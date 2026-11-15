@@ -1,0 +1,32 @@
+<div class="hud-slot hud-hover">
+  {{#with hover}}
+  <section class="hud-panel hc" style="{{style}}" aria-label="{{localize "FEO.Hud.hovered"}}">
+    <div class="hc-head cloth" data-army="{{army}}"><b>{{name}}</b><span>{{className}} · {{localize "FEO.Hud.level"}} {{level}}</span></div>
+    <div class="hc-body">
+      <div class="hc-hp" data-tone="{{hp.tone}}"><span>{{localize "FEO.Stat.hp.abbr"}}</span><div class="bar"><i style="width:{{hp.percent}}%"></i></div><b>{{hp.value}} / {{hp.max}}</b></div>
+      <div class="hc-row">
+        {{#if weapon}}<img src="{{weapon.img}}" alt=""><b>{{weapon.name}}</b> {{localize "FEO.Hud.range"}} {{weapon.range}}{{else}}{{feoIcon "x"}}{{localize "FEO.Combat.unarmed"}}{{/if}}
+        {{#if stateLabel}}<span class="end">{{stateLabel}}</span>{{/if}}
+      </div>
+      {{#if tile}}
+      <div class="hc-row">{{feoIcon tile.icon}}<b>{{tile.name}}</b>{{#if tile.elevation}} ▲{{tile.elevation}}{{/if}} <span>{{tile.bonus}}</span></div>
+      {{/if}}
+      {{#if conditions.length}}
+      <div class="hc-row wrap">{{#each conditions as |condition|}}<span class="chip">{{#if condition.img}}<img src="{{condition.img}}" alt="">{{/if}}{{condition.label}} <small>{{condition.turns}}</small></span>{{/each}}</div>
+      {{/if}}
+      {{#with versus}}
+      {{#if out}}
+      <div class="hc-hint">{{out}}</div>
+      {{else}}
+      <div class="hc-fc">
+        <small>{{lead}}</small>
+        {{#if blocked}}{{blocked}}{{else}}<b>{{damage}}</b>{{#if times}} × {{times}}{{/if}} {{localize "FEO.Hud.dmg"}} · <b>{{hit}}</b> {{localize "FEO.Combat.hit"}} · <b>{{crit}}</b> {{localize "FEO.Combat.critAbbr"}}{{/if}}
+        <small>{{counter}}</small>
+      </div>
+      <div class="hc-hint">{{localize "FEO.Hud.clickForecast"}}</div>
+      {{/if}}
+      {{/with}}
+    </div>
+  </section>
+  {{/with}}
+</div>

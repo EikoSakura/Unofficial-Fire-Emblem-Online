@@ -1,0 +1,192 @@
+<section class="tab panel-tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+
+  <div>
+    <h3 class="h3">{{localize "FEO.Section.skills"}}
+      <span class="aside">{{{localize "FEO.Skill.slots" used=skillSlots.used total=skillSlots.total}}}{{#if skillSlots.capacity}} · <span class="{{#if skillSlots.capacity.over}}over{{/if}}">{{{localize "FEO.Skill.capacityLine" spent=skillSlots.capacity.spent limit=skillSlots.capacity.limit}}}</span>{{#if skillSlots.capacity.tier}} ({{localize skillSlots.capacity.tier}}){{/if}}{{/if}}</span>
+      {{#if editable}}<button type="button" class="add edit-only" data-action="createItem" data-type="skill" data-tooltip="{{localize "FEO.Skill.add"}}" aria-label="{{localize "FEO.Skill.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+    </h3>
+    <div class="skill-grid">
+      {{#each skills as |skill|}}
+      <div class="skill draggable{{#unless skill.equipped}} unequipped{{/unless}}{{#if skill.flipped}} flipped{{/if}}" data-item-id="{{skill.id}}" data-kind="{{skill.kind}}" data-action="flipSkill">
+        <div class="faces">
+
+          {{!-- The front: what the skill is, and what there is to switch or to use --}}
+          <div class="face front"{{#if skill.flipped}} inert{{/if}}>
+            <div class="band">
+              <span class="row-controls">
+                <button type="button" data-action="postSkill" data-tooltip="{{localize "FEO.Skill.post"}}" aria-label="{{localize "FEO.Skill.post"}}">{{feoIcon "chat"}}</button>
+                <button type="button" data-action="flipSkill" data-tooltip="{{localize "FEO.Skill.flip"}}" aria-label="{{localize "FEO.Skill.flip"}}">{{feoIcon "swap"}}</button>
+              </span>
+            </div>
+            <button type="button" class="badge" data-action="toggleEquip" aria-pressed="{{skill.equipped}}"
+                    data-tooltip="{{#if skill.equipped}}{{localize "FEO.Skill.unequip"}}{{else}}{{localize "FEO.Skill.equip"}}{{/if}}">{{feoIcon skill.icon}}</button>
+            <span class="title">{{skill.name}}</span>
+            <div class="top">
+              <span class="kind">{{localize skill.kindLabel}}</span>
+              {{#if skill.capacity}}<span class="kind" data-tooltip="{{localize "FEO.Skill.capacity"}}">{{localize "FEO.Compendium.skills.cap"}} {{skill.capacity}}</span>{{/if}}
+              {{#if skill.choice}}<span class="kind">{{skill.choice}}</span>{{/if}}
+              {{#if skill.needsChoice}}<span class="kind warn" data-tooltip="{{localize "FEO.Skill.needsChoice"}}">{{localize "FEO.Skill.choiceNone"}}</span>{{else}}{{#if skill.automated}}<span class="auto-mark" data-tooltip="{{localize "FEO.Skill.automated"}}">{{feoIcon "check"}}</span>{{/if}}{{/if}}
+              {{#if skill.needsPicks}}<span class="kind warn" data-tooltip="{{localize "FEO.Skill.needsPicks"}}">{{localize "FEO.Skill.choiceNone"}}</span>{{/if}}
+              {{#if skill.check}}<span class="kind warn" data-tooltip="{{localize skill.check.hint}}">{{localize skill.check.label}}</span>{{/if}}
+            </div>
+            <div class="acts">
+              {{~#if skill.chance includeZero=true}}<span class="chance">{{{localize "FEO.Skill.chance" chance=skill.chance}}}</span>{{/if}}
+              {{#if skill.usable}}{{#if @root.editable}}<button type="button" class="btn small" data-action="useSkill" data-tooltip="{{localize "FEO.Skill.useHint"}}">{{localize "FEO.Item.use"}}</button>{{/if}}{{/if}}
+              {{#if skill.usage}}
+              {{#if skill.usage.note}}<span class="kind usage{{#if skill.usage.blocked}} warn{{/if}}">{{localize skill.usage.note turns=skill.usage.turns left=skill.usage.left uses=skill.usage.uses}}</span>{{/if}}
+              {{#if skill.usage.action}}{{#if @root.editable}}<button type="button" class="btn small usage{{#if skill.usage.active}} on{{/if}}" data-action="{{skill.usage.action}}" aria-pressed="{{#if skill.usage.active}}true{{else}}false{{/if}}"{{#if skill.usage.blocked}} disabled{{/if}} data-tooltip="{{localize skill.usage.hint}}">{{localize skill.usage.label}}</button>{{else}}{{#if skill.usage.active}}<span class="kind usage">{{localize skill.usage.label}}</span>{{/if}}{{/if}}{{/if}}
+              {{/if}}
+              {{#each skill.forms as |form|}}
+              {{#if @root.editable}}<button type="button" class="btn small usage{{#if form.on}} on{{/if}}" data-action="toggleForm" data-form="{{form.name}}" aria-pressed="{{#if form.on}}true{{else}}false{{/if}}" data-tooltip="{{localize "FEO.Skill.formHint"}}">{{form.name}}</button>{{else}}{{#if form.on}}<span class="kind usage">{{form.name}}</span>{{/if}}{{/if}}
+              {{/each}}
+            </div>
+          </div>
+
+          {{!-- The back: what the skill does --}}
+          <div class="face back"{{#unless skill.flipped}} inert{{/unless}}>
+            <div class="band">
+              <span class="title">{{skill.name}}</span>
+              <span class="row-controls">
+                <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "open"}}</button>
+                {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
+                <button type="button" data-action="flipSkill" data-tooltip="{{localize "FEO.Skill.flipBack"}}" aria-label="{{localize "FEO.Skill.flipBack"}}">{{feoIcon "swap"}}</button>
+              </span>
+            </div>
+            {{#if skill.effect}}<p class="effect">{{skill.effect}}</p>{{else}}<p class="effect none">{{localize "FEO.Skill.noEffect"}}</p>{{/if}}
+          </div>
+
+        </div>
+      </div>
+      {{else}}
+      <p class="empty">{{localize "FEO.Skill.none"}}</p>
+      {{/each}}
+    </div>
+    {{#if lasting.length}}
+    <ul class="lasting" aria-label="{{localize "FEO.Timed.title"}}">
+      {{#each lasting as |change|}}
+      <li data-timed="{{change.index}}">
+        <span class="lbl">{{localize "FEO.Timed.title"}}</span>
+        <b>{{change.name}}</b>{{#if change.from}} <span class="from">{{change.from}}</span>{{/if}}
+        <span class="what">{{#each change.parts as |part|}}<span>{{part.value}} {{localize part.label}}</span>{{/each}}</span>
+        <span class="lasts">{{localize change.lasts.key turns=change.lasts.turns from=change.from}}</span>
+        {{#if @root.editable}}<button type="button" class="remove" data-action="removeTimed" data-tooltip="{{localize "FEO.Timed.remove"}}" aria-label="{{localize "FEO.Timed.remove"}}">{{feoIcon "trash"}}</button>{{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+    {{#if nearby.length}}
+    <p class="nearby" data-tooltip="{{localize "FEO.Skill.nearbyHint"}}">
+      <span class="lbl">{{localize "FEO.Skill.nearby"}}</span>
+      {{#each nearby as |aura|}}<span class="aura{{#if aura.check}} warn{{/if}}"><b>{{aura.skill}}</b> {{aura.giver}}</span>{{/each}}
+    </p>
+    {{/if}}
+  </div>
+
+  {{#if arts}}
+  <div class="card arts">
+    <h3>{{localize "FEO.Optional.combatArts.title"}}
+      <span class="aside{{#if arts.over}} over{{/if}}">{{#if arts.allowed includeZero=true}}{{localize "FEO.Optional.combatArts.learned" known=arts.known allowed=arts.allowed}}{{else}}{{localize "FEO.Optional.combatArts.learnedOnly" known=arts.known}}{{/if}}</span>
+      {{#if editable}}<button type="button" class="add" data-action="learnArt" data-tooltip="{{localize "FEO.Optional.combatArts.learn.hint"}}" aria-label="{{localize "FEO.Optional.combatArts.learn.hint"}}">{{feoIcon "scroll"}}</button>{{/if}}
+      {{#if editable}}<button type="button" class="add edit-only" data-action="createItem" data-type="art" data-tooltip="{{localize "FEO.Optional.combatArts.add"}}" aria-label="{{localize "FEO.Optional.combatArts.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+    </h3>
+    <ul class="art-list">
+      {{#each arts.list as |art|}}
+      <li class="art draggable{{#if art.readied}} readied{{/if}}" data-item-id="{{art.id}}">
+        <div class="head">
+          <b class="title">{{art.name}}</b>
+          <span class="kind">{{localize art.type}}{{#if art.rank}} · {{localize art.rank}}{{/if}}</span>
+          <span class="cost">{{#if art.free}}{{localize "FEO.Optional.combatArts.cost.none"}}{{else}}{{#if art.cost.hp}}{{localize "FEO.Optional.combatArts.cost.hp" amount=art.cost.hp}}{{/if}}{{#if art.cost.uses}}{{#if art.cost.hp}}, {{/if}}{{localize "FEO.Optional.combatArts.cost.uses" amount=art.cost.uses}}{{/if}}{{/if}}</span>
+          {{#if art.byHand}}<span class="kind warn" data-tooltip="{{localize (concat art.byHand "Hint")}}">{{localize art.byHand}}</span>{{/if}}
+          <span class="row-controls">
+            {{#if @root.editable}}<button type="button" class="btn small usage{{#if art.readied}} on{{/if}}" data-action="readyArt" aria-pressed="{{#if art.readied}}true{{else}}false{{/if}}"{{#if art.blocked}}{{#unless art.readied}} disabled{{/unless}}{{/if}} data-tooltip="{{#if art.blocked}}{{localize art.blocked}}{{else}}{{localize "FEO.Optional.combatArts.readyHint"}}{{/if}}">{{#if art.readied}}{{localize "FEO.Optional.combatArts.readied"}}{{else}}{{localize "FEO.Optional.combatArts.ready"}}{{/if}}</button>{{else}}{{#if art.readied}}<span class="kind usage">{{localize "FEO.Optional.combatArts.readied"}}</span>{{/if}}{{/if}}
+            <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "open"}}</button>
+            {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
+          </span>
+        </div>
+        {{#if art.effect}}<p class="effect">{{art.effect}}</p>{{/if}}
+      </li>
+      {{else}}
+      <li class="empty">{{localize "FEO.Optional.combatArts.none"}}</li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  {{#if battalions}}
+  <div class="card battalions">
+    <h3>{{localize "FEO.Optional.battalions.title"}}
+      <span class="aside" data-tooltip="{{localize "FEO.Optional.battalions.authorityHint" bonus=battalions.authority.bonus}}">{{localize "FEO.Optional.battalions.authority"}} <b>{{localize battalions.authority.label}}</b>{{#if battalions.authority.next}} · {{battalions.authority.exp}} / {{battalions.authority.next}}{{/if}}</span>
+      {{#if editable}}<button type="button" class="add" data-action="takeBattalion" data-tooltip="{{localize "FEO.Optional.battalions.take.hint"}}" aria-label="{{localize "FEO.Optional.battalions.take.hint"}}">{{feoIcon "banner"}}</button>{{/if}}
+      {{#if editable}}<button type="button" class="add edit-only" data-action="createItem" data-type="battalion" data-tooltip="{{localize "FEO.Optional.battalions.add"}}" aria-label="{{localize "FEO.Optional.battalions.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+    </h3>
+    <div class="pairs edit-only">
+      <label class="field">
+        <span>{{localize "FEO.Optional.battalions.authorityRank"}}</span>
+        <select name="system.authority.rank">{{selectOptions battalions.authority.choices selected=battalions.authority.rank localize=true}}</select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Optional.battalions.authorityExp"}}</span>
+        <input type="number" name="system.authority.exp" value="{{battalions.authority.exp}}" min="0" step="1">
+      </label>
+    </div>
+    <ul class="art-list battalion-list">
+      {{#each battalions.list as |squad|}}
+      <li class="art battalion draggable{{#if squad.assigned}} readied{{/if}}{{#if squad.retreated}} retreated{{/if}}" data-item-id="{{squad.id}}">
+        <div class="head">
+          <b class="title">{{squad.name}}</b>
+          <span class="kind">{{localize "FEO.Optional.battalions.authority"}} {{localize squad.rank}} · {{localize "FEO.Optional.battalions.levelShort" level=squad.level}}{{#if squad.quality}} · {{squad.quality}}{{/if}}</span>
+          <span class="cost">{{localize "FEO.Stat.hp.abbr"}} {{squad.hp.value}} / {{squad.hp.max}}</span>
+          {{#if squad.retreated}}<span class="kind warn" data-tooltip="{{localize "FEO.Optional.battalions.retreatedHint"}}">{{localize "FEO.Optional.battalions.retreated"}}</span>{{/if}}
+          <span class="row-controls">
+            {{#if @root.editable}}
+            <button type="button" class="btn small usage{{#if squad.assigned}} on{{/if}}" data-action="assignBattalion" aria-pressed="{{#if squad.assigned}}true{{else}}false{{/if}}" data-tooltip="{{#if squad.assigned}}{{localize "FEO.Optional.battalions.standDown"}}{{else}}{{#if squad.blocked}}{{localize squad.blocked.key needs=(localize squad.blocked.needs) qualities=squad.blocked.qualities}}{{else}}{{localize "FEO.Optional.battalions.assignHint"}}{{/if}}{{/if}}">{{#if squad.assigned}}{{localize "FEO.Optional.battalions.assigned"}}{{else}}{{localize "FEO.Optional.battalions.assign"}}{{/if}}</button>
+            <button type="button" class="btn small" data-action="replenishBattalion"{{#if squad.full}} disabled{{/if}} data-tooltip="{{localize "FEO.Optional.battalions.replenishHint"}}">{{localize "FEO.Optional.battalions.replenish"}}</button>
+            {{else}}{{#if squad.assigned}}<span class="kind usage">{{localize "FEO.Optional.battalions.assigned"}}</span>{{/if}}{{/if}}
+            <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "open"}}</button>
+            {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
+          </span>
+        </div>
+        {{#if squad.bonuses.length}}<p class="effect bonuses">{{#each squad.bonuses as |bonus|}}<span><b>{{bonus.amount}}</b> {{localize bonus.label}}</span>{{/each}}</p>{{/if}}
+        <div class="head gambit">
+          <b class="title">{{#if squad.gambit.name}}{{squad.gambit.name}}{{else}}{{localize "FEO.Optional.battalions.gambit"}}{{/if}}</b>
+          <span class="kind">{{localize squad.gambit.kind}}</span>
+          <span class="cost">{{#if squad.gambit.offensive}}{{localize "FEO.Optional.battalions.gambitLine" might=squad.gambit.might hit=squad.gambit.hit}} · {{/if}}{{localize "FEO.Weapon.range"}} {{squad.gambit.range}}{{#if squad.gambit.uses}} · {{localize "FEO.Optional.battalions.usesLine" value=squad.gambit.uses.value max=squad.gambit.uses.max}}{{/if}}</span>
+          {{#if squad.gambit.byHand}}<span class="kind warn" data-tooltip="{{localize "FEO.Optional.battalions.partlyHint"}}">{{localize "FEO.Optional.combatArts.partly"}}</span>{{/if}}
+          {{#if squad.assigned}}{{#if @root.editable}}
+          <span class="row-controls">
+            <button type="button" class="btn small" data-action="useGambit"{{#if squad.gambit.blocked}} disabled{{/if}} data-tooltip="{{#if squad.gambit.blocked}}{{localize squad.gambit.blocked}}{{else}}{{localize "FEO.Optional.battalions.useHint"}}{{/if}}">{{localize "FEO.Optional.battalions.useGambit"}}</button>
+          </span>
+          {{/if}}{{/if}}
+        </div>
+        {{#if squad.gambit.effect}}<p class="effect">{{squad.gambit.effect}}</p>{{/if}}
+      </li>
+      {{else}}
+      <li class="empty">{{localize "FEO.Optional.battalions.none"}}</li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.allRanks"}} <span class="aside">{{#if ranks.level}}{{{localize "FEO.Weapon.levelLine" level=ranks.level.value cap=ranks.level.cap rank=(localize ranks.level.rankLabel)}}}{{else}}{{localize "FEO.Legend.rankEdit"}}{{/if}}</span></h3>
+    <div class="rank-grid">
+      {{#each ranks.all as |rank|}}
+      <div class="rank edit{{#unless rank.proficient}} none{{/unless}}">
+        <span class="ring" style="--p: {{rank.pct}}"><b>{{localize rank.rankLabel}}</b></span>
+        <span class="lbl">
+          {{localize rank.label}}
+          <span class="rank-fields">
+            <select name="system.proficiencies.{{rank.key}}.rank" aria-label="{{localize rank.label}} {{localize "FEO.Weapon.rank"}}">
+              {{selectOptions @root.config.ranks selected=rank.rank localize=true}}
+            </select>
+            <input type="number" name="system.proficiencies.{{rank.key}}.wexp" value="{{rank.wexp}}" min="0" step="any" data-play
+                   aria-label="{{localize rank.label}} {{localize "FEO.Weapon.wexp"}}">
+            <span class="of">/ {{#if rank.next}}{{rank.next}}{{else}}–{{/if}}</span>
+          </span>
+        </span>
+      </div>
+      {{/each}}
+    </div>
+  </div>
+
+</section>

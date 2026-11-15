@@ -1,0 +1,50 @@
+<div class="item-body">
+
+  <header class="item-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-action="editImage" data-edit="img">
+    <div class="item-title">
+      <div class="eyebrow">{{feoIcon icon}} {{localize "TYPES.Item.gear"}}</div>
+      <input class="name" type="text" name="name" value="{{source.name}}"
+             placeholder="{{localize "FEO.Item.name"}}" aria-label="{{localize "FEO.Item.name"}}">
+    </div>
+  </header>
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.itemDetails"}}</h3>
+    <div class="pairs three">
+      <div class="field">
+        <span>{{localize "FEO.Weapon.uses"}}</span>
+        <span class="fraction">
+          <input type="number" name="system.uses.value" value="{{system.uses.value}}" min="0" step="1"
+                 aria-label="{{localize "FEO.Weapon.usesCurrent"}}">
+          <span class="of">/</span>
+          <input type="number" name="system.uses.max" value="{{system.uses.max}}" min="0" step="1"
+                 aria-label="{{localize "FEO.Weapon.usesMax"}}">
+        </span>
+      </div>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.cost"}}</span>
+        <input type="number" name="system.cost" value="{{system.cost}}" min="0" step="1">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Item.restoreHint"}}">
+        <span>{{localize "FEO.Item.restore"}}</span>
+        <input type="number" name="system.restore" value="{{system.restore}}" min="0" step="1">
+      </label>
+      <label class="field check" data-tooltip="{{localize "FEO.Item.equipHint"}}">
+        <span>{{localize "FEO.Item.equip"}}</span>
+        <input type="checkbox" name="system.equip" {{checked system.equip}}>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Weapon.effect"}}</h3>
+    <textarea name="system.effect" rows="3" aria-label="{{localize "FEO.Weapon.effect"}}">{{system.effect}}</textarea>
+  </div>
+
+  <div class="card biography">
+    <h3>{{localize "FEO.Weapon.description"}}</h3>
+    {{formInput systemFields.description value=system.description enriched=descriptionHTML toggled=true}}
+  </div>
+
+</div>

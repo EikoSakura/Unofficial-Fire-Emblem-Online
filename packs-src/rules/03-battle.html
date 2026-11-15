@@ -1,0 +1,356 @@
+<!-- chapter: Battle | icon: sword -->
+
+<section data-page="actions" data-title="Turns &amp; Actions" data-source="Rules 3.0, Intro and Basics, “Actions, Combat and the Weapon Triangle” and “Stats” (MOV, WT)">
+<p class="feo-lead">Now that you know what your stats do, it is time to get into what you can do. All units have a variety of Actions available to them: Wait, Attack, Use, Shove, Rescue, Seize and more.</p>
+
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>On its turn a unit may move, then take <strong>one Action</strong>. Taking an Action ends the unit's turn, and all Skills that are “as an Action” do the same. A few things are free and do not: moving, equipping, Trading and Shifting.</p>
+</aside>
+
+<h2>Moving</h2>
+<p>MOV determines how far a unit can move in a turn. Units move in the cardinal directions, but not diagonally. Units can pass through their allies, but not enemies.</p>
+<p>Movement can be freely done and reconsidered until the unit takes an Action and locks in, however other units cannot act while a unit is mid-movement.</p>
+
+<h2>Actions that end your turn</h2>
+<dl class="feo-defs short">
+  <div><dt>Wait</dt><dd>Simply ends the unit's turn.</dd></div>
+  <div><dt>Attack</dt><dd>Initiates combat with an enemy in range. See [[combat]].</dd></div>
+  <div><dt>Use</dt><dd>Use an Item, such as a Vulnerary. Units are able to Use Items they would use on themselves on adjacent allies, as well. Units gain 10 EXP when Using an Item on an ally.</dd></div>
+  <div><dt>Shove</dt><dd>Pushes another unit one space forward. Units can only Shove units who do not have 3 or more WT than them, and can Shove units of all WT values below that.</dd></div>
+  <div><dt>Rescue</dt><dd>Picks up an ally and brings them under your protection. See below.</dd></div>
+  <div><dt>Drop</dt><dd>A Rescuer can Drop their passenger as an action.</dd></div>
+  <div><dt>Open</dt><dd>Units can Open doors and chests, provided they have the means to, such as a key or the ability to pick locks.</dd></div>
+  <div><dt>Objective</dt><dd>Units may perform various objective-based Actions at certain GM-designated spots, such as Seizing a throne, Arriving at a destination, Escaping from the battlefield, and so on. See [[objectives]].</dd></div>
+</dl>
+
+<h2>Rescuing</h2>
+<p>Rescuing picks up an ally and brings them under your protection, but halves your DEX and SPD. Rescued units cannot act or be targeted, only the Rescuer. Units can only Rescue allies with equal or less WT than them.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>If the Rescuer</th><th>The Rescued unit</th></tr></thead>
+  <tbody>
+    <tr><td>is incapacitated</td><td>is dropped on a random, viable adjacent tile.</td></tr>
+    <tr><td>is killed or retreats</td><td>is dropped on the tile the Rescuer was on.</td></tr>
+    <tr><td>could traverse terrain the Rescued unit could not, and is defeated</td><td>is placed onto the nearest tile they can traverse.</td></tr>
+  </tbody>
+</table></div>
+<p>Rescuers can <strong>Drop</strong> their passenger as an action, or <strong>Give</strong> them to an adjacent ally capable of holding them as a free action, however this prevents further movement. Similarly, a unit may <strong>Take</strong> another unit's passenger as a free, move-ending action.</p>
+
+<h2>Free actions</h2>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Free action</th><th>How it works</th><th class="mid">Move afterwards?</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Equip</strong></td><td>Units can freely equip whatever weapons and items they so choose during their turn before taking an action.</td><td class="mid yes">Yes</td></tr>
+    <tr><td><strong>Trade</strong></td><td>Trade items with adjacent allies. Units can trade an unlimited amount of times per turn, and may still take other Actions.</td><td class="mid no">No</td></tr>
+    <tr><td><strong>Give or Take</strong></td><td>Pass a Rescued passenger to or from an adjacent ally.</td><td class="mid no">No</td></tr>
+    <tr><td><strong>Shift</strong></td><td>Laguz transformation and reversion. A Laguz can move to a target, Shift, then Attack.</td><td class="mid no">No</td></tr>
+  </tbody>
+</table></div>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-capturing]] lets units take enemies alive. [[opt-berwick-turns]] replaces Phases with alternating turns. [[opt-stars|Movement Stars]] can grant a second action.</p>
+</aside>
+</section>
+
+<section data-page="combat" data-title="Combat" data-source="Rules 3.0, Intro and Basics, “Actions, Combat and the Weapon Triangle”. Example numbers: Class Sheet (Myrmidon, Fighter) and Reference Sheet (Iron Sword, Hand Axe).">
+<p class="feo-lead">The unit who starts combat is the initiator. Both the initiator and defender get one attack each, the initiator attacking first with the defender counter-attacking after them.</p>
+
+<div class="feo-glance">
+  <div><b>+4</b><span>Attack Speed for a second attack</span></div>
+  <div><b>×3</b><span>final damage on a Critical Hit</span></div>
+  <div><b>D100</b><span>roll equal to or under your chance</span></div>
+</div>
+
+<h2>The order of attacks</h2>
+<ol class="feo-steps">
+  <li><span class="feo-step-title">The initiator attacks</span></li>
+  <li><span class="feo-step-title">The defender counter-attacks</span>
+    <p>The defender may only counter-attack if their weapon has sufficient Range. See [[weapons|Range and Midrange]].</p></li>
+  <li><span class="feo-step-title">Whoever is faster attacks again</span>
+    <p>If one of the two units has 4 or more Attack Speed than the other, they can make a second attack, called a follow-up or double.</p>
+    <ul>
+      <li>If the initiator can double, they make their first attack, the defender counters, then the initiator doubles.</li>
+      <li>If the defender can, the initiator makes their attack, then the defender makes two counter-attacks.</li>
+    </ul></li>
+</ol>
+
+<h2>Making an attack</h2>
+<h3>Rolling to hit</h3>
+<p>To actually make an attack, the attacker rolls a D100. Whether or not this hits is determined by the Accuracy and Dodge of the units, with the defender's Dodge reducing the attacker's Accuracy.</p>
+<div class="feo-formulas">
+  <div class="feo-formula">
+    <span class="feo-formula-name">Chance to hit</span>
+    <div class="feo-formula-expr"><var>Accuracy</var> − <var>Foe's Dodge</var></div>
+    <p class="feo-formula-note">If an attacker has 100 Accuracy and the defender has 50 Dodge, the attacker has a 50% final chance to hit.</p>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Damage dealt</span>
+    <div class="feo-formula-expr"><var class="w">Might</var> + <var>STR or MAG</var> − <var>Foe's DEF or RES</var></div>
+    <p class="feo-formula-note">The unit's relevant stat plus their weapon's Might, reduced by their foe's relevant defensive stat.</p>
+  </div>
+</div>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>If the attacker rolls <strong>equal to or below</strong> the final chance to hit, their attack connects and deals damage.</p>
+</aside>
+
+<h3>Critical Hits</h3>
+<p>When attacking, units also have a chance to Critically hit. Critical Hits deal 3× final damage, and are similarly a D100 roll, rolled alongside or after Hits.</p>
+<div class="feo-formulas">
+  <div class="feo-formula wide">
+    <span class="feo-formula-name">Chance to crit</span>
+    <div class="feo-formula-expr"><var>Critical</var> − <var>Foe's Critical Avoid</var></div>
+    <p class="feo-formula-note">Rolling equal to or lower than the chance means a Critical Hit.</p>
+  </div>
+</div>
+
+<h3>Skills</h3>
+<p>Finally, many Skills have a chance to activate when you make an attack. As with hitting and critting, rolling equal to or below your activation chance means you activate the Skill. See [[skills]].</p>
+
+<h3>Offensive Staves</h3>
+<p>For Offensive Staves, hitting is the same, just with Offensive Staff Hit against Offensive Staff Avoid. See [[combat-stats]].</p>
+
+<h2>After each hit</h2>
+<ul>
+  <li>The weapon may lose a Use, depending on its kind. See [[weapons|Uses]].</li>
+  <li>The attacker adds the weapon's wEXP to their Proficiency, doubled on a killing blow. See [[weapons|Proficiency]].</li>
+  <li>If the weapon's Effect names a Condition, the target gains it. See [[conditions]].</li>
+</ul>
+<p>Once the combat is over, the unit earns Experience for it. See [[exp]].</p>
+
+<h2>Worked example</h2>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>A Myrmidon attacks a Fighter</strong></div>
+  <div class="feo-example-body">
+    <p>The Myrmidon initiates with an Iron Sword against a Fighter holding a Hand Axe. Swords beat Axes, so the Myrmidon's numbers below already include the [[weapon-triangle]] bonus for Sword Rank D, and the Fighter's the matching penalty.</p>
+    <div class="feo-versus">
+      <div>
+        <h4>Myrmidon <small>Iron Sword · initiator</small></h4>
+        <div class="feo-statline"><span class="feo-stat">HP <b>17</b></span><span class="feo-stat">ATTACK SPEED <b>10</b></span><span class="feo-stat">HIT <b>108</b></span><span class="feo-stat">DAMAGE <b>11</b></span><span class="feo-stat">CRIT <b>3</b></span></div>
+      </div>
+      <div>
+        <h4>Fighter <small>Hand Axe · defender</small></h4>
+        <div class="feo-statline"><span class="feo-stat">HP <b>24</b></span><span class="feo-stat">ATTACK SPEED <b>4</b></span><span class="feo-stat">HIT <b>51</b></span><span class="feo-stat">DAMAGE <b>10</b></span><span class="feo-stat">CRIT <b>0</b></span></div>
+      </div>
+    </div>
+    <p>The Myrmidon's Attack Speed is 6 higher than the Fighter's, which is 4 or more, so the Myrmidon doubles.</p>
+    <div class="feo-table-wrap"><table class="feo-table">
+      <thead><tr><th>Attack</th><th class="num">Needs</th><th class="num">Rolls</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1. Myrmidon</strong></td><td class="num">108 or less</td><td class="num">37</td><td class="up">Hit for 11. The Fighter is at 13 HP.</td></tr>
+        <tr><td><strong>2. Fighter</strong></td><td class="num">51 or less</td><td class="num">64</td><td class="down">Miss. The Myrmidon is still at 17 HP.</td></tr>
+        <tr><td><strong>3. Myrmidon</strong></td><td class="num">108 or less</td><td class="num">82</td><td class="up">Hit for 11. The Fighter is at 2 HP.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Each hit also had a 3 in 100 chance to be a Critical Hit, for 33 damage. The Fighter's Critical of 5 is lower than the Myrmidon's Critical Avoid of 6, so the Fighter could not crit at all.</p>
+  </div>
+</aside>
+
+<aside class="feo-callout ruling">
+  <p class="feo-callout-label">Ruling · Book of Stipulations</p>
+  <p>When a weapon attacks with an atypical damage stat for its type, it targets: Resistance if it uses MAG instead of STR, Resistance if it uses STR instead of MAG, Defense if it uses DEX instead of STR, and Defense if it uses Attack Speed instead of STR.</p>
+</aside>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-variants]] collects the modules that change a single combat rule: Double Roll RNG, FE5 RNG, Minimum Damage, FE4 Criticals, FE4 Effectiveness, Follow-up Critical Multiplier, Weapon Kill Critical Bonus and Berwick Counters/Doubles.</p>
+</aside>
+
+<aside class="feo-callout foundry">
+  <p class="feo-callout-label">In Foundry</p>
+  <p>Target an enemy and attack from your unit sheet to see a forecast of both sides' numbers before you commit.</p>
+</aside>
+</section>
+
+<section data-page="weapon-triangle" data-title="The Weapon Triangle" data-source="Rules 3.0, Intro and Basics, “Actions, Combat and the Weapon Triangle”. Example numbers: Class Sheet (Myrmidon, Fighter) and Reference Sheet (Iron Sword, Hand Axe).">
+<p class="feo-lead">The Weapon Triangle is essentially combat Rock-Paper-Scissors. One weapon type has an advantage against another, and a disadvantage against a third. There is also the Magic Triangle and the Anima Pentagon.</p>
+
+<h2>Who beats whom</h2>
+<p>Each arrow points from the winner to the loser.</p>
+<div class="feo-cycles">
+  <figure class="feo-cycle tri">
+    <div class="feo-cycle-ring">
+      <span class="feo-node c-bane i0"><i class="feo-ico sword"></i>Sword</span>
+      <span class="feo-node c-good i1"><i class="feo-ico axe"></i>Axe</span>
+      <span class="feo-node c-boon i2"><i class="feo-ico lance"></i>Lance</span>
+      <i class="feo-beat i0"></i><i class="feo-beat i1"></i><i class="feo-beat i2"></i>
+    </div>
+    <figcaption><strong>Weapon Triangle</strong>Swords beat Axes. Axes beat Lances. Lances beat Swords.</figcaption>
+  </figure>
+  <figure class="feo-cycle tri">
+    <div class="feo-cycle-ring">
+      <span class="feo-node c-warn i0"><i class="feo-ico sun"></i>Light</span>
+      <span class="feo-node c-opt i1"><i class="feo-ico moon"></i>Dark</span>
+      <span class="feo-node c-good i2"><i class="feo-ico spark"></i>Anima</span>
+      <i class="feo-beat i0"></i><i class="feo-beat i1"></i><i class="feo-beat i2"></i>
+    </div>
+    <figcaption><strong>Magic Triangle</strong>Light beats Dark. Dark beats Anima. Anima beats Light.</figcaption>
+  </figure>
+  <figure class="feo-cycle penta">
+    <div class="feo-cycle-ring">
+      <span class="feo-node c-bane i0"><i class="feo-ico flame"></i>Fire</span>
+      <span class="feo-node c-good i1"><i class="feo-ico wind"></i>Wind</span>
+      <span class="feo-node c-warn i2"><i class="feo-ico peak"></i>Earth</span>
+      <span class="feo-node c-gold i3"><i class="feo-ico bolt"></i>Thunder</span>
+      <span class="feo-node c-boon i4"><i class="feo-ico drop"></i>Water</span>
+      <i class="feo-beat i0"></i><i class="feo-beat i1"></i><i class="feo-beat i2"></i><i class="feo-beat i3"></i><i class="feo-beat i4"></i>
+      <span class="feo-hub c-good"><i class="feo-ico spark"></i>Anima</span>
+      <i class="feo-spoke i0"></i><i class="feo-spoke i1"></i><i class="feo-spoke i3"></i>
+    </div>
+    <figcaption><strong>Anima Pentagon</strong>Fire beats Wind, Wind beats Earth, Earth beats Thunder, Thunder beats Water, Water beats Fire. Anima also beats its subcategories Fire, Wind and Thunder.</figcaption>
+  </figure>
+</div>
+
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>The pentagon includes Earth and Water, but the rules name only Fire, Wind and Thunder as the subcategories that Anima beats. The original wording is kept here.</p>
+</aside>
+
+<h2>What advantage gives you</h2>
+<p>The unit with Weapon Triangle Advantage gains bonuses to their accuracy and damage, and their opponent receives the same numbers as penalties.</p>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>The size of the bonus is set by the <strong>Rank of the unit with advantage</strong>, in the weapon they are using. The losing side's Rank does not matter.</p>
+</aside>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th class="wrap">Rank of the unit with advantage</th><th class="num">Hit</th><th class="num">Damage</th></tr></thead>
+  <tbody>
+    <tr><td><span class="feo-rank">F</span></td><td class="num">± 5</td><td class="num">± 1</td></tr>
+    <tr><td><span class="feo-rank">E</span></td><td class="num">± 10</td><td class="num">± 1</td></tr>
+    <tr><td><span class="feo-rank">D</span></td><td class="num">± 10</td><td class="num">± 2</td></tr>
+    <tr><td><span class="feo-rank">C</span></td><td class="num">± 15</td><td class="num">± 2</td></tr>
+    <tr><td><span class="feo-rank">B</span></td><td class="num">± 15</td><td class="num">± 3</td></tr>
+    <tr><td><span class="feo-rank">A</span></td><td class="num">± 20</td><td class="num">± 3</td></tr>
+    <tr><td><span class="feo-rank top">S</span></td><td class="num">± 20</td><td class="num">± 4</td></tr>
+    <tr><td><span class="feo-rank top">SS</span></td><td class="num">± 30</td><td class="num">± 4</td></tr>
+    <tr><td><span class="feo-rank top">★</span></td><td class="num">± 40</td><td class="num">± 5</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">The plus goes to the unit with advantage, the minus to their opponent.</p>
+
+<h2>Outside the triangle</h2>
+<p>Weapons not included in a Weapon Triangle have neither an advantage nor a disadvantage against any other weapons, and weapons in the Triangle do not normally have an advantage or disadvantage against themselves.</p>
+
+<h2>Worked example</h2>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>Sword against Axe</strong></div>
+  <div class="feo-example-body">
+    <p>A Myrmidon with an Iron Sword attacks a Fighter holding a Hand Axe. Swords beat Axes, and the Myrmidon's Sword Rank is <span class="feo-rank">D</span>, so the row to read is ± 10 Hit and ± 2 Damage.</p>
+    <div class="feo-versus">
+      <div>
+        <h4>Myrmidon <small>Iron Sword · has advantage</small></h4>
+        <div class="feo-statline"><span class="feo-stat">ACCURACY <b>111</b></span><span class="feo-stat">DAMAGE <b>12</b></span><span class="feo-stat">DODGE <b>26</b></span><span class="feo-stat">DEF <b>4</b></span></div>
+      </div>
+      <div>
+        <h4>Fighter <small>Hand Axe · at a disadvantage</small></h4>
+        <div class="feo-statline"><span class="feo-stat">ACCURACY <b>87</b></span><span class="feo-stat">DAMAGE <b>16</b></span><span class="feo-stat">DODGE <b>13</b></span><span class="feo-stat">DEF <b>3</b></span></div>
+      </div>
+    </div>
+    <div class="feo-table-wrap"><table class="feo-table">
+      <thead><tr><th></th><th class="num">Without triangle</th><th class="num">With triangle</th></tr></thead>
+      <tbody>
+        <tr><td>Myrmidon's chance to hit <small>(111 − 13)</small></td><td class="num">98</td><td class="num up">108</td></tr>
+        <tr><td>Myrmidon's damage per hit <small>(12 − 3)</small></td><td class="num">9</td><td class="num up">11</td></tr>
+        <tr><td>Fighter's chance to hit <small>(87 − 26)</small></td><td class="num">61</td><td class="num down">51</td></tr>
+        <tr><td>Fighter's damage per hit <small>(16 − 4)</small></td><td class="num">12</td><td class="num down">10</td></tr>
+      </tbody>
+    </table></div>
+    <div class="feo-meter c-good"><em>Myrmidon hits</em><div class="track"><span style="width:100%"></span></div><b>108</b></div>
+    <div class="feo-meter c-bane"><em>Fighter hits</em><div class="track"><span style="width:51%"></span></div><b>51</b></div>
+    <p>The Myrmidon needs to roll 108 or lower on a D100, so cannot miss. The Fighter has gone from better than even to a coin flip.</p>
+  </div>
+</aside>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-break]] adds Break, which stops a unit at a disadvantage from counterattacking, and widens the triangle to Bows, Brawl, Knives and other weapon types.</p>
+</aside>
+</section>
+
+<section data-page="conditions" data-title="Conditions" data-source="Rules 3.0, Intro and Basics, “Stats” (Condition). Ruling: Book of Stipulations, first entry.">
+<p class="feo-lead">Condition is what state a unit is currently in. This is usually “Fine” or “Normal”, but units can be inflicted with various negative status effects, or Conditions.</p>
+
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>Conditions last a set number of turns, but can be reapplied to reset (or in some cases, increase) the time. They can also be cured by various items, staves, and Skills.</p>
+  <p>If a weapon has the name of a Condition in its Effect, it inflicts that Condition on hit.</p>
+</aside>
+
+<h2>At a glance</h2>
+<p>The Conditions that stop a unit from doing something.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Condition</th><th class="mid">Move</th><th class="mid">Act</th><th class="mid">Counter</th><th class="mid">Dodge</th><th class="num">Lasts</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Stun</strong></td><td class="mid no">No</td><td class="mid no">No</td><td class="mid no">No</td><td class="mid no">No</td><td class="num">1 turn</td></tr>
+    <tr><td><strong>Bind</strong></td><td class="mid no">No</td><td class="mid yes">Yes</td><td class="mid na">·</td><td class="mid na">·</td><td class="num">3 turns</td></tr>
+    <tr><td><strong>Disable</strong></td><td class="mid yes">Yes</td><td class="mid no">No</td><td class="mid na">·</td><td class="mid na">·</td><td class="num">2 turns</td></tr>
+    <tr><td><strong>Daze</strong></td><td class="mid" colspan="2">One or the other</td><td class="mid na">·</td><td class="mid na">·</td><td class="num">1 turn</td></tr>
+    <tr><td><strong>Sleep</strong></td><td class="mid no">No</td><td class="mid no">No</td><td class="mid no">No</td><td class="mid no">No</td><td class="num">3 turns</td></tr>
+    <tr><td><strong>Freeze</strong></td><td class="mid na">·</td><td class="mid no">No</td><td class="mid na">·</td><td class="mid na">·</td><td class="num">2 turns</td></tr>
+    <tr><td><strong>Petrification</strong></td><td class="mid no">No</td><td class="mid no">No</td><td class="mid no">No</td><td class="mid no">No</td><td class="num">5 turns</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">A dot means the rules do not mention it for that Condition.</p>
+
+<h2>Held in place</h2>
+<div class="feo-conds c-warn">
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico bolt"></i><span class="feo-cond-name">Stun</span><span class="feo-dur">1 turn</span></div><p>Cannot move, take actions, counter-attack, or dodge.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico lock"></i><span class="feo-cond-name">Bind</span><span class="feo-dur">3 turns</span></div><p>Cannot move, but may still take actions.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico lock"></i><span class="feo-cond-name">Disable</span><span class="feo-dur">2 turns</span></div><p>Cannot act, but may still move.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico spark"></i><span class="feo-cond-name">Daze</span><span class="feo-dur">1 turn</span></div><p>Must choose to only move or only take an action during its turn.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico moon"></i><span class="feo-cond-name">Sleep</span><span class="feo-dur">3 turns</span></div><p>Cannot move or act, and cannot counter-attack or dodge.</p><p class="feo-fine">Ends early if the unit is hit by an attack.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico snow"></i><span class="feo-cond-name">Freeze</span><span class="feo-dur">2 turns</span></div><p>Cannot act, takes 2× damage from physical attacks, and negates Fire damage.</p><p class="feo-fine">Ends early if the unit is hit by a physical or Fire attack.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico shield"></i><span class="feo-cond-name">Petrification</span><span class="feo-dur">5 turns</span></div><p>Cannot move, take actions, counter-attack or dodge, similarly to Sleep. Loses 30 Critical Avoid, but gains +10 DEF for the duration.</p></div>
+</div>
+
+<h2>Wearing you down</h2>
+<div class="feo-conds c-bane">
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico drop"></i><span class="feo-cond-name">Bleed</span><span class="feo-dur">5 turns</span></div><p>Takes damage equal to 10% of its max HP, rounded up, at the start of each of its turns, as well as −5 Critical Avoid.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico drop"></i><span class="feo-cond-name">Heavy Bleed</span><span class="feo-dur">5 turns</span></div><p>Works like Bleed, but deals 30% max HP damage instead of 10%.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico flask"></i><span class="feo-cond-name">Poison</span><span class="feo-dur">5 turns</span></div><p>Takes damage equal to 10% of its max HP, rounded up, at the start of each of its turns, as well as −10 Accuracy and Dodge.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico flask"></i><span class="feo-cond-name">Deep Poison</span><span class="feo-dur">5 turns</span></div><p>Works like Poison, but deals 30% max HP damage instead of 10%.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico flame"></i><span class="feo-cond-name">Burn</span><span class="feo-dur">1 turn · stacks</span></div><p>Takes damage equal to (10 + Burn duration)% of its max HP, rounded up, at the start of each of its turns, as well as −2 Damage dealt.</p><p class="feo-fine">Lasts 1 turn, but can stack with multiple applications of the effect.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico snow"></i><span class="feo-cond-name">Frostbite</span><span class="feo-dur">3 turns</span></div><p>Loses 10% of its max HP per turn, and suffers −4 SPD and −1 MOV for the duration.</p><p class="feo-fine">Ends early if the unit is hit by a Fire attack.</p></div>
+</div>
+
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>Poison on a 17 HP unit</strong></div>
+  <div class="feo-example-body">
+    <p>These Conditions say “rounded up”, which is the opposite of the usual rounding.</p>
+    <dl class="feo-calc">
+      <div><dt>Poison</dt><dd class="work">10% of 17 = 1.7 <small>rounded up</small></dd><dd class="res">2</dd></div>
+      <div><dt>Deep Poison</dt><dd class="work">30% of 17 = 5.1 <small>rounded up</small></dd><dd class="res">6</dd></div>
+      <div><dt>Burn, 3 turns</dt><dd class="work">(10 + 3)% of 17 = 2.21 <small>rounded up</small></dd><dd class="res">3</dd></div>
+    </dl>
+    <p>That damage lands at the start of each of the unit's turns.</p>
+  </div>
+</aside>
+
+<aside class="feo-callout ruling">
+  <p class="feo-callout-label">Ruling · Book of Stipulations</p>
+  <p>When a unit qualifies for damage, healing and a buff at the start of its turn, they resolve in the order <strong>Healing, Damage, Buffs, Debuffs</strong>. A unit would heal from Imbue, then be damaged by Poison, and then receive the buffs of White Pool.</p>
+</aside>
+
+<h2>Thrown off</h2>
+<div class="feo-conds c-boon">
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico down"></i><span class="feo-cond-name">Rattled</span><span class="feo-dur">1 turn</span></div><p>STR, MAG, DEF, RES, DEX, SPD and MOV are decreased by 2, and the unit is prevented from using Choice Skills, Combat Arts and Gambits.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico wind"></i><span class="feo-cond-name">Squall</span><span class="feo-dur">1 turn</span></div><p>−10 Dodge and −2 MOV, and an additional −15 Hit when making attacks at +2 Range.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico drop"></i><span class="feo-cond-name">Damp</span><span class="feo-dur">3 turns</span></div><p>Freeze, Frostbite and Squall chances are increased by 5% against it, and the unit takes 4 more Thunder damage and 4 less Fire damage.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico drop"></i><span class="feo-cond-name">Foam</span><span class="feo-dur">3 turns</span></div><p>−2 SPD, and returns 25% of damage taken as healing to its attacker.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico peak"></i><span class="feo-cond-name">Tremor</span><span class="feo-dur">1 turn · stacks to 20</span></div><p>Loses DEF equal to half the duration (minimum 1). When taking damage from a physical weapon, has a 5 × (Tremor duration)% chance to be Rattled and forcibly moved backwards 1 space, after which Tremor is “Burst” and removed.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico sun"></i><span class="feo-cond-name">Brighten</span><span class="feo-dur">2 turns</span></div><p>Enemies initiating combat against it gain +15 Hit and +5 Critical. The unit is always visible in Fog of War, and has its LoS set to 3 if lower, or +1 if equal to or higher.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico moon"></i><span class="feo-cond-name">Darken</span><span class="feo-dur">2 turns</span></div><p>−15 Hit and −5 Critical. The unit has its LoS set to 1 if higher.</p></div>
+</div>
+
+<h2>Not yourself</h2>
+<div class="feo-conds c-opt">
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico x"></i><span class="feo-cond-name">Silence</span><span class="feo-dur">4 turns</span></div><p>Unable to speak, or use tomes or staves.</p></div>
+  <div class="feo-cond"><div class="feo-cond-head"><i class="feo-ico claw"></i><span class="feo-cond-name">Berserk</span><span class="feo-dur">3 turns</span></div><p>Loses control and will automatically target the most vulnerable unit in its range, even if it is an ally.</p></div>
+</div>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-conditions]] lists 31 more, such as Dazzle, Brand and Fear, for use with Optional Content.</p>
+</aside>
+</section>

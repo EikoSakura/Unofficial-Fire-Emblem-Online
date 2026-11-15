@@ -1,0 +1,164 @@
+File names for your own arts images. Put an image in this folder, named as in the first column
+(for example iron-axe.webp or iron-axe.png; "Iron Axe.png" works too), and build the compendium again.
+Where two entries share a name, the second column is the name that picks out just one of them.
+This list is rewritten by every build.
+
+file name	more specific file name	entry	folder	image used now
+subdue		Subdue	Universal Arts	icons/skills/melee/strike-blade-claw-red.webp
+subdue-ranged		Subdue (Ranged)	Universal Arts	icons/skills/melee/strike-dagger-arcane-pink.webp
+lob		Lob	Shared Arts	icons/skills/melee/maneuver-sword-katana-yellow.webp
+survivors-instinct		Survivor's Instinct	Shared Arts	icons/skills/melee/strike-blade-hooked-orange-blue.webp
+light-attack		Light Attack	Shared Arts	icons/skills/melee/strike-blade-knife-green-purple.webp
+heavy-attack		Heavy Attack	Shared Arts	icons/skills/melee/strike-morningstar-gray.webp
+lucky-strike		Lucky Strike	Shared Arts	icons/skills/melee/strike-blade-knife-white-red.webp
+certain-strike		Certain Strike	Shared Arts	icons/skills/melee/strike-flail-destructive-yellow.webp
+duelists-strike		Duelist's Strike	Shared Arts	icons/skills/melee/strikes-sword-triple-gray.webp
+death-strike		Death Strike	Shared Arts	icons/skills/melee/strike-blade-hooked-blue-red.webp
+lacerate		Lacerate	Shared Arts	icons/skills/melee/strike-dagger-poison-green.webp
+quickness		Quickness	Shared Arts	icons/skills/melee/strike-axe-energy-pink.webp
+mutilate		Mutilate	Shared Arts	icons/skills/melee/strike-slashes-orange.webp
+dizzying-blow		Dizzying Blow	Shared Arts	icons/skills/melee/strike-blade-hooked-green-purple.webp
+all-out-attack		All-Out Attack	Shared Arts	icons/skills/melee/strike-dagger-blood-red.webp
+scale-tipper		Scale Tipper	Shared Arts	icons/skills/melee/strike-weapons-orange.webp
+fleet-footwork		Fleet Footwork	Shared Arts	icons/skills/melee/strike-axe-red.webp
+sunset-blade		Sunset Blade	Shared Arts	icons/skills/melee/strike-club-red.webp
+inner-emblem		Inner Emblem	Shared Arts	icons/skills/melee/strike-slashes-red.webp
+even-the-odds		Even The Odds	Shared Arts	icons/skills/melee/strike-axe-blood-red.webp
+earths-boon		Earth's Boon	Shared Arts	icons/skills/melee/strike-sword-slashing-red.webp
+all-in		All In	Shared Arts	icons/skills/melee/strike-sword-blood-red.webp
+harrier-strike		Harrier Strike	Shared Arts	icons/skills/melee/strike-axe-blood-red.webp
+plentitude		Plentitude	Shared Arts	icons/skills/melee/strike-flail-destructive-yellow.webp
+beatdown		Beatdown	Shared Arts	icons/skills/melee/strike-morningstar-gray.webp
+know-your-enemy		Know Your Enemy	Shared Arts	icons/skills/melee/weapons-crossed-swords-black.webp
+mordhau-strike		Mordhau Strike	Sword Arts	icons/skills/melee/blade-tip-chipped-blood-red.webp
+twisting-blade		Twisting Blade	Sword Arts	icons/skills/melee/hand-grip-sword-strike-orange.webp
+shadow-sword		Shadow Sword	Sword Arts	icons/skills/melee/blade-tips-triple-steel.webp
+wrath-strike		Wrath Strike	Sword Arts	icons/skills/melee/hand-grip-sword-strike-orange.webp
+sunder		Sunder	Sword Arts	icons/skills/melee/sword-damaged-bent.webp
+hexblade		Hexblade	Sword Arts	icons/skills/melee/weapons-crossed-swords-pink.webp
+grounder		Grounder	Sword Arts	icons/skills/melee/sword-damaged-bent.webp
+crosswise-cut		Crosswise Cut	Sword Arts	icons/skills/melee/swords-parry-block-yellow.webp
+bane-of-monsters		Bane of Monsters	Sword Arts	icons/skills/melee/hand-grip-sword-orange.webp
+sweep-slash		Sweep Slash	Sword Arts	icons/skills/melee/sword-damaged-broken-purple.webp
+sword-dance		Sword Dance	Sword Arts	icons/skills/melee/weapons-crossed-swords-black.webp
+haze-slice		Haze Slice	Sword Arts	icons/skills/melee/weapons-crossed-swords-black.webp
+finesse-blade		Finesse Blade	Sword Arts	icons/skills/melee/strike-blade-hooked-blue-red.webp
+flamberge		Flamberge	Sword Arts	icons/skills/melee/strike-blade-hooked-white-red.webp
+double-lion		Double Lion	Sword Arts	icons/skills/melee/strikes-sword-scimitar.webp
+shadow-gambit		Shadow Gambit	Sword Arts	icons/skills/melee/blade-tip-damaged-acid-green.webp
+tipper		Tipper	Sword Arts	icons/skills/melee/strikes-sword-triple-gray.webp
+roundhouse		Roundhouse	Sword Arts	icons/skills/melee/blade-tips-triple-steel.webp
+destreza		Destreza	Sword Arts	icons/skills/melee/sword-stuck-glowing-pink.webp
+myriad-strikes		Myriad Strikes	Sword Arts	icons/skills/melee/weapons-crossed-swords-teal.webp
+tempest-slash		Tempest Slash	Sword Arts	icons/skills/melee/strike-blade-claw-red.webp
+serpents-fang		Serpent's Fang	Knife Arts	icons/skills/melee/strike-sword-dagger-runes-gold.webp
+high-speed-stabbing		High-Speed Stabbing	Knife Arts	icons/skills/melee/weapons-crossed-daggers-orange.webp
+eliminate		Eliminate	Knife Arts	icons/skills/melee/strike-sword-dagger-runes-red.webp
+exploit-the-gap		Exploit the Gap	Knife Arts	icons/skills/melee/strike-sword-dagger-runes-gray.webp
+full-stop-to-life		Full-Stop To Life	Knife Arts	icons/skills/melee/strike-blade-knife-blue-red.webp
+gutbuster		Gutbuster	Axe Arts	icons/skills/melee/strike-axe-energy-pink.webp
+wild-carving		Wild Carving	Axe Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+smash		Smash	Axe Arts	icons/skills/melee/weapons-crossed-poleaxes-white.webp
+focused-strike		Focused Strike	Axe Arts	icons/skills/melee/strike-axe-red.webp
+lightning-axe		Lightning Axe	Axe Arts	icons/skills/melee/strike-axe-red.webp
+helm-splitter		Helm Splitter	Axe Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+monster-breaker		Monster Breaker	Axe Arts	icons/skills/melee/strike-axe-blood-red.webp
+scendscale		Scendscale	Axe Arts	icons/skills/melee/strike-axe-energy-pink.webp
+raiders-storm		Raider's Storm	Axe Arts	icons/skills/melee/weapons-crossed-poleaxes-white.webp
+exhaustive-strike		Exhaustive Strike	Axe Arts	icons/skills/melee/strike-axe-red.webp
+head-crusher		Head Crusher	Axe Arts	icons/skills/melee/strike-axe-red.webp
+slashing-rush		Slashing Rush	Axe Arts	icons/skills/melee/strike-axe-energy-pink.webp
+wild-abandon		Wild Abandon	Axe Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+vengeance		Vengeance	Axe Arts	icons/skills/melee/strike-axe-red.webp
+armored-strike		Armored Strike	Axe Arts	icons/skills/melee/strike-axe-blood-red.webp
+brainshaker		Brainshaker	Axe Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+spike		Spike	Axe Arts	icons/skills/melee/strike-axe-red.webp
+leaping-charge		Leaping Charge	Axe Arts	icons/skills/melee/weapons-crossed-poleaxes-white.webp
+manslayer		Manslayer	Axe Arts	icons/skills/melee/weapons-crossed-poleaxes-white.webp
+axe-uppercut		Axe Uppercut	Axe Arts	icons/skills/melee/weapons-crossed-poleaxes-white.webp
+shoulder-pin		Shoulder Pin	Lance Arts	icons/skills/melee/spear-tips-three-green.webp
+aggrieve		Aggrieve	Lance Arts	icons/skills/melee/strike-weapon-polearm-ice-blue.webp
+tempest-lance		Tempest Lance	Lance Arts	icons/skills/melee/strike-weapon-polearm-ice-blue.webp
+hit-and-run		Hit and Run	Lance Arts	icons/skills/melee/strike-polearm-glowing-white.webp
+frozen-lance		Frozen Lance	Lance Arts	icons/skills/melee/strike-polearm-glowing-white.webp
+knightkneeler		Knightkneeler	Lance Arts	icons/skills/melee/spear-tips-three-purple.webp
+monster-piercer		Monster Piercer	Lance Arts	icons/skills/melee/spear-tips-quintuple-orange.webp
+mages-boon		Mage's Boon	Lance Arts	icons/skills/melee/spear-tips-double-purple.webp
+shatter-slash		Shatter Slash	Lance Arts	icons/skills/melee/spear-tips-three-purple.webp
+armorcrush		Armorcrush	Lance Arts	icons/skills/melee/spear-tips-three-purple.webp
+swift-strikes		Swift Strikes	Lance Arts	icons/skills/melee/spear-tips-triple-orange.webp
+mistdancer		Mistdancer	Lance Arts	icons/skills/melee/spear-tips-triple-orange.webp
+jab		Jab	Lance Arts	icons/skills/melee/spear-tips-double-purple.webp
+skewer		Skewer	Lance Arts	icons/skills/melee/spear-tips-double-purple.webp
+overrun		Overrun	Lance Arts	icons/skills/melee/spear-tips-three-green.webp
+gouge		Gouge	Lance Arts	icons/skills/melee/strike-polearm-light-orange.webp
+leonine-poise		Leonine Poise	Lance Arts	icons/skills/melee/spear-tips-quintuple-orange.webp
+heaven-piercer		Heaven Piercer	Lance Arts	icons/skills/melee/spear-tips-double-purple.webp
+decisive-leap		Decisive Leap	Lance Arts	icons/skills/melee/spear-tips-quintuple-orange.webp
+heaven-or-hell		Heaven or Hell	Lance Arts	icons/skills/melee/spear-tips-three-green.webp
+assault-dive		Assault Dive	Lance Arts	icons/skills/melee/strike-weapon-polearm-ice-blue.webp
+vault		Vault	Pole Arts	icons/skills/melee/hand-grip-staff-yellow-brown.webp
+leg-sweep		Leg Sweep	Pole Arts	icons/skills/melee/strike-weapon-polearm-ice-blue.webp
+wallop		Wallop	Pole Arts	icons/skills/melee/spear-tips-double-purple.webp
+angels-strike		Angel's Strike	Pole Arts	icons/skills/melee/hand-grip-staff-yellow-brown.webp
+loss-of-senses		Loss Of Senses	Pole Arts	icons/skills/melee/spear-tips-triple-orange.webp
+light-draw		Light Draw	Bow Arts	icons/skills/ranged/target-bullseye-arrow-white.webp
+curved-shot		Curved Shot	Bow Arts	icons/skills/ranged/arrows-flying-salvo-purple.webp
+pointblank-shot		Pointblank Shot	Bow Arts	icons/skills/ranged/target-bullseye-arrow-green.webp
+heavy-draw		Heavy Draw	Bow Arts	icons/skills/ranged/arrows-flying-salvo-gray.webp
+celestial-bow		Celestial Bow	Bow Arts	icons/skills/ranged/arrows-flying-salvo-gray.webp
+steadied-shot		Steadied Shot	Bow Arts	icons/skills/ranged/arrows-flying-triple-blue.webp
+monster-blast		Monster Blast	Bow Arts	icons/skills/ranged/target-bullseye-arrow-glowing.webp
+volley		Volley	Bow Arts	icons/skills/ranged/arrows-flying-salvo-blue.webp
+ward-arrow		Ward Arrow	Bow Arts	icons/skills/ranged/arrows-triple-yellow-red.webp
+lethargy-arrow		Lethargy Arrow	Bow Arts	icons/skills/ranged/target-bullseye-arrow-white.webp
+waning-shot		Waning Shot	Bow Arts	icons/skills/ranged/arrow-strike-apple-orange.webp
+drain-shot		Drain Shot	Bow Arts	icons/skills/ranged/arrow-flying-broadhead-metal.webp
+break-shot		Break Shot	Bow Arts	icons/skills/ranged/arrow-strike-glowing-teal.webp
+schism-shot		Schism Shot	Bow Arts	icons/skills/ranged/arrows-flying-triple-brown.webp
+befuddling-shot		Befuddling Shot	Bow Arts	icons/skills/ranged/target-bullseye-arrow-blue.webp
+deadeye		Deadeye	Bow Arts	icons/skills/ranged/target-bullseye-arrow-green.webp
+exhaust-shot		Exhaust Shot	Bow Arts	icons/skills/ranged/person-archery-bow-attack-gray.webp
+arrow-storm		Arrow Storm	Bow Arts	icons/skills/ranged/bow-arrows-red.webp
+encloser		Encloser	Bow Arts	icons/skills/ranged/arrow-flying-ornate-gold.webp
+archballista		Archballista	Bow Arts	icons/skills/ranged/arrow-flying-broadhead-metal.webp
+ring-the-bell		Ring the Bell	Brawl Arts	icons/skills/melee/hand-grip-staff-teal.webp
+palm-thrust		Palm Thrust	Brawl Arts	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+fading-blow		Fading Blow	Brawl Arts	icons/skills/melee/unarmed-punch-fist-white.webp
+mystic-fist		Mystic Fist	Brawl Arts	icons/skills/melee/unarmed-punch-fist-blue.webp
+rushing-blow		Rushing Blow	Brawl Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+ferrous-guard		Ferrous Guard	Brawl Arts	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+monster-crusher		Monster Crusher	Brawl Arts	icons/skills/melee/unarmed-punch-fist.webp
+draining-blow		Draining Blow	Brawl Arts	icons/skills/melee/unarmed-punch-fist-yellow-red.webp
+one-two-punch		One-Two Punch	Brawl Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+nimble-combo		Nimble Combo	Brawl Arts	icons/skills/melee/hand-grip-sword-red.webp
+coral-cover		Coral Cover	Brawl Arts	icons/skills/melee/hand-grip-sword-red.webp
+dropkick		Dropkick	Brawl Arts	icons/skills/melee/hand-grip-staff-yellow-brown.webp
+heat-knuckle		Heat Knuckle	Brawl Arts	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+mighty-blow		Mighty Blow	Brawl Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+knock-out-punch		Knock Out Punch	Brawl Arts	icons/skills/melee/unarmed-punch-fist-blue.webp
+buster-punches		Buster Punches	Brawl Arts	icons/skills/melee/hand-grip-staff-blue.webp
+iron-shoulder		Iron Shoulder	Brawl Arts	icons/skills/melee/unarmed-punch-fist-blue.webp
+onslaught		Onslaught	Brawl Arts	icons/skills/melee/hand-grip-staff-blue.webp
+rising-fist		Rising Fist	Brawl Arts	icons/skills/melee/unarmed-punch-fist-blue.webp
+skull-cracker		Skull Cracker	Brawl Arts	icons/skills/melee/hand-grip-sword-strike-orange.webp
+gods-hand		God's Hand	Brawl Arts	icons/skills/melee/hand-grip-axe-strike-orange.webp
+privateers-trick		Privateer's Trick	Rifle Arts	icons/skills/ranged/target-bullseye-arrow-green.webp
+brimstone		Brimstone	Rifle Arts	icons/skills/ranged/target-bullseye-arrow-blue.webp
+twitch-shot		Twitch Shot	Rifle Arts	icons/skills/ranged/cannon-barrel-gray.webp
+flick-shot		Flick Shot	Rifle Arts	icons/skills/ranged/target-bullseye-arrow-blue.webp
+hipfire		Hipfire	Rifle Arts	icons/skills/ranged/target-bullseye-arrow-white.webp
+saturation-fire		Saturation Fire	Rifle Arts	icons/skills/ranged/rifle-scoped-firing-yellow-green.webp
+mountshot		Mountshot	Rifle Arts	icons/skills/ranged/target-bullseye-arrow-green.webp
+hold-steady		Hold Steady	Rifle Arts	icons/skills/ranged/target-bullseye-arrow-green.webp
+crippling-shot		Crippling Shot	Rifle Arts	icons/skills/ranged/rifle-scoped-gray-green.webp
+trim-the-hedges		Trim The Hedges	Rifle Arts	icons/skills/ranged/rifle-scoped-firing-yellow-green.webp
+armorcrack		Armorcrack	Rifle Arts	icons/skills/ranged/rifle-scoped-gray-green.webp
+flakshot		Flakshot	Rifle Arts	icons/skills/ranged/cannon-barrel-firing-blue.webp
+trick-shot		Trick Shot	Rifle Arts	icons/skills/ranged/rifle-scoped-gray-green.webp
+parting-shot		Parting Shot	Rifle Arts	icons/skills/ranged/cannon-barrel-firing-blue.webp
+reap-the-fields		Reap The Fields	Rifle Arts	icons/skills/ranged/cannon-barrel-firing-yellow.webp
+headshot		Headshot	Rifle Arts	icons/skills/ranged/cannon-barrel-firing-blue.webp
+showoffs-shot		Showoff's Shot	Rifle Arts	icons/skills/ranged/bullets-triple-ball-ice-blue.webp
+bullseye		Bullseye	Rifle Arts	icons/skills/ranged/bullets-triple-ball-yellow.webp
+bulletstorm		Bulletstorm	Rifle Arts	icons/skills/ranged/bullets-triple-ball-orange.webp

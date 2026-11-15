@@ -1,0 +1,176 @@
+<div class="item-body class-body">
+
+  <header class="item-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-action="editImage" data-edit="img">
+    <div class="item-title">
+      <div class="eyebrow">{{feoIcon icon}} {{localize "TYPES.Item.class"}}</div>
+      <input class="name" type="text" name="name" value="{{source.name}}"
+             placeholder="{{localize "FEO.Class.name"}}" aria-label="{{localize "FEO.Class.name"}}">
+    </div>
+  </header>
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.classDetails"}}</h3>
+    <div class="pairs three">
+      <label class="field">
+        <span>{{localize "FEO.Class.tier"}}</span>
+        <select name="system.tier">{{selectOptions tiers selected=system.tier localize=true}}</select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Class.race"}}</span>
+        <select name="system.race">{{selectOptions races selected=system.race localize=true}}</select>
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Class.weightHint"}}">
+        <span>{{localize "FEO.Unit.classWt"}}</span>
+        <input type="number" name="system.wt" value="{{system.wt}}" step="1">
+      </label>
+      <label class="field wide">
+        <span>{{localize "FEO.Unit.specialQualities"}}</span>
+        <input type="text" name="system.specialQualities" value="{{system.specialQualities}}">
+      </label>
+    </div>
+  </div>
+
+  {{#if showBase}}
+  <div class="card">
+    <h3>{{localize "FEO.Class.base"}} <span class="aside">{{localize "FEO.Class.baseHint"}}</span></h3>
+    <div class="pairs six">
+      {{#each base as |stat|}}
+      <label class="field" data-tooltip="{{localize stat.label}}">
+        <span>{{localize stat.abbr}}</span>
+        <input type="number" name="system.base.{{stat.key}}" value="{{stat.value}}" min="0" step="1" placeholder="–">
+      </label>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if showGains}}
+  <div class="card">
+    <h3>{{localize "FEO.Class.gains"}} <span class="aside">{{localize gainsHint}}</span></h3>
+    <div class="pairs six">
+      {{#each gains as |stat|}}
+      <label class="field" data-tooltip="{{localize stat.label}}">
+        <span>{{localize stat.abbr}}</span>
+        <input type="number" name="system.gains.{{stat.key}}" value="{{stat.value}}" step="1">
+      </label>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if showTransformed}}
+  <div class="card">
+    <h3>{{localize "FEO.Class.transformed"}} <span class="aside">{{localize "FEO.Class.transformedHint"}}</span></h3>
+    <div class="pairs six">
+      {{#each transformed as |stat|}}
+      <label class="field" data-tooltip="{{localize stat.label}}">
+        <span>{{localize stat.abbr}}</span>
+        <input type="number" name="system.transformed.{{stat.key}}" value="{{stat.value}}" step="1" placeholder="–">
+      </label>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  <div class="card">
+    <h3>{{localize "FEO.Class.caps"}} <span class="aside">{{localize "FEO.Class.capsHint"}}</span></h3>
+    <div class="pairs six">
+      {{#each caps as |stat|}}
+      <label class="field" data-tooltip="{{localize stat.label}}">
+        <span>{{localize stat.abbr}}</span>
+        <input type="number" name="system.caps.{{stat.key}}" value="{{stat.value}}" min="0" step="1" placeholder="–">
+      </label>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{#if showBase}}{{localize "FEO.Class.proficiencies"}}{{else}}{{localize "FEO.Class.proficienciesGained"}}{{/if}}</h3>
+    <div class="ticks">
+      {{#each proficiencyChoices as |choice|}}
+      <label class="tick">
+        <input type="checkbox" name="system.proficiencies.options" value="{{choice.key}}" {{checked choice.checked}}>
+        <span>{{localize choice.label}}</span>
+      </label>
+      {{/each}}
+    </div>
+    <div class="pairs three spaced">
+      <label class="field" data-tooltip="{{localize "FEO.Class.chooseHint"}}">
+        <span>{{localize "FEO.Class.choose"}}</span>
+        <input type="number" name="system.proficiencies.choose" value="{{system.proficiencies.choose}}" min="0" step="1">
+      </label>
+      <label class="field span-two" data-tooltip="{{localize "FEO.Class.asWrittenHint"}}">
+        <span>{{localize "FEO.Class.asWritten"}}</span>
+        <input type="text" name="system.proficiencies.note" value="{{system.proficiencies.note}}">
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.skills"}} <span class="aside">{{localize "FEO.Class.skillsHint"}}</span></h3>
+    <div class="pairs">
+      {{#each skillFields as |skill|}}
+      <label class="field">
+        <span>{{localize skill.label}}</span>
+        <input type="text" name="system.skills.{{skill.key}}" value="{{skill.value}}">
+      </label>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Class.promotesTo"}}
+      {{#if editable}}
+      <button type="button" class="add" data-action="addPromotion"
+              aria-label="{{localize "FEO.Class.addPromotion"}}" data-tooltip="{{localize "FEO.Class.addPromotion"}}">{{feoIcon "plus"}}</button>
+      {{/if}}
+    </h3>
+    {{#each promotesTo as |target|}}
+    <div class="line" data-index="{{target.index}}">
+      <input type="text" name="system.promotesTo.{{target.index}}.name" value="{{target.name}}"
+             placeholder="{{localize "FEO.Class.name"}}" aria-label="{{localize "FEO.Class.name"}}">
+      <input type="hidden" name="system.promotesTo.{{target.index}}.uuid" value="{{target.uuid}}">
+      {{#if target.uuid}}
+      <button type="button" class="link-mark" data-action="openPromotion" data-tooltip="{{localize "FEO.Class.openLinked"}}">{{feoIcon "check"}}{{localize "FEO.Class.linked"}}</button>
+      {{else}}
+      <span class="link-mark" data-tooltip="{{localize "FEO.Class.byNameHint"}}">{{localize "FEO.Class.byName"}}</span>
+      {{/if}}
+      {{#if @root.editable}}
+      <button type="button" class="remove" data-action="removePromotion"
+              aria-label="{{localize "FEO.Class.removePromotion"}}" data-tooltip="{{localize "FEO.Class.removePromotion"}}">{{feoIcon "x"}}</button>
+      {{/if}}
+    </div>
+    {{else}}
+    <p class="empty">{{localize "FEO.Class.noPromotions"}}</p>
+    {{/each}}
+    <p class="hint">{{localize "FEO.Class.promotesHint"}}</p>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Class.notes"}} <span class="aside">{{localize "FEO.Class.notesHint"}}</span>
+      {{#if editable}}
+      <button type="button" class="add" data-action="addNote"
+              aria-label="{{localize "FEO.Class.addNote"}}" data-tooltip="{{localize "FEO.Class.addNote"}}">{{feoIcon "plus"}}</button>
+      {{/if}}
+    </h3>
+    {{#each notes as |note|}}
+    <div class="line note-line" data-index="{{note.index}}">
+      <input type="text" name="system.notes.{{note.index}}.label" value="{{note.label}}"
+             placeholder="{{localize "FEO.Class.noteLabel"}}" aria-label="{{localize "FEO.Class.noteLabel"}}">
+      <input type="text" name="system.notes.{{note.index}}.value" value="{{note.value}}"
+             placeholder="{{localize "FEO.Class.noteValue"}}" aria-label="{{localize "FEO.Class.noteValue"}}">
+      {{#if @root.editable}}
+      <button type="button" class="remove" data-action="removeNote"
+              aria-label="{{localize "FEO.Class.removeNote"}}" data-tooltip="{{localize "FEO.Class.removeNote"}}">{{feoIcon "x"}}</button>
+      {{/if}}
+    </div>
+    {{/each}}
+  </div>
+
+  <div class="card biography">
+    <h3>{{localize "FEO.Weapon.description"}}</h3>
+    {{formInput systemFields.description value=system.description enriched=descriptionHTML toggled=true}}
+  </div>
+
+</div>

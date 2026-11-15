@@ -1,0 +1,50 @@
+<section class="bs-panel bs-v-forge">
+  <div class="bs-cols bs-wide-right">
+    <section class="bs-card">
+      <header class="bs-card-head">
+        <div class="bs-txt"><h3>{{localize "FEO.Base.forge.bench"}}</h3><p>{{benchLead}}</p></div>
+      </header>
+      <ul class="bs-items">
+        {{#each bench as |row|}}
+        <li class="bs-item{{#if row.barred}} bs-off{{else}} bs-pickable{{/if}}" data-kind="{{row.kind}}" aria-selected="{{row.selected}}"
+            {{#unless row.barred}}data-action="bench" data-item="{{row.id}}" role="button" tabindex="0"{{/unless}}>
+          <span class="bs-tile">{{feoIcon row.icon}}</span>
+          <span class="bs-nm"><b>{{row.name}}{{#if row.forged}} <i class="bs-mark" data-tooltip="{{localize "FEO.Base.forge.forged"}}"></i>{{/if}}</b><small>{{row.meta}}</small></span>
+          <span class="bs-uses bs-num">{{#if row.hasUses}}{{row.uses}}<div class="bs-bar"><i style="width:{{row.pct}}%"></i></div>{{/if}}</span>
+          <span class="bs-acts"></span>
+        </li>
+        {{/each}}
+      </ul>
+      <p class="bs-rule-note bs-inset">{{feoIcon "scroll"}}<span>{{localize "FEO.Base.forge.barred"}}</span></p>
+    </section>
+
+    {{#if ware}}
+    <section class="bs-card bs-anvil" data-kind="{{ware.kind}}">
+      <div class="bs-eyebrow">{{localize "FEO.Base.forge.name"}}</div>
+      <input class="bs-forge-name" type="text" name="bs-forge-name" data-forge-name value="{{ware.name}}" data-was="{{ware.was}}"
+             aria-label="{{localize "FEO.Base.forge.name"}}" autocomplete="off">
+      {{#each rows as |row|}}
+      <div class="bs-temper">
+        <span class="bs-lab">{{row.label}}</span>
+        <span class="bs-val bs-num{{#if row.cls}} bs-{{row.cls}}{{/if}}">{{#if row.changed}}<s>{{row.was}}</s> {{feoIcon "right"}} {{/if}}{{row.now}}</span>
+        <button type="button" class="bs-step" data-action="temper" data-key="{{row.key}}" data-delta="-1" {{#if row.fewer}}disabled{{/if}}
+                aria-label="{{localize "FEO.Base.forge.lower"}} {{row.label}}">{{feoIcon "minus"}}</button>
+        <span class="bs-pips">{{#each row.pips as |pip|}}<i class="{{#if pip.mid}}bs-mid{{else}}{{#if pip.cls}}bs-{{pip.cls}}{{/if}}{{/if}}"></i>{{/each}}</span>
+        <button type="button" class="bs-step" data-action="temper" data-key="{{row.key}}" data-delta="1" {{#if row.more}}disabled{{/if}}
+                aria-label="{{localize "FEO.Base.forge.raise"}} {{row.label}}">{{feoIcon "plus"}}</button>
+        <span class="bs-cost bs-num{{#unless row.cost}} bs-nil{{/unless}}">{{#if row.cost}}{{feoIcon "coin"}}{{row.cost}}{{else}}{{localize "FEO.Base.forge.free"}}{{/if}}</span>
+      </div>
+      {{/each}}
+      <div class="bs-tally">
+        <div>{{localize "FEO.Base.forge.count"}}<b class="bs-num">{{strikes}}</b></div>
+        <div>{{localize "FEO.Base.forge.cost"}}<b class="bs-num">{{total}}</b></div>
+        <div>{{localize "FEO.Base.market.goldLeft"}}<b class="bs-num{{#if short}} bs-short{{/if}}">{{goldLeft}}</b></div>
+        <button type="button" class="bs-btn bs-gold" data-action="strike" data-short="{{short}}" data-stepped="{{stepped}}"
+                {{#unless canStrike}}disabled{{/unless}}>{{feoIcon "hammer"}}{{localize "FEO.Base.forge.strike"}}</button>
+      </div>
+    </section>
+    {{else}}
+    <section class="bs-card"><p class="bs-none bs-center">{{none}}</p></section>
+    {{/if}}
+  </div>
+</section>

@@ -1,0 +1,112 @@
+<div class="item-body">
+
+  <header class="item-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-action="editImage" data-edit="img">
+    <div class="item-title">
+      <div class="eyebrow">{{feoIcon icon}} {{localize "TYPES.Item.weapon"}}</div>
+      <input class="name" type="text" name="name" value="{{source.name}}"
+             placeholder="{{localize "FEO.Weapon.name"}}" aria-label="{{localize "FEO.Weapon.name"}}">
+    </div>
+  </header>
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.weaponStats"}}</h3>
+    <div class="pairs three">
+      <label class="field">
+        <span>{{localize "FEO.Weapon.category"}}</span>
+        <select name="system.category">{{selectOptions categories selected=system.category localize=true}}</select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.rank"}}</span>
+        <select name="system.rank">{{selectOptions config.ranks selected=system.rank localize=true}}</select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.level"}}</span>
+        <input type="number" name="system.level" value="{{system.level}}" min="0" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.damageStat"}}</span>
+        <select name="system.damageStat">{{selectOptions config.damageStats selected=system.damageStat localize=true}}</select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.might"}}</span>
+        <input type="number" name="system.might" value="{{system.might}}" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.hit"}}</span>
+        <input type="number" name="system.hit" value="{{system.hit}}" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.crit"}}</span>
+        <input type="number" name="system.crit" value="{{system.crit}}" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.range"}}</span>
+        <input type="text" name="system.range" value="{{system.range}}">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.weight"}}</span>
+        <input type="number" name="system.weight" value="{{system.weight}}" min="0" step="1">
+      </label>
+      <div class="field">
+        <span>{{localize "FEO.Weapon.uses"}}</span>
+        <span class="fraction">
+          <input type="number" name="system.uses.value" value="{{system.uses.value}}" min="0" step="1"
+                 aria-label="{{localize "FEO.Weapon.usesCurrent"}}">
+          <span class="of">/</span>
+          <input type="number" name="system.uses.max" value="{{system.uses.max}}" min="0" step="1"
+                 aria-label="{{localize "FEO.Weapon.usesMax"}}">
+        </span>
+      </div>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.cost"}}</span>
+        <input type="number" name="system.cost" value="{{system.cost}}" min="0" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.wexp"}}</span>
+        <input type="number" name="system.wexp" value="{{system.wexp}}" min="0" step="any">
+      </label>
+      {{#if config.optional.weaponKills.enabled}}
+      <label class="field" data-tooltip="{{localize "FEO.Optional.kills.hint" threshold=config.optional.weaponKills.threshold cap=config.optional.weaponKills.cap}}">
+        <span>{{localize "FEO.Optional.kills.label"}}</span>
+        <input type="number" name="system.kills" value="{{system.kills}}" min="0" step="1">
+      </label>
+      {{/if}}
+      <label class="field check">
+        <span>{{localize "FEO.Combat.equipped"}}</span>
+        <input type="checkbox" name="system.equipped" {{checked system.equipped}}>
+      </label>
+    </div>
+  </div>
+
+  {{#if (eq system.category "staff")}}
+  <div class="card">
+    <h3>{{localize "FEO.Weapon.counter"}} <span class="aside">{{localize "FEO.Weapon.counterHint"}}</span></h3>
+    <div class="pairs three">
+      <label class="field">
+        <span>{{localize "FEO.Weapon.might"}}</span>
+        <input type="number" name="system.counter.might" value="{{system.counter.might}}" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.hit"}}</span>
+        <input type="number" name="system.counter.hit" value="{{system.counter.hit}}" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.crit"}}</span>
+        <input type="number" name="system.counter.crit" value="{{system.counter.crit}}" step="1">
+      </label>
+    </div>
+  </div>
+  {{/if}}
+
+  <div class="card">
+    <h3>{{localize "FEO.Weapon.effect"}}</h3>
+    <textarea name="system.effect" rows="3" aria-label="{{localize "FEO.Weapon.effect"}}">{{system.effect}}</textarea>
+  </div>
+
+  <div class="card biography">
+    <h3>{{localize "FEO.Weapon.description"}}</h3>
+    {{formInput systemFields.description value=system.description enriched=descriptionHTML toggled=true}}
+  </div>
+
+</div>

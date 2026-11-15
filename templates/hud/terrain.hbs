@@ -1,0 +1,24 @@
+<div class="hud-slot hud-terrain">
+  {{#with terrain}}
+  <section class="hud-panel terrain {{#if open}}open{{/if}}" aria-label="{{localize "FEO.Terrain.label"}}">
+    <div class="tr-ico">{{feoIcon icon}}</div>
+    <div class="tr-head">
+      <b class="tr-name">{{name}}</b>
+      {{#if noted}}<span class="tr-mark tr-note">{{feoIcon "spark"}}</span>{{/if}}
+      {{#if heal}}<span class="tr-mark tr-heal">{{feoIcon "heart"}}{{heal}}</span>{{/if}}
+      {{#with elevation}}<span class="tr-mark tr-elev {{cls}}"><i>{{localize "FEO.Terrain.elevAbbr"}}</i>{{value}}</span>{{/with}}
+    </div>
+    <div class="tr-figs">
+      {{#each figures as |figure|}}
+      <div class="tr-fig {{figure.cls}}"><i>{{figure.label}}</i><b>{{figure.value}}{{#if figure.locked}}{{feoIcon "lock"}}{{/if}}</b></div>
+      {{/each}}
+    </div>
+    {{#if detail.length}}
+    <div class="tr-more">
+      {{#if title}}<b>{{title}}</b>{{/if}}
+      {{#each detail as |line|}}<p class="{{line.cls}}">{{feoIcon line.icon}}<span>{{line.text}}</span></p>{{/each}}
+    </div>
+    {{/if}}
+  </section>
+  {{/with}}
+</div>

@@ -1,0 +1,21 @@
+<div class="feo-card feo-skill">
+  <header>
+    <span class="badge">{{{icon}}}</span>
+    <div class="head">
+      <h3>{{name}}</h3>
+      <p>{{kind}}{{#if choice}} · {{choice}}{{/if}}</p>
+    </div>
+    {{#if chance}}<span class="chance">{{chance}}</span>{{/if}}
+  </header>
+  {{#if forms.length}}
+  <p class="forms">{{#each forms as |form|}}<span>{{form}}</span>{{/each}}</p>
+  {{/if}}
+  {{#if effect}}<p class="effect">{{effect}}</p>{{/if}}
+  {{#if rows.length}}
+  <dl>
+    {{#each rows as |row|}}
+    <div><dt>{{row.label}}</dt><dd>{{row.value}}</dd></div>
+    {{/each}}
+  </dl>
+  {{/if}}
+</div>

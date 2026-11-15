@@ -1,0 +1,43 @@
+<section class="tab panel-tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+
+  <div class="ab-head">
+    <span class="tag">{{localize "FEO.Stat.cha.label"}} <b>{{checks.cha.total}}</b> · {{localize checks.cha.source}}</span>
+    <span class="tag">{{localize "FEO.Stat.int.label"}} <b>{{checks.int.total}}</b> · {{localize checks.int.source}}</span>
+    <label class="tag pool{{#if checks.over}} bad{{/if}}" data-tooltip="{{localize "FEO.Ability.poolHint"}}">
+      {{localize "FEO.Ability.spent"}} <b>{{checks.spent}}</b> /
+      <input type="number" name="system.checkPoints" value="{{checks.pool}}" min="0" step="1"
+             aria-label="{{localize "FEO.Ability.pool"}}">
+    </label>
+    <span class="tag" data-tooltip="{{localize "FEO.Ability.perLevelHint"}}">{{localize "FEO.Ability.perLevel"}} <b>+{{checks.perLevel}}</b></span>
+    <span class="tag" data-tooltip="{{localize "FEO.Ability.limitHint"}}">{{localize "FEO.Ability.limit"}} <b>{{checks.limit}}</b></span>
+  </div>
+
+  <div class="ab-cols">
+    {{#each checks.columns as |column|}}
+    <div class="stack">
+    {{#each column as |group|}}
+    <div class="card ab-group {{group.key}}">
+      <h3>{{localize group.label}} <span class="aside">{{localize "FEO.Ability.points"}}</span></h3>
+      {{#each group.checks as |check|}}
+      <div class="ab{{#if check.choices}} has-choice{{/if}}">
+        <button type="button" class="ab-roll" data-action="rollCheck" data-check="{{check.key}}"
+                data-tooltip="{{localize "FEO.Ability.rollHint" bonus=check.bonus stat=(localize check.statLabel)}}">
+          <span class="nm">{{localize check.label}}</span>
+          <span class="bn">+{{check.bonus}}</span>
+        </button>
+        {{#if check.choices}}
+        <select class="st" name="system.checks.{{check.key}}.stat" aria-label="{{localize check.label}} {{localize "FEO.Column.stat"}}">
+          {{selectOptions check.choices selected=check.stat localize=true}}
+        </select>
+        {{/if}}
+        <input type="number" name="system.checks.{{check.key}}.points" value="{{check.points}}" min="0" step="1"
+               aria-label="{{localize check.label}} {{localize "FEO.Ability.points"}}">
+      </div>
+      {{/each}}
+    </div>
+    {{/each}}
+    </div>
+    {{/each}}
+  </div>
+
+</section>

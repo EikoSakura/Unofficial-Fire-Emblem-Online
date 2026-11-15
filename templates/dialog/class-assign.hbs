@@ -1,0 +1,76 @@
+<header class="lead">
+  <h3>{{name}}</h3>
+  <p>{{localize tierLabel}}{{#if raceLabel}} · {{localize raceLabel}}{{/if}}</p>
+</header>
+{{#if replaces}}<p class="hint">{{localize "FEO.ClassAssign.replaces" name=replaces}}</p>{{/if}}
+
+{{#if starting}}
+<p class="hint">{{#if fresh}}{{localize "FEO.ClassAssign.fresh"}}{{else}}{{localize "FEO.ClassAssign.existing"}}{{/if}}</p>
+<div class="options">
+  {{#if hasStats}}
+  <label class="option">
+    <input type="checkbox" name="stats" {{checked fresh}}>
+    <span class="what">
+      <b>{{localize "FEO.Class.base"}}</b>
+      <span class="stat-list">
+        {{#each stats as |stat|}}<span>{{localize stat.abbr}} <b>{{stat.value}}</b></span>{{/each}}
+      </span>
+    </span>
+  </label>
+  {{/if}}
+  <label class="option">
+    <input type="checkbox" name="weight" {{checked fresh}}>
+    <span class="what"><b>{{localize "FEO.Unit.classWt"}}</b> <span>{{weight}}</span>
+      <small>{{localize "FEO.ClassAssign.weightHint"}}</small></span>
+  </label>
+  {{#if hasQualities}}
+  <label class="option">
+    <input type="checkbox" name="qualities" {{checked fresh}}>
+    <span class="what"><b>{{localize "FEO.Unit.specialQualities"}}</b> <span>{{qualities}}</span></span>
+  </label>
+  {{/if}}
+  {{#if hasProficiencies}}
+  <div class="option">
+    <input type="checkbox" name="proficiencies" {{checked fresh}} aria-label="{{localize "FEO.Class.proficiencies"}}">
+    <div class="what">
+      <b>{{localize "FEO.Class.proficiencies"}}</b>
+      <span class="rank-picks">
+        {{#each proficiencies as |proficiency|}}
+        <label>
+          <span>{{localize proficiency.label}}</span>
+          <select name="rank.{{proficiency.key}}">{{selectOptions proficiency.choices selected=proficiency.rank localize=true blank="–"}}</select>
+        </label>
+        {{/each}}
+      </span>
+      <small>{{localize "FEO.ClassAssign.ranksHint"}}{{#if proficiencyNote}} {{localize "FEO.ClassAssign.asWritten" note=proficiencyNote}}{{/if}}</small>
+    </div>
+  </div>
+  {{else}}
+  {{#if proficiencyNote}}
+  <p class="hint">{{localize "FEO.ClassAssign.otherProficiency" note=proficiencyNote}}</p>
+  {{/if}}
+  {{/if}}
+  {{#if skillOptions}}
+  <div class="option">
+    <input type="checkbox" name="skills" {{checked fresh}} aria-label="{{localize "FEO.Class.skill.starting"}}">
+    <div class="what">
+      <b>{{localize "FEO.Class.skill.starting"}}</b>
+      <span class="skill-pick">
+        <select name="skillPick" aria-label="{{localize "FEO.ClassAssign.skillPick"}}">
+          {{#each skillOptions as |option|}}<option value="{{option}}">{{option}}</option>{{/each}}
+        </select>
+      </span>
+      <small>{{localize "FEO.ClassAssign.skillPick"}}</small>
+    </div>
+  </div>
+  {{else if hasSkills}}
+  <label class="option">
+    <input type="checkbox" name="skills" {{checked fresh}}>
+    <span class="what"><b>{{localize "FEO.Class.skill.starting"}}</b> <span>{{skills}}</span>
+      <small>{{localize "FEO.ClassAssign.skillsHint"}}</small></span>
+  </label>
+  {{/if}}
+</div>
+{{else}}
+<p class="hint">{{localize "FEO.ClassAssign.promoted"}}</p>
+{{/if}}

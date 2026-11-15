@@ -1,0 +1,21 @@
+<section class="cp-head v-equipment">
+  <div class="cp-head-row">
+    <div class="txt">
+      <div class="cp-eyebrow">{{eyebrow}}</div>
+      <h2>{{localize "FEO.Compendium.equipment.title"}}</h2>
+      <p>{{localize "FEO.Compendium.equipment.lead"}}</p>
+    </div>
+    <div class="cp-tools">
+      <div class="cp-seg" role="group">
+        <button type="button" data-action="tab" data-tab="weapons" aria-pressed="{{weapons}}">{{localize "FEO.Compendium.equipment.weapons"}}</button>
+        <button type="button" data-action="tab" data-tab="items" aria-pressed="{{items}}">{{localize "FEO.Compendium.equipment.items"}}</button>
+      </div>
+      <label class="cp-search">
+        {{feoIcon "search"}}
+        <input type="search" data-search="equipment" value="{{query}}" autocomplete="off"
+               placeholder="{{localize "FEO.Compendium.equipment.search"}}"
+               aria-label="{{localize "FEO.Compendium.equipment.search"}}">
+      </label>
+    </div>
+  </div>
+</section>

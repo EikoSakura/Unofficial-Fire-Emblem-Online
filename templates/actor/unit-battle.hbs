@@ -1,0 +1,189 @@
+<section class="tab panel-tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+
+  {{#if reminders.length}}
+  <ul class="reminders" aria-label="{{localize "FEO.Rail.conditions"}}">
+    {{#each reminders as |reminder|}}
+    <li data-condition="{{reminder.id}}"><b>{{localize reminder.name}}</b><span>{{localize reminder.hint}}</span></li>
+    {{/each}}
+  </ul>
+  {{/if}}
+
+  <div class="card forecast">
+    <div class="fc-top">
+      <div class="tile">{{#if forecast.weapon}}{{feoIcon forecast.weapon.icon}}{{else}}{{feoIcon "fist"}}{{/if}}</div>
+      <div class="fc-weapon">
+        <div class="eyebrow">{{localize "FEO.Combat.equipped"}}</div>
+        {{#if forecast.weapon}}
+        <div class="wname">{{forecast.weapon.name}}</div>
+        <div class="meta">
+          {{localize forecast.weapon.categoryLabel}} ·
+          {{localize "FEO.Weapon.rank"}} {{localize forecast.weapon.rankLabel}} ·
+          {{localize "FEO.Weapon.range"}} {{forecast.weapon.range}} ·
+          {{localize "FEO.Weapon.weight"}} {{forecast.weapon.weight}} ·
+          {{forecast.weapon.uses}}/{{forecast.weapon.max}} {{localize "FEO.Weapon.usesLower"}}
+        </div>
+        {{else}}
+        <div class="wname">{{localize "FEO.Combat.unarmed"}}</div>
+        <div class="meta">{{localize "FEO.Combat.unarmedHint"}}</div>
+        {{/if}}
+      </div>
+      {{#if editable}}
+      {{#if capture}}
+      <button type="button" class="btn usage{{#if capture.readied}} on{{/if}}" data-action="toggleCapture" aria-pressed="{{#if capture.readied}}true{{else}}false{{/if}}"{{#if capture.captive}}{{#unless capture.readied}} disabled{{/unless}}{{/if}} data-tooltip="{{#if capture.captive}}{{localize "FEO.Optional.capturing.cannot.holding"}}{{else}}{{localize "FEO.Optional.capturing.readyHint"}}{{/if}}">{{feoIcon "hand"}}{{#if capture.readied}}{{localize "FEO.Optional.capturing.readied"}}{{else}}{{localize "FEO.Optional.capturing.ready"}}{{/if}}</button>
+      {{/if}}
+      <button type="button" class="btn primary" data-action="attack">{{feoIcon "dice"}}{{localize "FEO.Combat.attack"}}</button>
+      {{/if}}
+    </div>
+
+    <div class="fc-numbers">
+      {{#each forecast.cells as |cell|}}
+      <div class="fc-num{{#if cell.lead}} lead{{/if}}" tabindex="0">
+        <b>{{cell.value}}</b><span>{{localize cell.label}}</span>
+        <div class="why" role="tooltip">
+          {{#each cell.terms as |term|}}
+          <div class="{{term.cls}}"><span>{{#if term.localize}}{{localize term.label}}{{else}}{{term.label}}{{/if}}</span><b>{{term.display}}</b></div>
+          {{/each}}
+          <div class="sum"><span>{{localize cell.label}}</span><b>{{cell.value}}</b></div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <div class="fc-foot">
+      {{#if forecast.canDouble}}
+      <span class="tag">{{{localize "FEO.Combat.doubles" speed=forecast.doubles}}}</span>
+      {{/if}}
+      {{#if forecast.beats}}
+      <span class="tag good">{{localize "FEO.Combat.beats"}} <b>{{#each forecast.beats as |label|}}{{#unless @first}}, {{/unless}}{{localize label}}{{/each}}</b></span>
+      <span class="tag bad">{{localize "FEO.Combat.losesTo"}} <b>{{#each forecast.losesTo as |label|}}{{#unless @first}}, {{/unless}}{{localize label}}{{/each}}</b></span>
+      {{/if}}
+      {{#if forecast.outsideTriangle}}<span class="tag">{{localize "FEO.Combat.outsideTriangle"}}</span>{{/if}}
+      {{#if forecast.weapon.effect}}<span class="tag effect" data-tooltip="{{forecast.weapon.effect}}">{{localize "FEO.Weapon.effect"}} <b>{{forecast.weapon.effect}}</b></span>{{/if}}
+      {{#if forecast.hasStaffHit}}<span class="tag">{{localize "FEO.Combat.staffHit"}} <b>{{forecast.staffHit}}</b></span>{{/if}}
+      <span class="tag" data-tooltip="{{localize "FEO.Combat.staffAvoidHint"}}">{{localize "FEO.Combat.staffAvoid"}} <b>{{forecast.staffAvoid}}</b></span>
+      {{#if affinity.effect}}<span class="tag" data-tooltip="{{localize affinity.effect.text}} {{localize affinity.effect.mode}}">{{feoIcon affinity.icon}}{{localize "FEO.Optional.affinityEffect.name" affinity=(localize affinity.label)}}</span>{{/if}}
+      {{#if forecast.endurance}}<span class="tag good" data-tooltip="{{localize "FEO.Combat.enduranceHint"}}">{{localize "FEO.Bond.end"}} <b>+{{forecast.endurance}}</b></span>{{/if}}
+      {{#if forecast.haste}}<span class="tag good" data-tooltip="{{localize "FEO.Combat.hasteHint"}}">{{localize "FEO.Bond.hst"}} <b>+{{forecast.haste}}</b></span>{{/if}}
+      {{#if forecast.activation}}<span class="tag good" data-tooltip="{{localize "FEO.Combat.activationHint"}}">{{localize "FEO.Bond.activation"}} <b>+{{forecast.activation}}</b></span>{{/if}}
+      {{#each forecast.procs as |skill|}}
+      <span class="tag proc">{{feoIcon "spark"}}{{skill.name}} <em>{{skill.chance}}%</em></span>
+      {{/each}}
+      {{#each optional.procs as |proc|}}
+      {{#if @root.editable}}
+      <button type="button" class="tag proc roll" data-action="rollOptional" data-roll="{{proc.key}}" data-tooltip="{{localize proc.hint}}">{{feoIcon proc.icon}}{{#if proc.localize}}{{localize proc.label}}{{else}}{{proc.label}}{{/if}} <em>{{proc.chance}}%</em>{{feoIcon "dice"}}</button>
+      {{else}}
+      <span class="tag proc">{{feoIcon proc.icon}}{{#if proc.localize}}{{localize proc.label}}{{else}}{{proc.label}}{{/if}} <em>{{proc.chance}}%</em></span>
+      {{/if}}
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="stack">
+      <div class="card">
+        <h3>{{localize "FEO.Section.stats"}} <span class="aside">{{localize "FEO.Column.growth"}}</span></h3>
+        {{#each stats as |stat|}}
+        <div class="stat">
+          <span class="abbr" data-tooltip="{{localize stat.label}}">{{localize stat.abbr}}{{#if stat.boon}}<span class="mk boon" data-tooltip="{{localize "FEO.Growth.boon"}}">▲</span>{{/if}}{{#if stat.bane}}<span class="mk bane" data-tooltip="{{localize "FEO.Growth.bane"}}">▼</span>{{/if}}</span>
+          <span class="val {{stat.state}}">{{stat.total}}</span>
+          <span class="gauge {{stat.state}}"
+                data-tooltip="{{stat.base}} {{localize "FEO.Column.base"}}{{#if stat.shift}}, {{stat.shift}} {{localize "FEO.Column.boost"}}{{/if}}{{#if stat.hasCap}}, {{localize "FEO.Column.cap"}} {{stat.cap}}{{/if}}">
+            <i style="width: {{stat.basePct}}%"></i>{{#if stat.boostPct}}<i class="boost" style="left: {{stat.basePct}}%; width: {{stat.boostPct}}%"></i>{{/if}}
+          </span>
+          <span class="growth">{{#if stat.capped}}{{localize "FEO.Column.capShort"}}{{else}}{{#if stat.hasGrowth}}{{stat.growth}}%{{/if}}{{/if}}</span>
+        </div>
+        {{/each}}
+        <div class="legend">
+          <span><i class="base"></i>{{localize "FEO.Column.base"}}</span>
+          <span><i class="boosted"></i>{{localize "FEO.Column.boost"}}</span>
+          <span><i class="capped"></i>{{localize "FEO.Legend.atCap"}}</span>
+          <span><b class="boon">▲</b>{{localize "FEO.Growth.boon"}}</span>
+          <span><b class="bane">▼</b>{{localize "FEO.Growth.bane"}}</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>{{localize "FEO.Section.ranks"}} <span class="aside">{{localize "FEO.Legend.toNextRank"}}</span></h3>
+        <div class="ranks">
+          {{#each ranks.known as |rank|}}
+          <div class="rank">
+            <span class="ring" style="--p: {{rank.pct}}"><b>{{localize rank.rankLabel}}</b></span>
+            <span class="lbl">{{localize rank.label}}<small>{{#if rank.next}}{{rank.wexp}} / {{rank.next}} → {{localize rank.nextRankLabel}}{{else}}{{localize "FEO.Legend.mastered"}}{{/if}}</small></span>
+          </div>
+          {{else}}
+          <p class="empty">{{localize "FEO.Legend.noRanks"}}</p>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <h3>{{localize "FEO.Section.arsenal"}}
+          {{#if editable}}<button type="button" class="add edit-only" data-action="createItem" data-type="weapon" data-tooltip="{{localize "FEO.Weapon.add"}}" aria-label="{{localize "FEO.Weapon.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+        </h3>
+        <div class="rows">
+          {{#each weapons as |weapon|}}
+          <div class="row draggable{{#if weapon.equipped}} equipped{{/if}}{{#if weapon.broken}} broken{{/if}}{{#if weapon.wasBroken}} broken{{/if}}{{#unless weapon.wieldable}} above-rank{{/unless}}" data-item-id="{{weapon.id}}">
+            <button type="button" class="row-main" data-action="toggleEquip" aria-pressed="{{weapon.equipped}}"
+                    data-tooltip="{{#if weapon.equipped}}{{localize "FEO.Weapon.unequip"}}{{else}}{{#if weapon.wieldable}}{{localize "FEO.Weapon.equip"}}{{else}}{{#if weapon.needsLevel}}{{localize "FEO.Weapon.needsLevel" level=weapon.needsLevel}}{{else}}{{localize "FEO.Weapon.needsRank" rank=(localize weapon.needsRank)}}{{/if}}{{/if}}{{/if}}{{#if weapon.wasBroken}} {{localize "FEO.Weapon.brokenWas" name=weapon.originalName}}{{/if}}{{#if weapon.kills}} {{#if weapon.killBonus}}{{localize "FEO.Optional.kills.rowBonus" kills=weapon.kills bonus=weapon.killBonus}}{{else}}{{localize "FEO.Optional.kills.rowToGo" kills=weapon.kills left=weapon.killsToGo}}{{/if}}{{/if}}">
+              <span class="ico">{{feoIcon weapon.icon}}</span>
+              <span class="txt">
+                <span class="nm">{{weapon.name}}</span>
+                <span class="sub">{{localize "FEO.Weapon.mightAbbr"}} <b>{{weapon.might}}</b> · {{localize "FEO.Weapon.hit"}} <b>{{weapon.hit}}</b> · {{localize "FEO.Weapon.critAbbr"}} <b>{{weapon.crit}}</b> · {{localize "FEO.Weapon.rangeAbbr"}} <b>{{weapon.range}}</b> · {{localize "FEO.Weapon.weightAbbr"}} <b>{{weapon.weight}}</b></span>
+              </span>
+              <span class="uses {{weapon.usesState}}"><span class="gauge thin"><i style="width: {{weapon.usesPct}}%"></i></span>{{weapon.uses}} / {{weapon.max}}</span>
+              <span class="state">{{#if weapon.equipped}}{{feoIcon "check"}}{{else}}{{feoIcon "ring"}}{{/if}}</span>
+            </button>
+            <span class="row-controls">
+              {{#if @root.editable}}
+              {{#if weapon.isStaff}}<button type="button" class="btn small" data-action="useStaff" {{#if weapon.broken}}disabled{{/if}} data-tooltip="{{localize "FEO.Weapon.useStaffHint"}}">{{localize "FEO.Item.use"}}</button>{{/if}}
+              {{#if weapon.canRepair}}<button type="button" data-action="repairItem" data-tooltip="{{localize "FEO.Repair.hint" cost=weapon.repair}}" aria-label="{{localize "FEO.Repair.button"}}">{{feoIcon "hammer"}}</button>{{/if}}
+              <button type="button" data-action="sellItem" data-tooltip="{{localize "FEO.Sell.hint" gold=weapon.sell}}" aria-label="{{localize "FEO.Sell.button"}}">{{feoIcon "coin"}}</button>
+              {{/if}}
+              <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "spark"}}</button>
+              {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
+            </span>
+          </div>
+          {{else}}
+          <p class="empty">{{localize "FEO.Weapon.none"}}</p>
+          {{/each}}
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>{{localize "FEO.Section.items"}}
+          {{#if editable}}<button type="button" class="add edit-only" data-action="createItem" data-type="gear" data-tooltip="{{localize "FEO.Item.add"}}" aria-label="{{localize "FEO.Item.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+        </h3>
+        <div class="rows">
+          {{#each gear as |item|}}
+          <div class="row item draggable{{#if item.spent}} broken{{/if}}" data-item-id="{{item.id}}">
+            <button type="button" class="row-main" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}">
+              <span class="ico">{{feoIcon "flask"}}</span>
+              <span class="txt">
+                <span class="nm">{{item.name}}</span>
+                <span class="sub">{{item.effect}}</span>
+              </span>
+              {{#if item.dots}}
+              <span class="dots" data-tooltip="{{item.uses}} / {{item.max}}">{{#each item.dots as |on|}}<i class="{{#if on}}on{{/if}}"></i>{{/each}}</span>
+              {{else}}
+              <span class="count">{{item.uses}} / {{item.max}}</span>
+              {{/if}}
+            </button>
+            <span class="row-controls">
+              {{#if @root.editable}}
+              <button type="button" class="btn small" data-action="useItem" {{#if item.spent}}disabled{{/if}} data-tooltip="{{localize "FEO.Item.useHint"}}">{{localize "FEO.Item.use"}}</button>
+              <button type="button" data-action="sellItem" data-tooltip="{{localize "FEO.Sell.hint" gold=item.sell}}" aria-label="{{localize "FEO.Sell.button"}}">{{feoIcon "coin"}}</button>
+              <button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>
+              {{/if}}
+            </span>
+          </div>
+          {{else}}
+          <p class="empty">{{localize "FEO.Item.none"}}</p>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>

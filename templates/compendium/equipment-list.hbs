@@ -1,0 +1,98 @@
+<section class="cp-body cp-wide cp-equipment v-equipment">
+  {{#if banner}}
+  <div class="cp-for">
+    <b>{{banner.text}}</b>
+    {{#each banner.tags as |tag|}}<span class="tag">{{tag.label}} <b>{{tag.value}}</b></span>{{/each}}
+    {{#if banner.note}}<small>{{banner.note}}</small>{{/if}}
+  </div>
+  {{/if}}
+  <div class="cp-picks" role="group" aria-label="{{localize "FEO.Weapon.category"}}">
+    {{#each types as |type|}}
+    <button type="button" class="cp-pick" data-action="type" data-type="{{type.key}}" aria-pressed="{{type.pressed}}"
+            {{#if type.fit}}data-tooltip="{{localize "FEO.Compendium.equipment.fit"}}"{{/if}}>{{{type.icon}}}{{type.label}}<small class="num">{{type.count}}</small>{{#if type.fit}}<i class="fit"></i>{{/if}}</button>
+    {{/each}}
+  </div>
+  <div class="cp-scroll">
+    {{#if empty}}
+    <p class="cp-empty">{{localize "FEO.Compendium.equipment.none"}}</p>
+    {{else}}
+    <div class="eq-list">
+      {{#each groups as |group|}}
+      <section>
+        <header class="eq-head">
+          <span class="eq-emblem">{{{group.icon}}}</span>
+          <h3>{{group.name}}</h3>
+          <span class="count num">{{group.count}}</span>
+          {{#if group.note}}<p class="eq-note">{{group.note}}</p>{{/if}}
+        </header>
+
+        {{#if ../weapons}}
+        <div class="eq-table weapons{{#if @root.shop}} shop{{/if}}">
+          <div class="eq-row head">
+            <span class="c">{{localize "FEO.Compendium.equipment.name"}}</span>
+            <span class="c">{{localize "FEO.Weapon.rank"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.might"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.hit"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.critAbbr"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.range"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.weight"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.uses"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.cost"}}</span>
+            <span class="c">{{localize "FEO.Weapon.effect"}}</span>
+            {{#if @root.shop}}<span class="c"></span>{{/if}}
+          </div>
+          {{#each group.rows as |row|}}
+          <div class="eq-row{{#if row.unfit}} unfit{{/if}}" {{#if row.uuid}}draggable="true" data-drag-uuid="{{row.uuid}}"{{/if}}>
+            <span class="c nm"><button type="button" class="eq-name" data-action="openItem" data-uuid="{{row.uuid}}">{{row.name}}</button>{{#if row.unfit}}<small class="eq-unfit">{{row.unfit}}</small>{{/if}}</span>
+            <span class="c eq-rank"><b class="{{#if row.high}}hi{{/if}}">{{row.rank}}</b>{{#if row.level}}<small class="num" data-tooltip="{{localize "FEO.Weapon.level"}}">{{row.level}}</small>{{/if}}</span>
+            <i class="brk"></i>
+            <span class="c n num" data-l="{{localize "FEO.Weapon.might"}}">{{row.might}}</span>
+            <span class="c n num" data-l="{{localize "FEO.Weapon.hit"}}">{{row.hit}}</span>
+            <span class="c n num" data-l="{{localize "FEO.Weapon.critAbbr"}}">{{row.crit}}</span>
+            <span class="c n num" data-l="{{localize "FEO.Weapon.range"}}">{{row.range}}</span>
+            <span class="c n num" data-l="{{localize "FEO.Weapon.weight"}}">{{row.weight}}</span>
+            <span class="c n num" data-l="{{localize "FEO.Weapon.uses"}}">{{row.uses}}</span>
+            <span class="c n num gold" data-l="{{localize "FEO.Weapon.cost"}}">{{row.cost}}</span>
+            {{#if row.effect}}
+            <span class="c fx">{{row.effect}}</span>
+            {{else}}
+            <span class="c fx none">{{localize "FEO.Compendium.equipment.noEffect"}}</span>
+            {{/if}}
+            {{#if @root.shop}}
+            <span class="c buy" {{#unless row.can}}{{#if row.sold}}data-tooltip="{{localize "FEO.Compendium.equipment.tooDear"}}"{{/if}}{{/unless}}>
+              {{#if row.sold}}<button type="button" class="eq-buy" data-action="buy" data-id="{{row.id}}" {{#unless row.can}}disabled{{/unless}}>{{localize "FEO.Compendium.equipment.buy"}}</button>{{/if}}
+            </span>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+        {{else}}
+        <div class="eq-table items{{#if @root.shop}} shop{{/if}}">
+          <div class="eq-row head">
+            <span class="c">{{localize "FEO.Compendium.equipment.name"}}</span>
+            <span class="c">{{localize "FEO.Weapon.effect"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.uses"}}</span>
+            <span class="c n">{{localize "FEO.Weapon.cost"}}</span>
+            {{#if @root.shop}}<span class="c"></span>{{/if}}
+          </div>
+          {{#each group.rows as |row|}}
+          <div class="eq-row" {{#if row.uuid}}draggable="true" data-drag-uuid="{{row.uuid}}"{{/if}}>
+            <span class="c nm"><button type="button" class="eq-name" data-action="openItem" data-uuid="{{row.uuid}}">{{row.name}}</button></span>
+            <span class="c fx">{{row.effect}}</span>
+            <span class="c n num" data-l="{{localize "FEO.Weapon.uses"}}">{{row.uses}}</span>
+            <span class="c n num gold" data-l="{{localize "FEO.Weapon.cost"}}">{{row.cost}}</span>
+            {{#if @root.shop}}
+            <span class="c buy" {{#unless row.can}}{{#if row.sold}}data-tooltip="{{localize "FEO.Compendium.equipment.tooDear"}}"{{/if}}{{/unless}}>
+              {{#if row.sold}}<button type="button" class="eq-buy" data-action="buy" data-id="{{row.id}}" {{#unless row.can}}disabled{{/unless}}>{{localize "FEO.Compendium.equipment.buy"}}</button>{{/if}}
+            </span>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+      </section>
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+</section>

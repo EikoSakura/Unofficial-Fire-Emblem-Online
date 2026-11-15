@@ -1,0 +1,178 @@
+<aside class="cp-dock v-classes" aria-label="{{localize "FEO.Compendium.sheet.class"}}">
+  {{#if sheet}}
+  {{#with sheet}}
+  <article class="cp-sheet class-sheet" data-dye="{{dye}}" aria-label="{{name}}">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+    <header class="cs-banner" {{#if uuid}}draggable="true" data-drag-uuid="{{uuid}}" data-tooltip="{{localize "FEO.Compendium.dragHint"}}"{{/if}}>
+      {{{crest}}}
+      <div>
+        <span class="cs-tier">{{tier}}</span>
+        <h3>{{name}}</h3>
+        <div class="sub">{{sub}}</div>
+      </div>
+      <div class="cs-buttons">
+        {{#if uuid}}
+        <button type="button" class="cs-button" data-action="openItem" data-uuid="{{uuid}}"
+                data-tooltip="{{localize "FEO.Compendium.openItem"}}"
+                aria-label="{{localize "FEO.Compendium.openItem"}}">{{feoIcon "open"}}</button>
+        {{/if}}
+        <button type="button" class="cs-button close" data-action="closeSheet"
+                aria-label="{{localize "FEO.Compendium.close"}}">{{feoIcon "x"}}</button>
+      </div>
+    </header>
+
+    <div class="cs-body">
+      {{#if description}}<p class="cs-desc">{{description}}</p>{{/if}}
+
+      <section class="cs-sec">
+        <h4>{{stats.title}} <small>{{stats.hint}}</small></h4>
+        <div class="cs-stats">
+          {{#each stats.cells as |cell|}}
+          <div data-tooltip="{{cell.label}}"><span>{{cell.abbr}}</span><b class="num {{cell.css}}">{{cell.value}}</b></div>
+          {{/each}}
+          <div class="wt" data-tooltip="{{localize "FEO.Class.weightHint"}}">
+            <span>{{localize "FEO.Compendium.sheet.classWt"}}</span><b class="num">{{wt}}</b>
+          </div>
+        </div>
+      </section>
+
+      {{#if fromTrainee}}
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Compendium.sheet.fromTrainee"}} <small>{{localize "FEO.Class.gainsFromTrainee"}}</small></h4>
+        <div class="cs-stats">
+          {{#each fromTrainee as |cell|}}
+          <div data-tooltip="{{cell.label}}"><span>{{cell.abbr}}</span><b class="num {{cell.css}}">{{cell.value}}</b></div>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}}
+
+      {{#if transformed}}
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Class.transformed"}}</h4>
+        <div class="cs-stats">
+          {{#each transformed as |cell|}}
+          <div><span>{{cell.abbr}}</span><b class="num">{{cell.value}}</b></div>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}}
+
+      <section class="cs-sec">
+        <h4>{{proficiencies.title}}</h4>
+        {{#if proficiencies.text}}
+        <p class="cs-text">{{proficiencies.text}}</p>
+        {{#if proficiencies.links.length}}
+        <div class="cp-chips">
+          {{#each proficiencies.links as |link|}}
+          <button type="button" class="cp-linkchip" data-action="weapons" data-type="{{link.key}}">
+            {{{link.icon}}}{{link.label}}<small>{{localize "FEO.Compendium.sheet.inEquipment"}}</small>
+          </button>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{else}}
+        <p class="cs-text none">{{proficiencies.none}}</p>
+        {{/if}}
+      </section>
+
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Compendium.sheet.skills"}}</h4>
+        {{#each skills as |group|}}
+        {{#if group.intro}}<p class="cs-or">{{group.intro}}</p>{{/if}}
+        {{#each group.rows as |row|}}
+        <div class="cs-skill" data-kind="{{group.slot}}">
+          <span class="kind">{{{group.icon}}}</span>
+          <div class="top">
+            {{#if row.id}}
+            <button type="button" class="cp-skill-link" data-action="skill" data-skill-id="{{row.id}}">{{row.name}}</button>
+            {{else}}
+            <span class="cp-skill-link" style="text-decoration:none;cursor:default">{{row.name}}</span>
+            {{/if}}
+            <span class="when">{{row.label}}</span>
+          </div>
+          {{#if row.when}}<span class="learned">{{row.when}}</span>{{/if}}
+          {{#if row.effect}}<p>{{row.effect}}</p>{{/if}}
+        </div>
+        {{/each}}
+        {{else}}
+        <p class="cs-text none">{{localize "FEO.Compendium.sheet.noSkills"}}</p>
+        {{/each}}
+      </section>
+
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Unit.specialQualities"}}</h4>
+        {{#if qualities.length}}
+        <div class="cp-chips">
+          {{#each qualities as |quality|}}
+          <span class="cp-quality">{{quality.name}}</span>
+          {{#each quality.skills as |skill|}}
+          <button type="button" class="cp-linkchip" data-action="skill" data-skill-id="{{skill.id}}">
+            {{feoIcon "spark"}}{{skill.name}}<small>{{localize "FEO.Compendium.sheet.comesWith"}}</small>
+          </button>
+          {{/each}}
+          {{/each}}
+        </div>
+        {{else}}
+        <p class="cs-text none">{{localize "FEO.Compendium.sheet.noQualities"}}</p>
+        {{/if}}
+      </section>
+
+      {{#if notes.length}}
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Class.notes"}}</h4>
+        <dl class="cs-pairs">
+          {{#each notes as |note|}}<dt>{{note.label}}</dt><dd>{{note.value}}</dd>{{/each}}
+        </dl>
+      </section>
+      {{/if}}
+
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Compendium.sheet.promotion"}}</h4>
+        <div class="cs-route">
+          <span class="lbl from">{{feoIcon "up"}}{{localize "FEO.Compendium.sheet.from"}}</span>
+          {{#if from.length}}
+          <div class="cp-chips">
+            {{#each from as |chip|}}
+            <button type="button" class="cp-classchip" data-action="selectClass" data-class-id="{{chip.id}}">
+              {{{chip.crest}}}<span>{{chip.name}}</span>{{#if chip.note}}<small>{{chip.note}}</small>{{/if}}
+            </button>
+            {{/each}}
+            {{#if fromLevel}}<span class="lvl from">{{fromLevel}}</span>{{/if}}
+          </div>
+          {{else}}
+          <p class="cs-text none">{{fromNone}}</p>
+          {{/if}}
+
+          <span class="lbl to">{{feoIcon "up"}}{{localize "FEO.Compendium.sheet.to"}}</span>
+          {{#if to.length}}
+          <div class="cp-chips">
+            {{#each to as |chip|}}
+            <button type="button" class="cp-classchip" data-action="selectClass" data-class-id="{{chip.id}}">
+              {{{chip.crest}}}<span>{{chip.name}}</span>
+            </button>
+            {{/each}}
+            {{#if toLevel}}<span class="lvl">{{toLevel}}</span>{{/if}}
+          </div>
+          {{else}}
+          <p class="cs-text none">{{toNone}}</p>
+          {{/if}}
+        </div>
+      </section>
+    </div>
+
+    {{#if ../choose}}
+    <footer class="cs-choose{{#if ../choose.chosen}} chosen{{/if}}">
+      <span class="txt">{{../choose.text}}</span>
+      {{#if ../choose.can}}
+      <button type="button" class="cp-choose" data-action="chooseClass">{{feoIcon "check"}}{{../choose.label}}</button>
+      {{else if ../choose.chosen}}
+      <span class="cp-chosen">{{feoIcon "check"}}</span>
+      {{/if}}
+    </footer>
+    {{/if}}
+  </article>
+  {{/with}}
+  {{/if}}
+</aside>

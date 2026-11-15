@@ -1,0 +1,213 @@
+<section class="tab panel-tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+
+  <div class="card optional">
+    <h3>{{localize "FEO.Section.optional"}}</h3>
+    <div class="opt-grid">
+
+      {{#if optional.lives}}
+      <div class="opt-block" data-module="lives">
+        <h4>{{localize "FEO.Optional.lives.title"}}</h4>
+        <div class="pairs">
+          <label class="field">
+            <span>{{localize "FEO.Optional.lives.left"}}</span>
+            <input type="number" name="system.lives.value" value="{{optional.lives.value}}" min="0" step="1" data-play
+                   placeholder="{{optional.lives.left}}">
+          </label>
+          <label class="field">
+            <span>{{localize "FEO.Optional.lives.total"}}</span>
+            <input type="number" name="system.lives.max" value="{{optional.lives.max}}" min="0" step="1"
+                   placeholder="{{optional.lives.limit}}">
+          </label>
+        </div>
+      </div>
+      {{/if}}
+
+      {{#if optional.levelCap}}
+      <div class="opt-block" data-module="levelCap">
+        <h4>{{localize "FEO.Optional.levelCap.title"}}</h4>
+        <div class="pairs">
+          <label class="field" data-tooltip="{{localize "FEO.Optional.levelCap.ownHint"}}">
+            <span>{{localize "FEO.Optional.levelCap.own"}}</span>
+            <input type="number" name="system.levelLimit" value="{{optional.levelCap.value}}" min="1" step="1"
+                   placeholder="{{optional.levelCap.cap}}">
+          </label>
+          <div class="field readout">
+            <span>{{localize "FEO.Optional.levelCap.level"}}</span>
+            <b>{{system.level}} / {{optional.levelCap.limit}}</b>
+          </div>
+        </div>
+        {{#if optional.levelCap.reached}}<p class="opt-line">{{localize "FEO.Optional.levelCap.reached"}}</p>{{/if}}
+      </div>
+      {{/if}}
+
+      {{#if optional.capacity}}
+      <div class="opt-block" data-module="capacity">
+        <h4>{{localize "FEO.Optional.capacity.title"}}</h4>
+        <div class="pairs">
+          <label class="field" data-tooltip="{{localize "FEO.Optional.capacity.ownHint"}}">
+            <span>{{localize "FEO.Optional.capacity.own"}}</span>
+            <input type="number" name="system.skillCapacity" value="{{optional.capacity.own}}" min="0" step="1"
+                   placeholder="{{optional.capacity.usual}}">
+          </label>
+          <div class="field readout">
+            <span>{{localize "FEO.Optional.capacity.spent"}}</span>
+            <b>{{optional.capacity.spent}} / {{optional.capacity.limit}}</b>
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
+      {{#if optional.stars}}
+      <div class="opt-block" data-module="stars">
+        <h4>{{localize "FEO.Optional.stars.title"}}</h4>
+        <div class="pairs">
+          <label class="field">
+            <span>{{localize "FEO.Optional.stars.stars"}}</span>
+            <input type="number" name="system.movementStars" value="{{optional.stars.value}}" min="0" step="1">
+          </label>
+          {{#if optional.stars.bonus}}
+          <div class="field readout" data-tooltip="{{localize "FEO.Optional.glory.starsHint"}}">
+            <span>{{localize "FEO.Optional.glory.title"}}</span>
+            <b>+{{optional.stars.bonus}}</b>
+          </div>
+          {{/if}}
+          <div class="field readout">
+            <span>{{localize "FEO.Optional.stars.chance"}}</span>
+            <b>{{optional.stars.chance}}%</b>
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
+      {{#if optional.leadership}}
+      <div class="opt-block" data-module="leadership">
+        <h4>{{localize "FEO.Optional.leadership.title"}}</h4>
+        <div class="pairs three">
+          <label class="field">
+            <span>{{localize "FEO.Optional.leadership.stars"}}</span>
+            <input type="number" name="system.leadership.stars" value="{{optional.leadership.stars}}" min="0" step="1">
+          </label>
+          <label class="field">
+            <span>{{localize "FEO.Optional.leadership.authority"}}</span>
+            <select name="system.leadership.authority">{{selectOptions optional.leadership.choices selected=optional.leadership.authority blank=(localize "FEO.Optional.leadership.noAuthority")}}</select>
+          </label>
+          {{#if optional.leadership.linked}}
+          <div class="field readout" data-tooltip="{{localize "FEO.Optional.leadership.receivedAuto"}}">
+            <span>{{localize "FEO.Optional.leadership.received"}}</span>
+            <b>{{optional.leadership.received}}</b>
+          </div>
+          {{else}}
+          <label class="field" data-tooltip="{{localize "FEO.Optional.leadership.receivedManual"}}">
+            <span>{{localize "FEO.Optional.leadership.received"}}</span>
+            <input type="number" name="system.leadership.received" value="{{optional.leadership.received}}" min="0" step="1" data-play>
+          </label>
+          {{/if}}
+        </div>
+        {{#if optional.leadership.own.length}}
+        <p class="opt-line"><span>{{localize "FEO.Optional.leadership.own"}}</span> {{#each optional.leadership.own as |part|}}<b>+{{part.amount}}</b> {{localize part.label}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+        {{/if}}
+        {{#if optional.leadership.lent.length}}
+        <p class="opt-line"><span>{{localize "FEO.Optional.leadership.fromAuthority"}}</span> {{#each optional.leadership.lent as |part|}}<b>+{{part.amount}}</b> {{localize part.label}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      {{#if optional.crest}}
+      <div class="opt-block" data-module="crest">
+        <h4>{{localize "FEO.Optional.crest.title"}}</h4>
+        <div class="pairs">
+          <label class="field">
+            <span>{{localize "FEO.Optional.crest.crest"}}</span>
+            <select name="system.crest.id">{{selectOptions optional.crest.choices selected=optional.crest.id localize=true blank="–"}}</select>
+          </label>
+          <label class="field">
+            <span>{{localize "FEO.Optional.grade.label"}}</span>
+            <select name="system.crest.grade">{{selectOptions optional.crest.gradeChoices selected=optional.crest.grade localize=true}}</select>
+          </label>
+          {{#if optional.crest.custom}}
+          <label class="field">
+            <span>{{localize "FEO.Optional.crest.name"}}</span>
+            <input type="text" name="system.crest.name" value="{{optional.crest.name}}">
+          </label>
+          <label class="field">
+            <span>{{localize "FEO.Optional.crest.chance"}}</span>
+            <input type="number" name="system.crest.chance" value="{{optional.crest.chance}}" min="0" max="100" step="5">
+          </label>
+          <label class="field wide">
+            <span>{{localize "FEO.Optional.crest.effect"}}</span>
+            <input type="text" name="system.crest.effect" value="{{optional.crest.effect}}">
+          </label>
+          {{/if}}
+        </div>
+        {{#if optional.crest.borne}}
+        <p class="opt-line"><b>{{optional.crest.borne.chance}}%</b> {{#if optional.crest.borne.effectLocalize}}{{localize optional.crest.borne.effect}}{{else}}{{optional.crest.borne.effect}}{{/if}}</p>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      {{#if optional.glory}}
+      <div class="opt-block wide" data-module="glory">
+        <h4>{{localize "FEO.Optional.glory.title"}}</h4>
+        <div class="pairs">
+          <label class="field">
+            <span>{{localize "FEO.Optional.glory.value"}}</span>
+            <input type="number" name="system.glory.value" value="{{optional.glory.value}}" min="0" step="1" data-play>
+          </label>
+          <label class="field edit-only" data-tooltip="{{localize "FEO.Optional.glory.bountyHint"}}">
+            <span>{{localize "FEO.Optional.glory.bounty"}}</span>
+            <input type="number" name="system.glory.bounty" value="{{optional.glory.bounty}}" min="0" step="1">
+          </label>
+        </div>
+        {{#if optional.glory.any}}
+        <div class="power-list held">
+          {{#each optional.glory.held as |power|}}
+          <div class="power" data-tooltip="{{localize power.text}} {{localize power.mode}}">
+            <b>{{localize power.name}}</b>
+            <span class="txt">{{localize power.text}}</span>
+            {{#if @root.user.isGM}}{{#if @root.editable}}
+            <button type="button" class="remove edit-only" data-action="refundPower" data-power="{{power.id}}"
+                    aria-label="{{localize "FEO.Optional.glory.refund"}}" data-tooltip="{{localize "FEO.Optional.glory.refund"}}">{{feoIcon "x"}}</button>
+            {{/if}}{{/if}}
+          </div>
+          {{/each}}
+        </div>
+        {{else}}
+        <p class="empty">{{localize "FEO.Optional.glory.none"}}</p>
+        {{/if}}
+        {{#if editable}}
+        <details class="power-shop">
+          <summary>{{localize "FEO.Optional.glory.unlock"}}</summary>
+          <div class="power-list">
+            {{#each optional.glory.open as |power|}}
+            <div class="power{{#unless power.affordable}} dear{{/unless}}" data-tooltip="{{localize power.mode}}">
+              <b>{{localize power.name}}</b>
+              <span class="txt">{{localize power.text}}</span>
+              <button type="button" class="btn small" data-action="buyPower" data-power="{{power.id}}" {{#unless power.affordable}}disabled{{/unless}}>{{power.cost}} {{localize "FEO.Optional.glory.title"}}</button>
+            </div>
+            {{/each}}
+          </div>
+        </details>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      {{#if optional.blood}}
+      <div class="opt-block wide" data-module="blood">
+        <h4>{{localize "FEO.Optional.blood.title"}}</h4>
+        <div class="blood-chart">
+          {{#each optional.blood.rows as |row|}}
+          <div class="blood-row{{#if row.held}} held{{else}} edit-only{{/if}}{{#if row.major}} major{{/if}}">
+            <span class="nm">{{localize row.label}}</span>
+            <select name="{{row.path}}" aria-label="{{localize row.label}}">{{selectOptions @root.optional.blood.gradeChoices selected=row.grade localize=true blank="–"}}</select>
+            <span class="gains">{{#each row.growths as |gain|}}+{{gain.amount}}% {{localize gain.label}}{{#unless @last}}, {{/unless}}{{/each}} · {{localize row.rankNote rank=(localize row.rank) top=(localize row.topRank) steps=row.steps}}</span>
+          </div>
+          {{/each}}
+        </div>
+        {{#unless optional.blood.any}}<p class="empty play-only">{{localize "FEO.Optional.blood.none"}}</p>{{/unless}}
+      </div>
+      {{/if}}
+
+    </div>
+  </div>
+
+</section>

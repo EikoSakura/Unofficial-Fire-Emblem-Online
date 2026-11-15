@@ -1,0 +1,84 @@
+<div class="hud-slot hud-dock">
+  {{#with dock}}
+  <section class="hud-panel dock" aria-label="{{localize "FEO.Hud.selected"}}">
+    <div class="dk-banner cloth" data-army="{{army}}">
+      <div class="dk-portrait"><img src="{{img}}" alt=""><span class="lv">{{localize "FEO.Hud.level"}} {{level}}</span></div>
+      <div class="dk-id"><div class="dk-name">{{name}}</div><div class="dk-class">{{className}}</div></div>
+      <div class="dk-hp" data-tone="{{hp.tone}}">
+        <div>{{localize "FEO.Stat.hp.abbr"}}<b>{{hp.value}} <span>/ {{hp.max}}</span></b></div>
+        <div class="bar"><i style="width:{{hp.percent}}%"></i></div>
+      </div>
+      <div class="dk-chips">
+        {{#each conditions as |condition|}}
+        <span class="chip">{{#if condition.img}}<img src="{{condition.img}}" alt="">{{/if}}{{condition.label}} <small>{{condition.turns}}</small></span>
+        {{else}}
+        <span class="chip none">{{localize "FEO.Hud.noConditions"}}</span>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="dk-mid">
+      {{#if weapon}}
+      <button type="button" class="dk-weapon" data-action="equip" {{#if equipOpen}}aria-expanded="true"{{/if}} data-tooltip="{{localize "FEO.Hud.flyout.equipFree"}}">
+        <span class="ico"><img src="{{weapon.img}}" alt=""></span>
+        <span class="txt"><span class="nm">{{weapon.name}}</span>
+          <span class="sub">{{#if weapon.staff}}{{localize "FEO.WeaponType.staff"}}{{else}}{{localize "FEO.Hud.might"}} <b>{{weapon.might}}</b> · {{localize "FEO.Combat.hit"}} <b>{{weapon.hit}}</b> · {{localize "FEO.Combat.critAbbr"}} <b>{{weapon.crit}}</b>{{/if}} · {{localize "FEO.Hud.range"}} <b>{{weapon.range}}</b></span></span>
+        <span class="uses">{{weapon.uses}}{{#if canSwap}}{{feoIcon "swap"}}{{/if}}</span>
+      </button>
+      {{else}}
+      <button type="button" class="dk-weapon" data-action="equip" {{#if equipOpen}}aria-expanded="true"{{/if}}>
+        <span class="ico">{{feoIcon "x"}}</span>
+        <span class="txt"><span class="nm">{{localize "FEO.Combat.unarmed"}}</span><span class="sub">{{localize "FEO.Exchange.blocked.unarmed"}}</span></span>
+        <span class="uses">{{#if canSwap}}{{feoIcon "swap"}}{{/if}}</span>
+      </button>
+      {{/if}}
+      <div class="dk-nums">
+        {{#each numbers as |number|}}<div><b>{{number.value}}</b><span>{{number.label}}</span></div>{{/each}}
+      </div>
+      <div class="dk-foot">
+        <span class="lbl">{{localize "FEO.Stat.mov.abbr"}}</span>
+        <span class="movpips">{{#each mov.pips as |pip|}}<i class="{{#if pip.off}}off{{/if}}"></i>{{/each}}</span>
+        <span>{{mov.left}}</span>
+        {{#if canUndo}}<button type="button" class="btn small" data-action="undo">{{feoIcon "left"}}{{localize "FEO.Hud.undo"}}</button>{{/if}}
+        {{#if tile}}<span class="ground" data-tooltip="{{tile.bonus}}">{{feoIcon tile.icon}}<b>{{tile.name}}</b>{{#if tile.elevation}} ▲{{tile.elevation}}{{/if}}</span>{{/if}}
+      </div>
+    </div>
+
+    <div class="dk-actions">
+      <div class="dk-status {{#if status.locked}}lock{{/if}}">{{feoIcon status.icon}}<span>{{status.text}}</span>
+        {{#if canSpend}}<button type="button" class="btn small" data-action="spendRound" data-tooltip="{{localize "FEO.Hud.spendHint"}}">{{localize "FEO.Hud.spend"}}</button>{{/if}}
+      </div>
+      <div class="acts">
+        {{#each actions as |action|}}
+        <button type="button" class="act {{#if action.primary}}primary{{/if}} {{#if action.on}}on{{/if}}" data-action="{{action.id}}"
+                {{#if action.disabled}}disabled{{/if}} {{#if action.open}}aria-expanded="true"{{/if}}
+                {{#if action.tooltip}}data-tooltip="{{action.tooltip}}"{{/if}}>{{feoIcon action.icon}}{{action.label}}</button>
+        {{/each}}
+      </div>
+      {{#if showTurn}}
+      <div class="dk-turn">{{localize "FEO.Hud.turn"}}
+        <button type="button" class="btn small" data-action="startTurn" data-tooltip="{{localize "FEO.Rail.startTurnHint"}}">{{localize "FEO.Rail.startTurn"}}</button>
+        <button type="button" class="btn small" data-action="endTurn" data-tooltip="{{localize "FEO.Rail.endTurnHint"}}">{{localize "FEO.Rail.endTurn"}}</button>
+      </div>
+      {{/if}}
+    </div>
+
+    {{#with flyout}}
+    <div class="fly {{side}}">
+      <h5>{{title}} <span>{{aside}}</span></h5>
+      <div class="fly-rows">
+        {{#each rows as |row|}}
+        <button type="button" class="fly-row {{#if row.on}}on{{/if}}" data-action="{{row.action}}" data-item-id="{{row.id}}" {{#if row.form}}data-form="{{row.form}}" {{/if}}{{#if row.disabled}}disabled{{/if}}>
+          <span class="ico">{{#if row.img}}<img src="{{row.img}}" alt="">{{/if}}</span>
+          <span class="txt"><span class="nm">{{row.name}}</span><span class="sub">{{row.sub}}</span></span>
+          <span class="end">{{row.end}}</span>
+        </button>
+        {{/each}}
+      </div>
+      {{#if empty}}<p>{{empty}}</p>{{/if}}
+      {{#if foot}}<p>{{foot}}</p>{{/if}}
+    </div>
+    {{/with}}
+  </section>
+  {{/with}}
+</div>

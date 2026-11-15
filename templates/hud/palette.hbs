@@ -1,0 +1,25 @@
+<div class="hud-slot hud-palette">
+  {{#with palette}}
+  <section class="hud-panel palette {{#if erase}}erasing{{/if}}" aria-label="{{localize "FEO.Paint.label"}}">
+    <header class="pl-head"><span class="eyebrow">{{localize "FEO.Paint.label"}}</span><b>{{#if holds}}{{holds}}{{else}}{{summary}}{{/if}}</b></header>
+    <div class="pl-swatches" role="group" aria-label="{{localize "FEO.Terrain.label"}}">
+      {{#each swatches as |swatch|}}
+      <button type="button" class="pl-swatch {{#if swatch.none}}none{{/if}} {{#if swatch.on}}on{{/if}}" data-action="brush" data-terrain="{{swatch.key}}"
+              {{#if swatch.tint}}style="--tint: {{swatch.tint}}"{{/if}} data-tooltip="{{swatch.label}}" aria-label="{{swatch.label}}" aria-pressed="{{swatch.on}}">{{feoIcon swatch.icon}}</button>
+      {{/each}}
+    </div>
+    <div class="pl-levels" role="group" aria-label="{{localize "FEO.Terrain.elevation"}}">
+      <span class="eyebrow">{{localize "FEO.Terrain.elevation"}}</span>
+      {{#each levels as |level|}}
+      <button type="button" class="pl-level {{#if level.on}}on{{/if}}" data-action="brush" data-elevation="{{level.value}}"
+              data-tooltip="{{level.label}}" aria-label="{{level.label}}" aria-pressed="{{level.on}}">{{level.text}}</button>
+      {{/each}}
+    </div>
+    <div class="pl-foot">
+      <button type="button" class="btn small {{#if erase}}primary{{/if}}" data-action="brush" data-erase aria-pressed="{{erase}}">{{feoIcon "x"}}{{localize "FEO.Paint.erase"}}</button>
+      <button type="button" class="btn small {{#if shown}}primary{{/if}}" data-action="brushShow" aria-pressed="{{shown}}" data-tooltip="{{localize "FEO.Paint.showHint"}}">{{feoIcon "eye"}}{{localize "FEO.Paint.show"}}</button>
+    </div>
+    <p class="pl-hint">{{localize "FEO.Paint.hint"}}</p>
+  </section>
+  {{/with}}
+</div>

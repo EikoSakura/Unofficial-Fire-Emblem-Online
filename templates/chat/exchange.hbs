@@ -1,0 +1,40 @@
+<div class="feo-card feo-exchange">
+  <div class="versus">
+    {{#each sides as |side|}}
+    <div class="side" data-side="{{side.key}}" data-army="{{side.army}}">
+      <div class="name">{{side.name}}</div>
+      <div class="hp">{{#if side.changed}}<small>{{side.hpStart}} →</small> {{/if}}{{side.hp}}</div>
+      <div class="bar {{side.state}}"><span class="left" style="width: {{side.left}}%"></span><span class="lost" style="width: {{side.lost}}%"></span></div>
+    </div>
+    {{/each}}
+  </div>
+  {{#if strikes.length}}
+  <ol class="strikes">
+    {{#each strikes as |strike|}}
+    <li class="{{strike.cls}}" data-side="{{strike.side}}" data-army="{{strike.army}}">
+      <i class="fa-solid {{strike.icon}}"></i>
+      <span class="who">{{strike.name}}</span>
+      {{#if strike.crit}}<span class="tag">{{localize "FEO.Combat.critical"}}</span>{{/if}}
+      <span class="result">{{strike.result}}</span>
+      {{#if strike.tags.length}}
+      <span class="skills">{{#each strike.tags as |tag|}}<span class="tag skill {{tag.cls}}">{{tag.label}}</span>{{/each}}</span>
+      {{/if}}
+    </li>
+    {{/each}}
+  </ol>
+  {{/if}}
+  <details>
+    <summary>
+      <span class="notable">
+        {{#each notable as |line|}}<span class="{{line.cls}}">{{line.label}}</span>{{/each}}
+      </span>
+      <span class="toggle">{{localize "FEO.Exchange.details"}} <i class="fa-solid fa-chevron-down"></i></span>
+    </summary>
+    <dl>
+      {{#each details as |row|}}
+      <div><dt>{{row.label}}</dt><dd>{{row.value}}</dd></div>
+      {{/each}}
+    </dl>
+    {{#each notes as |line|}}<p class="note">{{line}}</p>{{/each}}
+  </details>
+</div>

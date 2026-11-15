@@ -1,0 +1,961 @@
+File names for your own weapons images. Put an image in this folder, named as in the first column
+(for example iron-axe.webp or iron-axe.png; "Iron Axe.png" works too), and build the compendium again.
+Where two entries share a name, the second column is the name that picks out just one of them.
+This list is rewritten by every build.
+
+file name	more specific file name	entry	folder	image used now
+rusted-axe	axe-rusted-axe	Rusted Axe	Axes	icons/weapons/axes/axe-broad-worn-yellow.webp
+training-axe	axe-training-axe	Training Axe	Axes	icons/weapons/axes/axe-tomahawk-simple-grey.webp
+compact-axe	axe-compact-axe	Compact Axe	Axes	icons/weapons/axes/shortaxe-simple-black.webp
+bronze-axe	axe-bronze-axe	Bronze Axe	Axes	icons/weapons/axes/axe-simple-brown.webp
+devil-axe	axe-devil-axe	Devil Axe	Axes	icons/weapons/axes/axe-battle-eyes-red.webp
+glass-axe	axe-glass-axe	Glass Axe	Axes	icons/weapons/axes/axe-double-ice-blue.webp
+hand-axe	axe-hand-axe	Hand Axe	Axes	icons/weapons/axes/shortaxe-worn-black.webp
+slim-axe	axe-slim-axe	Slim Axe	Axes	icons/weapons/axes/axe-simple-jagged.webp
+iron-axe	axe-iron-axe	Iron Axe	Axes	icons/weapons/axes/axe-double-simple-brown.webp
+halberd	axe-halberd	Halberd	Axes	icons/weapons/polearms/glaive-simple-hooked.webp
+mace	axe-mace	Mace	Axes	icons/weapons/maces/mace-round-ornate-purple.webp
+hatchet	axe-hatchet	Hatchet	Axes	icons/weapons/axes/shortaxe-yellow.webp
+iron-poleax	axe-iron-poleax	Iron Poleax	Axes	icons/weapons/polearms/glaive-simple.webp
+iron-francisca	axe-iron-francisca	Iron Francisca	Axes	icons/weapons/axes/shortaxe-simple-black.webp
+iron-greataxe	axe-iron-greataxe	Iron Greataxe	Axes	icons/weapons/axes/axe-battle-simple-black.webp
+steel-axe	axe-steel-axe	Steel Axe	Axes	icons/weapons/axes/shortaxe-hammer-steel.webp
+surehit-axe	axe-surehit-axe	Surehit Axe	Axes	icons/weapons/axes/axe-pick-white.webp
+serrated-axe	axe-serrated-axe	Serrated Axe	Axes	icons/weapons/axes/axe-battle-jagged.webp
+searing-axe	axe-searing-axe	Searing Axe	Axes	icons/weapons/axes/axe-battle-elemental-lava.webp
+venin-axe	axe-venin-axe	Venin Axe	Axes	icons/weapons/axes/axe-battle-green.webp
+mystic-axe	axe-mystic-axe	Mystic Axe	Axes	icons/weapons/axes/axe-double-engraved-runes.webp
+opus	axe-opus	Opus	Axes	icons/weapons/axes/axe-simple-purple-black.webp
+log-splitter	axe-log-splitter	Log Splitter	Axes	icons/weapons/axes/axe-double-chopping-black.webp
+broadaxe	axe-broadaxe	Broadaxe	Axes	icons/weapons/axes/axe-double-blue.webp
+longaxe	axe-longaxe	Longaxe	Axes	icons/weapons/axes/axe-broad-crescent-gray.webp
+doloire	axe-doloire	Doloire	Axes	icons/weapons/polearms/halberd-crescent-stone-worn.webp
+tremblor-axe	axe-tremblor-axe	Tremblor Axe	Axes	icons/weapons/axes/axe-broad-brown.webp
+emerald-axe	axe-emerald-axe	Emerald Axe	Axes	icons/weapons/axes/axe-battle-broad-stone.webp
+emblem-axe	axe-emblem-axe	Emblem Axe	Axes	icons/weapons/axes/axe-double-gold.webp
+killer-axe	axe-killer-axe	Killer Axe	Axes	icons/weapons/axes/axe-simple-jagged.webp
+quick-axe	axe-quick-axe	Quick Axe	Axes	icons/weapons/axes/axe-simple-purple-black.webp
+hunting-axe	axe-hunting-axe	Hunting Axe	Axes	icons/weapons/axes/axe-battle-skull-black.webp
+fiendcleaver	axe-fiendcleaver	Fiendcleaver	Axes	icons/weapons/axes/cleaver-black.webp
+volant-axe	axe-volant-axe	Volant Axe	Axes	icons/weapons/axes/axe-double-white-red.webp
+scalecrusher	axe-scalecrusher	Scalecrusher	Axes	icons/weapons/axes/axe-broad-simple.webp
+blessed-axe	axe-blessed-axe	Blessed Axe	Axes	icons/weapons/axes/axe-broad-white.webp
+fear-axe	axe-fear-axe	Fear Axe	Axes	icons/weapons/axes/shortaxe-engraved-green.webp
+rearguard	axe-rearguard	Rearguard	Axes	icons/weapons/axes/axe-pick-white.webp
+raider-axe	axe-raider-axe	Raider Axe	Axes	icons/weapons/axes/axe-broad-brown.webp
+knight-axe	axe-knight-axe	Knight Axe	Axes	icons/weapons/axes/axe-crooked-crystal-pink.webp
+moonrazer	axe-moonrazer	Moonrazer	Axes	icons/weapons/axes/axe-simple-black.webp
+pickaxe	axe-pickaxe	Pickaxe	Axes	icons/weapons/axes/pickaxe-stone-jagged-red.webp
+short-axe	axe-short-axe	Short Axe	Axes	icons/weapons/axes/axe-tomahawk-engraved.webp
+steel-poleax	axe-steel-poleax	Steel Poleax	Axes	icons/weapons/polearms/halberd-crescent-engraved-steel.webp
+steel-francisca	axe-steel-francisca	Steel Francisca	Axes	icons/weapons/axes/shortaxe-hammer-steel.webp
+steel-greataxe	axe-steel-greataxe	Steel Greataxe	Axes	icons/weapons/axes/axe-battle-elemental-lava.webp
+bardiche	axe-bardiche	Bardiche	Axes	icons/weapons/polearms/halberd-crescent-steel.webp
+meataxe	axe-meataxe	Meataxe	Axes	icons/weapons/axes/cleaver-black.webp
+tabar	axe-tabar	Tabar	Axes	icons/weapons/axes/axe-broad-purple.webp
+battle-axe	axe-battle-axe	Battle Axe	Axes	icons/weapons/axes/axe-double-worn-brown.webp
+hammer	axe-hammer	Hammer	Axes	icons/weapons/hammers/hammer-double-sledge-engraved.webp
+sparth	axe-sparth	Sparth	Axes	icons/weapons/polearms/halberd-engraved-steel.webp
+gale-axe	axe-gale-axe	Gale Axe	Axes	icons/weapons/axes/axe-broad-white.webp
+inferno-axe	axe-inferno-axe	Inferno Axe	Axes	icons/weapons/axes/axe-fire.webp
+bolt-axe	axe-bolt-axe	Bolt Axe	Axes	icons/weapons/axes/axe-broad-energy-pink.webp
+brave-axe	axe-brave-axe	Brave Axe	Axes	icons/weapons/axes/axe-double-gold.webp
+swordreaver	axe-swordreaver	Swordreaver	Axes	icons/weapons/axes/axe-broad-brown.webp
+superior-axe	axe-superior-axe	Superior Axe	Axes	icons/weapons/axes/axe-double-gold.webp
+tomahawk	axe-tomahawk	Tomahawk	Axes	icons/weapons/thrown/throwing-axe-steel.webp
+thief-axe	axe-thief-axe	Thief Axe	Axes	icons/weapons/axes/shortaxe-worn-black.webp
+vengeance	axe-vengeance	Vengeance	Axes	icons/weapons/axes/axe-battle-engraved-purple.webp
+gendarme	axe-gendarme	Gendarme	Axes	icons/weapons/axes/axe-broad-worn-blue.webp
+meisteraxt	axe-meisteraxt	Meisteraxt	Axes	icons/weapons/axes/axe-double-gold.webp
+runeaxe	axe-runeaxe	Runeaxe	Axes	icons/weapons/axes/axe-double-engraved-runes.webp
+hauteclere	axe-hauteclere	Hauteclere	Axes	icons/weapons/axes/axe-battle-elemental-lava.webp
+swordslayer	axe-swordslayer	Swordslayer	Axes	icons/weapons/axes/axe-broad-grey.webp
+silver-axe	axe-silver-axe	Silver Axe	Axes	icons/weapons/axes/shortaxe-hammer-steel.webp
+silver-poleax	axe-silver-poleax	Silver Poleax	Axes	icons/weapons/polearms/halberd-crescent-engraved-steel.webp
+silver-francisca	axe-silver-francisca	Silver Francisca	Axes	icons/weapons/axes/shortaxe-hammer-steel.webp
+silver-greataxe	axe-silver-greataxe	Silver Greataxe	Axes	icons/weapons/axes/axe-double-white-red.webp
+voulge	axe-voulge	Voulge	Axes	icons/weapons/polearms/halberd-crescent-wood.webp
+wolf-beil	axe-wolf-beil	Wolf Beil	Axes	icons/weapons/axes/axe-battle-skull-black.webp
+pugi	axe-pugi	Pugi	Axes	icons/weapons/axes/axe-fire.webp
+helswath	axe-helswath	Helswath	Axes	icons/weapons/axes/axe-battle-black.webp
+garm	axe-garm	Garm	Axes	icons/weapons/axes/axe-tomahawk-simple-grey.webp
+armads	axe-armads	Armads	Axes	icons/weapons/axes/axe-double-simple-brown.webp
+freikugel	axe-freikugel	Freikugel	Axes	icons/weapons/axes/axe-broad-engraved-black.webp
+konigswolf	axe-konigswolf	Königswolf	Axes	icons/weapons/axes/axe-double-engraved.webp
+labraunda	axe-labraunda	Labraunda	Axes	icons/weapons/axes/axe-battle-elemental-lava.webp
+bolverk	axe-bolverk	Bölverk	Axes	icons/weapons/axes/axe-double-engraved.webp
+urvan	axe-urvan	Urvan	Axes	icons/weapons/axes/axe-double-jagged-black.webp
+tarvos	axe-tarvos	Tarvos	Axes	icons/weapons/axes/axe-double-ice-blue.webp
+parashu	axe-parashu	Parashu	Axes	icons/weapons/axes/axe-tomahawk-jagged.webp
+fists	brawl-fists	Fists	Brawl	icons/skills/melee/unarmed-punch-fist-yellow-red.webp
+rusted-gauntlets	brawl-rusted-gauntlets	Rusted Gauntlets	Brawl	icons/equipment/hand/gauntlet-clawed-steel.webp
+training-gauntlets	brawl-training-gauntlets	Training Gauntlets	Brawl	icons/equipment/hand/gauntlet-simple-leather-brown-gold.webp
+bronze-gauntlets	brawl-bronze-gauntlets	Bronze Gauntlets	Brawl	icons/equipment/hand/gauntlet-simple-leather-brown-gold.webp
+brass-knuckles	brawl-brass-knuckles	Brass Knuckles	Brawl	icons/weapons/fist/fist-brass-knuckles.webp
+devil-gauntlets	brawl-devil-gauntlets	Devil Gauntlets	Brawl	icons/equipment/hand/gauntlet-armored-black.webp
+glass-gauntlets	brawl-glass-gauntlets	Glass Gauntlets	Brawl	icons/equipment/hand/gauntlet-tooled-leather-blue.webp
+iron-gauntlets	brawl-iron-gauntlets	Iron Gauntlets	Brawl	icons/equipment/hand/gauntlet-iron-riveted-brown.webp
+iron-knuckles	brawl-iron-knuckles	Iron Knuckles	Brawl	icons/weapons/fist/claw-gauntlet-gray.webp
+steel-gauntlets	brawl-steel-gauntlets	Steel Gauntlets	Brawl	icons/equipment/hand/gauntlet-armored-leather-steel-blue.webp
+steel-knuckles	brawl-steel-knuckles	Steel Knuckles	Brawl	icons/weapons/fist/knuckles-steel.webp
+iron-claws	brawl-iron-claws	Iron Claws	Brawl	icons/weapons/fist/claw-gauntlet-gray.webp
+serrated-knuckles	brawl-serrated-knuckles	Serrated Knuckles	Brawl	icons/weapons/fist/brass-knuckles-spiked.webp
+venin-knuckles	brawl-venin-knuckles	Venin Knuckles	Brawl	icons/weapons/fist/claw-gauntlet-poison-green.webp
+piercing-claws	brawl-piercing-claws	Piercing Claws	Brawl	icons/weapons/fist/claw-hooked-grey.webp
+bagh-nakh	brawl-bagh-nakh	Bagh Nakh	Brawl	icons/weapons/fist/claw-gauntlet-gray.webp
+shockwave-gauntlets	brawl-shockwave-gauntlets	Shockwave Gauntlets	Brawl	icons/equipment/hand/gauntlet-armored-steel-grey.webp
+targe-gauntlets	brawl-targe-gauntlets	Targe Gauntlets	Brawl	icons/equipment/hand/gauntlet-clawed-steel-blue.webp
+himantes	brawl-himantes	Himantes	Brawl	icons/weapons/fist/brass-knuckles-spiked.webp
+fiendknuckles	brawl-fiendknuckles	Fiendknuckles	Brawl	icons/weapons/fist/fist-katar-triple-gold-black.webp
+beast-fangs	brawl-beast-fangs	Beast Fangs	Brawl	icons/weapons/fist/claw-leather-brown.webp
+dragon-claws	brawl-dragon-claws	Dragon Claws	Brawl	icons/weapons/fist/claws-gloves.webp
+hora	brawl-hora	Hora	Brawl	icons/weapons/fist/claw-gauntlet-gray.webp
+steel-claws	brawl-steel-claws	Steel Claws	Brawl	icons/weapons/fist/claw-grey-black.webp
+blessed-knuckles	brawl-blessed-knuckles	Blessed Knuckles	Brawl	icons/weapons/fist/fist-knuckles-spiked-gold.webp
+fear-knuckles	brawl-fear-knuckles	Fear Knuckles	Brawl	icons/weapons/fist/fist-katar-triple-gold-black.webp
+flurry-knuckles	brawl-flurry-knuckles	Flurry Knuckles	Brawl	icons/weapons/fist/knuckles-steel.webp
+emblem-gauntlets	brawl-emblem-gauntlets	Emblem Gauntlets	Brawl	icons/equipment/hand/gauntlet-simple-leather-brown-gold.webp
+killer-knuckles	brawl-killer-knuckles	Killer Knuckles	Brawl	icons/weapons/fist/fist-knuckles-spiked-brown.webp
+raider-gauntlets	brawl-raider-gauntlets	Raider Gauntlets	Brawl	icons/equipment/hand/gauntlet-tooled-steel.webp
+lunge-gauntlets	brawl-lunge-gauntlets	Lunge Gauntlets	Brawl	icons/equipment/hand/gauntlet-armored-leather-steel-blue.webp
+wind-knuckles	brawl-wind-knuckles	Wind Knuckles	Brawl	icons/weapons/fist/brass-knuckles-spiked.webp
+fire-knuckles	brawl-fire-knuckles	Fire Knuckles	Brawl	icons/weapons/fist/fist-katar-gold.webp
+thunder-knuckles	brawl-thunder-knuckles	Thunder Knuckles	Brawl	icons/weapons/fist/boxing-gloves.webp
+katar	brawl-katar	Katar	Brawl	icons/weapons/fist/punch-dagger-flared-brown.webp
+pata	brawl-pata	Pata	Brawl	icons/weapons/fist/fist-katar-silver.webp
+sphairai	brawl-sphairai	Sphairai	Brawl	icons/weapons/fist/fist-katar-triple-silver.webp
+bowsnappers	brawl-bowsnappers	Bowsnappers	Brawl	icons/weapons/fist/fist-knuckles-spiked-gold.webp
+shield-gauntlets	brawl-shield-gauntlets	Shield Gauntlets	Brawl	icons/weapons/fist/boxing-gloves.webp
+concussion-gauntlets	brawl-concussion-gauntlets	Concussion Gauntlets	Brawl	icons/equipment/hand/gauntlet-tooled-leather-blue.webp
+knockback-gauntlets	brawl-knockback-gauntlets	Knockback Gauntlets	Brawl	icons/weapons/fist/glove-spiked.webp
+blastwave-gauntlets	brawl-blastwave-gauntlets	Blastwave Gauntlets	Brawl	icons/equipment/hand/gauntlet-armored-red-gold.webp
+disarmer	brawl-disarmer	Disarmer	Brawl	icons/weapons/fist/fist-knuckles-spiked-gold.webp
+ghost-knuckles	brawl-ghost-knuckles	Ghost Knuckles	Brawl	icons/weapons/fist/fist-brass-knuckles.webp
+thief-knuckles	brawl-thief-knuckles	Thief Knuckles	Brawl	icons/weapons/fist/brass-knuckles-spiked.webp
+silent-fists	brawl-silent-fists	Silent Fists	Brawl	icons/weapons/fist/claws-glove.webp
+sainti	brawl-sainti	Sainti	Brawl	icons/weapons/fist/fist-katar-triple-gold-black.webp
+aura-knuckles	brawl-aura-knuckles	Aura Knuckles	Brawl	icons/weapons/fist/fist-knuckles-spiked-gold.webp
+tekko	brawl-tekko	Tekko	Brawl	icons/weapons/fist/fist-knuckles-spiked-brown.webp
+lifesteal-knuckles	brawl-lifesteal-knuckles	Lifesteal Knuckles	Brawl	icons/weapons/fist/boxing-gloves.webp
+rending-claws	brawl-rending-claws	Rending Claws	Brawl	icons/weapons/fist/claw-straight-gold.webp
+wolf-fangs	brawl-wolf-fangs	Wolf Fangs	Brawl	icons/weapons/fist/claw-leather-brown.webp
+silver-gauntlets	brawl-silver-gauntlets	Silver Gauntlets	Brawl	icons/equipment/hand/gauntlet-clawed-steel-blue.webp
+silver-knuckles	brawl-silver-knuckles	Silver Knuckles	Brawl	icons/weapons/fist/fist-katar-triple-silver.webp
+silver-claws	brawl-silver-claws	Silver Claws	Brawl	icons/weapons/fist/claw-worn-brown.webp
+pankratos	brawl-pankratos	Pankratos	Brawl	icons/weapons/fist/fist-katar-gold.webp
+astra-knuckles	brawl-astra-knuckles	Astra Knuckles	Brawl	icons/weapons/fist/fist-knuckles-teeth.webp
+vajra-mushti	brawl-vajra-mushti	Vajra-Mushti	Brawl	icons/weapons/fist/fist-knuckles-spiked-stone.webp
+caestus	brawl-caestus	Caestus	Brawl	icons/weapons/fist/fist-knuckles-spiked-grey.webp
+hokuto	brawl-hokuto	Hokuto	Brawl	icons/weapons/fist/fist-katar-triple-silver.webp
+godhand	brawl-godhand	Godhand	Brawl	icons/weapons/fist/fist-knuckles-spiked-brown.webp
+balrog	brawl-balrog	Balrog	Brawl	icons/weapons/fist/fist-knuckles-spiked-grey.webp
+jarngreipr	brawl-jarngreipr	Járngreipr	Brawl	icons/weapons/fist/fist-knuckles-teeth.webp
+rusted-lance	lance-rusted-lance	Rusted Lance	Lances	icons/weapons/polearms/spear-flared-worn-grey.webp
+training-lance	lance-training-lance	Training Lance	Lances	icons/weapons/polearms/spear-simple-hooked-grey.webp
+areadbhar	lance-areadbhar	Areadbhar	Lances	icons/weapons/polearms/spear-tips-simple.webp
+bronze-lance	lance-bronze-lance	Bronze Lance	Lances	icons/weapons/polearms/spear-flared-bronze-teal.webp
+devil-lance	lance-devil-lance	Devil Lance	Lances	icons/weapons/polearms/spear-flared-purple.webp
+glass-lance	lance-glass-lance	Glass Lance	Lances	icons/weapons/polearms/spear-ice-crystal-blue.webp
+iron-lance	lance-iron-lance	Iron Lance	Lances	icons/weapons/polearms/spear-hooked-simple.webp
+javelin	lance-javelin	Javelin	Lances	icons/weapons/polearms/spear-simple-crescent.webp
+slim-lance	lance-slim-lance	Slim Lance	Lances	icons/weapons/polearms/spear-simple-stone.webp
+heavy-lance	lance-heavy-lance	Heavy Lance	Lances	icons/weapons/polearms/pike-flared-red.webp
+ridersbane	lance-ridersbane	Ridersbane	Lances	icons/weapons/polearms/spear-flared-blue.webp
+verutum	lance-verutum	Verutum	Lances	icons/weapons/polearms/spear-simple-hooked-grey.webp
+iron-greatlance	lance-iron-greatlance	Iron Greatlance	Lances	icons/weapons/polearms/spear-flared-gray.webp
+iron-hasta	lance-iron-hasta	Iron Hasta	Lances	icons/weapons/polearms/glaive-simple.webp
+iron-glaive	lance-iron-glaive	Iron Glaive	Lances	icons/weapons/polearms/glaive-simple.webp
+iron-greatspear	lance-iron-greatspear	Iron Greatspear	Lances	icons/weapons/polearms/spear-flared-worn-grey.webp
+steel-lance	lance-steel-lance	Steel Lance	Lances	icons/weapons/polearms/spear-pike-steel.webp
+serrated-lance	lance-serrated-lance	Serrated Lance	Lances	icons/weapons/polearms/spear-barbed-silver.webp
+searing-lance	lance-searing-lance	Searing Lance	Lances	icons/weapons/polearms/spear-hooked-red.webp
+venin-lance	lance-venin-lance	Venin Lance	Lances	icons/weapons/polearms/spear-simple-stone-green.webp
+billhook	lance-billhook	Billhook	Lances	icons/weapons/polearms/halberd-hooked-engraved-steel.webp
+doru	lance-doru	Doru	Lances	icons/weapons/polearms/spear-flared-purple.webp
+dueling-lance	lance-dueling-lance	Dueling Lance	Lances	icons/weapons/polearms/spear-flared-bronze-teal.webp
+longspear	lance-longspear	Longspear	Lances	icons/weapons/polearms/spear-flared-green.webp
+harpoon	lance-harpoon	Harpoon	Lances	icons/weapons/polearms/spear-simple-double.webp
+spontoon	lance-spontoon	Spontoon	Lances	icons/weapons/polearms/spear-simple-stone-green.webp
+wing-spear	lance-wing-spear	Wing Spear	Lances	icons/weapons/polearms/spear-ornate-teal.webp
+cletine	lance-cletine	Cletiné	Lances	icons/weapons/polearms/spear-hooked-double-jeweled.webp
+quake-lance	lance-quake-lance	Quake Lance	Lances	icons/weapons/polearms/spear-flared-gray.webp
+bold-lance	lance-bold-lance	Bold Lance	Lances	icons/weapons/polearms/pike-flared-red.webp
+guard-lance	lance-guard-lance	Guard Lance	Lances	icons/weapons/polearms/pike-flared-red.webp
+emblem-lance	lance-emblem-lance	Emblem Lance	Lances	icons/weapons/polearms/spear-flared-gold.webp
+killer-lance	lance-killer-lance	Killer Lance	Lances	icons/weapons/polearms/spear-barbed-silver.webp
+quick-lance	lance-quick-lance	Quick Lance	Lances	icons/weapons/polearms/spear-simple-engraved.webp
+hunting-lance	lance-hunting-lance	Hunting Lance	Lances	icons/weapons/polearms/spear-hooked-broad.webp
+blessed-lance	lance-blessed-lance	Blessed Lance	Lances	icons/weapons/polearms/spear-ornate-gold.webp
+fear-lance	lance-fear-lance	Fear Lance	Lances	icons/weapons/polearms/spear-flared-wrapped.webp
+raider-lance	lance-raider-lance	Raider Lance	Lances	icons/weapons/polearms/spear-flared-purple.webp
+knight-lance	lance-knight-lance	Knight Lance	Lances	icons/weapons/polearms/spear-flared-steel.webp
+fiendskewer	lance-fiendskewer	Fiendskewer	Lances	icons/weapons/polearms/spear-flared-purple.webp
+flycatcher	lance-flycatcher	Flycatcher	Lances	icons/weapons/polearms/spear-flared-green.webp
+dragonpike	lance-dragonpike	Dragonpike	Lances	icons/weapons/polearms/spear-flared-silver-pink.webp
+sunsplitter	lance-sunsplitter	Sunsplitter	Lances	icons/weapons/polearms/spear-hooked-rounded.webp
+sapphire-lance	lance-sapphire-lance	Sapphire Lance	Lances	icons/weapons/polearms/spear-ice-crystal-blue.webp
+short-spear	lance-short-spear	Short Spear	Lances	icons/weapons/polearms/spear-simple-barbed.webp
+steel-greatlance	lance-steel-greatlance	Steel Greatlance	Lances	icons/weapons/polearms/spear-flared-steel.webp
+steel-hasta	lance-steel-hasta	Steel Hasta	Lances	icons/weapons/polearms/halberd-hooked-engraved-steel.webp
+steel-glaive	lance-steel-glaive	Steel Glaive	Lances	icons/weapons/polearms/halberd-crescent-steel.webp
+steel-greatspear	lance-steel-greatspear	Steel Greatspear	Lances	icons/weapons/polearms/spear-pike-steel.webp
+partizan	lance-partizan	Partizan	Lances	icons/weapons/polearms/halberd-worn-steel.webp
+axereaver	lance-axereaver	Axereaver	Lances	icons/weapons/polearms/spear-hooked-rounded.webp
+superior-lance	lance-superior-lance	Superior Lance	Lances	icons/weapons/polearms/spear-flared-gold.webp
+brave-lance	lance-brave-lance	Brave Lance	Lances	icons/weapons/polearms/spear-ornate-gold.webp
+lance-of-justice	lance-lance-of-justice	Lance of Justice	Lances	icons/weapons/polearms/spear-hooked-spike.webp
+spear-of-tranquility	lance-spear-of-tranquility	Spear of Tranquility	Lances	icons/weapons/polearms/spear-hooked-brown.webp
+saunion	lance-saunion	Saunion	Lances	icons/weapons/polearms/spear-simple-hooked.webp
+pike	lance-pike	Pike	Lances	icons/weapons/polearms/spear-hooked-spike.webp
+battle-standard	lance-battle-standard	Battle Standard	Lances	icons/sundries/flags/banner-standard-brown.webp
+thief-lance	lance-thief-lance	Thief Lance	Lances	icons/weapons/polearms/spear-hooked-double-engraved.webp
+bright-lance	lance-bright-lance	Bright Lance	Lances	icons/weapons/polearms/spear-flared-gold.webp
+zephyr-spear	lance-zephyr-spear	Zephyr Spear	Lances	icons/weapons/polearms/spear-flared-bronze-teal.webp
+flame-lance	lance-flame-lance	Flame Lance	Lances	icons/weapons/polearms/pike-flared-red.webp
+shockstick	lance-shockstick	Shockstick	Lances	icons/weapons/polearms/spear-hooked-double.webp
+spear	lance-spear	Spear	Lances	icons/weapons/polearms/spear-simple-hooked.webp
+gungnir	lance-gungnir	Gungnir	Lances	icons/weapons/polearms/spear-ornate-gold.webp
+gae-bolg	lance-gae-bolg	Gáe Bolg	Lances	icons/weapons/polearms/spear-flared-bronze-teal.webp
+gradivus	lance-gradivus	Gradivus	Lances	icons/weapons/polearms/spear-flared-bronze-teal.webp
+reigenleif	lance-reigenleif	Reigenleif	Lances	icons/weapons/polearms/spear-flared-bronze-teal.webp
+meisterlanze	lance-meisterlanze	Meisterlanze	Lances	icons/weapons/polearms/spear-ornate-gold.webp
+axeslayer	lance-axeslayer	Axeslayer	Lances	icons/weapons/polearms/spear-simple-crescent.webp
+sarissa	lance-sarissa	Sarissa	Lances	icons/weapons/polearms/pike-flared-red.webp
+silver-lance	lance-silver-lance	Silver Lance	Lances	icons/weapons/polearms/spear-barbed-silver.webp
+silver-greatlance	lance-silver-greatlance	Silver Greatlance	Lances	icons/weapons/polearms/spear-flared-silver-pink.webp
+silver-hasta	lance-silver-hasta	Silver Hasta	Lances	icons/weapons/polearms/glaive-hooked-steel.webp
+silver-glaive	lance-silver-glaive	Silver Glaive	Lances	icons/weapons/polearms/halberd-crescent-steel.webp
+silver-greatspear	lance-silver-greatspear	Silver Greatspear	Lances	icons/weapons/polearms/spear-flared-silver-pink.webp
+venge-lance	lance-venge-lance	Venge Lance	Lances	icons/weapons/polearms/spear-ornate-teal.webp
+greathasta	lance-greathasta	Greathasta	Lances	icons/weapons/polearms/halberd-crescent-engraved.webp
+rhomphaia	lance-rhomphaia	Rhomphaia	Lances	icons/weapons/polearms/halberd-crescent-worn-steel.webp
+fensalir	lance-fensalir	Fensalir	Lances	icons/weapons/polearms/spear-hooked-brown.webp
+leda-lance	lance-leda-lance	Leda Lance	Lances	icons/weapons/polearms/spear-flared-worn.webp
+sehnsucht	lance-sehnsucht	Sehnsucht	Lances	icons/weapons/polearms/spear-flared-steel.webp
+gae-assail	lance-gae-assail	Gáe Assail	Lances	icons/weapons/polearms/spear-hooked-double-engraved.webp
+gavaleus	lance-gavaleus	Gavaleus	Lances	icons/weapons/polearms/spear-hooked-blue.webp
+rex-hasta	lance-rex-hasta	Rex Hasta	Lances	icons/weapons/polearms/halberd-engraved-black.webp
+kriemhild	lance-kriemhild	Kriemhild	Lances	icons/weapons/polearms/spear-hooked-blue.webp
+maltet	lance-maltet	Maltet	Lances	icons/weapons/polearms/pike-flared-brown.webp
+trishula	lance-trishula	Trishula	Lances	icons/weapons/polearms/trident-ice-blue.webp
+rusted-bow	bow-rusted-bow	Rusted Bow	Bows	icons/weapons/bows/shortbow-white.webp
+training-bow	bow-training-bow	Training Bow	Bows	icons/weapons/bows/bow-simple-small.webp
+backup-bow	bow-backup-bow	Backup Bow	Bows	icons/weapons/bows/bow-simple-small.webp
+bronze-bow	bow-bronze-bow	Bronze Bow	Bows	icons/weapons/bows/bow-ornamental-carved-brown.webp
+devil-bow	bow-devil-bow	Devil Bow	Bows	icons/weapons/bows/longbow-recurve-skull-brown.webp
+glass-bow	bow-glass-bow	Glass Bow	Bows	icons/weapons/bows/shortbow-recurve-yellow-blue.webp
+iron-bow	bow-iron-bow	Iron Bow	Bows	icons/weapons/bows/bow-simple-small.webp
+slim-bow	bow-slim-bow	Slim Bow	Bows	icons/weapons/bows/bow-simple-small.webp
+cleave-bow	bow-cleave-bow	Cleave Bow	Bows	icons/weapons/bows/shortbow-recurve-yellow-blue.webp
+hunting-bow	bow-hunting-bow	Hunting Bow	Bows	icons/weapons/bows/longbow-recurve-skull-brown.webp
+iron-longbow	bow-iron-longbow	Iron Longbow	Bows	icons/weapons/bows/longbow-recurve-skull-brown.webp
+iron-shortbow	bow-iron-shortbow	Iron Shortbow	Bows	icons/weapons/bows/bow-simple-small.webp
+iron-towerbow	bow-iron-towerbow	Iron Towerbow	Bows	icons/weapons/bows/longbow-recurve-skull-brown.webp
+steel-bow	bow-steel-bow	Steel Bow	Bows	icons/weapons/bows/longbow-recurve-brown.webp
+serrated-bow	bow-serrated-bow	Serrated Bow	Bows	icons/weapons/bows/shortbow-white.webp
+venin-bow	bow-venin-bow	Venin Bow	Bows	icons/weapons/bows/longbow-leather-green.webp
+ichaival	bow-ichaival	Ichaival	Bows	icons/weapons/bows/longbow-recurve.webp
+steel-longbow	bow-steel-longbow	Steel Longbow	Bows	icons/weapons/bows/longbow-recurve.webp
+steel-shortbow	bow-steel-shortbow	Steel Shortbow	Bows	icons/weapons/bows/bow-simple-small.webp
+steel-towerbow	bow-steel-towerbow	Steel Towerbow	Bows	icons/weapons/bows/longbow-recurve.webp
+blessed-bow	bow-blessed-bow	Blessed Bow	Bows	icons/weapons/bows/shortbow-white.webp
+fear-bow	bow-fear-bow	Fear Bow	Bows	icons/weapons/bows/shortbow-arrows-black.webp
+killer-bow	bow-killer-bow	Killer Bow	Bows	icons/weapons/bows/longbow-recurve-leather-red.webp
+quick-bow	bow-quick-bow	Quick Bow	Bows	icons/weapons/bows/bow-simple-small.webp
+magic-bow	bow-magic-bow	Magic Bow	Bows	icons/weapons/bows/shortbow-recurve-red.webp
+sentinel-bow	bow-sentinel-bow	Sentinel Bow	Bows	icons/weapons/bows/shortbow-leaves-green.webp
+horn-bow	bow-horn-bow	Horn Bow	Bows	icons/weapons/bows/shortbow-recurve-bone.webp
+fiendshooter	bow-fiendshooter	Fiendshooter	Bows	icons/weapons/bows/longbow-recurve-skull-brown.webp
+dracobow	bow-dracobow	Dracobow	Bows	icons/weapons/bows/longbow-leather-green.webp
+emblem-bow	bow-emblem-bow	Emblem Bow	Bows	icons/weapons/bows/bow-ornamental-gold-blue.webp
+raider-bow	bow-raider-bow	Raider Bow	Bows	icons/weapons/bows/bow-ornamental-gold-blue.webp
+knight-bow	bow-knight-bow	Knight Bow	Bows	icons/weapons/bows/bow-ornamental-silver-black.webp
+brave-bow	bow-brave-bow	Brave Bow	Bows	icons/weapons/bows/bow-ornamental-gold-blue.webp
+ghost-bow	bow-ghost-bow	Ghost Bow	Bows	icons/weapons/bows/shortbow-recurve.webp
+radiant-bow	bow-radiant-bow	Radiant Bow	Bows	icons/weapons/bows/shortbow-white.webp
+meisterbogen	bow-meisterbogen	Meisterbogen	Bows	icons/weapons/bows/longbow-gold-pink.webp
+silver-bow	bow-silver-bow	Silver Bow	Bows	icons/weapons/bows/bow-ornamental-silver-black.webp
+silver-longbow	bow-silver-longbow	Silver Longbow	Bows	icons/weapons/bows/longbow-recurve-brown.webp
+silver-shortbow	bow-silver-shortbow	Silver Shortbow	Bows	icons/weapons/bows/shortbow-white.webp
+silver-towerbow	bow-silver-towerbow	Silver Towerbow	Bows	icons/weapons/bows/longbow-recurve-leather-brown.webp
+spellbane-bow	bow-spellbane-bow	Spellbane Bow	Bows	icons/weapons/bows/longbow-recurve-brown.webp
+great-bow	bow-great-bow	Great Bow	Bows	icons/weapons/bows/longbow-recurve.webp
+double-bow	bow-double-bow	Double Bow	Bows	icons/weapons/bows/longbow-leather-green.webp
+rienfleche	bow-rienfleche	Rienfleche	Bows	icons/weapons/bows/longbow-recurve.webp
+lughnasadh	bow-lughnasadh	Lughnasadh	Bows	icons/weapons/bows/shortbow-recurve.webp
+pursuer	bow-pursuer	Pursuer	Bows	icons/weapons/bows/longbow-leather-green.webp
+the-inexhaustible	bow-the-inexhaustible	The Inexhaustible	Bows	icons/weapons/bows/shortbow-leather.webp
+seitengrat	bow-seitengrat	Seitengrat	Bows	icons/weapons/bows/bow-ornamental-carved-brown.webp
+yewfelle	bow-yewfelle	Yewfelle	Bows	icons/weapons/bows/shortbow-recurve-yellow.webp
+silencer	bow-silencer	Silencer	Bows	icons/weapons/bows/shortbow-recurve-yellow-blue.webp
+sharanga	bow-sharanga	Sharanga	Bows	icons/weapons/bows/bow-ornamental-silver-black.webp
+rusted-crossbow	crossbow-rusted-crossbow	Rusted Crossbow	Crossbows	icons/weapons/crossbows/crossbow-ornamental-winged.webp
+bowgun	crossbow-bowgun	Bowgun	Crossbows	icons/weapons/crossbows/crossbow-simple-brown.webp
+devil-crossbow	crossbow-devil-crossbow	Devil Crossbow	Crossbows	icons/weapons/crossbows/crossbow-loaded-black.webp
+glass-crossbow	crossbow-glass-crossbow	Glass Crossbow	Crossbows	icons/weapons/crossbows/crossbow-blue.webp
+handbow	crossbow-handbow	Handbow	Crossbows	icons/weapons/crossbows/crossbow-simple-purple.webp
+crossbow	crossbow-crossbow	Crossbow	Crossbows	icons/weapons/crossbows/crossbow-simple-brown.webp
+venin-crossbow	crossbow-venin-crossbow	Venin Crossbow	Crossbows	icons/weapons/crossbows/crossbow-golden-bolt.webp
+taksh	crossbow-taksh	Taksh	Crossbows	icons/weapons/crossbows/crossbow-simple-purple.webp
+killer-crossbow	crossbow-killer-crossbow	Killer Crossbow	Crossbows	icons/weapons/crossbows/crossbow-simple-red.webp
+quick-crossbow	crossbow-quick-crossbow	Quick Crossbow	Crossbows	icons/weapons/crossbows/crossbow-simple-purple.webp
+gastraphetes	crossbow-gastraphetes	Gastraphetes	Crossbows	icons/weapons/crossbows/crossbow-heavy.webp
+emblem-crossbow	crossbow-emblem-crossbow	Emblem Crossbow	Crossbows	icons/weapons/crossbows/crossbow-golden-bolt.webp
+raider-crossbow	crossbow-raider-crossbow	Raider Crossbow	Crossbows	icons/weapons/crossbows/crossbow-ornamental-winged.webp
+knight-crossbow	crossbow-knight-crossbow	Knight Crossbow	Crossbows	icons/weapons/crossbows/crossbow-ornamental-winged.webp
+aqqar	crossbow-aqqar	Aqqar	Crossbows	icons/weapons/crossbows/crossbow-simple-red.webp
+arcane-crossbow	crossbow-arcane-crossbow	Arcane Crossbow	Crossbows	icons/weapons/crossbows/crossbow-slotted.webp
+cranequin	crossbow-cranequin	Cranequin	Crossbows	icons/weapons/crossbows/crossbow-simple-black.webp
+balester	crossbow-balester	Balester	Crossbows	icons/weapons/crossbows/crossbow-simple-black.webp
+speargun	crossbow-speargun	Speargun	Crossbows	icons/weapons/crossbows/crossbow-white.webp
+arbalest	crossbow-arbalest	Arbalest	Crossbows	icons/weapons/crossbows/crossbow-heavy.webp
+arvanrest	crossbow-arvanrest	Arvanrest	Crossbows	icons/weapons/crossbows/crossbow-simple-red.webp
+ollerus	crossbow-ollerus	Ollerus	Crossbows	icons/weapons/crossbows/crossbow-heavy.webp
+repeating-crossbow	crossbow-repeating-crossbow	Repeating Crossbow	Crossbows	icons/weapons/crossbows/crossbow-simple-brown.webp
+wallarmbrust	crossbow-wallarmbrust	Wallarmbrust	Crossbows	icons/weapons/crossbows/crossbow-long-brown.webp
+hand-ballista	crossbow-hand-ballista	Hand Ballista	Crossbows	icons/weapons/crossbows/crossbow-simple-brown.webp
+sauterelle	crossbow-sauterelle	Sauterelle	Crossbows	icons/weapons/crossbows/crossbow-heavy-black.webp
+hawkeye	crossbow-hawkeye	Hawkeye	Crossbows	icons/weapons/crossbows/crossbow-long-brown.webp
+overseer	crossbow-overseer	Overseer	Crossbows	icons/weapons/crossbows/crossbow-simple-brown.webp
+avelyn	crossbow-avelyn	Avelyn	Crossbows	icons/weapons/crossbows/crossbow-heavy-black.webp
+rusted-sword	sword-rusted-sword	Rusted Sword	Swords	icons/weapons/swords/shortsword-guard-steel-worn.webp
+training-sword	sword-training-sword	Training Sword	Swords	icons/weapons/swords/sword-simple-white.webp
+shortsword	sword-shortsword	Shortsword	Swords	icons/weapons/swords/shortsword-guard-gold-red.webp
+bronze-sword	sword-bronze-sword	Bronze Sword	Swords	icons/weapons/swords/shortsword-guard-brass.webp
+devil-sword	sword-devil-sword	Devil Sword	Swords	icons/weapons/swords/sword-guard-purple.webp
+glass-sword	sword-glass-sword	Glass Sword	Swords	icons/weapons/swords/sword-broad-crystal-paired.webp
+iron-sword	sword-iron-sword	Iron Sword	Swords	icons/weapons/swords/shortsword-simple.webp
+iron-kukri	sword-iron-kukri	Iron Kukri	Swords	icons/weapons/swords/scimitar-guard.webp
+iron-scimitar	sword-iron-scimitar	Iron Scimitar	Swords	icons/weapons/swords/swords-cutlasses-white.webp
+slim-sword	sword-slim-sword	Slim Sword	Swords	icons/weapons/swords/shortsword-simple.webp
+iron-blade	sword-iron-blade	Iron Blade	Swords	icons/weapons/swords/greatsword-crossguard-flanged-red.webp
+iron-saber	sword-iron-saber	Iron Saber	Swords	icons/weapons/swords/scimitar-broad.webp
+iron-grandsword	sword-iron-grandsword	Iron Grandsword	Swords	icons/weapons/swords/greatsword-guard-jewel-green.webp
+bastard-sword	sword-bastard-sword	Bastard Sword	Swords	icons/weapons/swords/greatsword-crossguard-engraved-green.webp
+armorslayer	sword-armorslayer	Armorslayer	Swords	icons/weapons/swords/sword-guard-bronze.webp
+longsword	sword-longsword	Longsword	Swords	icons/weapons/swords/greatsword-flamberge.webp
+shotel	sword-shotel	Shotel	Swords	icons/weapons/swords/scimitar-guard.webp
+steel-sword	sword-steel-sword	Steel Sword	Swords	icons/weapons/swords/shortsword-guard-steel-worn.webp
+steel-kukri	sword-steel-kukri	Steel Kukri	Swords	icons/weapons/swords/scimitar-worn-blue.webp
+steel-scimitar	sword-steel-scimitar	Steel Scimitar	Swords	icons/weapons/swords/scimitar-guard-brown.webp
+serrated-sword	sword-serrated-sword	Serrated Sword	Swords	icons/weapons/swords/sword-broad-serrated-blue.webp
+searing-sword	sword-searing-sword	Searing Sword	Swords	icons/weapons/swords/sword-guard-red.webp
+venin-edge	sword-venin-edge	Venin Edge	Swords	icons/weapons/swords/sword-hilt-steel-green.webp
+machete	sword-machete	Machete	Swords	icons/weapons/swords/scimitar-guard-wood.webp
+spadroon	sword-spadroon	Spadroon	Swords	icons/weapons/swords/shortsword-broad-blue.webp
+broadsword	sword-broadsword	Broadsword	Swords	icons/weapons/swords/greatsword-sheathed.webp
+florete	sword-florete	Florete	Swords	icons/weapons/swords/shortsword-broad-blue.webp
+wind-edge	sword-wind-edge	Wind Edge	Swords	icons/weapons/swords/shortsword-winged.webp
+rapier	sword-rapier	Rapier	Swords	icons/weapons/swords/shortsword-hooked-blue.webp
+vibration-blade	sword-vibration-blade	Vibration Blade	Swords	icons/weapons/swords/greatsword-crossguard-barbed.webp
+steel-blade	sword-steel-blade	Steel Blade	Swords	icons/weapons/swords/greatsword-crossguard-steel.webp
+steel-saber	sword-steel-saber	Steel Saber	Swords	icons/weapons/swords/scimitar-guard-brown.webp
+steel-grandsword	sword-steel-grandsword	Steel Grandsword	Swords	icons/weapons/swords/greatsword-crossguard-steel.webp
+claymore	sword-claymore	Claymore	Swords	icons/weapons/swords/greatsword-crossguard-embossed-gold.webp
+ettard	sword-ettard	Ettard	Swords	icons/weapons/swords/sword-flanged-lightning.webp
+emblem-sword	sword-emblem-sword	Emblem Sword	Swords	icons/weapons/swords/sword-guard-gold-red.webp
+killing-edge	sword-killing-edge	Killing Edge	Swords	icons/weapons/swords/sword-katana-tan.webp
+quick-sword	sword-quick-sword	Quick Sword	Swords	icons/weapons/swords/shortsword-simple.webp
+ruby-sword	sword-ruby-sword	Ruby Sword	Swords	icons/weapons/swords/sword-guard-red-jewel.webp
+raider-sword	sword-raider-sword	Raider Sword	Swords	icons/weapons/swords/sword-guard-brass-worn.webp
+knight-sword	sword-knight-sword	Knight Sword	Swords	icons/weapons/swords/sword-machete-white.webp
+magebane	sword-magebane	Magebane	Swords	icons/weapons/swords/sword-runed-glowing.webp
+wing-clipper	sword-wing-clipper	Wing Clipper	Swords	icons/weapons/swords/shortsword-winged.webp
+blessed-sword	sword-blessed-sword	Blessed Sword	Swords	icons/weapons/swords/sword-gold-holy.webp
+fear-sword	sword-fear-sword	Fear Sword	Swords	icons/weapons/swords/sword-guard-worn-gold.webp
+fiendslayer	sword-fiendslayer	Fiendslayer	Swords	icons/weapons/swords/sword-guard-worn-purple.webp
+hunting-sword	sword-hunting-sword	Hunting Sword	Swords	icons/weapons/swords/shortsword-green.webp
+wyrmslayer	sword-wyrmslayer	Wyrmslayer	Swords	icons/weapons/swords/sword-ringed-engraved.webp
+faussart	sword-faussart	Faussart	Swords	icons/weapons/swords/shortsword-guard-brown.webp
+safeguard-sword	sword-safeguard-sword	Safeguard Sword	Swords	icons/weapons/swords/sword-hooked-worn.webp
+barrier-blade	sword-barrier-blade	Barrier Blade	Swords	icons/weapons/swords/greatsword-guard-gold.webp
+berserk-blade	sword-berserk-blade	Berserk Blade	Swords	icons/weapons/swords/sword-broad-crystal-paired.webp
+sleep-edge	sword-sleep-edge	Sleep Edge	Swords	icons/weapons/swords/sword-guard-worn-brown.webp
+silence-sword	sword-silence-sword	Silence Sword	Swords	icons/weapons/swords/sword-guard-worn-brown.webp
+ladyblade	sword-ladyblade	Ladyblade	Swords	icons/weapons/swords/greatsword-guard-gold.webp
+miracle-sword	sword-miracle-sword	Miracle Sword	Swords	icons/weapons/swords/sword-gold-holy.webp
+thief-sword	sword-thief-sword	Thief Sword	Swords	icons/weapons/swords/sword-hooked-engraved.webp
+brave-sword	sword-brave-sword	Brave Sword	Swords	icons/weapons/swords/sword-gold-holy.webp
+bold-blade	sword-bold-blade	Bold Blade	Swords	icons/weapons/swords/greatsword-crossguard-engraved-green.webp
+lancereaver	sword-lancereaver	Lancereaver	Swords	icons/weapons/swords/sword-flanged-lightning.webp
+superior-sword	sword-superior-sword	Superior Sword	Swords	icons/weapons/swords/shortsword-guard-gold.webp
+mercurius	sword-mercurius	Mercurius	Swords	icons/weapons/swords/sword-guard-purple.webp
+shamshir	sword-shamshir	Shamshir	Swords	icons/weapons/swords/scimitar-bone.webp
+katana	sword-katana	Katana	Swords	icons/weapons/swords/sword-katana-purple.webp
+chopper	sword-chopper	Chopper	Swords	icons/weapons/swords/scimitar-guard-wood.webp
+frost-sword	sword-frost-sword	Frost Sword	Swords	icons/weapons/swords/sword-broad-crystal-paired.webp
+sonic-sword	sword-sonic-sword	Sonic Sword	Swords	icons/weapons/swords/sword-winged-pink.webp
+flame-sword	sword-flame-sword	Flame Sword	Swords	icons/weapons/swords/sword-guard-gold-red.webp
+earth-sword	sword-earth-sword	Earth Sword	Swords	icons/weapons/swords/shortsword-green.webp
+levin-sword	sword-levin-sword	Levin Sword	Swords	icons/weapons/swords/sword-flanged-lightning.webp
+storm-sword	sword-storm-sword	Storm Sword	Swords	icons/weapons/swords/shortsword-winged.webp
+paragon-sword	sword-paragon-sword	Paragon Sword	Swords	icons/weapons/swords/shortsword-guard-gold-red.webp
+balmung	sword-balmung	Balmung	Swords	icons/weapons/swords/sword-broad-crystal-paired.webp
+estoc	sword-estoc	Estoc	Swords	icons/weapons/swords/shortsword-winged.webp
+zweihander	sword-zweihander	Zweihänder	Swords	icons/weapons/swords/greatsword-crossguard-flanged-purple.webp
+wo-dao	sword-wo-dao	Wo Dao	Swords	icons/weapons/swords/sword-katana-tan.webp
+cutlass	sword-cutlass	Cutlass	Swords	icons/weapons/swords/scimitar-broad.webp
+greatsword	sword-greatsword	Greatsword	Swords	icons/weapons/swords/shortsword-broad-engraved.webp
+ilwoon	sword-ilwoon	Ilwoon	Swords	icons/weapons/swords/sword-guard-blue.webp
+light-brand	sword-light-brand	Light Brand	Swords	icons/weapons/swords/sword-gold-holy.webp
+runesword	sword-runesword	Runesword	Swords	icons/weapons/swords/sword-runed-glowing.webp
+quickdraw-sword	sword-quickdraw-sword	Quickdraw Sword	Swords	icons/weapons/swords/sword-katana.webp
+lanceslayer	sword-lanceslayer	Lanceslayer	Swords	icons/weapons/swords/sword-guard-flanged.webp
+kingmaker	sword-kingmaker	Kingmaker	Swords	icons/weapons/swords/sword-gold-holy.webp
+milican-sword	sword-milican-sword	Milican Sword	Swords	icons/weapons/swords/shortsword-guard-gold-red.webp
+silver-sword	sword-silver-sword	Silver Sword	Swords	icons/weapons/swords/shortsword-guard-silver.webp
+silver-blade	sword-silver-blade	Silver Blade	Swords	icons/weapons/swords/greatsword-crossguard-silver.webp
+silver-saber	sword-silver-saber	Silver Saber	Swords	icons/weapons/swords/swords-cutlasses-white.webp
+silver-kukri	sword-silver-kukri	Silver Kukri	Swords	icons/weapons/swords/swords-cutlasses-white.webp
+silver-scimitar	sword-silver-scimitar	Silver Scimitar	Swords	icons/weapons/swords/swords-cutlasses-white.webp
+silver-grandsword	sword-silver-grandsword	Silver Grandsword	Swords	icons/weapons/swords/greatsword-crossguard-silver.webp
+adresteia	sword-adresteia	Adresteia	Swords	icons/weapons/swords/shortsword-guard-silver.webp
+tempest-blade	sword-tempest-blade	Tempest Blade	Swords	icons/weapons/swords/sword-broad-red.webp
+meisterschwert	sword-meisterschwert	Meisterschwert	Swords	icons/weapons/swords/sword-gold-holy.webp
+audhulma	sword-audhulma	Audhulma	Swords	icons/weapons/swords/sword-ringed-engraved.webp
+tyrfing	sword-tyrfing	Tyrfing	Swords	icons/weapons/swords/shortsword-guard-gold.webp
+amiti	sword-amiti	Amiti	Swords	icons/weapons/swords/sword-guard-engraved.webp
+blutgang	sword-blutgang	Blutgang	Swords	icons/weapons/swords/shortsword-guard-gold-red.webp
+loptrian-fang	sword-loptrian-fang	Loptrian Fang	Swords	icons/weapons/swords/sword-broad-serrated-blue.webp
+brymranger	sword-brymranger	Brymranger	Swords	icons/weapons/swords/sword-flamberge.webp
+caladbolg	sword-caladbolg	Caladbolg	Swords	icons/weapons/swords/sword-guard-blue.webp
+mystletainn	sword-mystletainn	Mystletainn	Swords	icons/weapons/swords/sword-guard-worn-brown.webp
+vague-katti	sword-vague-katti	Vague Katti	Swords	icons/weapons/swords/shortsword-guard-brown.webp
+falchion	sword-falchion	Falchion	Swords	icons/weapons/swords/scimitar-broad.webp
+alondite	sword-alondite	Alondite	Swords	icons/weapons/swords/sword-guard.webp
+ragnell	sword-ragnell	Ragnell	Swords	icons/weapons/swords/shortsword-winged.webp
+gurgurant	sword-gurgurant	Gurgurant	Swords	icons/weapons/swords/shortsword-sheathed-brown.webp
+nandaka	sword-nandaka	Nandaka	Swords	icons/weapons/swords/shortsword-broad-engraved.webp
+rusted-knife	knife-rusted-knife	Rusted Knife	Knives	icons/weapons/daggers/dagger-straight-cracked.webp
+training-knife	knife-training-knife	Training Knife	Knives	icons/weapons/daggers/dagger-simple-green.webp
+backup-dagger	knife-backup-dagger	Backup Dagger	Knives	icons/weapons/daggers/dagger-ritual-simple-green.webp
+bronze-knife	knife-bronze-knife	Bronze Knife	Knives	icons/weapons/daggers/dagger-double-brown.webp
+bronze-dagger	knife-bronze-dagger	Bronze Dagger	Knives	icons/weapons/daggers/dagger-double-brown.webp
+devil-dagger	knife-devil-dagger	Devil Dagger	Knives	icons/weapons/daggers/dagger-double-skull-pink.webp
+glass-dagger	knife-glass-dagger	Glass Dagger	Knives	icons/weapons/daggers/dagger-ritual-crooked-crystal.webp
+slim-knife	knife-slim-knife	Slim Knife	Knives	icons/weapons/daggers/dagger-straight-thin-black.webp
+iron-knife	knife-iron-knife	Iron Knife	Knives	icons/weapons/daggers/dagger-simple-blue.webp
+iron-dagger	knife-iron-dagger	Iron Dagger	Knives	icons/weapons/daggers/dagger-simple-green.webp
+serrated-knife	knife-serrated-knife	Serrated Knife	Knives	icons/weapons/daggers/dagger-bone-barbed.webp
+venin-dagger	knife-venin-dagger	Venin Dagger	Knives	icons/weapons/daggers/dagger-poisoned.webp
+throwing-knife	knife-throwing-knife	Throwing Knife	Knives	icons/weapons/thrown/dagger-ringed-guard.webp
+seax	knife-seax	Seax	Knives	icons/weapons/daggers/knife-utility-red.webp
+greatknife	knife-greatknife	Greatknife	Knives	icons/weapons/daggers/dagger-double-skull-pink.webp
+carnwennan	knife-carnwennan	Carnwennan	Knives	icons/weapons/daggers/dagger-double-simple-black.webp
+stiletto	knife-stiletto	Stiletto	Knives	icons/weapons/daggers/dagger-simple-stone-black.webp
+horsekiller	knife-horsekiller	Horsekiller	Knives	icons/weapons/daggers/dagger-crooked-grey.webp
+anelace	knife-anelace	Anelace	Knives	icons/weapons/daggers/dagger-bone-purple.webp
+steel-knife	knife-steel-knife	Steel Knife	Knives	icons/weapons/daggers/dagger-bone-grey.webp
+steel-dagger	knife-steel-dagger	Steel Dagger	Knives	icons/weapons/daggers/dagger-crooked-grey.webp
+iron-rondel	knife-iron-rondel	Iron Rondel	Knives	icons/weapons/daggers/dagger-simple-teal-black.webp
+barbed-knife	knife-barbed-knife	Barbed Knife	Knives	icons/weapons/daggers/dagger-jagged-handguard-black.webp
+dirk	knife-dirk	Dirk	Knives	icons/weapons/daggers/dagger-simple-red.webp
+flame-knife	knife-flame-knife	Flame Knife	Knives	icons/weapons/daggers/dagger-double-red.webp
+emblem-dagger	knife-emblem-dagger	Emblem Dagger	Knives	icons/weapons/daggers/dagger-curved-gold.webp
+killer-dagger	knife-killer-dagger	Killer Dagger	Knives	icons/weapons/daggers/dagger-jagged-handguard-black.webp
+quick-dagger	knife-quick-dagger	Quick Dagger	Knives	icons/weapons/daggers/dagger-straight-thin-black.webp
+raider-knife	knife-raider-knife	Raider Knife	Knives	icons/weapons/daggers/dagger-ritual-black.webp
+knight-dagger	knife-knight-dagger	Knight Dagger	Knives	icons/weapons/daggers/dagger-serrated-purple.webp
+wingcutter	knife-wingcutter	Wingcutter	Knives	icons/weapons/daggers/dagger-simple-teal-black.webp
+fiendstabber	knife-fiendstabber	Fiendstabber	Knives	icons/weapons/daggers/dagger-double-skull-pink.webp
+dragonslasher	knife-dragonslasher	Dragonslasher	Knives	icons/weapons/daggers/dagger-notched-blackened.webp
+beastslayer	knife-beastslayer	Beastslayer	Knives	icons/weapons/daggers/dagger-double-skull-pink.webp
+cleaver	knife-cleaver	Cleaver	Knives	icons/weapons/axes/cleaver-black.webp
+blessed-knife	knife-blessed-knife	Blessed Knife	Knives	icons/weapons/daggers/dagger-glowing-white.webp
+fear-knife	knife-fear-knife	Fear Knife	Knives	icons/weapons/daggers/dagger-simple-red.webp
+kris	knife-kris	Kris	Knives	icons/weapons/daggers/dagger-simple-pink.webp
+hook	knife-hook	Hook	Knives	icons/weapons/fist/hook.webp
+rogue-knife	knife-rogue-knife	Rogue Knife	Knives	icons/weapons/daggers/dagger-serrated-black.webp
+steel-rondel	knife-steel-rondel	Steel Rondel	Knives	icons/weapons/daggers/dagger-simple-green.webp
+assassins-blade	knife-assassins-blade	Assassin's Blade	Knives	icons/weapons/daggers/dagger-ritual-crooked-black.webp
+brave-dagger	knife-brave-dagger	Brave Dagger	Knives	icons/weapons/daggers/dagger-curved-gold.webp
+spys-knife	knife-spys-knife	Spy's Knife	Knives	icons/weapons/daggers/dagger-simple-blue.webp
+shadow-knife	knife-shadow-knife	Shadow Knife	Knives	icons/weapons/daggers/dagger-double-skull-pink.webp
+levin-dagger	knife-levin-dagger	Levin Dagger	Knives	icons/weapons/daggers/dagger-simple-teal-black.webp
+ripper	knife-ripper	Ripper	Knives	icons/weapons/daggers/dagger-serrated-purple.webp
+cleaner	knife-cleaner	Cleaner	Knives	icons/weapons/daggers/knife-punch-grip.webp
+orichalcum	knife-orichalcum	Orichalcum	Knives	icons/weapons/daggers/dagger-curved-gold.webp
+thief-dagger	knife-thief-dagger	Thief Dagger	Knives	icons/weapons/daggers/dagger-serrated-purple.webp
+tranquilizer	knife-tranquilizer	Tranquilizer	Knives	icons/weapons/daggers/dagger-curved-blue.webp
+mage-masher	knife-mage-masher	Mage Masher	Knives	icons/weapons/daggers/dagger-magical-glowing-blue.webp
+deathly-dagger	knife-deathly-dagger	Deathly Dagger	Knives	icons/weapons/daggers/dagger-double-skull-pink.webp
+main-gauche	knife-main-gauche	Main Gauche	Knives	icons/weapons/daggers/dagger-double-simple-black.webp
+scramaseax	knife-scramaseax	Scramaseax	Knives	icons/weapons/daggers/dagger-serrated-black.webp
+kard	knife-kard	Kard	Knives	icons/weapons/daggers/dagger-simple-red.webp
+golden-dagger	knife-golden-dagger	Golden Dagger	Knives	icons/weapons/daggers/dagger-curved-gold.webp
+smoke-knife	knife-smoke-knife	Smoke Knife	Knives	icons/weapons/daggers/knife-punch-grip.webp
+meistermesser	knife-meistermesser	Meistermesser	Knives	icons/weapons/daggers/dagger-curved-gold.webp
+chakram	knife-chakram	Chakram	Knives	icons/weapons/thrown/daggers-guard-green.webp
+cinquedea	knife-cinquedea	Cinquedea	Knives	icons/weapons/daggers/dagger-straight-green.webp
+silver-knife	knife-silver-knife	Silver Knife	Knives	icons/weapons/daggers/dagger-glowing-white.webp
+silver-dagger	knife-silver-dagger	Silver Dagger	Knives	icons/weapons/daggers/dagger-glowing-white.webp
+silver-rondel	knife-silver-rondel	Silver Rondel	Knives	icons/weapons/daggers/dagger-simple-red.webp
+katzbalger	knife-katzbalger	Katzbalger	Knives	icons/weapons/daggers/dagger-double-red.webp
+misericorde	knife-misericorde	Misericorde	Knives	icons/weapons/daggers/dagger-simple-hooked.webp
+athame	knife-athame	Athame	Knives	icons/weapons/daggers/dagger-straight-cracked.webp
+peshkatz	knife-peshkatz	Peshkatz	Knives	icons/weapons/daggers/knife-hooked-ringed.webp
+holbein	knife-holbein	Holbein	Knives	icons/weapons/daggers/dagger-ritual-simple-green.webp
+baselard	knife-baselard	Baselard	Knives	icons/weapons/daggers/dagger-ritual-crooked-crystal.webp
+broken-axe	axe-broken-axe	Broken Axe	Broken Weapons	icons/weapons/axes/axe-broad-chipped-glow-yellow.webp
+broken-gauntlets	brawl-broken-gauntlets	Broken Gauntlets	Broken Weapons	icons/equipment/hand/gauntlet-clawed-steel.webp
+broken-lance	lance-broken-lance	Broken Lance	Broken Weapons	icons/weapons/polearms/spear-flared-worn.webp
+broken-bow	bow-broken-bow	Broken Bow	Broken Weapons	icons/weapons/bows/shortbow-recurve-bone.webp
+broken-crossbow	crossbow-broken-crossbow	Broken Crossbow	Broken Weapons	icons/weapons/crossbows/crossbow-heavy-black.webp
+broken-sword	sword-broken-sword	Broken Sword	Broken Weapons	icons/weapons/swords/sword-guard-worn-purple.webp
+broken-knife	knife-broken-knife	Broken Knife	Broken Weapons	icons/weapons/daggers/dagger-bone-worn-black.webp
+broken-staff	staff-broken-staff	Broken Staff	Broken Weapons	icons/weapons/staves/staff-mended.webp
+drained-tome	anima-drained-tome	Drained Tome	Broken Weapons	icons/sundries/books/book-worn-purple.webp
+bolt	bolt-bolt	Bolt	Bolts	icons/weapons/ammunition/arrows-bodkin-yellow-red.webp
+scorpio	bolt-scorpio	Scorpio	Bolts	icons/weapons/ammunition/arrows-war-red.webp
+aconite	bolt-aconite	Aconite	Bolts	icons/weapons/ammunition/arrow-head-war-flight.webp
+lumen	bolt-lumen	Lumen	Bolts	icons/weapons/ammunition/arrow-broadhead-bent-teal.webp
+stonehoist	bolt-stonehoist	Stonehoist	Bolts	icons/weapons/artillery/catapult-white.webp
+lithobolos	bolt-lithobolos	Lithobolos	Bolts	icons/weapons/thrown/throwing-stone.webp
+oxybeles	bolt-oxybeles	Oxybeles	Bolts	icons/weapons/ammunition/arrow-broadhead.webp
+auceps	bolt-auceps	Auceps	Bolts	icons/weapons/ammunition/arrows-barbed-white.webp
+lues	bolt-lues	Lues	Bolts	icons/weapons/ammunition/arrows-war-red.webp
+viskam	bolt-viskam	Viskam	Bolts	icons/weapons/ammunition/arrows-bodkin-yellow-red.webp
+cheiro	bolt-cheiro	Cheiro	Bolts	icons/weapons/ammunition/arrows-fletching.webp
+palintonon	bolt-palintonon	Palintonon	Bolts	icons/weapons/ammunition/arrows-war-red.webp
+carro	bolt-carro	Carro	Bolts	icons/weapons/artillery/ballista-wood-green.webp
+gravatus	bolt-gravatus	Gravatus	Bolts	icons/weapons/ammunition/arrow-broadhead.webp
+harpax	bolt-harpax	Harpax	Bolts	icons/weapons/ammunition/arrow-head-war.webp
+hatra	bolt-hatra	Hatra	Bolts	icons/weapons/ammunition/arrows-barbed-white.webp
+thunderbolt	bolt-thunderbolt	Thunderbolt	Bolts	icons/weapons/ammunition/arrows-barbed-white.webp
+arrowspate	bolt-arrowspate	Arrowspate	Bolts	icons/weapons/ammunition/arrows-fletching.webp
+hoistflamme	bolt-hoistflamme	Hoistflamme	Bolts	icons/weapons/ammunition/arrows-war-red.webp
+sacerdos	bolt-sacerdos	Sacerdos	Bolts	icons/weapons/ammunition/arrow-head-war.webp
+lex	bolt-lex	Lex	Bolts	icons/weapons/ammunition/arrow-broadhead.webp
+stabit	bolt-stabit	Stabit	Bolts	icons/weapons/ammunition/arrow-broadhead-bent-teal.webp
+torpeo	bolt-torpeo	Torpeo	Bolts	icons/weapons/ammunition/arrow-broadhead-green.webp
+tacet	bolt-tacet	Tacet	Bolts	icons/weapons/ammunition/arrow-broadhead.webp
+pachyderm	bolt-pachyderm	Pachyderm	Bolts	icons/weapons/thrown/throwing-stone.webp
+onager	bolt-onager	Onager	Bolts	icons/weapons/artillery/catapult-white.webp
+sopio	bolt-sopio	Sopio	Bolts	icons/weapons/ammunition/arrows-broadhead-white.webp
+springald	bolt-springald	Springald	Bolts	icons/weapons/thrown/throwing-rock.webp
+mangonel	bolt-mangonel	Mangonel	Bolts	icons/weapons/thrown/throwing-rock.webp
+polybolos	bolt-polybolos	Polybolos	Bolts	icons/weapons/ammunition/arrows-barbed-white.webp
+zopyros	bolt-zopyros	Zopyros	Bolts	icons/weapons/ammunition/arrow-broadhead-glowing-orange.webp
+epimachus	bolt-epimachus	Epimachus	Bolts	icons/weapons/ammunition/arrow-simple-brown.webp
+mana	anima-mana	Mana	Anima	icons/magic/symbols/runes-star-orange.webp
+force	anima-force	Force	Anima	icons/magic/control/energy-stream-link-spiral-white.webp
+surge	anima-surge	Surge	Anima	icons/magic/symbols/runes-carved-stone-yellow.webp
+evil-force	anima-evil-force	Evil Force	Anima	icons/magic/control/energy-stream-link-large-orange.webp
+evil-surge	anima-evil-surge	Evil Surge	Anima	icons/magic/symbols/rune-sigil-green.webp
+missile	anima-missile	Missile	Anima	icons/magic/symbols/triangle-glow-purple.webp
+elforce	anima-elforce	Elforce	Anima	icons/magic/symbols/runes-carved-stone-red.webp
+elsurge	anima-elsurge	Elsurge	Anima	icons/magic/symbols/runes-star-blue.webp
+scission	anima-scission	Scission	Anima	icons/magic/symbols/rune-sigil-horned-blue.webp
+shield	anima-shield	Shield	Anima	icons/magic/symbols/rune-sigil-green-purple.webp
+barrage	anima-barrage	Barrage	Anima	icons/magic/symbols/triangle-glowing-green.webp
+arcforce	anima-arcforce	Arcforce	Anima	icons/magic/symbols/star-rising-purple.webp
+arcsurge	anima-arcsurge	Arcsurge	Anima	icons/magic/symbols/runes-star-pentagon-magenta.webp
+blade	anima-blade	Blade	Anima	icons/magic/symbols/star-inverted-yellow.webp
+rexburst	anima-rexburst	Rexburst	Anima	icons/magic/control/energy-stream-link-teal.webp
+rexpulse	anima-rexpulse	Rexpulse	Anima	icons/magic/control/energy-stream-link-spiral-white.webp
+darkslayer	anima-darkslayer	Darkslayer	Anima	icons/magic/symbols/runes-triangle-magenta.webp
+cascade	anima-cascade	Cascade	Anima	icons/magic/symbols/circled-gem-pink.webp
+lancet	anima-lancet	Lancet	Anima	icons/magic/control/energy-stream-link-teal.webp
+dire-force	anima-dire-force	Dire Force	Anima	icons/magic/symbols/star-rising-purple.webp
+dire-surge	anima-dire-surge	Dire Surge	Anima	icons/magic/symbols/rune-sigil-black-pink.webp
+blast	anima-blast	Blast	Anima	icons/magic/symbols/rune-sigil-hook-white-red.webp
+torrent	anima-torrent	Torrent	Anima	icons/magic/control/energy-stream-link-white.webp
+salvo	anima-salvo	Salvo	Anima	icons/magic/control/energy-stream-link-teal.webp
+quintessence	anima-quintessence	Quintessence	Anima	icons/magic/symbols/runes-etched-steel-blade.webp
+cinder	fire-cinder	Cinder	Fire	icons/magic/fire/projectile-fireball-sparks-orange.webp
+smolder	fire-smolder	Smolder	Fire	icons/magic/fire/projectile-fireball-smoke-large-orange.webp
+fire	fire-fire	Fire	Fire	icons/magic/fire/projectile-fireball-sparks-orange.webp
+blaze	fire-blaze	Blaze	Fire	icons/magic/fire/projectile-meteor-salvo-heavy-red.webp
+evil-fire	fire-evil-fire	Evil Fire	Fire	icons/magic/fire/projectile-arrow-fire-yellow-orange.webp
+elfire	fire-elfire	Elfire	Fire	icons/magic/fire/explosion-fireball-medium-red-orange.webp
+elblaze	fire-elblaze	Elblaze	Fire	icons/magic/fire/projectile-fireball-orange-yellow.webp
+heatstroke	fire-heatstroke	Heatstroke	Fire	icons/magic/fire/explosion-fireball-small-orange.webp
+arcfire	fire-arcfire	Arcfire	Fire	icons/magic/fire/projectile-flaming-eyeball-red.webp
+arcblaze	fire-arcblaze	Arcblaze	Fire	icons/magic/fire/projectile-arrow-fire-gem-yellow.webp
+combust	fire-combust	Combust	Fire	icons/magic/fire/projectile-wave-yellow.webp
+sear	fire-sear	Sear	Fire	icons/magic/fire/flame-burning-campfire-orange.webp
+rexflame	fire-rexflame	Rexflame	Fire	icons/magic/fire/projectile-meteor-salvo-strong-red.webp
+rexinferno	fire-rexinferno	Rexinferno	Fire	icons/magic/fire/blast-jet-stream-embers-yellow.webp
+meteorite	fire-meteorite	Meteorite	Fire	icons/magic/fire/projectile-meteor-salvo-strong-red.webp
+ember	fire-ember	Ember	Fire	icons/magic/fire/projectile-arrow-fire-yellow-orange.webp
+frostslayer	fire-frostslayer	Frostslayer	Fire	icons/magic/fire/explosion-fireball-large-red-orange.webp
+pyre	fire-pyre	Pyre	Fire	icons/magic/fire/explosion-mushroom-nuke-orange.webp
+meteor	fire-meteor	Meteor	Fire	icons/magic/fire/projectile-meteor-salvo-heavy-red.webp
+ifrit	fire-ifrit	Ifrit	Fire	icons/magic/fire/explosion-mushroom-nuke-yellow.webp
+dire-fire	fire-dire-fire	Dire Fire	Fire	icons/magic/fire/projectile-needles-salvo-red.webp
+bolganone	fire-bolganone	Bolganone	Fire	icons/magic/fire/projectile-bolt-zigzag-orange.webp
+agnea	fire-agnea	Agnea	Fire	icons/magic/fire/flame-burning-earth-yellow.webp
+ragnarok	fire-ragnarok	Ragnarok	Fire	icons/magic/fire/projectile-meteor-salvo-strong-red.webp
+sunflame	fire-sunflame	Sunflame	Fire	icons/magic/fire/blast-jet-stream-embers-red.webp
+forblaze	fire-forblaze	Forblaze	Fire	icons/magic/fire/explosion-fireball-medium-orange.webp
+hellfire	fire-hellfire	Hellfire	Fire	icons/magic/fire/explosion-fireball-small-red.webp
+valflame	fire-valflame	Valflame	Fire	icons/magic/fire/flame-burning-yellow-orange.webp
+spark	thunder-spark	Spark	Thunder	icons/magic/lightning/orb-ball-blue.webp
+crackle	thunder-crackle	Crackle	Thunder	icons/magic/lightning/bolt-forked-blue.webp
+thunder	thunder-thunder	Thunder	Thunder	icons/magic/lightning/bolt-strike-explosion-yellow.webp
+charge	thunder-charge	Charge	Thunder	icons/magic/lightning/bolt-strike-hand-gray.webp
+evil-thunder	thunder-evil-thunder	Evil Thunder	Thunder	icons/magic/lightning/bolt-strike-blue-white.webp
+elthunder	thunder-elthunder	Elthunder	Thunder	icons/magic/lightning/bolts-forked-large-orange-purple.webp
+elcharge	thunder-elcharge	Elcharge	Thunder	icons/magic/lightning/bolt-forked-teal.webp
+lightning	thunder-lightning	Lightning	Thunder	icons/magic/lightning/bolt-forked-red.webp
+crash	thunder-crash	Crash	Thunder	icons/magic/lightning/bolts-forked-large-blue.webp
+arcthunder	thunder-arcthunder	Arcthunder	Thunder	icons/magic/lightning/bolt-strike-hand-gray.webp
+archarge	thunder-archarge	Archarge	Thunder	icons/magic/lightning/bolt-cloud-sky-green.webp
+strike	thunder-strike	Strike	Thunder	icons/magic/lightning/bolt-strike-blue-white.webp
+discharge	thunder-discharge	Discharge	Thunder	icons/magic/lightning/bolts-forked-large-magenta.webp
+thunderer	thunder-thunderer	Thunderer	Thunder	icons/magic/lightning/bolt-strike-sparks-yellow.webp
+rexbolt	thunder-rexbolt	Rexbolt	Thunder	icons/magic/lightning/bolt-forked-orange.webp
+rexblitz	thunder-rexblitz	Rexblitz	Thunder	icons/magic/lightning/bolt-strike-sparks-blue.webp
+rockslayer	thunder-rockslayer	Rockslayer	Thunder	icons/magic/lightning/bolts-forked-large-teal.webp
+jolt	thunder-jolt	Jolt	Thunder	icons/magic/lightning/projectile-tendrils-red.webp
+thunderclap	thunder-thunderclap	Thunderclap	Thunder	icons/magic/lightning/bolt-forked-large-teal-purple.webp
+shock	thunder-shock	Shock	Thunder	icons/magic/lightning/bolt-forked-magenta.webp
+bolting	thunder-bolting	Bolting	Thunder	icons/magic/lightning/bolt-forked-large-blue-yellow.webp
+storm	thunder-storm	Storm	Thunder	icons/magic/lightning/bolts-forked-large-blue.webp
+dire-thunder	thunder-dire-thunder	Dire Thunder	Thunder	icons/magic/lightning/bolt-strike-explosion-blue.webp
+thoron	thunder-thoron	Thoron	Thunder	icons/magic/lightning/bolt-cloud-sky-white.webp
+arcblast	thunder-arcblast	Arcblast	Thunder	icons/magic/lightning/bolt-strike-sparks-purple.webp
+brenthunder	thunder-brenthunder	Brenthunder	Thunder	icons/magic/lightning/bolt-strike-explosion-blue.webp
+mjolnir	thunder-mjolnir	Mjölnir	Thunder	icons/magic/lightning/bolt-strike-smoke-yellow.webp
+breeze	wind-breeze	Breeze	Wind	icons/magic/air/wind-vortex-swirl-purple.webp
+whirl	wind-whirl	Whirl	Wind	icons/magic/air/wind-tornado-spiral-teal-green.webp
+wind	wind-wind	Wind	Wind	icons/magic/air/wind-tornado-cyclone-purple-pink.webp
+draft	wind-draft	Draft	Wind	icons/magic/air/wind-tornado-funnel-damage-blue.webp
+evil-wind	wind-evil-wind	Evil Wind	Wind	icons/magic/air/air-smoke-casting.webp
+eldraft	wind-eldraft	Eldraft	Wind	icons/magic/air/wind-tornado-spiral-pink-purple.webp
+elwind	wind-elwind	Elwind	Wind	icons/magic/air/air-wave-gust-smoke-yellow.webp
+batter	wind-batter	Batter	Wind	icons/magic/air/wind-tornado-cyclone-white.webp
+fog	wind-fog	Fog	Wind	icons/magic/air/fog-gas-smoke-swirling-white.webp
+gale	wind-gale	Gale	Wind	icons/magic/air/air-burst-spiral-large-yellow.webp
+arcdraft	wind-arcdraft	Arcdraft	Wind	icons/magic/air/air-smoke-casting.webp
+arcwind	wind-arcwind	Arcwind	Wind	icons/magic/air/air-burst-spiral-large-teal-green.webp
+squall	wind-squall	Squall	Wind	icons/magic/air/wind-tornado-funnel-damage-blue.webp
+tempest	wind-tempest	Tempest	Wind	icons/magic/air/wind-stream-purple-blue.webp
+rexcyclone	wind-rexcyclone	Rexcyclone	Wind	icons/magic/air/wind-stream-blue-gray.webp
+rexcalibur	wind-rexcalibur	Rexcalibur	Wind	icons/magic/air/wind-tornado-funnel-damage-blue.webp
+blazeslayer	wind-blazeslayer	Blazeslayer	Wind	icons/magic/air/air-pressure-shield-blue.webp
+shaver	wind-shaver	Shaver	Wind	icons/magic/air/air-burst-spiral-large-teal-green.webp
+gust	wind-gust	Gust	Wind	icons/magic/air/wind-tornado-funnel-gray.webp
+hurricane	wind-hurricane	Hurricane	Wind	icons/magic/air/wind-tornado-spiral-pink-purple.webp
+dire-wind	wind-dire-wind	Dire Wind	Wind	icons/magic/air/wind-weather-snow-gusts.webp
+sagittae	wind-sagittae	Sagittae	Wind	icons/magic/air/air-smoke-casting.webp
+excalibur	wind-excalibur	Excalibur	Wind	icons/magic/air/air-burst-spiral-teal-green.webp
+tornado	wind-tornado	Tornado	Wind	icons/magic/air/air-burst-spiral-large-teal-green.webp
+aircalibur	wind-aircalibur	Aircalibur	Wind	icons/magic/air/wind-stream-red.webp
+grafcalibur	wind-grafcalibur	Grafcalibur	Wind	icons/magic/air/wind-tornado-spiral-pink-purple.webp
+hraesvelgr	wind-hraesvelgr	Hræsvelgr	Wind	icons/magic/air/wind-swirl-pink-purple.webp
+forseti	wind-forseti	Forseti	Wind	icons/magic/air/wind-vortex-swirl-blue.webp
+sylpheed	wind-sylpheed	Sylpheed	Wind	icons/magic/air/wind-tornado-cyclone-purple-pink.webp
+droplet	water-droplet	Droplet	Water	icons/magic/water/water-hand.webp
+douse	water-douse	Douse	Water	icons/magic/water/waves-water-blue.webp
+tide	water-tide	Tide	Water	icons/magic/water/water-well.webp
+water	water-water	Water	Water	icons/magic/water/bubbles-air-water-blue.webp
+evil-water	water-evil-water	Evil Water	Water	icons/magic/water/wave-water-explosion.webp
+eltide	water-eltide	Eltide	Water	icons/magic/water/water-elemental-blue-teeth.webp
+elwater	water-elwater	Elwater	Water	icons/magic/water/water-hand.webp
+arctide	water-arctide	Arctide	Water	icons/magic/water/bubbles-air-water-pink.webp
+arcwater	water-arcwater	Arcwater	Water	icons/magic/water/pseudopod-teal.webp
+shower	water-shower	Shower	Water	icons/magic/water/wave-water-blue.webp
+rexvortex	water-rexvortex	Rexvortex	Water	icons/magic/water/projectile-water-wave-teal.webp
+rexocean	water-rexocean	Rexocean	Water	icons/magic/water/wave-water-blue.webp
+drown	water-drown	Drown	Water	icons/magic/water/wave-water-teal.webp
+flood	water-flood	Flood	Water	icons/magic/water/projectile-water-wave-teal.webp
+stormslayer	water-stormslayer	Stormslayer	Water	icons/magic/water/water-well.webp
+splash	water-splash	Splash	Water	icons/magic/water/bubbles-air-water-blue.webp
+downpour	water-downpour	Downpour	Water	icons/magic/water/water-hand.webp
+dire-water	water-dire-water	Dire Water	Water	icons/magic/water/projectile-water-ice-orb.webp
+tsunami	water-tsunami	Tsunami	Water	icons/magic/water/orb-water-bubbles-teal.webp
+maelstrom	water-maelstrom	Maelstrom	Water	icons/magic/water/orb-water-bubbles-teal.webp
+donbettyr	water-donbettyr	Donbettyr	Water	icons/magic/water/vortex-water-whirlpool-blue.webp
+theseus	water-theseus	Theseus	Water	icons/magic/water/pseudopod-teal.webp
+leviathan	water-leviathan	Leviathan	Water	icons/magic/water/water-iceberg-bubbles.webp
+shiver	ice-shiver	Shiver	Ice	icons/magic/water/projectile-ice-snowball.webp
+ice	ice-ice	Ice	Ice	icons/magic/water/projectile-icecicles-salvo.webp
+chill	ice-chill	Chill	Ice	icons/magic/water/barrier-ice-crystal-wall-jagged.webp
+evil-ice	ice-evil-ice	Evil Ice	Ice	icons/magic/water/projectile-icecicle-glowing.webp
+elice	ice-elice	Elice	Ice	icons/magic/water/projectile-ice-faceted-teal.webp
+elchill	ice-elchill	Elchill	Ice	icons/magic/water/heart-ice-freeze.webp
+flurry	ice-flurry	Flurry	Ice	icons/magic/water/tendrils-ice-growth.webp
+arcice	ice-arcice	Arcice	Ice	icons/magic/water/projectile-icecicle-glowing.webp
+archill	ice-archill	Archill	Ice	icons/magic/water/projectiles-ice-faceted-salvo-gray.webp
+floe	ice-floe	Floe	Ice	icons/magic/water/orb-ice-web.webp
+sleet	ice-sleet	Sleet	Ice	icons/magic/water/projectiles-ice-explosion.webp
+rexfrost	ice-rexfrost	Rexfrost	Ice	icons/magic/water/projectile-ice-faceted-gray.webp
+rexrime	ice-rexrime	Rexrime	Ice	icons/magic/water/snowflake-ice-purple.webp
+freeze	ice-freeze	Freeze	Ice	icons/magic/water/ice-crystal-white.webp
+blizzard	ice-blizzard	Blizzard	Ice	icons/magic/water/projectile-ice-chunks-salvo.webp
+dire-ice	ice-dire-ice	Dire Ice	Ice	icons/magic/water/projectiles-ice-explosion.webp
+icicle	ice-icicle	Icicle	Ice	icons/magic/water/barrier-ice-wall-explosion.webp
+glacier	ice-glacier	Glacier	Ice	icons/magic/water/projectile-ice-chunks-salvo.webp
+tundra	ice-tundra	Tundra	Ice	icons/magic/water/projectile-ice-faceted-teal.webp
+berg	ice-berg	Berg	Ice	icons/magic/water/projectiles-ice-faceted-shard-salvo-blue.webp
+permafrost	ice-permafrost	Permafrost	Ice	icons/magic/water/barrier-ice-shield.webp
+elivagar	ice-elivagar	Élivágar	Ice	icons/magic/water/strike-weapon-blade-ice-blue.webp
+fimbulvetr	ice-fimbulvetr	Fimbulvetr	Ice	icons/magic/water/water-iceberg-bubbles.webp
+pebble	earth-pebble	Pebble	Earth	icons/magic/earth/strike-fist-stone-light.webp
+tremble	earth-tremble	Tremble	Earth	icons/magic/earth/explosion-lava-stone-yellow.webp
+stone	earth-stone	Stone	Earth	icons/magic/earth/explosion-lava-orange.webp
+fissure	earth-fissure	Fissure	Earth	icons/magic/earth/projectile-orb-asteroid-yellow.webp
+evil-stone	earth-evil-stone	Evil Stone	Earth	icons/magic/earth/volcano-explosion-lava-teal.webp
+elstone	earth-elstone	Elstone	Earth	icons/magic/earth/barrier-stone-pillar-purple.webp
+elfissure	earth-elfissure	Elfissure	Earth	icons/magic/earth/projectile-stone-boulder-blue.webp
+arcstone	earth-arcstone	Arcstone	Earth	icons/magic/earth/projectile-spiked-stone-boulder-brown.webp
+arcfissure	earth-arcfissure	Arcfissure	Earth	icons/magic/earth/projectiles-magma-stone-orange.webp
+fault	earth-fault	Fault	Earth	icons/magic/earth/explosion-lava-stone-green.webp
+shrapnel	earth-shrapnel	Shrapnel	Earth	icons/magic/earth/barrier-stone-explosion-debris.webp
+mud	earth-mud	Mud	Earth	icons/magic/earth/barrier-stone-brown-green.webp
+jewel	earth-jewel	Jewel	Earth	icons/magic/earth/projectile-stone-ball-brown.webp
+rexboulder	earth-rexboulder	Rexboulder	Earth	icons/magic/earth/projectile-spiked-stone-boulder-green.webp
+rexcanyon	earth-rexcanyon	Rexcanyon	Earth	icons/magic/earth/barrier-stone-explosion-spiked.webp
+tremor	earth-tremor	Tremor	Earth	icons/magic/earth/projectile-spiked-stone-boulder-green.webp
+sepulture	earth-sepulture	Sepulture	Earth	icons/magic/earth/projectile-stone-boulder-orange.webp
+galeslayer	earth-galeslayer	Galeslayer	Earth	icons/magic/earth/explosion-lava-orange.webp
+upheaval	earth-upheaval	Upheaval	Earth	icons/magic/earth/projectile-stone-boulder-purple.webp
+dire-stone	earth-dire-stone	Dire Stone	Earth	icons/magic/earth/projectile-boulder-yellow.webp
+quake	earth-quake	Quake	Earth	icons/magic/earth/barrier-stone-explosion-spiked.webp
+mountain	earth-mountain	Mountain	Earth	icons/magic/earth/projectile-moonrock-asteroid.webp
+crag	earth-crag	Crag	Earth	icons/magic/earth/lava-stone-fire-eye.webp
+petrify	earth-petrify	Petrify	Earth	icons/magic/earth/barrier-stone-explosion-red.webp
+gaia	earth-gaia	Gaia	Earth	icons/magic/earth/projectile-spiked-stone-boulder-purple-yellow.webp
+atlas	earth-atlas	Atlas	Earth	icons/magic/earth/projectile-moonrock-asteroid.webp
+brynhildr	earth-brynhildr	Brynhildr	Earth	icons/magic/earth/explosion-lava-stone-yellow-orange.webp
+glint	light-glint	Glint	Light	icons/magic/light/projectile-bolts-salvo-white.webp
+glow	light-glow	Glow	Light	icons/magic/light/beam-rays-orange.webp
+light	light-light	Light	Light	icons/magic/light/explosion-star-small-orange-purple.webp
+heaven	light-heaven	Heaven	Light	icons/magic/light/explosion-star-glow-orange.webp
+holy	light-holy	Holy	Light	icons/magic/light/projectile-needles-salvo-white.webp
+ellight	light-ellight	Ellight	Light	icons/magic/light/explosion-glow-spiral-teal.webp
+vallight	light-vallight	Vallight	Light	icons/magic/holy/angel-winged-humanoid-blue.webp
+flash	light-flash	Flash	Light	icons/magic/light/explosion-beam-impact-silhouette.webp
+sanctuary	light-sanctuary	Sanctuary	Light	icons/magic/light/explosion-star-large-orange.webp
+shimmer	light-shimmer	Shimmer	Light	icons/magic/light/beams-rays-orange-purple.webp
+purge	light-purge	Purge	Light	icons/magic/light/explosion-star-small-blue-yellow.webp
+arclight	light-arclight	Arclight	Light	icons/magic/light/explosion-star-blue-small.webp
+chastise	light-chastise	Chastise	Light	icons/magic/light/beam-rays-orange-large.webp
+reflect	light-reflect	Reflect	Light	icons/magic/light/explosion-star-small-orange-purple.webp
+liturgy	light-liturgy	Liturgy	Light	icons/magic/light/beam-rays-teal-purple-small.webp
+consecrate	light-consecrate	Consecrate	Light	icons/magic/light/beam-rays-yellow-blue-large.webp
+angel	light-angel	Angel	Light	icons/magic/light/beam-deflect-path-yellow.webp
+shine	light-shine	Shine	Light	icons/magic/light/explosion-star-small-orange.webp
+daybreak	light-daybreak	Daybreak	Light	icons/magic/light/beam-rays-teal-purple.webp
+rexaura	light-rexaura	Rexaura	Light	icons/magic/light/orb-hands-humanoid-yellow.webp
+judgement	light-judgement	Judgement	Light	icons/magic/light/explosion-star-small-orange.webp
+blessing	light-blessing	Blessing	Light	icons/magic/light/explosion-star-orange.webp
+retribution	light-retribution	Retribution	Light	icons/magic/light/beam-rays-teal.webp
+excommunicate	light-excommunicate	Excommunicate	Light	icons/magic/light/beam-rays-green-large.webp
+purify	light-purify	Purify	Light	icons/magic/light/beam-strike-orange.webp
+animaslayer	light-animaslayer	Animaslayer	Light	icons/magic/light/beam-rays-yellow.webp
+moonlight	light-moonlight	Moonlight	Light	icons/magic/light/explosion-star-small-teal.webp
+divine	light-divine	Divine	Light	icons/magic/light/orb-lightbulb-gray.webp
+aura	light-aura	Aura	Light	icons/magic/holy/prayer-hands-glowing-yellow-green.webp
+seraphim	light-seraphim	Seraphim	Light	icons/magic/light/explosion-star-pink.webp
+archangel	light-archangel	Archangel	Light	icons/magic/light/projectile-flare-explosion-yellow.webp
+resire	light-resire	Resire	Light	icons/magic/light/beam-rays-yellow-blue-large.webp
+sacrament	light-sacrament	Sacrament	Light	icons/magic/holy/angel-winged-humanoid-blue.webp
+lullaby	light-lullaby	Lullaby	Light	icons/magic/light/beam-rays-blue-large.webp
+trisagion	light-trisagion	Trisagion	Light	icons/magic/light/projectile-beams-salvo-yellow.webp
+smite	light-smite	Smite	Light	icons/magic/light/projectile-halo-teal.webp
+dire-light	light-dire-light	Dire Light	Light	icons/magic/light/orbs-hand-gray.webp
+thani	light-thani	Thani	Light	icons/magic/light/projectile-stars-blue.webp
+aureola	light-aureola	Aureola	Light	icons/magic/light/beam-rays-green-small.webp
+starlight	light-starlight	Starlight	Light	icons/magic/light/beam-rays-blue-large.webp
+valaura	light-valaura	Valaura	Light	icons/magic/light/explosion-star-blue-yellow.webp
+creiddylad	light-creiddylad	Creiddylad	Light	icons/magic/light/beam-rays-teal-purple-small.webp
+naga	light-naga	Naga	Light	icons/magic/light/projectile-bolts-salvo-yellow.webp
+shade	dark-shade	Shade	Dark	icons/magic/unholy/orb-swirling-teal.webp
+murk	dark-murk	Murk	Dark	icons/magic/unholy/strike-beam-blood-large-red-purple.webp
+flux	dark-flux	Flux	Dark	icons/magic/unholy/strike-beam-blood-large-red-teal.webp
+goetia	dark-goetia	Goetia	Dark	icons/magic/unholy/beam-impact-purple.webp
+luna	dark-luna	Luna	Dark	icons/magic/unholy/projectile-bolts-salvo-pink.webp
+miasma	dark-miasma	Miasma	Dark	icons/magic/unholy/beam-ringed-impact-purple.webp
+ruin	dark-ruin	Ruin	Dark	icons/magic/death/skull-fire-white-yellow.webp
+waste	dark-waste	Waste	Dark	icons/magic/unholy/beams-impact-pink.webp
+carreau	dark-carreau	Carreau	Dark	icons/magic/death/projectile-skull-flaming-yellow.webp
+scourge	dark-scourge	Scourge	Dark	icons/magic/unholy/silhouette-robe-evil-power.webp
+toxin	dark-toxin	Toxin	Dark	icons/magic/unholy/orb-glowing-yellow-purple.webp
+swarm	dark-swarm	Swarm	Dark	icons/magic/unholy/hand-claw-fire-blue.webp
+eclipse	dark-eclipse	Eclipse	Dark	icons/magic/death/skull-horned-goat-pentagram-red.webp
+grimoire	dark-grimoire	Grimoire	Dark	icons/magic/unholy/strike-beam-blood-red-green.webp
+dismay	dark-dismay	Dismay	Dark	icons/magic/unholy/strike-body-explode-disintegrate.webp
+twilight	dark-twilight	Twilight	Dark	icons/magic/unholy/hand-claw-fog-green.webp
+balberith	dark-balberith	Balberith	Dark	icons/magic/unholy/strike-beam-blood-red-green.webp
+nosferatu	dark-nosferatu	Nosferatu	Dark	icons/magic/death/projectile-skull-fire-purple.webp
+mire	dark-mire	Mire	Dark	icons/magic/unholy/strike-beam-blood-red-teal.webp
+lightslayer	dark-lightslayer	Lightslayer	Dark	icons/magic/unholy/projectile-smoke-trail-pink.webp
+zahhak	dark-zahhak	Zahhak	Dark	icons/magic/death/skull-poison-green.webp
+jormungandr	dark-jormungandr	Jörmungandr	Dark	icons/magic/unholy/hand-weapon-glow-black-green.webp
+impaler	dark-impaler	Impaler	Dark	icons/magic/unholy/hand-light-green.webp
+acid	dark-acid	Acid	Dark	icons/magic/death/projectile-skull-flaming-green.webp
+banshee	dark-banshee	Banshee	Dark	icons/magic/unholy/orb-swirling-teal.webp
+plague	dark-plague	Plague	Dark	icons/magic/unholy/projectile-bullet-orb-pink.webp
+worm	dark-worm	Worm	Dark	icons/magic/unholy/strike-beam-blood-large-red-blue.webp
+hel	dark-hel	Hel	Dark	icons/magic/unholy/hand-light-green.webp
+fenrir	dark-fenrir	Fenrir	Dark	icons/magic/unholy/strike-body-life-soul-purple.webp
+death	dark-death	Death	Dark	icons/magic/death/skull-trio-badge-purple.webp
+scylla	dark-scylla	Scylla	Dark	icons/magic/unholy/strike-beam-blood-red-green.webp
+dire-dark	dark-dire-dark	Dire Dark	Dark	icons/magic/unholy/strike-beam-blood-small-red-teal.webp
+nemesis	dark-nemesis	Nemesis	Dark	icons/magic/unholy/hand-claw-fire-green.webp
+belial	dark-belial	Belial	Dark	icons/magic/unholy/strike-body-life-soul-purple.webp
+ginnungagap	dark-ginnungagap	Ginnungagap	Dark	icons/magic/unholy/orb-glowing-yellow-purple.webp
+medusa	dark-medusa	Medusa	Dark	icons/magic/unholy/orb-smoking-green.webp
+earthquake	dark-earthquake	Earthquake	Dark	icons/magic/unholy/beam-impact-green.webp
+ereshkigal	dark-ereshkigal	Ereshkigal	Dark	icons/magic/death/skull-energy-light-purple.webp
+loptous	dark-loptous	Loptous	Dark	icons/magic/unholy/projectiles-binary-pink.webp
+verrine	dark-verrine	Verrine	Dark	icons/magic/unholy/projectile-fireball-green.webp
+tomaharn	dark-tomaharn	Tomaharn	Dark	icons/magic/unholy/projectile-missile-green.webp
+imhullu	dark-imhullu	Imhullu	Dark	icons/magic/unholy/strike-beam-blood-small-red-purple.webp
+apocalypse	dark-apocalypse	Apocalypse	Dark	icons/magic/death/skull-humanoid-white-red.webp
+treat	staff-treat	Treat	Staves	icons/weapons/staves/staff-ornate-eye.webp
+soothe	staff-soothe	Soothe	Staves	icons/weapons/staves/staff-simple-carved.webp
+bloom-festal	staff-bloom-festal	Bloom Festal	Staves	icons/weapons/wands/wand-star-white.webp
+heal	staff-heal	Heal	Staves	icons/weapons/staves/staff-animal-bird.webp
+refresh	staff-refresh	Refresh	Staves	icons/weapons/staves/staff-simple-gold.webp
+push	staff-push	Push	Staves	icons/weapons/staves/staff-skull-brown.webp
+balmwood	staff-balmwood	Balmwood	Staves	icons/weapons/staves/staff-mended.webp
+venom	staff-venom	Venom	Staves	icons/weapons/staves/staff-ornate-hook.webp
+freeze	staff-freeze	Freeze	Staves	icons/weapons/staves/staff-simple-gold.webp
+mend	staff-mend	Mend	Staves	icons/weapons/staves/staff-forest-hooked.webp
+sun-festal	staff-sun-festal	Sun Festal	Staves	icons/weapons/wands/wand-carved-fire.webp
+remedy	staff-remedy	Remedy	Staves	icons/weapons/staves/staff-simple-carved.webp
+restore	staff-restore	Restore	Staves	icons/weapons/staves/staff-animal-bird.webp
+pain	staff-pain	Pain	Staves	icons/weapons/staves/staff-engraved-red.webp
+speed	staff-speed	Speed	Staves	icons/weapons/staves/staff-animal-skull-bull.webp
+strength	staff-strength	Strength	Staves	icons/weapons/staves/staff-simple.webp
+illume	staff-illume	Illume	Staves	icons/weapons/staves/staff-hooked-banded.webp
+unlock	staff-unlock	Unlock	Staves	icons/weapons/staves/staff-ornate-blue.webp
+disarm	staff-disarm	Disarm	Staves	icons/weapons/staves/staff-engraved-wood.webp
+absorb	staff-absorb	Absorb	Staves	icons/weapons/staves/staff-simple-blue.webp
+enfeeble	staff-enfeeble	Enfeeble	Staves	icons/weapons/staves/staff-orb-purple.webp
+repair	staff-repair	Repair	Staves	icons/weapons/staves/staff-animal-bull.webp
+panic	staff-panic	Panic	Staves	icons/weapons/staves/staff-ornate.webp
+assault	staff-assault	Assault	Staves	icons/weapons/staves/staff-ornate-banded-purple.webp
+wane-festal	staff-wane-festal	Wane Festal	Staves	icons/weapons/wands/wand-carved-fire.webp
+physic	staff-physic	Physic	Staves	icons/weapons/staves/staff-ornate-jeweled-blue.webp
+clear	staff-clear	Clear	Staves	icons/weapons/staves/staff-ornate-orb-steel-red.webp
+star-festal	staff-star-festal	Star Festal	Staves	icons/weapons/wands/wand-crook-yellow.webp
+rescue	staff-rescue	Rescue	Staves	icons/weapons/staves/staff-hooked-banded.webp
+return	staff-return	Return	Staves	icons/weapons/staves/staff-ornate-blue-jewel.webp
+barrier	staff-barrier	Barrier	Staves	icons/weapons/staves/staff-vines-green.webp
+blind	staff-blind	Blind	Staves	icons/weapons/staves/staff-nature.webp
+catharsis	staff-catharsis	Catharsis	Staves	icons/weapons/staves/staff-simple-jeweled-green.webp
+disturb	staff-disturb	Disturb	Staves	icons/weapons/staves/staff-vines-green.webp
+bind	staff-bind	Bind	Staves	icons/weapons/staves/staff-animal-bull.webp
+inaction	staff-inaction	Inaction	Staves	icons/weapons/staves/staff-simple-spiral-brown.webp
+renew	staff-renew	Renew	Staves	icons/weapons/staves/staff-engraved-red.webp
+ensorcel	staff-ensorcel	Ensorcel	Staves	icons/weapons/staves/staff-ornate-engraved-blue.webp
+charm	staff-charm	Charm	Staves	icons/weapons/staves/staff-ornate-eye.webp
+defense	staff-defense	Defense	Staves	icons/weapons/staves/staff-engraved-wood.webp
+crest	staff-crest	Crest	Staves	icons/weapons/staves/staff-crescent-green.webp
+entrap	staff-entrap	Entrap	Staves	icons/weapons/staves/staff-ornate-teal.webp
+hammerne	staff-hammerne	Hammerne	Staves	icons/weapons/staves/staff-ornate-wood.webp
+hex	staff-hex	Hex	Staves	icons/weapons/staves/staff-ornate-cross.webp
+moon-festal	staff-moon-festal	Moon Festal	Staves	icons/weapons/wands/wand-gem-blue.webp
+recover	staff-recover	Recover	Staves	icons/weapons/staves/staff-ornate-blue-jewel.webp
+empower	staff-empower	Empower	Staves	icons/weapons/staves/staff-ornate-wood.webp
+silence	staff-silence	Silence	Staves	icons/weapons/staves/staff-ornate-eye.webp
+expel	staff-expel	Expel	Staves	icons/weapons/staves/staff-animal-skull-bull.webp
+thief	staff-thief	Thief	Staves	icons/weapons/staves/staff-ornate-green.webp
+warp	staff-warp	Warp	Staves	icons/weapons/staves/staff-ornate-eye.webp
+agony	staff-agony	Agony	Staves	icons/weapons/staves/staff-crescent-purple.webp
+fortify	staff-fortify	Fortify	Staves	icons/weapons/staves/staff-animal-skull-horned.webp
+reinforce	staff-reinforce	Reinforce	Staves	icons/weapons/staves/staff-ornate-hook.webp
+great-festal	staff-great-festal	Great Festal	Staves	icons/weapons/wands/wand-star-white.webp
+regenerate	staff-regenerate	Regenerate	Staves	icons/weapons/staves/staff-animal-skull-bull.webp
+obscure	staff-obscure	Obscure	Staves	icons/weapons/staves/staff-nature-spiral.webp
+watch	staff-watch	Watch	Staves	icons/weapons/staves/staff-animal-skull-horn-brown.webp
+haste	staff-haste	Haste	Staves	icons/weapons/staves/staff-ornate-red.webp
+rewarp	staff-rewarp	Rewarp	Staves	icons/weapons/staves/staff-ornate-bird.webp
+miswarp	staff-miswarp	Miswarp	Staves	icons/weapons/staves/staff-forest-hooked.webp
+nightmare	staff-nightmare	Nightmare	Staves	icons/weapons/staves/staff-ornate-wood.webp
+again	staff-again	Again	Staves	icons/weapons/staves/staff-orb-red.webp
+berserk	staff-berserk	Berserk	Staves	icons/weapons/staves/staff-simple-brown.webp
+sleep	staff-sleep	Sleep	Staves	icons/weapons/staves/staff-simple-brown.webp
+petrify	staff-petrify	Petrify	Staves	icons/weapons/staves/staff-skull-brown.webp
+aid	staff-aid	Aid	Staves	icons/weapons/staves/staff-ornate-red.webp
+kia	staff-kia	Kia	Staves	icons/weapons/staves/staff-crescent-green.webp
+anew	staff-anew	Anew	Staves	icons/weapons/staves/staff-engraved-wood.webp
+ashera-staff	staff-ashera-staff	Ashera Staff	Staves	icons/weapons/staves/staff-animal-bird.webp
+valkyria	staff-valkyria	Valkyria	Staves	icons/weapons/staves/staff-skull-feathers.webp
+helarn	staff-helarn	Helarn	Staves	icons/weapons/staves/staff-nature.webp
+latona	staff-latona	Latona	Staves	icons/weapons/staves/staff-crescent-purple.webp
+claw	laguz-claw	Claw	Laguz	icons/creatures/claws/claw-talons-glowing-purple.webp
+great-claw	laguz-great-claw	Great Claw	Laguz	icons/creatures/claws/claw-hooked-barbed.webp
+tiger-fang	laguz-tiger-fang	Tiger Fang	Laguz	icons/commodities/bones/tooth-canine-white.webp
+great-tiger-fang	laguz-great-tiger-fang	Great Tiger Fang	Laguz	icons/commodities/bones/tooth-molar-white.webp
+wolf-fang	laguz-wolf-fang	Wolf Fang	Laguz	icons/commodities/bones/tooth-molar-white.webp
+great-wolf-fang	laguz-great-wolf-fang	Great Wolf Fang	Laguz	icons/commodities/bones/teeth-pointed-gray.webp
+dirge-of-sorrow	laguz-dirge-of-sorrow	Dirge of Sorrow	Laguz	icons/tools/instruments/flute-simple-wood.webp
+dirge-of-pain	laguz-dirge-of-pain	Dirge of Pain	Laguz	icons/skills/trades/music-notes-sound-blue.webp
+dirge-of-sloth	laguz-dirge-of-sloth	Dirge of Sloth	Laguz	icons/tools/instruments/harp-red.webp
+dirge-of-rot	laguz-dirge-of-rot	Dirge of Rot	Laguz	icons/tools/instruments/harp-yellow-teal.webp
+dirge-of-weakness	laguz-dirge-of-weakness	Dirge of Weakness	Laguz	icons/tools/instruments/harp-yellow-teal.webp
+dirge-of-hate	laguz-dirge-of-hate	Dirge of Hate	Laguz	icons/tools/instruments/horn-megaphone-loudspeaker.webp
+dirge-of-ruin	laguz-dirge-of-ruin	Dirge of Ruin	Laguz	icons/tools/instruments/horn-white-gray.webp
+beak	laguz-beak	Beak	Laguz	icons/creatures/birds/corvid-call-sound-glowing.webp
+great-beak	laguz-great-beak	Great Beak	Laguz	icons/commodities/bones/beak-hooked-red.webp
+talon	laguz-talon	Talon	Laguz	icons/commodities/claws/talon-red.webp
+great-talon	laguz-great-talon	Great Talon	Laguz	icons/commodities/claws/talon-grey.webp
+red-breath	laguz-red-breath	Red Breath	Laguz	icons/creatures/abilities/dragon-fire-breath-orange.webp
+white-breath	laguz-white-breath	White Breath	Laguz	icons/magic/water/projectile-ice-orb-white.webp
+black-breath	laguz-black-breath	Black Breath	Laguz	icons/magic/unholy/strike-beam-blood-red-purple.webp
+dragonstone	manakete-dragonstone	Dragonstone	Manakete	icons/commodities/gems/gem-faceted-trillion-blue.webp
+firestone	manakete-firestone	Firestone	Manakete	icons/commodities/gems/gem-faceted-radiant-red.webp
+icestone	manakete-icestone	Icestone	Manakete	icons/commodities/gems/gem-rough-tapered-blue.webp
+earthstone	manakete-earthstone	Earthstone	Manakete	icons/commodities/gems/gem-rough-round-orange.webp
+thunderstone	manakete-thunderstone	Thunderstone	Manakete	icons/commodities/gems/gem-rough-square-yellow.webp
+windstone	manakete-windstone	Windstone	Manakete	icons/commodities/gems/gem-cut-square-green.webp
+magestone	manakete-magestone	Magestone	Manakete	icons/commodities/gems/gem-rough-cushion-violet.webp
+darkstone	manakete-darkstone	Darkstone	Manakete	icons/commodities/gems/gem-faceted-round-black.webp
+lightstone	manakete-lightstone	Lightstone	Manakete	icons/commodities/gems/pearl-rough-white.webp
+beaststone	taguel-beaststone	Beaststone	Taguel	icons/commodities/stone/geode-raw-green.webp
+beastrune	taguel-beastrune	Beastrune	Taguel	icons/commodities/treasure/token-runed-wyn-grey.webp
+beastboulder	taguel-beastboulder	Beastboulder	Taguel	icons/commodities/stone/rock-chunk-purple.webp
+claws	monster-claws	Claws	Monster Weapons	icons/commodities/claws/claw-pincer-grey.webp
+devil-claws	monster-devil-claws	Devil Claws	Monster Weapons	icons/commodities/claws/claw-lizard-white-black.webp
+venin-claws	monster-venin-claws	Venin Claws	Monster Weapons	icons/creatures/claws/claw-curved-poison-purple.webp
+rotten-claws	monster-rotten-claws	Rotten Claws	Monster Weapons	icons/creatures/claws/claw-curved-poison-purple.webp
+sharp-claws	monster-sharp-claws	Sharp Claws	Monster Weapons	icons/commodities/claws/claws-worn-grey.webp
+flaming-claws	monster-flaming-claws	Flaming Claws	Monster Weapons	icons/commodities/claws/claw-insect-red.webp
+fetid-claws	monster-fetid-claws	Fetid Claws	Monster Weapons	icons/creatures/claws/claw-curved-poison-purple.webp
+blighted-claws	monster-blighted-claws	Blighted Claws	Monster Weapons	icons/creatures/claws/claw-curved-poison-purple.webp
+numbing-claws	monster-numbing-claws	Numbing Claws	Monster Weapons	icons/creatures/claws/claw-curved-poison-purple.webp
+eerie-claws	monster-eerie-claws	Eerie Claws	Monster Weapons	icons/commodities/claws/claws-bear-brown-white.webp
+dark-claws	monster-dark-claws	Dark Claws	Monster Weapons	icons/commodities/claws/claw-brown-black.webp
+brutal-claws	monster-brutal-claws	Brutal Claws	Monster Weapons	icons/creatures/claws/pincer-crab-red.webp
+plague-claws	monster-plague-claws	Plague Claws	Monster Weapons	icons/creatures/claws/claw-curved-poison-purple.webp
+lethal-claws	monster-lethal-claws	Lethal Claws	Monster Weapons	icons/creatures/claws/claw-hooked-purple.webp
+demon-claws	monster-demon-claws	Demon Claws	Monster Weapons	icons/commodities/claws/claw-brown-black.webp
+throwing-bone	monster-throwing-bone	Throwing Bone	Monster Weapons	icons/commodities/bones/bone-jaw-white.webp
+throwing-skull	monster-throwing-skull	Throwing Skull	Monster Weapons	icons/commodities/bones/skull-bird-beige.webp
+spiked-skull	monster-spiked-skull	Spiked Skull	Monster Weapons	icons/commodities/bones/skull-monster-beige.webp
+oozing-skull	monster-oozing-skull	Oozing Skull	Monster Weapons	icons/commodities/bones/skull-fish.webp
+burning-skull	monster-burning-skull	Burning Skull	Monster Weapons	icons/commodities/bones/skull-hollow-brown-red.webp
+bone-boomerang	monster-bone-boomerang	Bone Boomerang	Monster Weapons	icons/commodities/bones/bone-red.webp
+slaughterang	monster-slaughterang	Slaughterang	Monster Weapons	icons/creatures/abilities/mouth-teeth-rows-red.webp
+eye	monster-eye	Eye	Monster Weapons	icons/magic/perception/hand-eye-black.webp
+evil-eye	monster-evil-eye	Evil Eye	Monster Weapons	icons/magic/perception/eye-ringed-green.webp
+sinister-eye	monster-sinister-eye	Sinister Eye	Monster Weapons	icons/magic/perception/eye-ringed-green.webp
+cursed-eye	monster-cursed-eye	Cursed Eye	Monster Weapons	icons/magic/perception/hand-eye-black.webp
+deathly-eye	monster-deathly-eye	Deathly Eye	Monster Weapons	icons/magic/perception/eye-ringed-glow-angry-large-teal.webp
+demonic-eye	monster-demonic-eye	Demonic Eye	Monster Weapons	icons/magic/perception/orb-eye-scrying.webp
+oculus	monster-oculus	Oculus	Monster Weapons	icons/magic/perception/hand-eye-black.webp
+bronze-scythe	monster-bronze-scythe	Bronze Scythe	Monster Weapons	icons/weapons/sickles/sickle-simple-purple.webp
+sickle	monster-sickle	Sickle	Monster Weapons	icons/weapons/sickles/sickle-hooked-purple.webp
+iron-scythe	monster-iron-scythe	Iron Scythe	Monster Weapons	icons/weapons/sickles/scythe-simple-white.webp
+devil-scythe	monster-devil-scythe	Devil Scythe	Monster Weapons	icons/weapons/sickles/sickle-simple-purple.webp
+steel-scythe	monster-steel-scythe	Steel Scythe	Monster Weapons	icons/weapons/sickles/scythe-curved-steel.webp
+venin-scythe	monster-venin-scythe	Venin Scythe	Monster Weapons	icons/weapons/sickles/sickle-wrapped-engraved-green.webp
+killing-scythe	monster-killing-scythe	Killing Scythe	Monster Weapons	icons/weapons/sickles/sickle-hooked-purple.webp
+emblem-scythe	monster-emblem-scythe	Emblem Scythe	Monster Weapons	icons/weapons/sickles/sickle-wrapped-engraved-green.webp
+quick-scythe	monster-quick-scythe	Quick Scythe	Monster Weapons	icons/weapons/sickles/sickle-simple-blue.webp
+brave-scythe	monster-brave-scythe	Brave Scythe	Monster Weapons	icons/weapons/sickles/sickle-wrapped-engraved-green.webp
+silver-scythe	monster-silver-scythe	Silver Scythe	Monster Weapons	icons/weapons/sickles/sickle-hooked-silver.webp
+wicked-scythe	monster-wicked-scythe	Wicked Scythe	Monster Weapons	icons/weapons/sickles/sickle-hooked-purple.webp
+crescent-sickle	monster-crescent-sickle	Crescent Sickle	Monster Weapons	icons/weapons/sickles/sickle-hooked-silver.webp
+scythe-of-sariel	monster-scythe-of-sariel	Scythe of Sariel	Monster Weapons	icons/weapons/sickles/scythe-bone-green-fire.webp
+necro-breath	monster-necro-breath	Necro Breath	Monster Weapons	icons/magic/death/projectile-skull-fire-orange-red.webp
+poison-breath	monster-poison-breath	Poison Breath	Monster Weapons	icons/magic/acid/projectile-flame-smoke-green.webp
+dark-breath	monster-dark-breath	Dark Breath	Monster Weapons	icons/magic/death/projectile-skull-fire-orange.webp
+evil-breath	monster-evil-breath	Evil Breath	Monster Weapons	icons/magic/death/projectile-skull-fire-green.webp
+corrupt-breath	monster-corrupt-breath	Corrupt Breath	Monster Weapons	icons/magic/acid/projectile-glowing-bubbles.webp
+demon-breath	monster-demon-breath	Demon Breath	Monster Weapons	icons/magic/death/projectile-skull-fire-purple.webp

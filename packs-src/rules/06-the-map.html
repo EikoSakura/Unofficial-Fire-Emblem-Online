@@ -1,0 +1,139 @@
+<!-- chapter: The Map | icon: peak -->
+
+<section data-page="objectives" data-title="Objectives &amp; Shops" data-source="Rules 3.0, On and Off the Map, “On the Map”">
+<p class="feo-lead">Fire Emblem Online is played on a square grid, with player units typically starting in a predefined area where they may rearrange themselves and assemble a formation before the map starts.</p>
+
+<h2>Objectives</h2>
+<p>Most maps have Objectives for the party to work towards, which include, but are not limited to:</p>
+<dl class="feo-defs">
+  <div><dt>Seize or Arrive</dt><dd>Have a player character choose the “Seize” or “Arrive” action on a certain space on the map.</dd></div>
+  <div><dt>Rout</dt><dd>Defeat all enemies on the map.</dd></div>
+  <div><dt>Defeat the Boss</dt><dd>Defeat a certain unit on the map, designated as the “Boss”.</dd></div>
+  <div><dt>Survive</dt><dd>Survive a certain number of turns.</dd></div>
+  <div><dt>Defend</dt><dd>Prevent enemies from ending their turn on a certain space on the map.</dd></div>
+  <div><dt>Protect</dt><dd>Prevent enemies from defeating a certain (usually ally) unit.</dd></div>
+  <div><dt>Escape</dt><dd>All players must choose the “Escape” action on a certain space on the map, leaving the map.</dd></div>
+</dl>
+<p>After completing all Objectives, the map typically ends.</p>
+
+<h2>Shops on the map</h2>
+<p>On the map, various shops may be found: Armories for weapons, Vendors for various items, Arenas for extra combat, and anything else the GM can come up with. Shop services are reached from House, Shop and Village terrain. See [[terrain]].</p>
+<p>A map can be in any climate, whether it is on a mountaintop or in a desert. See [[weather]].</p>
+</section>
+
+<section data-page="terrain" data-title="Terrain &amp; Elevation" data-source="Rules 3.0, On and Off the Map, “On the Map”">
+<p class="feo-lead">Certain terrain will impose movement restrictions on units, and may have additional effects.</p>
+
+<h2>Terrain types</h2>
+<p>Move cost is how many spaces of movement each space of that terrain takes.</p>
+<div class="feo-table-wrap"><table class="feo-table top">
+  <thead><tr><th>Terrain</th><th>Bonus</th><th class="num">Move cost</th><th>Also</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Plain, Road, Snow, Sand, Floor</strong></td><td>No modifiers.</td><td class="num">1</td><td></td></tr>
+    <tr><td><strong>Forest</strong></td><td>+1 Defense, +15 Dodge</td><td class="num">2</td><td></td></tr>
+    <tr><td><strong>Thicket</strong></td><td>+30 Dodge</td><td class="num">3</td><td>Reduces LoS by 1, and the unit cannot be revealed in Fog of War unless a unit is adjacent.</td></tr>
+    <tr><td><strong>Hill</strong></td><td>+2 Defense, +20 Dodge</td><td class="num">3</td><td></td></tr>
+    <tr><td><strong>Mountain, Peak</strong></td><td>+3 Defense, +25 Dodge</td><td class="num">4</td><td>Can only be crossed by units with the Mountaineer or Climber skills.</td></tr>
+    <tr><td><strong>Cliff</strong></td><td>−15 Dodge</td><td class="num">5</td><td>Can only be crossed by units with the Mountaineer or Climber skills.</td></tr>
+    <tr><td><strong>Fort, Throne, Gate</strong></td><td>+2 Defense, +20 Dodge</td><td class="num">1</td><td>The unit gains 20% of its total HP each turn.</td></tr>
+    <tr><td><strong>House, Shop, Village</strong></td><td>+10 Dodge</td><td class="num">1</td><td>Any relevant shop services are accessible here.</td></tr>
+    <tr><td><strong>River</strong></td><td>+10 Dodge</td><td class="num">2</td><td></td></tr>
+    <tr><td><strong>Water, Sea, Ocean</strong></td><td>+10 Dodge</td><td class="num">2</td><td>Only crossable by units with the Privateer or Sailor skills.</td></tr>
+    <tr><td><strong>Desert, Dune</strong></td><td>+5 Dodge</td><td class="num">2</td><td>Movement for Armored and Mounted units takes the equivalent of three. Magic users, Thief and its promotions, and Shifted Laguz are unaffected.</td></tr>
+    <tr><td><strong>Healhedge</strong></td><td>+10 Dodge</td><td class="num">1</td><td>The unit gains 10% of total HP each turn.</td></tr>
+    <tr><td><strong>Wardwood</strong></td><td>+5 RES</td><td class="num">2</td><td></td></tr>
+    <tr><td><strong>Cover, Barricade</strong></td><td>+5 DEF</td><td class="num">2</td><td></td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">Flying units can fly over most terrain and obstacles, ignoring both their penalties and positive effects, except for healing. See [[special-qualities]].</p>
+
+<aside class="feo-callout gm">
+  <p class="feo-callout-label">GM advice</p>
+  <p>Terrain can and should be used to control where units can move through the use of buildings, fences, rivers, walls, rock-faces, and countless other ways to manage movement. Flying units can mitigate these as per the GM's discretion; typically they can fly over most obstacles.</p>
+</aside>
+
+<h2>Elevation</h2>
+<p>Optionally, certain maps may also have terrain at different elevations at the GM's discretion and declaration.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>A ranged attack against a unit</th><th class="num">Damage</th><th class="num">Accuracy</th></tr></thead>
+  <tbody>
+    <tr><td>at a lower elevation</td><td class="num up">+1</td><td class="num up">+20</td></tr>
+    <tr><td>at a higher elevation</td><td class="num down">−1</td><td class="num down">−20</td></tr>
+  </tbody>
+</table></div>
+<p>Melee attacks cannot be made against targets at different elevations.</p>
+</section>
+
+<section data-page="obstacles" data-title="Doors &amp; Obstacles" data-source="Rules 3.0, On and Off the Map, “On the Map”">
+<p class="feo-lead">Doors are common obstacles in maps with buildings, and can be opened through the use of a key or a Skill, or through brute force.</p>
+
+<h2>Opening a door</h2>
+<p>A unit can Open a door as an Action, provided they have the means to, such as a key or the ability to pick locks. Otherwise it can be broken down: depending on the type of door, it will require a different amount of damage dealt to it in order to open.</p>
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>This paragraph appears twice in the rules. One copy says doors open with “a key or the Pick skill”, the other with “a key or the Thievery skill”.</p>
+</aside>
+
+<h2>Doors</h2>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Door</th><th class="num">HP</th></tr></thead>
+  <tbody>
+    <tr><td>Wooden Door</td><td class="num">25</td></tr>
+    <tr><td>Reinforced Wooden Door</td><td class="num">40</td></tr>
+    <tr><td>Iron Door</td><td class="num">50</td></tr>
+    <tr><td>Reinforced Iron Door</td><td class="num">65</td></tr>
+    <tr><td>Portcullis</td><td class="num">80</td></tr>
+    <tr><td>Castle Door</td><td class="num">100</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Landmarks</h2>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Landmark</th><th class="num">HP</th><th>When destroyed</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Snag</strong></td><td class="num">25</td><td>Falls into an unoccupied adjacent space, allowing units to cross it if they could not before.</td></tr>
+    <tr><td><strong>Boulder</strong></td><td class="num">30</td><td>Rolls down the map in a straight line, dealing 10 points of damage to any unit in the way.</td></tr>
+    <tr><td><strong>Cliffside</strong></td><td class="num">50</td><td>Rolls down the map in a straight line, dealing 20 points of damage to any unit in the way.</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<section data-page="weather" data-title="Weather" data-source="Rules 3.0, On and Off the Map, “On the Map”">
+<p class="feo-lead">Maps may have Weather effects active, which typically disrupt and shake up gameplay for both sides.</p>
+
+<h2>Weather effects</h2>
+<dl class="feo-defs wide">
+  <div><dt>Rain, Snowstorm</dt><dd>Tiles cost 1 more MOV to cross for infantry units, and 2 more for Mounted units.</dd></div>
+  <div><dt>Fog, Sandstorm, Darkness, Ash Storm</dt><dd>Causes Fog of War.</dd></div>
+  <div><dt>Mist</dt><dd>Causes Fog of War, but the LoS of all units is set to 4 unless it is higher.</dd></div>
+  <div><dt>Thunderstorm</dt><dd>Same effects as Rain, plus lightning. See below.</dd></div>
+  <div><dt>Windstorm</dt><dd>Tiles cost 1 more MOV to cross for Flying units.</dd></div>
+  <div><dt>Hail</dt><dd>Units take 1 damage at the end of their turn. Units cannot die this way.</dd></div>
+  <div><dt>Heat Wave</dt><dd>Units receive −3 SPD and take 1 damage at the end of their turn. Units cannot die this way. If the [[opt-fatigue]] Optional Module is being used, units also receive 1 fatigue.</dd></div>
+  <div><dt>Ballista Fire</dt><dd>Every other turn, 1D5 ballista bolts strike random tiles. Units struck by Ballistae take 10 damage. If one hits a tile considered indoors, nothing happens.</dd></div>
+</dl>
+<p>Weather effects can also be combined (ideally within reason) if the GM so chooses.</p>
+
+<h2>Lightning</h2>
+<p>In a Thunderstorm, at the end of every turn (after all phases are done and it is back to player phase), flip a coin. If it is tails, a bolt of lightning strikes a random tile.</p>
+<ul>
+  <li>If it hits a unit, it deals 10 damage.</li>
+  <li>If the unit has the Dragon Special Quality, it deals 15 instead.</li>
+  <li>If it hits a tile considered indoors, nothing happens, even if a unit was on that tile.</li>
+</ul>
+
+<h2>Picking a random tile</h2>
+<p>Where a lightning bolt or ballista bolt strikes can be determined by rolling the grid size of the map.</p>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>Where the bolt lands</strong></div>
+  <div class="feo-example-body">
+    <p>If the map was 10 × 10 (width, height) you would roll 2D10, and a result of 5, 5 would strike at 5 wide, 5 high.</p>
+    <p>If it was 10 × 15 you would roll a D10, then a D15.</p>
+  </div>
+</aside>
+
+<aside class="feo-callout foundry">
+  <p class="feo-callout-label">In Foundry</p>
+  <p>Type <strong>/roll 1d10</strong> and <strong>/roll 1d15</strong> in chat for a map of that size.</p>
+</aside>
+</section>

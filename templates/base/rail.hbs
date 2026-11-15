@@ -1,0 +1,35 @@
+<nav class="bs-rail" aria-label="{{localize "FEO.Base.posts"}}">
+  <div class="bs-rail-label">{{localize "FEO.Base.whereTo"}}</div>
+  <ul class="bs-posts" role="tablist">
+    {{#each posts as |post|}}
+    <li>
+      <button type="button" class="bs-post{{#if post.closed}} bs-closed{{/if}}" role="tab" data-action="view"
+              data-view="{{post.id}}" aria-selected="{{post.selected}}">
+        <span class="bs-seal">{{feoIcon post.icon}}</span>
+        <span class="bs-post-text"><b>{{post.name}}</b><small>{{post.note}}</small></span>
+        {{#if post.flag}}<i class="bs-flag"></i>{{/if}}
+      </button>
+      {{#if post.toggle}}
+      <button type="button" class="bs-switch" role="switch" aria-checked="{{#if post.closed}}false{{else}}true{{/if}}"
+              data-action="post" data-post="{{post.id}}" data-tooltip="{{localize "FEO.Base.post.toggle"}}"
+              aria-label="{{localize "FEO.Base.post.toggle"}}"></button>
+      {{/if}}
+    </li>
+    {{/each}}
+  </ul>
+
+  <div class="bs-march">
+    <small>{{localize "FEO.Base.march.over"}}</small>
+    <b>{{march.title}}</b>
+    {{#if march.subtitle}}<p>{{march.subtitle}}</p>{{/if}}
+    <div class="bs-ready">
+      {{#each march.pips as |pip|}}<i class="{{#if pip.on}}bs-on{{/if}}" data-tooltip="{{pip.name}}"></i>{{/each}}
+      <span>{{march.readyText}}</span>
+    </div>
+    {{#if isGM}}
+    <button type="button" class="bs-btn bs-gold bs-block" data-action="sound">{{feoIcon "banner"}}{{localize "FEO.Base.march.sound"}}</button>
+    {{else}}
+    <button type="button" class="bs-btn bs-gold bs-block" data-action="ready">{{feoIcon "check"}}{{#if march.mine}}{{localize "FEO.Base.march.unready"}}{{else}}{{localize "FEO.Base.march.readyButton"}}{{/if}}</button>
+    {{/if}}
+  </div>
+</nav>

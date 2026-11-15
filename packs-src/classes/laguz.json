@@ -1,0 +1,66 @@
+{
+  "source": "Fire Emblem Online Class Sheet, Laguz, Manakete and Taguel tab, rows 3 to 18",
+  "classes": [
+    {
+      "name": "Cat",
+      "cell": "Laguz, Manakete and Taguel!A3",
+      "tier": "base",
+      "race": "laguz",
+      "description": "Laguz that use cunning and nimble attacks to corner and defeat enemies.",
+      "base": {
+        "hp": 22,
+        "str": 5,
+        "mag": 0,
+        "def": 3,
+        "res": 2,
+        "dex": 7,
+        "spd": 8,
+        "luk": 4,
+        "mov": 7,
+        "con": 9,
+        "los": 3
+      },
+      "wt": 5,
+      "transformed": {
+        "mov": 9,
+        "con": 14,
+        "los": 4,
+        "wt": 12
+      },
+      "proficiencies": {
+        "options": [],
+        "choose": 0,
+        "note": "Claw"
+      },
+      "skills": {
+        "promotion": "Nimble",
+        "occult": "Pounce",
+        "mastery": "Quickclaw"
+      },
+      "specialQualities": "Beast, Laguz",
+      "promotesTo": [],
+      "notes": [
+        {
+          "label": "Starting Shift Gauge",
+          "value": "0"
+        },
+        {
+          "label": "Shift Modifier Per Turn (Humanoid)",
+          "value": "+9"
+        },
+        {
+          "label": "Shift Modifier Per Turn (Animal)",
+          "value": "-3"
+        },
+        {
+          "label": "Shift Modifier Per Combat (Humanoid)",
+          "value": "+6"
+        },
+        {
+          "label": "Shift Modifier Per Combat (Animal)",
+          "value": "-4"
+        }
+      ]
+    }
+  ]
+}

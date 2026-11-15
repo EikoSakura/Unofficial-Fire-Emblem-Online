@@ -1,0 +1,27 @@
+<section class="cp-head v-classes">
+  <div class="cp-head-row">
+    <div class="txt">
+      <div class="cp-eyebrow">{{eyebrow}}</div>
+      <h2 data-tooltip="{{localize "FEO.Compendium.classes.lead"}}">{{localize "FEO.Compendium.classes.title"}}</h2>
+    </div>
+    {{#if races.length}}
+    <div class="cp-picks" role="group" aria-label="{{localize "FEO.Class.race"}}">
+      {{#each races as |race|}}
+      <button type="button" class="cp-pick" data-action="people" data-race="{{race.key}}"
+              aria-pressed="{{race.pressed}}">{{race.label}}<small class="num">{{race.count}}</small></button>
+      {{/each}}
+    </div>
+    {{/if}}
+    <div class="cp-tools">
+      <label class="cp-search">
+        {{feoIcon "search"}}
+        <input type="search" data-find="class" list="{{listId}}" autocomplete="off"
+               placeholder="{{localize "FEO.Compendium.classes.find"}}"
+               aria-label="{{localize "FEO.Compendium.classes.find"}}">
+      </label>
+      <datalist id="{{listId}}">
+        {{#each names}}<option value="{{this}}"></option>{{/each}}
+      </datalist>
+    </div>
+  </div>
+</section>

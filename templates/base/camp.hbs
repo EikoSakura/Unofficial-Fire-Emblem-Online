@@ -1,0 +1,52 @@
+<section class="bs-panel bs-v-camp">
+  <div class="bs-cols bs-wide-left">
+    <section class="bs-card">
+      <header class="bs-card-head">
+        <div class="bs-txt"><h3>{{localize "FEO.Base.camp.company"}}</h3><p>{{count}}</p></div>
+        {{#if isGM}}<button type="button" class="bs-btn bs-sm bs-gmb" data-action="gold">{{feoIcon "plus"}}{{localize "FEO.Base.camp.grant"}}</button>{{/if}}
+        <button type="button" class="bs-btn bs-sm" data-action="view" data-view="roster">{{feoIcon "company"}}{{localize "FEO.Base.post.roster.name"}}</button>
+      </header>
+      {{#if units.length}}
+      <div class="bs-roster">
+        {{#each units as |unit|}}
+        <div class="bs-unit{{#if unit.me}} bs-me{{/if}}">
+          <span class="bs-medal">{{feoIcon unit.icon}}</span>
+          <div class="bs-who"><b>{{unit.name}}</b><small>{{unit.sub}}</small></div>
+          <div class="bs-tags">
+            {{#each unit.tags as |tag|}}<span class="bs-chip{{#if tag.cls}} bs-{{tag.cls}}{{/if}}">{{#if tag.icon}}{{feoIcon tag.icon}}{{/if}}{{tag.text}}</span>{{/each}}
+          </div>
+          <div class="bs-hp bs-num">
+            <span>{{localize "FEO.Stat.hp.abbr"}}</span>
+            <div class="bs-bar{{#if unit.hp.low}} bs-low{{/if}}"><i style="width:{{unit.hp.pct}}%"></i></div>
+            <span>{{unit.hp.value}}/{{unit.hp.max}}</span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{else}}
+      <p class="bs-none bs-center">{{none}}</p>
+      {{/if}}
+    </section>
+
+    <section class="bs-card">
+      <header class="bs-card-head">
+        <div class="bs-txt"><h3>{{localize "FEO.Base.camp.worth"}}</h3><p>{{forWhom}}</p></div>
+      </header>
+      {{#if shortcuts.length}}
+      <ul class="bs-orders">
+        {{#each shortcuts as |shortcut|}}
+        <li>
+          <button type="button" class="bs-order" data-action="view" data-view="{{shortcut.view}}">
+            {{feoIcon shortcut.icon}}
+            <span><b>{{shortcut.title}}</b><small>{{shortcut.sub}}</small></span>
+            {{feoIcon "right"}}
+          </button>
+        </li>
+        {{/each}}
+      </ul>
+      {{else}}
+      <p class="bs-none bs-center">{{localize "FEO.Base.camp.quiet"}}</p>
+      {{/if}}
+    </section>
+  </div>
+</section>

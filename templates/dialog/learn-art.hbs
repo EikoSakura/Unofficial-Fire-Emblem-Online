@@ -1,0 +1,14 @@
+<div class="feo-learn-art">
+  <p class="hint">{{#if lead}}{{lead}}{{else}}{{localize "FEO.Optional.combatArts.learn.lead"}}{{/if}}</p>
+  <label class="field">
+    <span>{{#if pick}}{{pick}}{{else}}{{localize "FEO.Optional.combatArts.learn.pick"}}{{/if}}</span>
+    <select name="art">
+      {{#each groups as |group|}}
+      <optgroup label="{{group.label}}">
+        {{#each group.arts as |art|}}<option value="{{art.id}}">{{art.label}}</option>{{/each}}
+      </optgroup>
+      {{/each}}
+    </select>
+  </label>
+  <p class="art-preview"></p>
+</div>

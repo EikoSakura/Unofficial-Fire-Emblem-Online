@@ -1,0 +1,423 @@
+<!-- chapter: Optional · Combat | icon: module -->
+
+<section data-page="opt-combat-arts" data-title="Combat Arts" data-source="Rules 3.0, Optional Modules, “Combat Arts”">
+<p class="feo-lead">Adds the ability to perform several Combat Arts with various types of weapons to improve combat performance.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>This page covers the rules for Combat Arts. The list of Arts themselves is not part of this journal. See [[opt-more]].</p>
+</aside>
+
+<h2>Using a Combat Art</h2>
+<p>Units may perform Combat Arts when initiating combat. Depending on the GM's preference, they will either make a singular attack using the Combat Art, or will make any follow-ups as normal, with their first attack (unless specified otherwise) carrying the Combat Art's effects.</p>
+<ul>
+  <li>Combat Arts with 2x Strikes do not stack with 2x Strikes from other sources, such as Brave Weapons, and Combat Arts only apply to the first attack made with 2x Strikes.</li>
+  <li>Dodge and Critical Avoid apply to the first attack by an enemy unless otherwise specified.</li>
+  <li>If able to follow-up, Combat Arts that modify range allow their user to follow-up as though they had the extended range, although they lose their other effects.</li>
+</ul>
+
+<h2>Costs</h2>
+<p>Combat Arts have Costs to use, taking HP or Weapon Uses.</p>
+<div class="feo-table-wrap"><table class="feo-table top">
+  <thead><tr><th>Cost</th><th>Rule</th></tr></thead>
+  <tbody>
+    <tr><td><strong>HP</strong></td><td>Combat Arts cannot be used if the unit would die from the HP cost. Laguz, Taguel and Manakete weapons can execute Combat Arts that cost HP.</td></tr>
+    <tr><td><strong>Weapon Uses</strong></td><td>They may be used if the weapon would break from the Weapon Use cost, with the weapon breaking after combat as normal. Broken Weapons cannot execute Arts with Weapon Use costs, and neither can Laguz, Taguel and Manakete weapons.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Learning Combat Arts</h2>
+<p>Units gain a Combat Art every time they achieve a new Weapon Rank, the learned Combat Art being of equal Rank or lower.</p>
+<ul>
+  <li>For <span class="feo-rank">E</span> Rank, this means acquiring an E Rank Universal Art.</li>
+  <li>Starting at <span class="feo-rank">D</span> and up, units can choose to gain weapon-specific arts, only usable with that weapon type.</li>
+  <li>All Universal Arts may be used with any weapon once learned, regardless of the Ranks of the Art and Proficiency in question.</li>
+</ul>
+
+<h2>Which weapons use which Arts</h2>
+<p>Weapons that count as other types use the type they count as for what Combat Arts they can use.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Weapon</th><th>Can use</th><th>Its Ranks let the unit learn</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Knife</strong></td><td class="na">·</td><td>Sword Arts</td></tr>
+    <tr><td><strong>Pole</strong></td><td class="na">·</td><td>Lance Arts</td></tr>
+    <tr><td><strong>Bolt</strong></td><td>Bow Arts</td><td>Bow Arts</td></tr>
+    <tr><td><strong>Gunarm</strong></td><td>Rifle Arts in ranged mode</td><td>Any melee or Rifle Combat Art of sufficient rank</td></tr>
+    <tr><td><strong>Tome</strong></td><td>Universal Combat Arts</td><td>Universal Arts only</td></tr>
+    <tr><td><strong>Staff</strong></td><td>None</td><td>None. Staff Ranks do not give Combat Arts at all.</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">A dot means the rules do not say.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>With [[opt-fatigue]], using a Combat Art adds Fatigue according to its Rank.</p>
+</aside>
+</section>
+
+<section data-page="opt-battalions" data-title="Battalions &amp; Gambits" data-source="Rules 3.0, Optional Modules, “Battalions &amp; Gambits”">
+<p class="feo-lead">Battalions are squadrons led by a commanding unit which can provide several useful bonuses, and special actions called Gambits.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>The Battalions listed on the Optional Content Sheet are designed to be applicable to most campaigns, but GMs are heavily encouraged to make their own to better fit theirs.</p>
+</aside>
+
+<h2>What a Battalion gives</h2>
+<p>When equipping a Battalion, it can provide a number of effects, such as increasing the unit's STR, MAG, DEF, RES, LUK, Hit, Critical, Dodge, Critical Avoid, Attack Speed, LoS, and even CHA. Battalions also all have special actions that can be taken, called Gambits.</p>
+
+<h2>Gambits</h2>
+<p>Gambits have many different effects.</p>
+<ul>
+  <li>All Offensive Gambits inflict the <strong>Rattled</strong> status on hit, which decreases STR, MAG, DEF, RES, DEX, SPD and MOV by 2, and prevents the target from using Gambits of their own, as well as choosing when to activate Skills and Combat Arts. Rattled wears off after one turn.</li>
+  <li>Gambits cannot be counter-attacked, and cannot make follow-up attacks.</li>
+</ul>
+<div class="feo-formulas">
+  <div class="feo-formula wide">
+    <span class="feo-formula-name">Gambit damage</span>
+    <div class="feo-formula-expr"><var class="w">Might</var> + <var>STR or MAG</var> + <var>CHA</var> ÷ 5 − <var>Foe's DEF or RES</var></div>
+  </div>
+  <div class="feo-formula wide">
+    <span class="feo-formula-name">Gambit to-hit target number</span>
+    <div class="feo-formula-expr"><var class="w">Hit</var> + 5 × ( <var>CHA</var> − <var>Foe's CHA</var> )</div>
+    <p class="feo-formula-note">The CHA part is capped at +30 or −30.</p>
+  </div>
+</div>
+
+<h2>Authority</h2>
+<p>Battalions and Gambits also introduce a new proficiency essential to using them: Authority. Authority starts either at F or E rank, depending on the GM's preference. Authority increases your ability to equip better battalions, and also minorly increases your chances to hit or avoid Gambits.</p>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>For each rank in Authority, you gain <strong>+5 to hit and avoid</strong> for Gambits.</p>
+</aside>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Authority rank up</th><th class="num">Authority EXP</th></tr></thead>
+  <tbody>
+    <tr><td>F to E</td><td class="num">15</td></tr>
+    <tr><td>E to D</td><td class="num">20</td></tr>
+    <tr><td>D to C</td><td class="num">25</td></tr>
+    <tr><td>C to B</td><td class="num">35</td></tr>
+    <tr><td>B to A</td><td class="num">45</td></tr>
+    <tr><td>A to S</td><td class="num">55</td></tr>
+    <tr><td>S to SS</td><td class="num">70</td></tr>
+  </tbody>
+</table></div>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Units gain Authority EXP for</th><th class="num">EXP</th></tr></thead>
+  <tbody>
+    <tr><td>Offensive Gambit use</td><td class="num">1</td></tr>
+    <tr><td>Offensive Gambit Hit or Support Gambit Use</td><td class="num">3</td></tr>
+    <tr><td>Defeating an enemy or enemy Battalion with a Gambit</td><td class="num">an additional 3</td></tr>
+    <tr><td>Dodging a Gambit</td><td class="num">2</td></tr>
+    <tr><td>Defeating an enemy Battalion without a Gambit</td><td class="num">1</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Battalion health</h2>
+<p>When the commanding unit takes damage, the Battalion takes 50% of the damage to their HP. The damage they take is capped at 50% of their Max HP, meaning they cannot be defeated in one round.</p>
+<p>When defeated, Battalions retreat and must be replenished. Replenishing a Battalion can occur any time between battles, such as at a Base or during Preparations.</p>
+
+<h2>Special Qualities</h2>
+<p>Battalions have Special Qualities that affect a few things.</p>
+<ul>
+  <li>Effective weapons boost damage dealt to the Battalion by 1.5×.</li>
+  <li>Battalions with the Flying, Mounted, Terror, Beast or Laguz Special Quality cannot be assigned to units who lack the quality.</li>
+</ul>
+
+<h2>Levels</h2>
+<p>Gambits also have levels, leveled 1 to 5. Each level is 10 EXP, and you get 1 EXP for using a Gambit, and 3 EXP for defeating another unit or Battalion with your Battalion. When a Battalion levels up, it gains a fixed amount of stats, listed as “per level up”.</p>
+
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>The Levels paragraph says Gambits have levels and then that the Battalion levels up; the original wording is kept. Rattled is also worded slightly differently here than in [[conditions]]. And “Authority” here is a proficiency, while in [[opt-stars|Authority &amp; Leadership]] it means the leader a unit answers to.</p>
+</aside>
+</section>
+
+<section data-page="opt-break" data-title="Breaking &amp; the Extended Triangle" data-source="Rules 3.0, Optional Modules, “Breaking and Extended Weapon Triangle”">
+<p class="feo-lead">This module adds Breaks. Landing a hit with Weapon Triangle Advantage takes away the foe's counterattack.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional modules</p>
+  <p>Break and the extended triangle can be used together or separately. The core rules are in [[weapon-triangle]].</p>
+</aside>
+
+<h2>Break</h2>
+<p>When a unit with Weapon Triangle Advantage initiates combat and lands an attack that deals at least 1 damage, the foe with Disadvantage suffers from Break.</p>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>Units afflicted with Break <strong>cannot counterattack</strong> during that combat and the next, or until the start of their next turn, whichever comes first.</p>
+</aside>
+<ul>
+  <li>Break is not a proper status condition that can be cured.</li>
+  <li>This applies to units of all factions, meaning enemies can Break the players, and vice versa.</li>
+  <li>Armored units are immune to Break.</li>
+</ul>
+
+<h2>The extended triangle</h2>
+<p>In addition to this (or separately), if desired, is an extended Weapon Triangle incorporating Bows, Brawl, Knives and others, in order for them to have the ability to Break as well. Each arrow points from the winner to the loser.</p>
+<div class="feo-cycles">
+  <figure class="feo-cycle tri">
+    <div class="feo-cycle-ring">
+      <span class="feo-node c-bane i0"><i class="feo-ico sword"></i>Sword</span>
+      <span class="feo-node c-good i1"><i class="feo-ico axe"></i>Axe</span>
+      <span class="feo-node c-boon i2"><i class="feo-ico lance"></i>Lance</span>
+      <i class="feo-beat i0"></i><i class="feo-beat i1"></i><i class="feo-beat i2"></i>
+    </div>
+    <figcaption><strong>Melee</strong>Swords and Katanas beat Axes and Maces. Axes and Maces beat Lances, Scythes and Poles. Lances, Scythes and Poles beat Swords and Katanas.</figcaption>
+  </figure>
+  <figure class="feo-cycle tri">
+    <div class="feo-cycle-ring">
+      <span class="feo-node c-warn i0"><i class="feo-ico fist"></i>Brawl</span>
+      <span class="feo-node c-good i1"><i class="feo-ico bow"></i>Bow</span>
+      <span class="feo-node c-opt i2"><i class="feo-ico knife"></i>Knife</span>
+      <i class="feo-beat i0"></i><i class="feo-beat i1"></i><i class="feo-beat i2"></i>
+    </div>
+    <figcaption><strong>Skirmish</strong>Brawl and Whips beat Bows and Crossbows. Bows and Crossbows beat Knives. Knives beat Brawl and Whips.</figcaption>
+  </figure>
+  <figure class="feo-cycle tri">
+    <div class="feo-cycle-ring">
+      <span class="feo-node c-good i0"><i class="feo-ico spark"></i>Anima</span>
+      <span class="feo-node c-warn i1"><i class="feo-ico sun"></i>Light</span>
+      <span class="feo-node c-opt i2"><i class="feo-ico moon"></i>Dark</span>
+      <i class="feo-beat i0"></i><i class="feo-beat i1"></i><i class="feo-beat i2"></i>
+    </div>
+    <figcaption><strong>Magic</strong>Anima beats Light. Light beats Dark and Blood. Dark and Blood beat Anima.</figcaption>
+  </figure>
+</div>
+
+<h3>Everything else</h3>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Weapon</th><th>Beats</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Pistols</strong></td><td>Knives and Brawl</td></tr>
+    <tr><td><strong>Rifles, Handcannons</strong></td><td>Pistols, and Bows and Crossbows</td></tr>
+    <tr><td><strong>Magic</strong></td><td>Rifles and Handcannons</td></tr>
+    <tr><td><strong>Anima</strong></td><td>Its subcategories</td></tr>
+    <tr><td><strong>Arcanima</strong></td><td>Anima</td></tr>
+    <tr><td><strong>Dark, Light</strong></td><td>Arcanima</td></tr>
+    <tr><td><strong>Fire, Wind, Earth, Thunder, Water</strong></td><td>Fire beats Wind, Wind beats Earth, Earth beats Thunder, Thunder beats Water, Water beats Fire.</td></tr>
+    <tr><td><strong>Astral, Scrolls, Magicite</strong></td><td>Unless otherwise stated, they beat and are beaten by nothing.</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">This is the full set, with all Optional weapon types accounted for. The names Melee, Skirmish and Magic on the diagrams are labels for this page only.</p>
+</section>
+
+<section data-page="opt-conditions" data-title="Additional Conditions" data-source="Rules 3.0, Optional Modules, “Additional Conditions”">
+<p class="feo-lead">This is a list of additional Conditions, or Status Effects, that may be used in Optional Content.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>The core Conditions, and the rules all Conditions share, are in [[conditions]].</p>
+</aside>
+
+<h2>The list</h2>
+<!-- include: tables/additional-conditions.html -->
+</section>
+
+<section data-page="opt-capturing" data-title="Capturing" data-source="Rules 3.0, Optional Modules, “Capturing”">
+<p class="feo-lead">Units can choose to Capture enemies instead of killing them.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>A captured unit is carried like a Rescued one. See [[actions|Rescuing]].</p>
+</aside>
+
+<h2>Attempting a capture</h2>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>To capture a unit, one must have <strong>higher Weight</strong> than them. Capturing works like a normal round of combat, however all of the capturing unit's stats except LUK are temporarily <strong>halved</strong>.</p>
+</aside>
+<div class="feo-table-wrap"><table class="feo-table top">
+  <thead><tr><th></th><th>In melee</th><th>At range</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Stats</strong></td><td>All stats except LUK halved.</td><td>The same stat debuffs are applied.</td></tr>
+    <tr><td><strong>On success</strong></td><td>A unit is captured when their HP drops to 0 during a capture, and is picked up by the capturing unit like a Rescue, with the same debuff of halving the unit's SPD and DEX.</td><td>The enemy is not Captured, and is instead effectively stunned for a turn, unable to act in any way, allowing the unit to pick them up on the next turn.</td></tr>
+    <tr><td><strong>Afterwards</strong></td><td class="na">·</td><td>Enemies stunned like this cannot be cured by any means, and regain control and their previous health if they are uncaptured by the end of the next turn.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Who cannot be captured</h2>
+<ul>
+  <li>Beorc Mounted and Flying units, unless they have certain conditions or are dismounted.</li>
+  <li>Ballisticians.</li>
+  <li>Shifted Laguz.</li>
+  <li>Manakete and Taguel, if they still have transformations remaining.</li>
+  <li>Terror units.</li>
+</ul>
+
+<h2>Automatic captures</h2>
+<p>Under certain circumstances, combat is skipped entirely and the target is automatically captured. Those are, if the unit:</p>
+<ul>
+  <li>is afflicted with Sleep, Stun, Petrification, Freeze, Beckon, Seduce, Stop or Control;</li>
+  <li>has no weapons in their inventory;</li>
+  <li>has only broken weapons or staves in their inventory; or</li>
+  <li>can only fight back with innate Fists.</li>
+</ul>
+
+<h2>Holding a captive</h2>
+<ul>
+  <li>Units can trade with captured units, such as for taking equipment from them.</li>
+  <li>A unit can release their captive at any time, in which case they leave the map and are no longer a combatant.</li>
+  <li>Defeating a unit with a captive will free the captive, and they will return to combat with the amount of HP they had before being captured.</li>
+</ul>
+</section>
+
+<section data-page="opt-stagger" data-title="Stagger" data-source="Rules 3.0, Optional Modules, “Stagger”">
+<p class="feo-lead">When this module is active, all units gain a Stagger bar, equal to 60% of their current HP.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>Stagger adds a second bar to track beside HP for every unit on the map.</p>
+</aside>
+
+<h2>How it works</h2>
+<ol class="feo-steps">
+  <li><span class="feo-step-title">Damage lowers the bar</span>
+    <p>Taking damage lowers the Stagger bar by the amount of damage taken. Units do not take Stagger damage during combat they initiate.</p></li>
+  <li><span class="feo-step-title">An empty bar Staggers the unit</span>
+    <p>When a unit's Stagger bar is depleted, they take double damage from all sources and are unable to act for the rest of the turn and until the end of their next.</p></li>
+  <li><span class="feo-step-title">The bar comes back</span>
+    <p>Stagger is not restored through HP healing. Instead it is restored by 20% of its max value at the start of the unit's turn, and refills to max after the unit recovers from being Staggered.</p></li>
+</ol>
+</section>
+
+<section data-page="opt-staves" data-title="Additional Staff Effects" data-source="Rules 3.0, Optional Modules, “Additional Staff Effects”">
+<p class="feo-lead">These are several effects you can allow staves to have during your game.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional modules</p>
+  <p>There are four effects here. A GM can allow any of them.</p>
+</aside>
+
+<h2>Passive Staff Effects</h2>
+<p>Staves, when equipped, will cause an effect depending on the staff at the start of the unit's turn, or as a passive effect.</p>
+<div class="feo-table-wrap"><table class="feo-table top">
+  <thead><tr><th>Staff equipped</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><strong>All healing staves</strong></td><td>Heal the unit for 5 + MAG/3.</td></tr>
+    <tr><td><strong>Status staves such as Berserk</strong></td><td>Cure the unit of that effect. Staves that cure all conditions, such as Restore, will do so too.</td></tr>
+    <tr><td><strong>Speed, Strength, Ensorcel, Barrier, Defense</strong></td><td>+2 SPD, STR, MAG, RES and DEF respectively.</td></tr>
+    <tr><td><strong>Enfeeble, Empower</strong></td><td>+1 to all stats.</td></tr>
+    <tr><td><strong>Freeze, Obscure</strong></td><td>+10 Dodge.</td></tr>
+    <tr><td><strong>Blind</strong></td><td>+10 Hit.</td></tr>
+    <tr><td><strong>Candlelight</strong></td><td>+1 AS.</td></tr>
+    <tr><td><strong>Torch</strong></td><td>+1 LoS.</td></tr>
+    <tr><td><strong>Crest</strong></td><td>+5 Skill Activation.</td></tr>
+    <tr><td><strong>Haste</strong></td><td>+4 SPD.</td></tr>
+    <tr><td><strong>Anew</strong></td><td>+1 MOV.</td></tr>
+    <tr><td><strong>Expel</strong></td><td>−3 Damage taken from Terrors.</td></tr>
+    <tr><td><strong>All other staves</strong></td><td>No effect when equipped.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>Heal Criticals</h2>
+<p>Healing staves may score criticals, not unlike weapons, that heal the target for 3× the amount.</p>
+<div class="feo-formulas">
+  <div class="feo-formula wide">
+    <span class="feo-formula-name">Heal Critical rate</span>
+    <div class="feo-formula-expr"><var>LUK</var> ÷ 2 %</div>
+    <p class="feo-formula-note">It cannot be modulated by skills like Fencer's Grace, and cannot be increased by skills.</p>
+  </div>
+</div>
+
+<h2>Double-Cast</h2>
+<p>Healing staves can cast a second time, like a follow-up attack, but it is random if they do. Double-Cast will not activate if the target was healed to full.</p>
+<div class="feo-formulas">
+  <div class="feo-formula wide">
+    <span class="feo-formula-name">Double-Cast rate</span>
+    <div class="feo-formula-expr">( <var>DEX</var> + <var>SPD</var> + <var>LUK</var> ) ÷ 2 %</div>
+  </div>
+</div>
+
+<h2>Staff Missing</h2>
+<p>Non-offensive staff casts are no longer guaranteed, and instead have a hit rate like attacking with a weapon. Missing still consumes a staff use, like with tomes and bows. Staves like Fortify that target multiple allies will roll miss chance for each target.</p>
+<div class="feo-formulas">
+  <div class="feo-formula wide">
+    <span class="feo-formula-name">Staff hit rate</span>
+    <div class="feo-formula-expr"><var class="w">Hit</var> + <var>DEX</var> × 3</div>
+  </div>
+</div>
+</section>
+
+<section data-page="opt-variants" data-title="Combat Variants" data-source="Rules 3.0, Optional Modules, “Follow-up Critical Multiplier (FCM)”, “FE4 Criticals”, “FE4 Effectiveness”, “Minimum Damage”, “Double Roll RNG”, “FE5 RNG”, “Weapon Kill Critical Bonus” and “Berwick Counters/Doubles”">
+<p class="feo-lead">Eight short modules that each change a single rule of combat. A GM may use any of them on its own.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional modules</p>
+  <p>The core rules these change are in [[combat]] and [[weapons]].</p>
+</aside>
+
+<h2>Follow-up Critical Multiplier</h2>
+<p>Follow-up Critical Multiplier, or FCM, lets units land critical hits more on follow-up attacks.</p>
+<ul>
+  <li>FCM can reach a value of up to 5, and the base is 1. An FCM of 1 means you do not gain a bonus.</li>
+  <li>On follow-up attacks, the unit's Critical is multiplied by their FCM, so a 5 becomes a 10 if the unit's FCM is 2.</li>
+  <li>Brave effect weapons are exempt from this except in scenarios where they will hit 4 times from doubling, in which case the third and fourth attacks (technically the second) will receive the FCM.</li>
+  <li>It is up to the GM's discretion if player units can get or start with an FCM higher than 1.</li>
+</ul>
+
+<h2>FE4 Criticals</h2>
+<p>Makes critical hits deal 2× damage before defense, instead of 3× damage after defense. Weapons with effects like making criticals do 4× instead of 3× will instead do 3× instead of 2× before defense.</p>
+
+<h2>FE4 Effectiveness</h2>
+<p>Effective damage does not multiply weapon Might, but instead deals a standard critical hit. These “Criticals” are not nullified by item or skill effects that negate Criticals, only ones that negate Effective Damage.</p>
+
+<h2>Minimum Damage</h2>
+<p>If a unit negates damage from Defense or Resistance, the attack instead deals 1 damage. This does not affect skills like Iron Wall, which will still cause no damage to be dealt.</p>
+
+<h2>Double Roll RNG</h2>
+<p>The GM can decide to use the Double Roll system, where 2 numbers are rolled for Hit and the average between them (rounded down) is the actual result.</p>
+
+<h2>FE5 RNG</h2>
+<p>Hit chances cannot go below 1% and can only go to 99%, always leaving at least a 1% margin of hitting and dodging.</p>
+
+<h2>Weapon Kill Critical Bonus</h2>
+<p>With this module, units who use a specific weapon for a long time will eventually gain benefits from it. Namely, critical chance.</p>
+<p>When reaching <strong>50 kills</strong> with a specific weapon (individual or collective, that is, all Iron Swords or just the one), units will gain +1 Critical while using that weapon for every kill past 50, up to 100 kills for a total of +50 Critical.</p>
+<p>Depending on the availability of repairs in your campaign, it may be worthwhile to consider adjusting these values.</p>
+
+<h2>Berwick Counters/Doubles</h2>
+<p>With this module, combat gains much more focus on landing the first strike.</p>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>When a unit lands an attack, the foe's next attack is <strong>cancelled</strong>. This is ignored if the damage dealt is zero, either naturally or after things like Shields, Skills, or otherwise.</p>
+</aside>
+<p>Other distinct skill interactions include:</p>
+<ul>
+  <li>Cancel does not exist.</li>
+  <li>Deathmatch, Desperation and Reckless do not cancel attacks on hit while they are active.</li>
+  <li>Opportunist does not activate if a foe's attack is cancelled this way.</li>
+</ul>
+<p>The rules add that there are probably more interactions still to be listed.</p>
+</section>
+
+<section data-page="opt-stars" data-title="Leadership &amp; Movement Stars" data-source="Rules 3.0, Optional Modules, “Authority &amp; Leadership” and “Movement Stars”">
+<p class="feo-lead">Two modules that give certain units Stars: Leadership Stars strengthen the units under a leader, and Movement Stars give a unit a chance to act twice.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional modules</p>
+  <p>These are two modules. A GM may use either one without the other.</p>
+</aside>
+
+<h2>Authority &amp; Leadership</h2>
+<p>The GM can assign a Leadership value to non-playable units if they so wish. Leaders can have as low as 0 and up to 5 Leadership Stars by default.</p>
+<ul>
+  <li>Each star gives a bonus of either +10 Hit and Dodge to affected units in a 3-space range, or +3 Hit and +5 Dodge to all affected units on the map.</li>
+  <li>Units affected are units who have the unit as their “Authority”.</li>
+  <li>Units also gain their own leadership bonuses.</li>
+  <li>Units with Leadership Stars but a different Authority (usually a unit with a superior amount of stars) will still get their own bonuses, stacking with the Authority's bonuses.</li>
+  <li>The GM may also let players take advantage of this at their discretion.</li>
+</ul>
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>The rules document words this as “+3 or +5 to all affected units on the map” without saying what the numbers are added to. They are +3 Hit and +5 Dodge, as the line above now reads.</p>
+</aside>
+
+<h2>Movement Stars</h2>
+<p>Movement Stars are a stat that allows a unit to act again after taking an action, like the Encore skill.</p>
+<ul>
+  <li>A unit typically may only have up to 5 Movement Stars.</li>
+  <li>Each star gives a 5% chance to give the unit another action, up to 25%.</li>
+  <li>Movement Stars can proc infinitely.</li>
+</ul>
+</section>

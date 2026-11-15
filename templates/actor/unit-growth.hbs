@@ -1,0 +1,228 @@
+<section class="tab panel-tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+
+  <div class="cols wide-left">
+    <div class="card">
+      <h3>{{localize "FEO.Section.growth"}}
+        <span class="aside">{{{localize "FEO.Growth.points" total=level.growthTotal}}}</span>
+      </h3>
+      <table class="grid">
+        <thead>
+          <tr>
+            <th scope="col">{{localize "FEO.Column.stat"}}</th>
+            <th scope="col">{{localize "FEO.Column.base"}}</th>
+            <th scope="col">{{localize "FEO.Column.boost"}}</th>
+            <th scope="col">{{localize "FEO.Column.total"}}</th>
+            <th scope="col">{{localize "FEO.Column.cap"}}</th>
+            <th scope="col" class="growth-col">{{localize "FEO.Column.growth"}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each growth as |row|}}
+          <tr>
+            <td data-tooltip="{{localize row.label}}">{{localize row.abbr}}{{#if row.mark}}<span class="pill {{row.mark}}">{{localize (concat "FEO.Growth." row.mark)}}</span>{{else}}{{#if row.capped}}<span class="pill cap">{{localize "FEO.Column.capShort"}}</span>{{/if}}{{/if}}</td>
+            <td><input type="number" name="{{row.path}}" value="{{row.base}}" min="0" step="1"
+                       aria-label="{{localize row.label}} {{localize "FEO.Column.base"}}"></td>
+            <td>
+              {{#if row.boostPath}}
+              <input type="number" name="{{row.boostPath}}" value="{{row.boost}}" step="1" data-play
+                     aria-label="{{localize row.label}} {{localize "FEO.Column.boost"}}">
+              {{/if}}
+              {{#if row.note}}<span class="auto" data-tooltip="{{localize "FEO.Growth.autoHint"}}">{{row.note}}</span>{{/if}}
+            </td>
+            <td class="total">{{row.total}}</td>
+            <td>
+              {{#if row.capFixed}}<span class="from-class">{{row.capFixed}}</span>{{/if}}
+              {{#if row.capPath}}
+              {{#if row.capFromClass}}
+              <span class="from-class" data-tooltip="{{localize "FEO.Growth.capFromClass"}}">{{row.cap}}</span>
+              {{else}}
+              <input type="number" name="{{row.capPath}}" value="{{row.capManual}}" min="0" step="1" placeholder="{{#if row.capDefault}}{{row.capDefault}}{{else}}–{{/if}}"
+                     aria-label="{{localize row.label}} {{localize "FEO.Column.cap"}}">
+              {{/if}}
+              {{/if}}
+              {{#if row.sourcePath}}
+              <select name="{{row.sourcePath}}" aria-label="{{localize row.label}} {{localize "FEO.Column.source"}}"
+                      data-tooltip="{{localize "FEO.Growth.sourceHint"}}">
+                {{selectOptions row.sources selected=row.source localize=true}}
+              </select>
+              {{/if}}
+            </td>
+            <td>
+              {{#if row.growthPct includeZero=true}}
+              <div class="mini">
+                <div class="gauge thin"><i style="width: {{row.growthPct}}%"></i></div>
+                <input type="number" name="system.growths.{{row.key}}" value="{{row.growth}}" min="0" step="5"
+                       {{#with (lookup @root.optional.growthCaps row.key) as |limit|}}max="{{limit}}" data-tooltip="{{localize "FEO.Optional.growths.capHint" cap=limit}}"{{/with}}
+                       aria-label="{{localize row.label}} {{localize "FEO.Column.growth"}}">
+                <span>%</span>
+                {{#with (lookup @root.optional.growthBonus row.key) as |bonus|}}<span class="pill blood" data-tooltip="{{localize "FEO.Optional.blood.growthHint"}}">+{{bonus}}</span>{{/with}}
+                {{#if row.growthSkills}}<span class="pill by-skill" data-tooltip="{{localize "FEO.Growth.skillHint"}}">+{{row.growthSkills}}</span>{{/if}}
+              </div>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <h3>{{localize "FEO.Unit.level"}}</h3>
+        <div class="level-line">
+          <span class="big">{{system.level}}</span>
+          <span class="muted">{{#if level.capped}}{{localize "FEO.LevelUp.atLimit" level=level.limit}}{{else}}{{{localize "FEO.LevelUp.toNext" exp=level.toNext level=level.next}}}{{/if}}</span>
+        </div>
+        <div class="mini"><div class="gauge thin gold"><i style="width: {{level.expPct}}%"></i></div><span>{{system.exp}}</span></div>
+        {{#if editable}}
+        <button type="button" class="btn{{#if level.ready}} primary{{/if}}" data-action="levelUp" {{#unless level.ready}}disabled{{/unless}}>
+          {{feoIcon "up"}}{{#if level.promotes}}{{localize "FEO.LevelUp.promote"}}{{else}}{{#if level.promotion}}{{localize "FEO.LevelUp.promoteOrLevel"}}{{else}}{{localize "FEO.LevelUp.button"}}{{/if}}{{/if}}
+        </button>
+        {{/if}}
+        {{#if level.capped}}<p class="hint">{{localize "FEO.LevelUp.atLimitHint"}}</p>{{else}}{{#if level.promotes}}<p class="hint">{{localize "FEO.LevelUp.promoteHint"}}</p>{{/if}}{{/if}}
+      </div>
+
+      <div class="card class-path">
+        <h3>{{localize "FEO.Section.classPath"}}</h3>
+        {{#if classPath.hasClass}}
+        <ol class="path">
+          {{#each classPath.steps as |step|}}
+          <li class="{{step.state}}{{#if step.missing}} missing{{/if}}"{{#if step.itemId}} data-item-id="{{step.itemId}}"{{/if}}>
+            <span class="step-head">
+              {{#if step.itemId}}
+              <button type="button" class="step-name" data-action="editItem" data-tooltip="{{localize "FEO.Class.open"}}">{{step.name}}</button>
+              {{else}}
+              <b class="step-name">{{step.name}}</b>
+              {{/if}}
+              {{#if step.removable}}{{#if @root.editable}}
+              <button type="button" class="remove edit-only" data-action="deleteItem"
+                      aria-label="{{localize "FEO.Class.forget"}}" data-tooltip="{{localize "FEO.Class.forget"}}">{{feoIcon "x"}}</button>
+              {{/if}}{{/if}}
+            </span>
+            <small>
+              {{~#if step.missing~}}
+              {{localize "FEO.Class.notFound"}}
+              {{~else~}}
+              {{#if step.tag}}{{localize step.tag}} · {{/if}}
+              {{~#if step.levels}}{{localize step.levels.label from=step.levels.from to=step.levels.to}}{{/if}}
+              {{~#each step.skills as |skill|}} · {{skill.name}}{{#if skill.tag}} ({{localize skill.tag}}){{/if}}{{/each}}
+              {{~#if step.gained.length}} · {{localize step.gainedLabel}} {{#each step.gained as |label|}}{{localize label}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}
+              {{~/if~}}
+            </small>
+          </li>
+          {{/each}}
+        </ol>
+        {{#if classPath.early}}{{#if editable}}
+        <button type="button" class="btn small edit-only" data-action="promote" data-tooltip="{{localize "FEO.Class.promoteNowHint"}}">
+          {{feoIcon "up"}}{{localize "FEO.Class.promoteNow"}}
+        </button>
+        {{/if}}{{/if}}
+        {{else}}
+        <p class="empty">{{#if system.className}}{{localize "FEO.Class.nameOnly" name=system.className}}{{else}}{{localize "FEO.Class.none"}}{{/if}}</p>
+        <p class="hint">{{localize "FEO.Class.dropHint"}}</p>
+        {{/if}}
+      </div>
+
+      {{#if heartSeals}}
+      <div class="card heart-seals">
+        <h3>{{localize "FEO.HeartSeal.title"}}
+          {{#if editable}}<button type="button" class="add edit-only" data-action="addSealClass" data-tooltip="{{localize "FEO.HeartSeal.add"}}" aria-label="{{localize "FEO.HeartSeal.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+        </h3>
+        <div class="seal-list">
+          {{#each heartSeals.classes as |entry|}}
+          <span class="tag{{#if entry.starting}} good{{/if}}"{{#if entry.starting}} data-tooltip="{{localize "FEO.HeartSeal.starting"}}"{{/if}}>
+            <b>{{entry.name}}</b>
+            {{#unless entry.starting}}{{#if @root.editable}}
+            <button type="button" class="remove edit-only" data-action="removeSealClass" data-name="{{entry.name}}"
+                    aria-label="{{localize "FEO.HeartSeal.remove"}}" data-tooltip="{{localize "FEO.HeartSeal.remove"}}">{{feoIcon "x"}}</button>
+            {{/if}}{{/unless}}
+          </span>
+          {{else}}
+          <p class="empty">{{localize "FEO.HeartSeal.none"}}</p>
+          {{/each}}
+        </div>
+        {{#if editable}}
+        {{#if heartSeals.canReclass}}
+        <button type="button" class="btn small" data-action="reclass" data-tooltip="{{localize "FEO.HeartSeal.reclassHint"}}">
+          {{feoIcon "swap"}}{{localize "FEO.HeartSeal.reclass"}}
+        </button>
+        {{/if}}
+        {{#if heartSeals.needsSeal}}<p class="hint">{{localize "FEO.HeartSeal.needsSeal" item=heartSeals.item}}</p>{{/if}}
+        {{/if}}
+      </div>
+      {{/if}}
+
+      <div class="card">
+        <h3>{{localize "FEO.Section.boonBane"}}</h3>
+        <div class="pairs">
+          <label class="field">
+            <span>{{localize "FEO.Growth.boon"}}</span>
+            <select name="system.boon">{{selectOptions boonChoices selected=system.boon localize=true blank="–"}}</select>
+          </label>
+          <label class="field">
+            <span>{{localize "FEO.Growth.bane"}}</span>
+            <select name="system.bane">{{selectOptions boonChoices selected=system.bane localize=true blank="–"}}</select>
+          </label>
+        </div>
+      </div>
+
+      {{#if vitals.health}}
+      <div class="card">
+        <h3>{{localize "FEO.Section.health"}}</h3>
+        <div class="pairs three">
+          <label class="field">
+            <span>{{localize "FEO.Health.wounds"}}</span>
+            <input type="number" name="system.wounds" value="{{system.wounds}}" min="0" step="1" data-play>
+          </label>
+          <label class="field">
+            <span>{{localize "FEO.Health.injuries"}}</span>
+            <input type="number" name="system.injuries" value="{{system.injuries}}" min="0" step="1" data-play>
+          </label>
+          <div class="field readout">
+            <span>{{localize "FEO.Health.graveWounds"}}</span>
+            <b>{{system.graveWounds}}</b>
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
+      <div class="card">
+        <h3>{{localize "FEO.Stat.wt.label"}}</h3>
+        <div class="pairs three">
+          <div class="field readout"><span>{{localize "FEO.Stat.con.abbr"}}</span><b>{{system.stats.con.total}}</b></div>
+          <label class="field">
+            <span>{{localize "FEO.Unit.classWt"}}</span>
+            <input type="number" name="system.wt.class" value="{{system.wt.class}}" step="1">
+          </label>
+          <div class="field readout"><span>{{localize "FEO.Stat.wt.abbr"}}</span><b>{{system.wt.total}}</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h3>{{localize "FEO.Section.combatBoosts"}} <span class="aside">{{localize "FEO.Growth.manualHint"}}</span></h3>
+      <div class="pairs three">
+        {{#each boosts as |boost|}}
+        <label class="field">
+          <span>{{localize boost.label}}</span>
+          <input type="number" name="system.combatBoosts.{{boost.key}}" value="{{boost.value}}" step="1" data-play>
+        </label>
+        {{/each}}
+      </div>
+    </div>
+    <div class="card">
+      <h3>{{localize "FEO.Section.calcModes"}} <span class="aside">{{localize "FEO.Growth.calcHint"}}</span></h3>
+      <div class="pairs three">
+        {{#each calcModes as |mode|}}
+        <label class="field">
+          <span>{{localize mode.label}}</span>
+          <select name="system.calc.{{mode.key}}">{{selectOptions mode.choices selected=mode.value localize=true}}</select>
+        </label>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+
+</section>

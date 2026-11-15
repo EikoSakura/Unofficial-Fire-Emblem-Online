@@ -1,0 +1,10 @@
+<p class="hint">{{localize "FEO.SkillPick.lead" kind=(localize kindLabel)}}</p>
+<div class="picks">
+  {{#each options as |option|}}
+  <label class="pick">
+    <input type="radio" name="skill" value="{{option.name}}" {{checked option.checked}}>
+    <b>{{option.name}}</b>
+  </label>
+  {{/each}}
+</div>
+<p class="hint">{{localize "FEO.SkillPick.later"}}</p>

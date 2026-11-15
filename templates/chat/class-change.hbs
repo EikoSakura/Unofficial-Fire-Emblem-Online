@@ -1,0 +1,17 @@
+<div class="feo-card feo-class-change">
+  <header>
+    <h3>{{title}}</h3>
+    {{#if subtitle}}<p>{{subtitle}}</p>{{/if}}
+  </header>
+  {{#each groups as |group|}}
+  <section>
+    <h4>{{group.label}}</h4>
+    <dl>
+      {{#each group.rows as |row|}}
+      <div class="{{row.cls}}"><dt>{{row.label}}</dt><dd>{{row.value}}</dd></div>
+      {{/each}}
+    </dl>
+  </section>
+  {{/each}}
+  {{#each notes as |note|}}<p class="note">{{note}}</p>{{/each}}
+</div>

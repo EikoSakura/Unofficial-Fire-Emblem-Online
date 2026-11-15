@@ -1,0 +1,178 @@
+<div class="item-body">
+
+  <header class="item-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-action="editImage" data-edit="img">
+    <div class="item-title">
+      <div class="eyebrow">{{feoIcon icon}} {{localize "TYPES.Item.skill"}}</div>
+      <input class="name" type="text" name="name" value="{{source.name}}"
+             placeholder="{{localize "FEO.Skill.name"}}" aria-label="{{localize "FEO.Skill.name"}}">
+    </div>
+  </header>
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.skillDetails"}}</h3>
+    <div class="pairs three">
+      <label class="field">
+        <span>{{localize "FEO.Skill.kind"}}</span>
+        <select name="system.kind">{{selectOptions config.skillKinds selected=system.kind localize=true}}</select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Skill.capacity"}}</span>
+        <input type="number" name="system.capacity" value="{{system.capacity}}" min="0" step="1">
+      </label>
+      <label class="field check">
+        <span>{{localize "FEO.Combat.equipped"}}</span>
+        <input type="checkbox" name="system.equipped" {{checked system.equipped}}>
+      </label>
+      <label class="field wide">
+        <span>{{localize "FEO.Skill.prerequisite"}}</span>
+        <input type="text" name="system.prerequisite" value="{{system.prerequisite}}">
+      </label>
+      <label class="field check">
+        <span>{{localize "FEO.Skill.chosen"}}</span>
+        <input type="checkbox" name="system.chosen" {{checked system.chosen}}>
+      </label>
+      <label class="field check">
+        <span>{{localize "FEO.Skill.nihil"}}</span>
+        <input type="checkbox" name="system.nihil" {{checked system.nihil}}>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Skill.scroll"}}</span>
+        <select name="system.scroll">{{selectOptions config.skillScrolls selected=system.scroll localize=true}}</select>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Skill.effect"}}</h3>
+    <textarea name="system.effect" rows="4" aria-label="{{localize "FEO.Skill.effect"}}">{{system.effect}}</textarea>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Skill.automation"}} <span class="aside">{{localize "FEO.Skill.automationHint"}}</span></h3>
+    <div class="pairs three">
+      {{#if choices}}
+      <label class="field">
+        <span>{{localize "FEO.Skill.choice"}}</span>
+        <select name="system.choice">{{selectOptions choices selected=system.choice blank=(localize "FEO.Skill.choiceNone")}}</select>
+      </label>
+      {{/if}}
+      {{#each picks as |pick|}}
+      <label class="field">
+        <span>{{localize "FEO.Skill.pick" number=pick.number}}</span>
+        <select name="picks.{{pick.index}}">{{selectOptions pick.options selected=pick.value localize=true blank=(localize "FEO.Skill.choiceNone")}}</select>
+      </label>
+      {{/each}}
+      <label class="field check" data-tooltip="{{localize "FEO.Skill.automateHint"}}">
+        <span>{{localize "FEO.Skill.automate"}}</span>
+        <input type="checkbox" name="system.automate" {{checked system.automate}}>
+      </label>
+      <div class="field readout wide">
+        <span>{{localize "FEO.Skill.effects"}}</span>
+        <b>{{#if effectCount}}{{localize "FEO.Skill.effectsCount" count=effectCount}}{{else}}{{localize "FEO.Skill.effectsNone"}}{{/if}}</b>
+      </div>
+    </div>
+    <details class="skill-effects">
+      <summary>{{localize "FEO.Skill.effects"}}</summary>
+      <p class="hint">{{localize "FEO.Skill.effectsHint"}}</p>
+      <textarea name="effectsJson" rows="8" spellcheck="false" aria-label="{{localize "FEO.Skill.effects"}}">{{effectsJson}}</textarea>
+    </details>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Usage.title"}} <span class="aside">{{localize "FEO.Usage.titleHint"}}</span></h3>
+    <div class="pairs five">
+      <label class="field wide">
+        <span>{{localize "FEO.Usage.kindLabel"}}</span>
+        <select name="system.usage.kind">
+          {{selectOptions config.skillUsage selected=system.usage.kind localize=true blank=(localize "FEO.Usage.kindNone")}}
+        </select>
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Usage.cooldownHint"}}">
+        <span>{{localize "FEO.Usage.cooldownRow"}}</span>
+        <input type="number" name="system.usage.cooldown" value="{{system.usage.cooldown}}" min="0" step="1">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Usage.lastsHint"}}">
+        <span>{{localize "FEO.Usage.lastsRow"}}</span>
+        <input type="number" name="system.usage.lasts" value="{{system.usage.lasts}}" min="0" step="1">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Usage.usesHint"}}">
+        <span>{{localize "FEO.Usage.usesRow"}}</span>
+        <input type="number" name="system.usage.uses" value="{{system.usage.uses}}" min="0" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Usage.perLabel"}}</span>
+        <select name="system.usage.per">
+          {{selectOptions config.skillPeriods selected=system.usage.per localize=true blank="–"}}
+        </select>
+      </label>
+    </div>
+    {{#if system.usage.kind}}
+    <div class="pairs five">
+      <label class="field check">
+        <span>{{localize "FEO.Usage.activeState"}}</span>
+        <input type="checkbox" name="system.state.active" {{checked system.state.active}}>
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Usage.cooldownStateHint"}}">
+        <span>{{localize "FEO.Usage.cooldownState"}}</span>
+        <input type="number" name="system.state.cooldown" value="{{system.state.cooldown}}" min="0" step="1">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Usage.lastingStateHint"}}">
+        <span>{{localize "FEO.Usage.lastingState"}}</span>
+        <input type="number" name="system.state.lasting" value="{{system.state.lasting}}" min="0" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Usage.usedState"}}</span>
+        <input type="number" name="system.state.used" value="{{system.state.used}}" min="0" step="1">
+      </label>
+    </div>
+    {{/if}}
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Skill.activation"}} <span class="aside">{{localize "FEO.Skill.activationHint"}}</span></h3>
+    <div class="pairs three">
+      <label class="field">
+        <span>{{localize "FEO.Column.stat"}}</span>
+        <select name="system.activation.stat">
+          {{selectOptions config.activationStats selected=system.activation.stat localize=true blank="–"}}
+        </select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Skill.divisor"}}</span>
+        <input type="number" name="system.activation.divisor" value="{{system.activation.divisor}}" min="1" step="1">
+      </label>
+      {{#if chance includeZero=true}}
+      <div class="field readout"><span>{{localize "FEO.Skill.chanceLabel"}}</span><b>{{chance}}%</b></div>
+      {{/if}}
+    </div>
+    {{#if activationNote}}<p class="hint">{{activationNote}}</p>{{/if}}
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Skill.statBoosts"}} <span class="aside">{{localize "FEO.Skill.boostHint"}}</span></h3>
+    <div class="pairs five">
+      {{#each statBoosts as |boost|}}
+      <label class="field">
+        <span>{{localize boost.label}}</span>
+        <input type="number" name="system.stats.{{boost.key}}" value="{{boost.value}}" step="1">
+      </label>
+      {{/each}}
+    </div>
+    <h3 class="spaced">{{localize "FEO.Section.combatBoosts"}}</h3>
+    <div class="pairs three">
+      {{#each combatBoosts as |boost|}}
+      <label class="field">
+        <span>{{localize boost.label}}</span>
+        <input type="number" name="system.combat.{{boost.key}}" value="{{boost.value}}" step="1">
+      </label>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="card biography">
+    <h3>{{localize "FEO.Weapon.description"}}</h3>
+    {{formInput systemFields.description value=system.description enriched=descriptionHTML toggled=true}}
+  </div>
+
+</div>

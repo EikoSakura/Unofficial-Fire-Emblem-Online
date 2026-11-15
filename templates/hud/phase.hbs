@@ -1,0 +1,37 @@
+<div class="hud-slot hud-phase">
+  {{#with phase}}
+  {{#if battle}}
+  <section class="hud-panel phase" aria-label="{{localize "FEO.Phase.label"}}">
+    <div class="ph-flag cloth" data-army="{{phase}}"><small>{{turnLabel}}</small><b>{{phaseLabel}}</b></div>
+    <div class="ph-roster">
+      {{#each roster as |unit|}}
+      <button type="button" class="mini {{unit.state}} {{#if unit.selected}}sel{{/if}}" data-army="{{unit.army}}"
+              data-action="pick" data-token-id="{{unit.id}}" data-tooltip="{{unit.tooltip}}" aria-label="{{unit.tooltip}}">
+        <img src="{{unit.img}}" alt="">{{#if unit.mark}}<em>{{feoIcon unit.mark}}</em>{{/if}}
+      </button>
+      {{/each}}
+    </div>
+    <div class="ph-count"><b>{{left}}</b><span>{{localize "FEO.Phase.toAct"}}</span></div>
+    {{#if canEnd}}
+    <div class="ph-end">
+      <button type="button" class="btn {{#if allActed}}primary{{/if}}" data-action="endPhase" data-tooltip="{{localize "FEO.Phase.endHint"}}">{{feoIcon "banner"}}{{localize "FEO.Phase.end"}}</button>
+      {{#if canClose}}
+      <button type="button" class="btn icon" data-action="endBattle" data-tooltip="{{localize "FEO.Phase.endBattleHint"}}" aria-label="{{localize "FEO.Phase.endBattle"}}">{{feoIcon "x"}}</button>
+      {{/if}}
+    </div>
+    {{/if}}
+  </section>
+  <div class="ph-track">
+    {{#each sides as |side|}}<span data-army="{{side.army}}" class="{{#if side.now}}now{{/if}}">{{side.label}}</span>{{/each}}
+  </div>
+  {{else if canBegin}}
+  <section class="hud-panel phase idle" aria-label="{{localize "FEO.Phase.label"}}">
+    <div class="ph-flag cloth"><small>{{localize "FEO.Phase.battle"}}</small><b>{{localize "FEO.Phase.idle"}}</b></div>
+    <div class="ph-count"><b>{{fielded}}</b><span>{{localize "FEO.Phase.fielded"}}</span></div>
+    <div class="ph-end">
+      <button type="button" class="btn primary" data-action="beginBattle" data-tooltip="{{localize "FEO.Phase.beginHint"}}">{{feoIcon "banner"}}{{localize "FEO.Phase.begin"}}</button>
+    </div>
+  </section>
+  {{/if}}
+  {{/with}}
+</div>

@@ -1,0 +1,50 @@
+<section class="bs-panel bs-v-supports">
+  {{#if bonds.length}}
+  <div class="bs-bonds">
+    {{#each bonds as |bond|}}
+    <article class="bs-card bs-bond{{#if bond.ripe}} bs-ripe{{/if}}">
+      <div class="bs-pair">
+        <span class="bs-medal">{{feoIcon ../icon}}</span>
+        <span class="bs-knot">{{feoIcon "heart"}}</span>
+        <span class="bs-medal">{{feoIcon bond.icon}}</span>
+      </div>
+      <div class="bs-who">
+        <b>{{bond.name}}</b>
+        <small>{{#each bond.affinities as |affinity|}}{{feoIcon affinity}}{{/each}}{{bond.sub}}{{#if bond.kin}} <span class="bs-chip bs-boon">{{localize "FEO.Bond.kin"}}</span>{{/if}}</small>
+      </div>
+      <div class="bs-track">
+        <div class="bs-ladder">{{#each bond.ladder as |step|}}<span class="{{#if step.cls}}bs-{{step.cls}}{{/if}}">{{step.label}}</span>{{/each}}</div>
+        {{#if bond.progress}}
+        <div class="bs-prog bs-num"><div class="bs-bar"><i style="width:{{bond.progress.pct}}%"></i></div><span>{{bond.progress.text}}</span></div>
+        {{/if}}
+      </div>
+      <div class="bs-bond-acts">
+        <button type="button" class="bs-btn{{#if bond.ripe}} bs-gold{{/if}}" data-action="talk" data-bond="{{bond.index}}" data-name="{{bond.name}}">{{feoIcon "heart"}}{{localize "FEO.Base.supports.talk"}}</button>
+        {{#if bond.canLower}}
+        <button type="button" class="bs-step bs-gmb" data-action="rank" data-bond="{{bond.index}}" data-lower="true"
+                data-tooltip="{{localize "FEO.Base.supports.lower"}}" aria-label="{{localize "FEO.Base.supports.lower"}}">{{feoIcon "minus"}}</button>
+        {{/if}}
+        {{#if bond.canRaise}}
+        <button type="button" class="bs-step bs-gmb" data-action="rank" data-bond="{{bond.index}}" data-lower="false"
+                data-tooltip="{{localize "FEO.Base.supports.raise"}}" aria-label="{{localize "FEO.Base.supports.raise"}}">{{feoIcon "plus"}}</button>
+        {{/if}}
+      </div>
+      <div class="bs-gives">{{bond.gives}}{{#if bond.kinGives}} {{bond.kinGives}}{{/if}}{{#if bond.ripe}} <b>{{localize "FEO.Base.supports.ripe"}}</b>{{/if}}</div>
+    </article>
+    {{/each}}
+  </div>
+  {{else}}
+  <p class="bs-none bs-center">{{none}}</p>
+  {{/if}}
+
+  {{#if candidates.length}}
+  <div class="bs-befriend">
+    <span class="bs-eyebrow">{{localize "FEO.Base.supports.new"}}</span>
+    <select data-befriend aria-label="{{localize "FEO.Base.supports.new"}}">
+      {{#each candidates as |unit|}}<option value="{{unit.id}}">{{unit.name}}</option>{{/each}}
+    </select>
+    <button type="button" class="bs-btn bs-sm" data-action="befriend">{{feoIcon "plus"}}{{localize "FEO.Base.supports.begin"}}</button>
+  </div>
+  {{/if}}
+  {{#if visitor}}<p class="bs-rule-note">{{feoIcon "scroll"}}<span>{{method}}. {{limit}}</span></p>{{/if}}
+</section>

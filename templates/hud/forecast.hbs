@@ -1,0 +1,49 @@
+<div class="hud-slot hud-forecast">
+  {{#with forecast}}
+  <section class="hud-panel fc" data-side="{{side}}" aria-label="{{localize "FEO.Exchange.forecast"}}">
+    <div class="fc-names">
+      {{#each names as |unit|}}
+      <div class="fc-name cloth" data-army="{{unit.army}}">
+        <b>{{unit.name}}</b>
+        <span>{{#if unit.weaponImg}}<img src="{{unit.weaponImg}}" alt="">{{/if}}{{unit.weapon}}{{#if unit.triangleUp}}<i class="up" data-tooltip="{{localize "FEO.Exchange.triangle"}}">▲</i>{{/if}}{{#if unit.triangleDown}}<i class="dn" data-tooltip="{{localize "FEO.Exchange.triangle"}}">▼</i>{{/if}}</span>
+      </div>
+      {{/each}}
+    </div>
+    <div class="fc-rows">
+      {{#each rows as |row|}}
+      <div class="fc-row">
+        {{#if row.hp}}
+        {{#each row.cells as |unit|}}
+        {{#if @index}}<span class="fc-mid">{{row.label}}</span>{{/if}}
+        <div class="fc-hp" data-tone="{{unit.hpTone}}">
+          <div class="n">{{unit.hp}}{{#if unit.hpChanges}}<i>→</i><span class="after">{{unit.hpAfter}}</span>{{/if}}</div>
+          <div class="bar"><i style="width:{{unit.hpLeft}}%"></i>{{#if unit.hpChanges}}<u style="left:{{unit.hpLeft}}%;width:{{unit.hpLost}}%"></u>{{/if}}</div>
+        </div>
+        {{/each}}
+        {{else}}
+        {{#each row.cells as |cell|}}
+        {{#if @index}}<span class="fc-mid">{{row.label}}</span>{{/if}}
+        {{#if cell.active}}
+        <div class="fc-cell {{#if cell.lead}}lead{{/if}} {{#if @index}}r{{/if}}" tabindex="0">
+          <div class="n">{{cell.value}}{{#if cell.times}}<small> × {{cell.times}}</small>{{/if}}</div>
+          <div class="why">
+            {{#each cell.lines as |line|}}<div class="{{line.cls}}"><span>{{line.label}}</span><b>{{line.value}}</b></div>{{/each}}
+            <div class="sum"><span>{{localize "FEO.Hud.sum.result"}}</span><span>{{cell.result}}</span></div>
+          </div>
+        </div>
+        {{else}}
+        <div class="fc-cell off" data-tooltip="{{cell.blocked}}"><div class="n">–</div></div>
+        {{/if}}
+        {{/each}}
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{#if blocked}}<p class="fc-blocked">{{blocked}}</p>{{/if}}
+    <div class="fc-foot">
+      <button type="button" class="btn" data-action="cancel">{{localize "COMMON.Cancel"}}</button>
+      <button type="button" class="btn primary" data-action="confirm" {{#unless canAttack}}disabled{{/unless}} {{#if busy}}disabled{{/if}}>{{feoIcon "crossed"}}{{localize "FEO.Combat.attack"}}</button>
+    </div>
+  </section>
+  {{/with}}
+</div>

@@ -1,0 +1,54 @@
+<section class="bs-panel bs-v-convoy">
+  <div class="bs-cols bs-wide-right">
+    <section class="bs-card bs-column">
+      <header class="bs-card-head">
+        <div class="bs-txt"><h3>{{packTitle}}</h3><p>{{packCount}}</p></div>
+      </header>
+      <ul class="bs-items bs-pack">
+        {{#each pack as |row|}}
+        <li class="bs-item" data-kind="{{row.kind}}">
+          <span class="bs-tile">{{feoIcon row.icon}}</span>
+          <span class="bs-nm"><b>{{row.name}}</b><small>{{row.meta}}</small></span>
+          <span class="bs-uses bs-num">{{#if row.hasUses}}{{row.uses}}<div class="bs-bar"><i style="width:{{row.pct}}%"></i></div>{{/if}}</span>
+          <span class="bs-acts">
+            <button type="button" class="bs-btn bs-sm" data-action="store" data-item="{{row.id}}">{{localize "FEO.Base.convoy.store"}}{{feoIcon "right"}}</button>
+          </span>
+        </li>
+        {{else}}
+        <li class="bs-none bs-center">{{packNone}}</li>
+        {{/each}}
+      </ul>
+    </section>
+
+    <section class="bs-card bs-column">
+      <header class="bs-card-head">
+        <div class="bs-txt"><h3>{{localize "FEO.Base.convoy.title"}}</h3><p>{{heldCount}}</p></div>
+        <div class="bs-pickrow">
+          {{#each kinds as |kind|}}
+          <button type="button" class="bs-pick" data-action="convoyKind" data-kind="{{kind.key}}" aria-pressed="{{kind.pressed}}"
+                  data-tooltip="{{kind.label}}" aria-label="{{kind.label}}">{{#if kind.icon}}{{feoIcon kind.icon}}{{else}}{{kind.label}}{{/if}}<small class="bs-num">{{kind.count}}</small></button>
+          {{/each}}
+        </div>
+      </header>
+      <ul class="bs-items bs-held">
+        {{#each rows as |row|}}
+        <li class="bs-item" data-kind="{{row.kind}}">
+          <span class="bs-tile">{{feoIcon row.icon}}</span>
+          <span class="bs-nm"><b>{{row.name}}</b><small>{{row.meta}}</small></span>
+          <span class="bs-uses bs-num">{{#if row.hasUses}}{{row.uses}}<div class="bs-bar"><i style="width:{{row.pct}}%"></i></div>{{/if}}</span>
+          <span class="bs-acts">
+            <button type="button" class="bs-btn bs-sm" data-action="take" data-entry="{{row.id}}" {{#unless ../visitor}}disabled{{/unless}}>{{feoIcon "left"}}{{localize "FEO.Base.convoy.take"}}</button>
+            {{#if ../isGM}}
+            <button type="button" class="bs-step bs-gmb" data-action="discard" data-entry="{{row.id}}"
+                    data-tooltip="{{localize "FEO.Base.convoy.discard"}}" aria-label="{{localize "FEO.Base.convoy.discard"}}">{{feoIcon "trash"}}</button>
+            {{/if}}
+          </span>
+        </li>
+        {{else}}
+        <li class="bs-none bs-center">{{heldNone}}</li>
+        {{/each}}
+      </ul>
+      {{#if isGM}}<p class="bs-rule-note bs-inset">{{feoIcon "hand"}}<span>{{localize "FEO.Base.convoy.dropHint"}}</span></p>{{/if}}
+    </section>
+  </div>
+</section>

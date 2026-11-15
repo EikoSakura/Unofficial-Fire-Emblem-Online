@@ -1,0 +1,46 @@
+<div class="mg">
+  <div class="mg-side">
+    <div class="mg-field" role="group" aria-label="{{localize "FEO.MapGen.kind"}}">
+      <span class="eyebrow">{{localize "FEO.MapGen.kind"}}</span>
+      <div class="mg-types">
+        {{#each types as |type|}}
+        <button type="button" class="mg-type {{#if type.on}}on{{/if}}" data-action="pickType" data-type="{{type.key}}"
+                data-tooltip="{{type.hint}}" aria-pressed="{{type.on}}">{{type.label}}</button>
+        {{/each}}
+      </div>
+    </div>
+    <div class="mg-field">
+      <label class="eyebrow" for="feo-mapgen-size">{{localize "FEO.MapGen.sizeLabel"}}</label>
+      <select id="feo-mapgen-size" name="size">
+        {{#each sizes as |size|}}<option value="{{size.key}}" {{#if size.selected}}selected{{/if}}>{{size.label}}</option>{{/each}}
+      </select>
+      {{#if custom}}
+      <div class="mg-pair">
+        <label><span>{{localize "FEO.MapGen.columns"}}</span><input type="number" name="columns" value="{{columns}}" min="{{limits.min}}" max="{{limits.max}}" step="1"></label>
+        <label><span>{{localize "FEO.MapGen.rows"}}</span><input type="number" name="rows" value="{{rows}}" min="{{limits.min}}" max="{{limits.max}}" step="1"></label>
+      </div>
+      {{/if}}
+    </div>
+    <div class="mg-field">
+      <label class="eyebrow" for="feo-mapgen-seed">{{localize "FEO.MapGen.seed"}}</label>
+      <input type="text" id="feo-mapgen-seed" name="seed" value="{{seed}}" maxlength="24" spellcheck="false" autocomplete="off"
+             data-tooltip="{{localize "FEO.MapGen.seedHint"}}">
+    </div>
+    <div class="mg-field">
+      <label class="eyebrow" for="feo-mapgen-name">{{localize "FEO.MapGen.name"}}</label>
+      <input type="text" id="feo-mapgen-name" name="name" value="{{name}}" placeholder="{{placeholder}}" autocomplete="off">
+    </div>
+    <p class="mg-note">{{localize "FEO.MapGen.note"}}</p>
+  </div>
+  <div class="mg-main">
+    <div class="mg-frame"><canvas class="mg-map" role="img" aria-label="{{placeholder}}, {{summary}}"></canvas></div>
+    <div class="mg-legend">
+      {{#each legend as |entry|}}<span class="mg-key"><i style="background: {{entry.tint}}"></i>{{entry.label}} <b>{{entry.count}}</b></span>{{/each}}
+    </div>
+  </div>
+  <footer class="mg-foot">
+    <span>{{summary}}</span>
+    <button type="button" class="btn" data-action="reroll">{{feoIcon "dice"}}{{localize "FEO.MapGen.reroll"}}</button>
+    <button type="button" class="btn primary" data-action="create">{{feoIcon "plus"}}{{localize "FEO.MapGen.create"}}</button>
+  </footer>
+</div>

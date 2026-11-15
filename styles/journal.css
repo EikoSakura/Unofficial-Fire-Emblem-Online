@@ -1,0 +1,1397 @@
+/* ============================================================
+   Fire Emblem Online: rules journal styles
+
+   Every page of the rules journal wraps its content in
+   <div class="feo-rules">. The journal window is recognised by
+   that wrapper, so no custom journal sheet is needed.
+   ============================================================ */
+
+/* ---------- Tokens ---------- */
+
+.journal-entry:has(.feo-rules) {
+  --feo-font-display: "Amiri", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --feo-font-ui: "Signika", "Segoe UI", system-ui, sans-serif;
+  --feo-font-number: "Amiri", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --feo-radius: 8px;
+
+  /* Cloth and brass keep their own colours in both themes, as on the unit sheet's banner */
+  --feo-cloth: #1c3a72;
+  --feo-cloth-deep: #0f2146;
+  --feo-cloth-ink: #f4eedd;
+  --feo-cloth-muted: rgba(244, 238, 221, .66);
+  --feo-cloth-line: rgba(244, 238, 221, .16);
+  --feo-brass: #e2c476;
+  --feo-brass-hi: #f3d98f;
+  --feo-brass-lo: #c9a14a;
+  --feo-weave:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .028) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, .028) 0 2px, transparent 2px 14px);
+
+  /* Vigil (dark) */
+  --feo-rail-top: #121a2b;
+  --feo-rail: #0a0e17;
+  --feo-window: #121824;
+  --feo-panel: #18202e;
+  --feo-raised: #1f2939;
+  --feo-line: rgba(214, 178, 94, .24);
+  --feo-line-soft: rgba(255, 255, 255, .075);
+  --feo-ink: #ece6d6;
+  --feo-muted: #a0a8b8;
+  --feo-faint: #6d7588;
+  --feo-gold: #d9b662;
+  --feo-gold-ink: #1b1508;
+  --feo-good: #62c48d;
+  --feo-boon: #70b2f7;
+  --feo-bane: #f07a7a;
+  --feo-warn: #e8a640;
+  --feo-optional: #b79df2;
+  --feo-track: rgba(255, 255, 255, .09);
+  --feo-page:
+    radial-gradient(80% 46% at 50% 0%, rgba(217, 182, 98, .085), transparent 70%),
+    radial-gradient(90% 70% at 100% 100%, rgba(74, 134, 228, .07), transparent 65%),
+    var(--feo-window);
+  --feo-card: linear-gradient(180deg, #1c2536, #171f2d);
+  --feo-card-shadow: inset 0 1px 0 rgba(255, 255, 255, .04), 0 8px 20px rgba(0, 0, 0, .24);
+}
+
+/* Vellum (light) */
+.theme-light .journal-entry:has(.feo-rules):not(.theme-dark),
+.journal-entry.theme-light:has(.feo-rules) {
+  --feo-rail-top: #26314c;
+  --feo-rail: #171e30;
+  --feo-window: #f1e9d6;
+  --feo-panel: #f9f4e6;
+  --feo-raised: #fffdf5;
+  --feo-line: rgba(122, 92, 28, .38);
+  --feo-line-soft: rgba(58, 44, 20, .13);
+  --feo-ink: #2a2430;
+  --feo-muted: #655d4f;
+  --feo-faint: #93897a;
+  --feo-gold: #94701c;
+  --feo-gold-ink: #fffaf0;
+  --feo-good: #2c8a57;
+  --feo-boon: #2a6dc4;
+  --feo-bane: #c14040;
+  --feo-warn: #b16f12;
+  --feo-optional: #6b4bb8;
+  --feo-track: rgba(58, 44, 20, .13);
+  --feo-page:
+    radial-gradient(80% 46% at 50% 0%, rgba(255, 253, 245, .95), transparent 70%),
+    radial-gradient(110% 70% at 50% 100%, rgba(122, 92, 28, .13), transparent 65%),
+    var(--feo-window);
+  --feo-card: linear-gradient(180deg, #fffdf6, #f8f1df);
+  --feo-card-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 6px 16px rgba(74, 56, 18, .11);
+}
+
+/* ---------- Window ---------- */
+
+.journal-entry:has(.feo-rules) {
+  background: var(--feo-weave), linear-gradient(180deg, var(--feo-rail-top), var(--feo-rail));
+}
+
+.journal-entry:has(.feo-rules) .window-header { color: var(--feo-cloth-ink); }
+
+/* ---------- Sidebar ---------- */
+
+.journal-entry:has(.feo-rules) .journal-sidebar {
+  flex-basis: 272px;
+  color: var(--feo-cloth-ink);
+  font-family: var(--feo-font-ui);
+}
+
+/* A small crest above the search box: two hairlines and a brass lozenge */
+.journal-entry:has(.feo-rules) .journal-sidebar::before {
+  content: "";
+  flex: none;
+  height: 22px;
+  margin: 0 16px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l10 10-10 10L2 12z' fill='none' stroke='%23e2c476' stroke-width='1.3'/%3E%3Cpath d='M12 7.5l4.5 4.5-4.5 4.5L7.5 12z' fill='%23e2c476'/%3E%3C/svg%3E") center / 20px 20px no-repeat,
+    linear-gradient(90deg, transparent, var(--feo-cloth-line) 18%, var(--feo-cloth-line) calc(50% - 18px), transparent calc(50% - 18px), transparent calc(50% + 18px), var(--feo-cloth-line) calc(50% + 18px), var(--feo-cloth-line) 82%, transparent) center / 100% 1px no-repeat;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar search input {
+  border: 1px solid var(--feo-cloth-line);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .24);
+  color: var(--feo-cloth-ink);
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar search input:focus { border-color: var(--feo-brass); }
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc {
+  --line-height: 29px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--feo-cloth-line) transparent;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc > ol {
+  padding-bottom: 8px;
+  counter-reset: feo-chapter feo-page;
+}
+
+/* Chapters: Foundry's journal categories, numbered in Roman numerals */
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.category {
+  padding: 16px 12px 6px 14px;
+  border: 0;
+  counter-increment: feo-chapter;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.category:first-child { padding-top: 6px; }
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.category strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  color: var(--feo-brass);
+  font-family: var(--feo-font-ui);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  line-height: 1.4;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.category strong::before {
+  content: counter(feo-chapter, upper-roman);
+  flex: none;
+  min-width: 20px;
+  padding-top: 3px;
+  font-family: var(--feo-font-number);
+  font-size: 14px;
+  letter-spacing: .02em;
+  text-align: center;
+  opacity: .85;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.category strong::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--feo-cloth-line), transparent);
+}
+
+/* Pages */
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.page {
+  border: 0;
+  counter-increment: feo-page;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .page-heading {
+  height: var(--line-height);
+  padding-right: 10px;
+  border-left: 3px solid transparent;
+  font-size: 13.5px;
+}
+
+/* Foundry numbers pages from zero; show them from one instead */
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .page-heading .page-index {
+  flex: none;
+  width: 36px;
+  color: var(--feo-cloth-muted);
+  font-size: 0;
+  opacity: .7;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .page-heading .page-index::before {
+  content: counter(feo-page);
+  font-family: var(--feo-font-number);
+  font-size: 14px;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .page-heading:hover {
+  background: linear-gradient(90deg, rgba(255, 255, 255, .06), transparent);
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.page.active > .page-heading {
+  border-left-color: var(--feo-brass);
+  background: linear-gradient(90deg, rgba(226, 196, 118, .2), rgba(226, 196, 118, .03));
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.page.active .page-title { color: var(--feo-brass-hi); font-weight: 600; }
+.journal-entry:has(.feo-rules) .journal-sidebar .toc li.page.active .page-index { color: var(--feo-brass); opacity: 1; }
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .headings {
+  margin: 3px 0 7px 20px;
+  border-left: 1px solid var(--feo-cloth-line);
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .headings li { height: auto; line-height: 1.35; }
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .heading-link {
+  padding: 4px 10px 4px 17px;
+  color: var(--feo-cloth-muted);
+  font-size: 12.5px;
+  text-indent: 0;
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .heading-link:hover { color: var(--feo-cloth-ink); }
+.journal-entry:has(.feo-rules) .journal-sidebar .toc .h3 .heading-link { padding-left: 29px; }
+
+.journal-entry:has(.feo-rules) .journal-sidebar .action-buttons {
+  padding: 10px;
+  border-top: 1px solid var(--feo-cloth-line);
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .action-buttons button {
+  border-color: var(--feo-cloth-line);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .22);
+  color: var(--feo-cloth-ink);
+}
+
+.journal-entry:has(.feo-rules) .journal-sidebar .action-buttons button:hover:not(:disabled) {
+  border-color: var(--feo-brass);
+  color: var(--feo-brass);
+}
+
+/* Collapsed sidebar */
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar { flex-basis: var(--sidebar-width-collapsed); }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar::before { margin: 0 6px; }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar { min-width: 0; }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar .toc li.category { padding: 0; }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar .toc li.category strong { display: none; }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar .toc li.category::after { color: var(--feo-brass); opacity: .7; }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar .toc .page-heading { padding: 0; }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar .toc .page-heading .page-index { width: 100%; }
+.journal-entry:has(.feo-rules):not(.expanded) .journal-sidebar .action-buttons { padding: 4px; }
+
+/* ---------- Search ---------- */
+
+/* The search box looks through the text of every page (module/helpers/rules-search.mjs). While it holds a
+   query, the passages that were found take the place of the contents. The button that switches between
+   searching names and text has nothing left to switch */
+.journal-entry:has(.feo-rules) .journal-sidebar search .toggle-search-mode { display: none; }
+.journal-entry.expanded .journal-sidebar.feo-searching .toc { display: none; }
+.journal-entry:not(.expanded) .journal-sidebar .feo-search { display: none; }
+
+.feo-search {
+  flex: 1;
+  height: 0;
+  overflow: hidden auto;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--feo-cloth-line) transparent;
+}
+
+.feo-search[hidden] { display: none; }
+.feo-search ol { margin: 0; padding: 0; list-style: none; }
+.feo-search li { margin: 0; }
+.feo-search a { display: block; color: inherit; cursor: pointer; text-shadow: none; }
+.feo-search a:focus-visible { outline: 1px solid var(--feo-brass); outline-offset: -1px; }
+
+.feo-search-summary {
+  margin: 0;
+  padding: 6px 12px 8px 14px;
+  color: var(--feo-brass);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.feo-search-none, .feo-search-more {
+  margin: 0;
+  padding: 10px 16px;
+  color: var(--feo-cloth-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* A page with something on it, set like its line in the contents */
+.feo-search a.feo-search-page {
+  display: flex;
+  align-items: center;
+  height: 29px;
+  padding-right: 10px;
+  border-left: 3px solid transparent;
+  font-size: 13.5px;
+}
+
+.feo-search-page .num {
+  flex: none;
+  width: 36px;
+  color: var(--feo-cloth-muted);
+  font-family: var(--feo-font-number);
+  font-size: 14px;
+  text-align: center;
+  opacity: .7;
+}
+
+.feo-search-page .name { flex: 1; min-width: 0; overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+
+.feo-search-page .count {
+  flex: none;
+  min-width: 22px;
+  margin-left: 8px;
+  padding: 1px 6px 0;
+  border: 1px solid var(--feo-cloth-line);
+  border-radius: 999px;
+  color: var(--feo-brass);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* The passages found on it */
+.feo-search-hits { margin: 2px 0 9px 20px !important; border-left: 1px solid var(--feo-cloth-line); }
+
+.feo-search a.feo-search-hit {
+  margin-left: -1px;
+  padding: 5px 10px 5px 15px;
+  border-left: 2px solid transparent;
+  color: var(--feo-cloth-muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.feo-search-hit .where {
+  display: block;
+  margin-bottom: 1px;
+  overflow: hidden;
+  color: var(--feo-brass);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: .8;
+}
+
+.feo-search-hit .text { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; }
+.feo-search-hit.heading .text { color: var(--feo-cloth-ink); font-weight: 600; }
+.feo-search mark { background: none; color: var(--feo-brass-hi); font-weight: 700; }
+
+.feo-search a.feo-search-page:hover, .feo-search a.feo-search-hit:hover {
+  background: linear-gradient(90deg, rgba(255, 255, 255, .06), transparent);
+  color: var(--feo-cloth-ink);
+}
+
+.feo-search a.feo-search-page.active, .feo-search a.feo-search-hit.active {
+  border-left-color: var(--feo-brass);
+  background: linear-gradient(90deg, rgba(226, 196, 118, .2), rgba(226, 196, 118, .03));
+  color: var(--feo-cloth-ink);
+}
+
+.feo-search a.feo-search-page.active .name { color: var(--feo-brass-hi); }
+
+/* On the page: every match is painted, and the passage that was chosen is ringed for a moment */
+::highlight(feo-rules-search) { background-color: rgba(226, 190, 96, .34); }
+.journal-entry.theme-light ::highlight(feo-rules-search),
+.theme-light .journal-entry:not(.theme-dark) ::highlight(feo-rules-search) { background-color: rgba(222, 164, 24, .42); }
+
+.feo-rules .feo-search-flash { outline: 2px solid transparent; outline-offset: 4px; animation: feo-search-flash 1.8s ease-out; }
+.feo-rules tr.feo-search-flash { outline-offset: -2px; }
+
+@keyframes feo-search-flash {
+  0%, 35% { outline-color: var(--feo-gold); }
+  100% { outline-color: transparent; }
+}
+
+/* ---------- Pages ---------- */
+
+.journal-entry:has(.feo-rules) .journal-entry-content {
+  background: var(--feo-page);
+  border-radius: 10px 0 0 0;
+  box-shadow: inset 1px 1px 0 var(--feo-line);
+  color: var(--feo-ink);
+}
+
+/* The window title already names the journal */
+.journal-entry:has(.feo-rules) .journal-entry-content > .journal-header { display: none; }
+
+.journal-entry:has(.feo-rules) .journal-entry-pages {
+  container: feo-page / inline-size;
+  margin: 0;
+  padding: 0 24px 32px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--feo-line) transparent;
+}
+
+.journal-entry:has(.feo-rules) .journal-entry-page {
+  max-width: 770px;
+  margin-inline: auto;
+  padding-top: 56px;
+  font-family: var(--feo-font-ui);
+}
+
+.journal-entry:has(.feo-rules) .journal-page-header {
+  position: relative;
+  margin-bottom: 20px;
+  padding-right: 66px;
+}
+
+.journal-entry:has(.feo-rules) .journal-page-header h1 {
+  margin: 0;
+  padding: 0 0 13px;
+  border: 0;
+  color: var(--feo-ink);
+  font-family: var(--feo-font-display);
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: .005em;
+  line-height: 1.05;
+}
+
+/* The rule under the title: gold fading out, with three lozenges on it */
+.journal-entry:has(.feo-rules) .journal-page-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--feo-gold), color-mix(in srgb, var(--feo-gold) 35%, transparent) 55%, transparent);
+}
+
+.journal-entry:has(.feo-rules) .journal-page-header::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  bottom: -4px;
+  width: 9px;
+  height: 9px;
+  background: var(--feo-gold);
+  transform: rotate(45deg);
+  box-shadow: 9.5px -9.5px 0 -2px var(--feo-gold), 16.5px -16.5px 0 -3.2px var(--feo-gold);
+}
+
+/* A Game Master's button for sending the page to Discord, at the end of the chapter line. The chapter line
+   runs the width of the page, so the button is raised above it to be reached */
+.journal-entry:has(.feo-rules) .journal-page-header .feo-discord-send {
+  position: absolute;
+  z-index: 1;
+  top: -33px;
+  right: 66px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--feo-line);
+  border-radius: 50%;
+  background: none;
+  box-shadow: none;
+  outline: none;
+  color: var(--feo-faint);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background-color .15s;
+}
+
+.journal-entry:has(.feo-rules) .journal-page-header .feo-discord-send:is(:hover, :focus-visible) {
+  border-color: var(--feo-gold);
+  background: color-mix(in srgb, var(--feo-gold) 12%, transparent);
+  color: var(--feo-gold);
+  outline: none;
+}
+
+.journal-entry:has(.feo-rules) .journal-page-header .feo-discord-send:disabled {
+  border-color: var(--feo-line);
+  background: none;
+  color: var(--feo-gold);
+  cursor: progress;
+}
+
+/* ============================================================
+   Page content
+   ============================================================ */
+
+.feo-rules {
+  color: var(--feo-ink);
+  font-family: var(--feo-font-ui);
+  font-size: 15px;
+  font-variant-numeric: lining-nums;
+  line-height: 1.58;
+}
+
+.feo-rules :where(p, ul, ol, dl, dd, dt, figure, table, aside, nav, h2, h3, h4) { margin: 0; }
+.feo-rules > * + * { margin-top: 15px; }
+.feo-rules > :where(p, ul, ol) { max-width: 68ch; }
+.feo-rules :where(ul, ol) { padding-left: 20px; }
+.feo-rules :where(li + li) { margin-top: 3px; }
+.feo-rules :where(ul, ol) > li::marker { color: var(--feo-gold); }
+.feo-rules :where(li > ul, li > ol) { margin-top: 3px; }
+.feo-rules strong { font-weight: 600; }
+.feo-rules :where(dt, dd) { display: block; color: inherit; text-shadow: none; }
+
+.feo-rules a.content-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--feo-gold);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--feo-gold) 45%, transparent);
+  text-underline-offset: 3px;
+  white-space: normal;
+}
+
+.feo-rules a.content-link:hover { text-decoration-color: var(--feo-gold); text-shadow: none; }
+.feo-rules a.content-link > i { display: none; }
+
+.feo-rules .n {
+  font-family: var(--feo-font-number);
+  font-size: 1.12em;
+  line-height: 1;
+}
+
+/* Line icons, drawn as masks so they take the colour of the text around them */
+.feo-ico {
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  background: currentColor;
+  -webkit-mask: var(--ico) center / contain no-repeat;
+  mask: var(--ico) center / contain no-repeat;
+  vertical-align: -.14em;
+}
+
+.feo-ico.axe { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 20L15 6'/%3E%3Cpath d='M13 5c3-2 7-.5 7.5 3.5-1.5 3-4.5 4-7.5 2.5 1-2 1-4 0-6z'/%3E%3C/svg%3E"); }
+.feo-ico.bolt { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 2L5 13.5h5.5L9.5 22 19 9.5h-6L13 2z'/%3E%3C/svg%3E"); }
+.feo-ico.bow { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 4c9-1 16 6 15 15'/%3E%3Cpath d='M5 4l15 15'/%3E%3Cpath d='M4 20L15.5 8.5M12 8.5h3.5V12'/%3E%3C/svg%3E"); }
+.feo-ico.check { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+.feo-ico.claw { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 4c1 6 1 10-1 16M12 3c1 7 1 11-1 18M18 4c1 6 1 10-1 16'/%3E%3C/svg%3E"); }
+.feo-ico.coin { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 7.5v9M9.3 9.8c.6-1 4.7-1.2 4.9.7.3 2.5-4.7 1.2-4.7 3.5 0 1.7 4.3 1.6 5 .2'/%3E%3C/svg%3E"); }
+.feo-ico.dice { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='16' height='16' rx='3'/%3E%3Cpath d='M8.5 8.5h.01M15.5 8.5h.01M12 12h.01M8.5 15.5h.01M15.5 15.5h.01' stroke-width='2.4'/%3E%3C/svg%3E"); }
+.feo-ico.down { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v13M6 12.5l6 6 6-6'/%3E%3C/svg%3E"); }
+.feo-ico.drop { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5s6 6.7 6 11a6 6 0 0 1-12 0c0-4.3 6-11 6-11z'/%3E%3C/svg%3E"); }
+.feo-ico.fist { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 11V8.5a1.5 1.5 0 0 1 3 0V8a1.5 1.5 0 0 1 3 0v.5a1.5 1.5 0 0 1 3 0V10a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6v-1.5A1.5 1.5 0 0 1 7 11z'/%3E%3C/svg%3E"); }
+.feo-ico.flag { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 21V4M6 5h12l-2.5 3.5L18 12H6'/%3E%3C/svg%3E"); }
+.feo-ico.flame { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3c.8 4.2 5.5 5.6 5.5 11a5.5 5.5 0 0 1-11 0c0-2.2 1-3.6 2.2-4.8.2 2 1 3 2 3.3C10.6 9 10.2 6.2 12 3z'/%3E%3C/svg%3E"); }
+.feo-ico.flask { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.5 3h5M10.5 3v5.5L6 17.4A2.5 2.5 0 0 0 8.2 21h7.6a2.5 2.5 0 0 0 2.2-3.6L13.5 8.5V3'/%3E%3Cpath d='M8 15h8'/%3E%3C/svg%3E"); }
+.feo-ico.info { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 11v5.5M12 7.5h.01'/%3E%3C/svg%3E"); }
+.feo-ico.knife { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 4c-1 5-4 8.5-8.5 11L8 12.5 19 4z'/%3E%3Cpath d='M9.5 14L5 18.5M6.5 12.5l5 5'/%3E%3C/svg%3E"); }
+.feo-ico.lance { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 4l-2.2 6.8-4.6-4.6L20 4z'/%3E%3Cpath d='M14.5 9.5L4 20'/%3E%3C/svg%3E"); }
+.feo-ico.lock { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5.5' y='10.5' width='13' height='9.5' rx='2'/%3E%3Cpath d='M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5'/%3E%3C/svg%3E"); }
+.feo-ico.module { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3C/svg%3E"); }
+.feo-ico.moon { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19.5 14.5A8 8 0 1 1 9.5 4.5a6.5 6.5 0 0 0 10 10z'/%3E%3C/svg%3E"); }
+.feo-ico.peak { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 19.5L9 8l4 6.5 2.2-3.2 6.3 8.2z'/%3E%3C/svg%3E"); }
+.feo-ico.plus { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E"); }
+.feo-ico.ring { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='7.5'/%3E%3C/svg%3E"); }
+.feo-ico.shield { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l7.5 2.5v6c0 4.5-3 8-7.5 9.5-4.5-1.5-7.5-5-7.5-9.5v-6L12 3z'/%3E%3C/svg%3E"); }
+.feo-ico.snow { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2.5v19M3.8 7.2l16.4 9.6M3.8 16.8l16.4-9.6'/%3E%3C/svg%3E"); }
+.feo-ico.spark { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2L12 3z'/%3E%3C/svg%3E"); }
+.feo-ico.staff { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 21L14.5 9.5'/%3E%3Ccircle cx='16.5' cy='6.5' r='3.5'/%3E%3C/svg%3E"); }
+.feo-ico.star { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6.1L12 16.9l-5.4 2.9 1.1-6.1-4.5-4.3 6.1-.8L12 3z'/%3E%3C/svg%3E"); }
+.feo-ico.sun { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1'/%3E%3C/svg%3E"); }
+.feo-ico.sword { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 4l-1.2 5L10 17.8 6.2 14 15 5.2 20 4z'/%3E%3Cpath d='M5 12.8l6.2 6.2M7.4 16.6L4 20'/%3E%3C/svg%3E"); }
+.feo-ico.tome { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5v-15z'/%3E%3Cpath d='M5 20.5A2.5 2.5 0 0 0 7.5 21H19v-3'/%3E%3C/svg%3E"); }
+.feo-ico.up { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V6M6 11.5L12 5.5l6 6'/%3E%3C/svg%3E"); }
+.feo-ico.wind { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9h10.5a3 3 0 1 0-3-3M3 15h14.5a3 3 0 1 1-3 3M3 12h7'/%3E%3C/svg%3E"); }
+.feo-ico.window { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='14' rx='2'/%3E%3Cpath d='M3.5 9h17'/%3E%3C/svg%3E"); }
+.feo-ico.x { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E"); }
+
+.feo-callout.rule { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6.1L12 16.9l-5.4 2.9 1.1-6.1-4.5-4.3 6.1-.8L12 3z'/%3E%3C/svg%3E"); }
+.feo-callout.gm { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 21V4M6 5h12l-2.5 3.5L18 12H6'/%3E%3C/svg%3E"); }
+.feo-callout.optional { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 8v8M8 12h8'/%3E%3C/svg%3E"); }
+.feo-callout.tip { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2L12 3z'/%3E%3C/svg%3E"); }
+.feo-callout.source { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 11v5.5M12 7.5h.01'/%3E%3C/svg%3E"); }
+.feo-callout.ruling { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 5.5A2.5 2.5 0 0 1 7.5 3H19v15H7.5A2.5 2.5 0 0 0 5 20.5v-15z'/%3E%3Cpath d='M5 20.5A2.5 2.5 0 0 0 7.5 21H19v-3'/%3E%3C/svg%3E"); }
+.feo-callout.foundry { --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='14' rx='2'/%3E%3Cpath d='M3.5 9h17'/%3E%3C/svg%3E"); }
+
+/* ---------- Chapter line and pennant ---------- */
+
+.feo-kicker {
+  position: absolute;
+  top: 27px;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding-right: 66px;
+  color: var(--feo-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.feo-kicker .pg { color: var(--feo-faint); }
+
+.feo-pennant {
+  position: absolute;
+  right: 6px;
+  top: -27px;
+  width: 46px;
+  height: 78px;
+  padding-bottom: 14px;
+  display: grid;
+  place-items: center;
+  color: var(--feo-brass);
+  font-size: 23px;
+  background:
+    linear-gradient(90deg, var(--feo-brass-lo) 0 2px, transparent 2px 5px, rgba(226, 196, 118, .45) 5px 6px, transparent 6px calc(100% - 6px), rgba(226, 196, 118, .45) calc(100% - 6px) calc(100% - 5px), transparent calc(100% - 5px) calc(100% - 2px), var(--feo-brass-lo) calc(100% - 2px)),
+    var(--feo-weave),
+    linear-gradient(180deg, var(--feo-cloth), var(--feo-cloth-deep));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 15px), 0 100%);
+}
+
+/* ---------- Text ---------- */
+
+.feo-lead {
+  margin-top: 0;
+  color: var(--feo-ink);
+  font-family: var(--feo-font-display);
+  font-size: 21px;
+  line-height: 1.5;
+}
+
+.feo-lead::first-letter {
+  float: left;
+  margin: 9px 9px 0 0;
+  color: var(--feo-gold);
+  font-size: 64px;
+  font-weight: 700;
+  line-height: .72;
+}
+
+.feo-rules h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 36px;
+  padding: 0;
+  border: 0;
+  color: var(--feo-ink);
+  font-family: var(--feo-font-display);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.feo-rules h2::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: var(--feo-gold);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--feo-gold) 22%, transparent);
+}
+
+.feo-rules h2::after {
+  content: "";
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--feo-line), transparent);
+}
+
+.feo-rules h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 0;
+  border: 0;
+  color: var(--feo-muted);
+  font-family: var(--feo-font-ui);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.feo-rules h3::after { content: ""; flex: 1; height: 1px; background: var(--feo-line-soft); }
+.feo-rules :is(h2, h3) + * { margin-top: 12px; }
+
+/* ---------- Cover banner ---------- */
+
+.feo-hero {
+  padding: 24px 20px 22px;
+  border-radius: 10px;
+  color: var(--feo-cloth-ink);
+  text-align: center;
+  background:
+    var(--feo-weave),
+    radial-gradient(90% 120% at 50% 0%, rgba(74, 134, 228, .38), transparent 62%),
+    linear-gradient(180deg, var(--feo-cloth), var(--feo-cloth-deep));
+  box-shadow: inset 0 0 0 1px var(--feo-brass-lo), inset 0 0 0 5px rgba(0, 0, 0, .2), inset 0 0 0 6px rgba(226, 196, 118, .35), 0 10px 26px rgba(0, 0, 0, .28);
+}
+
+.feo-hero-arms { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; color: var(--feo-brass); }
+
+.feo-hero-arms span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid var(--feo-brass);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .28);
+  font-size: 18px;
+}
+
+.feo-hero-arms span:nth-child(2) { width: 50px; height: 50px; font-size: 25px; box-shadow: 0 0 0 4px rgba(226, 196, 118, .16); }
+.feo-hero-arms::before, .feo-hero-arms::after { content: ""; width: 54px; height: 1px; background: linear-gradient(90deg, transparent, var(--feo-brass)); }
+.feo-hero-arms::after { transform: scaleX(-1); }
+.feo-hero-over { color: var(--feo-cloth-muted); font-size: 11px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; }
+.feo-hero-title { font-family: var(--feo-font-display); font-size: 42px; font-weight: 700; line-height: 1.15; }
+.feo-hero-sub { margin-top: 2px; color: var(--feo-cloth-muted); font-size: 14px; }
+
+/* ---------- At a glance ---------- */
+
+.feo-glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+
+.feo-glance > div {
+  position: relative;
+  overflow: hidden;
+  padding: 13px 12px 11px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+  text-align: center;
+}
+
+.feo-glance > div::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--feo-gold), transparent); }
+.feo-glance b { display: block; color: var(--feo-gold); font-family: var(--feo-font-number); font-size: 30px; font-weight: 700; line-height: 1.15; }
+.feo-glance span { color: var(--feo-muted); font-size: 13px; }
+
+/* ---------- Formula blocks ---------- */
+
+.feo-formulas { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; }
+
+.feo-formula {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 12px 13px 17px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--feo-gold) 10%, transparent), transparent 46%), var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+}
+
+.feo-formula::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--feo-brass-hi), var(--feo-gold) 60%, var(--feo-brass-lo)); }
+.feo-formula.wide { grid-column: 1 / -1; }
+.feo-formula-name { display: block; margin-bottom: 8px; color: var(--feo-gold); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.feo-formula-expr { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 5px; font-family: var(--feo-font-number); font-size: 21px; line-height: 1; }
+
+.feo-formula-expr var, .feo-key var {
+  padding: 5px 9px 4px;
+  border: 1px solid var(--feo-line);
+  border-radius: 999px;
+  background: var(--feo-raised);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .14);
+  font-family: var(--feo-font-ui);
+  font-size: 12.5px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+
+.feo-formula-expr var.w, .feo-key var.w {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--feo-gold) 70%, transparent);
+  background: color-mix(in srgb, var(--feo-gold) 9%, transparent);
+  box-shadow: none;
+  color: var(--feo-gold);
+}
+
+.feo-formula-note { margin-top: 10px; color: var(--feo-muted); font-size: 13px; line-height: 1.45; }
+.feo-key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--feo-muted); font-size: 13px; }
+.feo-key span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Tables ---------- */
+
+.feo-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+}
+
+.feo-rules .feo-table { width: 100%; margin: 0; border: 0; border-collapse: collapse; background: none; font-size: 14px; line-height: 1.4; }
+.feo-rules .feo-table :is(thead, tbody, tr) { border: 0; background: none; color: inherit; font-weight: inherit; }
+
+.feo-rules .feo-table th {
+  padding: 10px 12px 9px;
+  border: 0;
+  border-bottom: 1px solid var(--feo-line);
+  background: color-mix(in srgb, var(--feo-gold) 8%, transparent);
+  color: var(--feo-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-align: left;
+  text-transform: uppercase;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.feo-rules .feo-table th.wrap { white-space: normal; }
+.feo-rules .feo-table td { padding: 8px 12px; border: 0; border-top: 1px solid var(--feo-line-soft); vertical-align: middle; }
+.feo-rules .feo-table td.top, .feo-rules .feo-table.top td { vertical-align: top; }
+.feo-rules .feo-table tbody tr:first-child td { border-top: 0; }
+.feo-rules .feo-table tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--feo-raised) 55%, transparent); }
+.feo-rules .feo-table tbody tr:hover td { background: color-mix(in srgb, var(--feo-gold) 8%, transparent); }
+.feo-rules .feo-table td:first-child strong, .feo-rules .feo-table td.nw { white-space: nowrap; }
+.feo-rules .feo-table .num { font-family: var(--feo-font-number); font-size: 17px; line-height: 1.1; text-align: right; white-space: nowrap; }
+.feo-rules .feo-table th.num { font-family: var(--feo-font-ui); font-size: 11px; }
+.feo-rules .feo-table .mid { text-align: center; }
+.feo-rules .feo-table td.yes { color: var(--feo-good); font-weight: 700; }
+.feo-rules .feo-table td.no { color: var(--feo-bane); font-weight: 700; }
+.feo-rules .feo-table td.na { color: var(--feo-faint); }
+.feo-rules .feo-table td.up { color: var(--feo-good); }
+.feo-rules .feo-table td.down { color: var(--feo-bane); }
+.feo-rules .feo-table small { color: var(--feo-muted); }
+.feo-rules .feo-table.compact { font-size: 13px; }
+.feo-rules .feo-table.compact td { padding: 5px 10px; }
+.feo-table-note { margin-top: 7px !important; color: var(--feo-muted); font-size: 12.5px; }
+
+.feo-rank {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 2px 6px 0;
+  border: 1.5px solid var(--feo-gold);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--feo-gold) 10%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--feo-gold) 12%, transparent);
+  color: var(--feo-gold);
+  font-family: var(--feo-font-number);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.feo-rank.top { border-color: #fff1c2; background: linear-gradient(180deg, var(--feo-brass-hi), var(--feo-brass-lo)); color: #241a05; }
+
+/* ---------- Definition lists ---------- */
+
+.feo-defs {
+  overflow: hidden;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+}
+
+.feo-defs > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 0 14px; padding: 9px 14px; border-top: 1px solid var(--feo-line-soft); }
+.feo-defs > div:first-child { border-top: 0; }
+.feo-defs > div:nth-child(even) { background: color-mix(in srgb, var(--feo-raised) 55%, transparent); }
+.feo-defs dt { color: var(--feo-gold); font-weight: 700; line-height: 1.4; }
+.feo-defs dt small { display: block; color: var(--feo-muted); font-size: 12px; font-weight: 400; }
+.feo-defs dd { font-size: 14px; line-height: 1.5; }
+.feo-defs.short > div { grid-template-columns: 70px minmax(0, 1fr); }
+.feo-defs.wide > div { grid-template-columns: 210px minmax(0, 1fr); }
+
+/* ---------- Cycle diagrams (triangles and the pentagon) ---------- */
+
+.feo-cycles { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.feo-rules .feo-cycle {
+  flex: 1 1 184px;
+  display: flex;
+  flex-direction: column;
+  width: auto;
+  padding: 12px 12px 13px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: radial-gradient(70% 55% at 50% 38%, color-mix(in srgb, var(--feo-gold) 9%, transparent), transparent 75%), var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+}
+
+.feo-cycle.tri { --n: 3; --r: 60px; --node: 56px; --h: 156px; --cy: 92px; }
+.feo-cycle.penta { flex-basis: 230px; --n: 5; --r: 82px; --node: 50px; --hub: 46px; --h: 208px; --cy: 111px; }
+.feo-cycle-ring { position: relative; height: var(--h); margin: auto 0; }
+
+/* The dashed orbit the nodes sit on */
+.feo-cycle-ring::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: var(--cy);
+  width: calc(var(--r) * 2);
+  height: calc(var(--r) * 2);
+  translate: -50% -50%;
+  border: 1px dashed var(--feo-line);
+  border-radius: 50%;
+}
+
+.feo-cycle.tri .feo-cycle-ring::after {
+  content: "beats";
+  position: absolute;
+  left: 50%;
+  top: var(--cy);
+  translate: -50% -50%;
+  color: var(--feo-muted);
+  font-family: var(--feo-font-display);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1;
+}
+
+/* Each node, arrow and spoke takes its place on the ring from --i, set by the classes i0 to i7 */
+.feo-cycle .i0 { --i: 0; } .feo-cycle .i1 { --i: 1; } .feo-cycle .i2 { --i: 2; } .feo-cycle .i3 { --i: 3; }
+.feo-cycle .i4 { --i: 4; } .feo-cycle .i5 { --i: 5; } .feo-cycle .i6 { --i: 6; } .feo-cycle .i7 { --i: 7; }
+
+.feo-node, .feo-hub, .feo-beat, .feo-spoke { position: absolute; --a: calc(var(--i) / var(--n) * 1turn); translate: -50% -50%; }
+
+.feo-node, .feo-hub {
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1px;
+  width: var(--node);
+  height: var(--node);
+  border: 1.5px solid var(--c, var(--feo-gold));
+  border-radius: 50%;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c, var(--feo-gold)) 20%, var(--feo-raised)), color-mix(in srgb, var(--c, var(--feo-gold)) 7%, var(--feo-raised)));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c, var(--feo-gold)) 14%, transparent), 0 3px 8px rgba(0, 0, 0, .2);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.feo-node { left: calc(50% + var(--r) * sin(var(--a))); top: calc(var(--cy) - var(--r) * cos(var(--a))); }
+.feo-hub { left: 50%; top: var(--cy); width: var(--hub); height: var(--hub); }
+.feo-node .feo-ico, .feo-hub .feo-ico { color: var(--c, var(--feo-gold)); font-size: 19px; }
+.feo-hub .feo-ico { font-size: 15px; }
+.feo-beat, .feo-spoke { height: 2.5px; border-radius: 2px; background: linear-gradient(90deg, color-mix(in srgb, var(--feo-gold) 45%, transparent), var(--feo-gold)); }
+
+.feo-beat {
+  --a: calc((var(--i) + .5) / var(--n) * 1turn);
+  --half: calc(.5turn / var(--n));
+  --m: calc(var(--r) * cos(var(--half)));
+  left: calc(50% + var(--m) * sin(var(--a)));
+  top: calc(var(--cy) - var(--m) * cos(var(--a)));
+  width: calc(2 * var(--r) * sin(var(--half)) - var(--node) - 18px);
+  rotate: var(--a);
+}
+
+.feo-spoke {
+  --m: calc((var(--hub) / 2 + var(--r) - var(--node) / 2) / 2);
+  left: calc(50% + var(--m) * sin(var(--a)));
+  top: calc(var(--cy) - var(--m) * cos(var(--a)));
+  width: calc(var(--r) - var(--node) / 2 - var(--hub) / 2 - 16px);
+  rotate: calc(var(--a) - 90deg);
+  opacity: .65;
+}
+
+.feo-beat::after, .feo-spoke::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-top: 2.5px solid var(--feo-gold);
+  border-right: 2.5px solid var(--feo-gold);
+  border-radius: 1px;
+  translate: 0 -50%;
+  rotate: 45deg;
+}
+
+.feo-rules .feo-cycle figcaption { margin: 8px 0 0; color: var(--feo-muted); font-size: 13px; font-style: normal; line-height: 1.45; text-align: center; }
+.feo-rules .feo-cycle figcaption strong { display: block; margin-bottom: 2px; color: var(--feo-ink); font-family: var(--feo-font-display); font-size: 19px; font-weight: 700; line-height: 1.2; }
+
+.c-bane { --c: var(--feo-bane); } .c-boon { --c: var(--feo-boon); } .c-good { --c: var(--feo-good); }
+.c-warn { --c: var(--feo-warn); } .c-gold { --c: var(--feo-gold); } .c-opt { --c: var(--feo-optional); }
+.c-muted { --c: var(--feo-muted); }
+
+/* ---------- Condition cards ---------- */
+
+.feo-conds { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 10px; }
+
+.feo-cond {
+  position: relative;
+  overflow: hidden;
+  padding: 11px 13px 12px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c, var(--feo-gold)) 9%, transparent), transparent 62%), var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+}
+
+.feo-cond::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, var(--c, var(--feo-gold)), color-mix(in srgb, var(--c, var(--feo-gold)) 25%, transparent)); }
+.feo-cond-head { position: relative; display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+
+.feo-cond-head::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  translate: 0 -50%;
+  border: 1px solid color-mix(in srgb, var(--c, var(--feo-gold)) 50%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c, var(--feo-gold)) 16%, transparent);
+}
+
+.feo-cond-head .feo-ico { position: relative; margin: 6.5px 0 6.5px 6.5px; color: var(--c, var(--feo-gold)); font-size: 17px; }
+.feo-cond-name { padding-top: 4px; font-family: var(--feo-font-display); font-size: 21px; font-weight: 700; line-height: 1; }
+
+.feo-dur {
+  margin-left: auto;
+  padding: 2px 9px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: 999px;
+  background: var(--feo-raised);
+  color: var(--feo-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.feo-cond p { font-size: 13.5px; line-height: 1.46; }
+.feo-cond .feo-fine { margin-top: 7px; padding-top: 6px; border-top: 1px dashed var(--feo-line-soft); color: var(--feo-muted); font-size: 12.5px; }
+
+/* ---------- Numbered steps ---------- */
+
+.feo-rules .feo-steps { padding: 0; list-style: none; counter-reset: feo-step; }
+.feo-rules .feo-steps > li { position: relative; margin: 0; padding: 0 0 22px 54px; counter-increment: feo-step; }
+
+.feo-rules .feo-steps > li::before {
+  content: counter(feo-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  padding-top: 3px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #fff1c2;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--feo-brass-hi), var(--feo-brass-lo));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--feo-gold) 16%, transparent), 0 3px 7px rgba(0, 0, 0, .3);
+  color: #241a05;
+  font-family: var(--feo-font-number);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.feo-rules .feo-steps > li::after { content: ""; position: absolute; left: 17.5px; top: 45px; bottom: 5px; border-left: 1px dashed var(--feo-line); }
+.feo-rules .feo-steps > li:last-child { padding-bottom: 0; }
+.feo-rules .feo-steps > li:last-child::after { display: none; }
+.feo-step-title { display: block; padding-top: 5px; font-family: var(--feo-font-display); font-size: 22px; font-weight: 700; line-height: 1.2; }
+.feo-rules .feo-steps > li > * + * { margin-top: 8px; }
+.feo-rules .feo-steps p { max-width: 64ch; }
+
+.feo-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--feo-line);
+  border-radius: 999px;
+  color: var(--feo-gold);
+  font-family: var(--feo-font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  vertical-align: 3px;
+}
+
+/* ---------- Worked examples ---------- */
+
+.feo-example { position: relative; border: 1px solid var(--feo-line); border-radius: var(--feo-radius); background: var(--feo-card); box-shadow: var(--feo-card-shadow); }
+
+/* Brass corner brackets */
+.feo-example::before, .feo-example::after { content: ""; position: absolute; width: 16px; height: 16px; pointer-events: none; }
+.feo-example::before { left: -1px; top: -1px; border-left: 2px solid var(--feo-gold); border-top: 2px solid var(--feo-gold); border-radius: var(--feo-radius) 0 0 0; }
+.feo-example::after { right: -1px; bottom: -1px; border-right: 2px solid var(--feo-gold); border-bottom: 2px solid var(--feo-gold); border-radius: 0 0 var(--feo-radius) 0; }
+
+.feo-example-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 10px 15px 8px;
+  border-bottom: 1px solid var(--feo-line);
+  border-radius: 7px 7px 0 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--feo-gold) 17%, transparent), color-mix(in srgb, var(--feo-gold) 4%, transparent));
+}
+
+.feo-example-head span { display: inline-flex; align-items: center; gap: 6px; color: var(--feo-gold); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.feo-example-head span .feo-ico { font-size: 15px; }
+.feo-example-head strong { font-family: var(--feo-font-display); font-size: 21px; font-weight: 700; line-height: 1.2; }
+.feo-example-body { padding: 13px 15px 15px; }
+.feo-example-body > * + * { margin-top: 10px; }
+.feo-example-body p { font-size: 14px; }
+.feo-statline { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.feo-statline em { margin-right: 4px; color: var(--feo-muted); font-size: 12.5px; font-style: normal; font-weight: 600; }
+
+.feo-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 2px 9px 1px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: 999px;
+  background: var(--feo-raised);
+  color: var(--feo-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.feo-stat b { color: var(--feo-ink); font-family: var(--feo-font-number); font-size: 17px; font-weight: 700; letter-spacing: 0; line-height: 1.2; }
+.feo-stat.w { border-style: dashed; border-color: color-mix(in srgb, var(--feo-gold) 60%, transparent); background: color-mix(in srgb, var(--feo-gold) 8%, transparent); }
+.feo-calc > div { display: grid; grid-template-columns: 118px minmax(0, 1fr) auto; gap: 0 12px; align-items: baseline; padding: 6px 0 5px; border-top: 1px solid var(--feo-line-soft); }
+.feo-calc > div:first-child { border-top: 0; }
+.feo-calc dt { color: var(--feo-muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.feo-calc .work { font-family: var(--feo-font-number); font-size: 18px; line-height: 1.2; }
+.feo-calc .work small { color: var(--feo-muted); font-family: var(--feo-font-ui); font-size: 12px; }
+.feo-calc .res { min-width: 44px; color: var(--feo-gold); font-family: var(--feo-font-number); font-size: 25px; font-weight: 700; line-height: 1; text-align: right; }
+.feo-calc .res::before { content: "= "; color: var(--feo-faint); font-size: 17px; font-weight: 400; }
+.feo-meter { display: grid; grid-template-columns: 118px minmax(0, 1fr) 54px; gap: 12px; align-items: center; font-size: 13px; }
+.feo-meter em { color: var(--feo-muted); font-size: 12px; font-style: normal; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.feo-meter .track { height: 12px; overflow: hidden; border-radius: 999px; background: var(--feo-track); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .3); }
+.feo-meter .track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(180deg, color-mix(in srgb, var(--c, var(--feo-gold)) 78%, #fff), var(--c, var(--feo-gold))); }
+.feo-meter b { font-family: var(--feo-font-number); font-size: 19px; line-height: 1; text-align: right; }
+.feo-versus { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.feo-versus > div { padding: 10px 12px 11px; border: 1px solid var(--feo-line-soft); border-radius: 7px; background: var(--feo-raised); }
+.feo-rules .feo-versus h4 { margin-bottom: 7px; padding: 0; border: 0; font-family: var(--feo-font-display); font-size: 19px; font-weight: 700; line-height: 1.2; }
+.feo-rules .feo-versus h4 small { display: block; color: var(--feo-muted); font-family: var(--feo-font-ui); font-size: 12px; font-weight: 400; }
+
+/* ---------- Callouts ---------- */
+
+.feo-callout {
+  --c: var(--feo-gold);
+  position: relative;
+  overflow: hidden;
+  padding: 13px 16px 14px 60px;
+  border: 1px solid color-mix(in srgb, var(--c) 36%, transparent);
+  border-radius: var(--feo-radius);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c) 14%, var(--feo-panel)), color-mix(in srgb, var(--c) 4%, var(--feo-panel)) 70%);
+  box-shadow: var(--feo-card-shadow);
+}
+
+/* Icon medallion: the disc, then the icon on top of it */
+.feo-callout::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 13px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+}
+
+.feo-callout::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 21px;
+  width: 18px;
+  height: 18px;
+  background: var(--c);
+  -webkit-mask: var(--ico) center / contain no-repeat;
+  mask: var(--ico) center / contain no-repeat;
+}
+
+.feo-callout > * + * { margin-top: 6px; }
+.feo-callout p, .feo-callout li { font-size: 14px; line-height: 1.5; }
+.feo-rules .feo-callout-label { color: var(--c); font-size: 11px; font-weight: 700; letter-spacing: .14em; line-height: 16px; text-transform: uppercase; }
+.feo-callout.rule { --c: var(--feo-gold); }
+.feo-callout.gm { --c: var(--feo-boon); }
+.feo-callout.optional { --c: var(--feo-optional); border-style: dashed; }
+.feo-callout.tip { --c: var(--feo-good); }
+.feo-callout.source { --c: var(--feo-warn); }
+.feo-callout.ruling { --c: var(--feo-muted); }
+.feo-callout.foundry { --c: var(--feo-faint); }
+.feo-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+
+/* ---------- Rulings: a situation and its answer ---------- */
+
+.feo-qa {
+  overflow: hidden;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+}
+
+.feo-qa > * { padding: 11px 15px 12px 60px; position: relative; }
+.feo-qa > * > * + * { margin-top: 6px; }
+.feo-qa p { font-size: 14px; line-height: 1.5; }
+.feo-q { color: var(--feo-ink); }
+.feo-a { border-top: 1px solid var(--feo-line-soft); background: color-mix(in srgb, var(--feo-gold) 7%, transparent); }
+
+.feo-q::before, .feo-a::before {
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  width: 30px;
+  height: 30px;
+  padding-top: 3px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--feo-line);
+  border-radius: 50%;
+  color: var(--feo-muted);
+  font-family: var(--feo-font-number);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.feo-q::before { content: "Q"; }
+.feo-a::before { content: "A"; border-color: #fff1c2; background: linear-gradient(180deg, var(--feo-brass-hi), var(--feo-brass-lo)); color: #241a05; }
+
+/* ---------- Fold-away sections ---------- */
+
+.feo-more {
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+}
+
+.feo-more > summary {
+  padding: 10px 14px;
+  color: var(--feo-gold);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+
+.feo-more > summary::marker { color: var(--feo-gold); }
+.feo-more[open] > summary { border-bottom: 1px solid var(--feo-line-soft); }
+.feo-more > .feo-table-wrap { border: 0; border-radius: 0 0 var(--feo-radius) var(--feo-radius); background: none; box-shadow: none; }
+.feo-more > :not(summary, .feo-table-wrap) { margin: 12px 14px; }
+
+/* ---------- Reading path, source line, pager ---------- */
+
+.feo-path { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; counter-reset: feo-path; }
+
+.feo-path > div {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 15px 15px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+  counter-increment: feo-path;
+}
+
+.feo-path > div::before {
+  content: counter(feo-path);
+  position: absolute;
+  right: 12px;
+  top: 6px;
+  color: color-mix(in srgb, var(--feo-gold) 38%, transparent);
+  font-family: var(--feo-font-number);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.feo-path > div::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--feo-brass-hi), var(--feo-brass-lo)); }
+.feo-path strong { position: relative; display: block; margin-bottom: 5px; padding-right: 34px; font-family: var(--feo-font-display); font-size: 21px; font-weight: 700; line-height: 1.2; }
+.feo-path p { position: relative; font-size: 13.5px; line-height: 1.5; }
+
+.feo-rules > .feo-source {
+  position: relative;
+  max-width: none;
+  margin-top: 36px;
+  padding-top: 22px;
+  color: var(--feo-faint);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.feo-source::before { content: ""; position: absolute; left: 8%; right: 8%; top: 4px; height: 1px; background: linear-gradient(90deg, transparent, var(--feo-line) 25%, var(--feo-line) 75%, transparent); }
+
+.feo-source::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  background: var(--feo-gold);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0 4px var(--feo-window), 10px -10px 0 -2.5px var(--feo-gold), -10px 10px 0 -2.5px var(--feo-gold);
+}
+
+.feo-rules > .feo-pager { display: flex; gap: 10px; margin-top: 16px; }
+.feo-pager > span { flex: 1; min-width: 0; }
+
+.feo-rules .feo-pager a.content-link {
+  display: block;
+  padding: 10px 14px 11px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: var(--feo-radius);
+  background: var(--feo-card);
+  box-shadow: var(--feo-card-shadow);
+  color: var(--feo-ink);
+  font-family: var(--feo-font-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.feo-rules .feo-pager a.content-link::before {
+  content: "‹  Previous";
+  display: block;
+  margin-bottom: 2px;
+  color: var(--feo-gold);
+  font-family: var(--feo-font-ui);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: pre;
+}
+
+.feo-rules .feo-pager .next a.content-link { text-align: right; }
+.feo-rules .feo-pager .next a.content-link::before { content: "Next  ›"; }
+.feo-rules .feo-pager a.content-link:hover { border-color: var(--feo-gold); }
+
+/* ---------- Narrow page column ---------- */
+
+@container feo-page (max-width: 520px) {
+  .journal-entry:has(.feo-rules) .journal-page-header { padding-right: 52px; }
+  .journal-entry:has(.feo-rules) .journal-page-header .feo-discord-send { right: 52px; }
+  .journal-entry:has(.feo-rules) .journal-page-header h1 { font-size: 33px; }
+  .feo-kicker { padding-right: 52px; }
+  .feo-kicker .pg { display: none; }
+  .feo-pennant { right: 2px; width: 38px; height: 68px; font-size: 19px; }
+  .feo-lead { font-size: 18.5px; }
+  .feo-lead::first-letter { font-size: 54px; }
+  .feo-rules h2 { font-size: 24px; }
+  .feo-hero-title { font-size: 31px; }
+  .feo-hero-arms::before, .feo-hero-arms::after { width: 24px; }
+  .feo-formula-expr { font-size: 20px; }
+  .feo-calc > div, .feo-meter { grid-template-columns: 86px minmax(0, 1fr) auto; gap: 0 8px; }
+  .feo-defs > div, .feo-defs.wide > div { grid-template-columns: minmax(0, 1fr); }
+  .feo-rules .feo-steps > li { padding-left: 46px; }
+  .feo-rules > .feo-pager { flex-direction: column; }
+  .feo-rules .feo-pager .next a.content-link { text-align: left; }
+  .feo-rules .feo-table th, .feo-rules .feo-table td { padding-left: 7px; padding-right: 7px; }
+  .feo-rules .feo-table th { letter-spacing: .05em; }
+  .feo-rules .feo-table .num { font-size: 15.5px; }
+  .feo-rules .feo-table th.num { font-size: 11px; }
+  .feo-callout { padding-left: 54px; }
+  .feo-callout::before { left: 10px; }
+  .feo-callout::after { left: 18px; }
+  .feo-qa > * { padding-left: 52px; }
+  .feo-q::before, .feo-a::before { left: 10px; }
+}

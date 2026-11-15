@@ -1,0 +1,606 @@
+/* ============================================================
+   Fire Emblem Online: the Compendium
+   One window for the classes, skills and equipment of the
+   system's compendiums: the class tree and its class sheet,
+   the roll of skills and its skill sheet, and the armoury.
+   ============================================================ */
+
+/* ---------- Tokens ---------- */
+
+/* An item's sheet wears them too: read, it is a panel like the class sheet and the skill sheet below */
+.feo.feo-compendium,
+.feo.item-sheet {
+  --cp-brass: linear-gradient(90deg, #a67c2c, #f0d48a 22%, #f0d48a 78%, #a67c2c);
+  --cp-lattice:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .03) 0 2px, transparent 2px 14px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, .03) 0 2px, transparent 2px 14px);
+  --cp-crest-ink: #f8f1de;
+  --cp-violet: #c08be6;
+  --cp-gutter: 118px;
+
+  /* Crest metals by tier: iron, bronze, silver, gold, and white gold above them */
+  --cp-m0: #8d95a3;
+  --cp-m1: #bd8c58;
+  --cp-m2: #cdd4de;
+  --cp-m3: #edc965;
+  --cp-m4: #fff3c4;
+
+  /* The map the tree is drawn on (Vigil) */
+  --cp-map: #0c121c;
+  --cp-map-line: rgba(214, 178, 94, .05);
+  --cp-gutter-bg: #0a0f19;
+  --cp-edge: #414b63;
+  --cp-route: #6fd896;
+  --cp-route-ink: #06240f;
+  --cp-trail: #e8c267;
+  --cp-trail-ink: #1b1508;
+  --cp-ped-a: #404d6a;
+  --cp-ped-b: #1a2233;
+  --cp-ped-line: #5a6684;
+  --cp-plate: #19212f;
+  --cp-parch: #e8dbb8;
+  --cp-parch-ink: #33291a;
+  --cp-parch-edge: rgba(90, 64, 16, .5);
+}
+
+/* Vellum (light) */
+.theme-light .feo:is(.feo-compendium, .item-sheet):not(.theme-dark),
+.feo:is(.feo-compendium, .item-sheet).theme-light {
+  --cp-violet: #8a4bb8;
+  --cp-map: #ece3ca;
+  --cp-map-line: rgba(122, 92, 28, .085);
+  --cp-gutter-bg: #e0d5b8;
+  --cp-edge: #b9ad90;
+  --cp-route: #1f8a50;
+  --cp-route-ink: #fff;
+  --cp-trail: #a87c12;
+  --cp-trail-ink: #fffaf0;
+  --cp-ped-a: #fffef6;
+  --cp-ped-b: #d5c9a9;
+  --cp-ped-line: #a09378;
+  --cp-plate: #fffdf5;
+  --cp-parch: #fdf8e8;
+  --cp-parch-ink: #3b2f1c;
+  --cp-parch-edge: rgba(122, 92, 28, .4);
+}
+
+/* The dye of each line's cloth */
+.feo-compendium [data-dye="green"] { --cp-dye: #2f7653; --cp-dye-deep: #1a4a33; }
+.feo-compendium [data-dye="crimson"] { --cp-dye: #a5363e; --cp-dye-deep: #6a1d24; }
+.feo-compendium [data-dye="amber"] { --cp-dye: #b4651f; --cp-dye-deep: #733f0e; }
+.feo-compendium [data-dye="blue"] { --cp-dye: #2f63b6; --cp-dye-deep: #1a3a76; }
+.feo-compendium [data-dye="violet"] { --cp-dye: #7347aa; --cp-dye-deep: #46296d; }
+.feo-compendium [data-dye="teal"] { --cp-dye: #1f8289; --cp-dye-deep: #105156; }
+.feo-compendium [data-dye="indigo"] { --cp-dye: #4a3f9a; --cp-dye-deep: #2a2362; }
+.feo-compendium [data-dye="plum"] { --cp-dye: #8a3f78; --cp-dye-deep: #552449; }
+.feo-compendium [data-dye="umber"] { --cp-dye: #8a5a34; --cp-dye-deep: #54351c; }
+.feo-compendium [data-dye="slate"] { --cp-dye: #5a5f6f; --cp-dye-deep: #343741; }
+
+/* The colour of each kind of skill */
+.feo-compendium [data-kind="generic"], .feo-compendium [data-kind="misc"] { --cp-kind: var(--feo-muted); --cp-dye: #586277; --cp-dye-deep: #343a48; }
+.feo-compendium [data-kind="class"], .feo-compendium [data-kind="starting"] { --cp-kind: var(--feo-boon); --cp-dye: #2f63b6; --cp-dye-deep: #1a3a76; }
+.feo-compendium [data-kind="promotion"] { --cp-kind: var(--feo-good); --cp-dye: #2f7653; --cp-dye-deep: #1a4a33; }
+.feo-compendium [data-kind="occult"] { --cp-kind: var(--cp-violet); --cp-dye: #7347aa; --cp-dye-deep: #46296d; }
+.feo-compendium [data-kind="mastery"] { --cp-kind: var(--feo-gold); --cp-dye: #a47b29; --cp-dye-deep: #674a11; }
+.feo-compendium [data-kind="monster"] { --cp-kind: var(--feo-bane); --cp-dye: #a5363e; --cp-dye-deep: #6a1d24; }
+.feo-compendium [data-kind="enemy"] { --cp-kind: var(--feo-warn); --cp-dye: #b4651f; --cp-dye-deep: #733f0e; }
+
+/* ---------- Window ---------- */
+
+.feo.feo-compendium { container: feo-codex / inline-size; min-width: 340px; min-height: 420px; }
+
+.feo.feo-compendium .window-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.feo-compendium .cp-top { grid-column: 1 / -1; grid-row: 1; }
+.feo-compendium .cp-head { grid-column: 1 / -1; grid-row: 2; }
+.feo-compendium .cp-body { position: relative; grid-column: 1; grid-row: 3; min-width: 0; min-height: 0; display: flex; flex-direction: column; border-top: 1px solid var(--feo-line); }
+.feo-compendium .cp-body.cp-wide { grid-column: 1 / -1; }
+.feo-compendium .cp-dock {
+  grid-column: 2; grid-row: 3; width: 392px; min-height: 0; padding: 12px; overflow-y: auto;
+  border-top: 1px solid var(--feo-line); border-left: 1px solid var(--feo-line);
+  background: color-mix(in srgb, var(--feo-window) 60%, var(--feo-panel));
+  scrollbar-width: thin; scrollbar-color: var(--feo-line) transparent;
+}
+
+/* Only the parts of the section in view are shown */
+.feo-compendium[data-view="classes"] :is(.v-skills, .v-equipment),
+.feo-compendium[data-view="skills"] :is(.v-classes, .v-equipment),
+.feo-compendium[data-view="equipment"] :is(.v-classes, .v-skills) { display: none; }
+
+.feo-compendium .feo-icon { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.feo-compendium .num { font-variant-numeric: tabular-nums lining-nums; }
+.feo-compendium :is(h2, h3, h4, p) { margin: 0; padding: 0; border: 0; }
+.feo-compendium .cp-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--feo-line) transparent; }
+
+/* ---------- Masthead: a cloth band, and the sections as pennants hung from its rod ---------- */
+
+.feo-compendium .cp-masthead {
+  position: relative; display: flex; align-items: center; gap: 14px;
+  padding: 8px 20px 11px; color: var(--feo-cloth-ink);
+  background: var(--cp-lattice), linear-gradient(180deg, var(--feo-army-deep), var(--feo-army-dark));
+}
+.feo-compendium .cp-masthead::before { content: ""; position: absolute; left: 0; right: 0; top: 4px; height: 1px; background: rgba(240, 212, 138, .45); }
+.feo-compendium .cp-masthead::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--cp-brass); box-shadow: 0 2px 5px rgba(0, 0, 0, .45); }
+.feo-compendium .cp-mast-crest { flex: none; width: 39px; height: 44px; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .45)); }
+.feo-compendium .cp-mast-title { min-width: 0; }
+.feo-compendium .cp-mast-title small { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: var(--feo-cloth-muted); }
+.feo-compendium .cp-mast-title b { display: block; font-family: var(--feo-font-display); font-weight: 400; font-size: 25px; line-height: 1.1; letter-spacing: .02em; }
+.feo-compendium .cp-mast-rule {
+  flex: 1; min-width: 20px; height: 13px; opacity: .7;
+  background: linear-gradient(#f0d48a, #f0d48a) 0 50% / 100% 1px no-repeat;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent); mask: linear-gradient(90deg, transparent, #000 30%, #000 70%, transparent);
+}
+.feo-compendium .cp-mast-motto { flex: none; text-align: right; font-size: 12.5px; color: var(--feo-cloth-muted); line-height: 1.3; }
+.feo-compendium .cp-mast-motto b { display: block; font-family: var(--feo-font-display); font-weight: 400; font-size: 15px; color: #f0d48a; }
+
+.feo-compendium .cp-pennants { position: relative; z-index: 2; display: flex; gap: 8px; padding: 0 20px; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .35)); }
+.feo-compendium .cp-pennant {
+  all: unset; box-sizing: border-box; cursor: pointer;
+  display: flex; align-items: center; gap: 10px; min-width: 168px;
+  padding: 7px 16px 18px 12px; color: var(--feo-cloth-ink);
+  background: var(--cp-lattice), linear-gradient(180deg, var(--feo-army-dark), var(--feo-army-deep));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 11px), 0 100%);
+  transition: padding .15s;
+}
+.feo-compendium .cp-pennant:hover { background: var(--cp-lattice), linear-gradient(180deg, var(--feo-army-deep), color-mix(in srgb, var(--feo-army-deep) 70%, var(--feo-army))); }
+.feo-compendium .cp-pennant:focus-visible { outline: none; box-shadow: inset 0 0 0 2px #f0d48a; }
+.feo-compendium .cp-pennant .seal { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 17px; border: 1.5px solid currentColor; background: rgba(0, 0, 0, .2); }
+.feo-compendium .cp-pennant b { display: block; font-family: var(--feo-font-display); font-weight: 400; font-size: 17px; line-height: 1.15; }
+.feo-compendium .cp-pennant small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .72; }
+.feo-compendium .cp-pennant[aria-selected="true"] { background: linear-gradient(180deg, #f6dd96, #c9a14a); color: #241a05; padding-bottom: 24px; }
+.feo-compendium .cp-pennant[aria-selected="true"] .seal { background: rgba(255, 255, 255, .28); }
+
+/* ---------- The head of a section ---------- */
+
+.feo-compendium .cp-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 18px; padding: 6px 20px 10px; }
+.feo-compendium .cp-head-row .cp-picks { padding: 0; }
+.feo-compendium .cp-head-row .txt { margin-right: auto; min-width: 0; }
+.feo-compendium .cp-eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--feo-faint); }
+.feo-compendium .cp-head h2 { margin-top: 1px; font-family: var(--feo-font-display); font-weight: 400; font-size: 24px; line-height: 1.15; color: var(--feo-ink); }
+.feo-compendium .cp-head p { margin-top: 2px; font-size: 13.5px; color: var(--feo-muted); max-width: 64ch; }
+.feo-compendium .cp-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.feo-compendium .cp-search { position: relative; display: block; flex: 1 1 200px; min-width: 150px; max-width: 320px; }
+.feo-compendium .cp-search .feo-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--feo-faint); font-size: 15px; pointer-events: none; }
+.feo-compendium .cp-search input {
+  width: 100%; height: 32px; padding: 0 10px 0 32px; border-radius: 999px;
+  background: var(--feo-raised); border: 1px solid var(--feo-line-soft); color: var(--feo-ink);
+  font-family: var(--feo-font-ui); font-size: 14px; box-shadow: none; outline: none;
+}
+.feo-compendium .cp-search input:focus { border-color: var(--feo-gold); }
+.feo-compendium .cp-search input::placeholder { color: var(--feo-faint); opacity: 1; }
+.feo-compendium .cp-seg { display: inline-flex; border: 1px solid var(--feo-line); border-radius: 999px; overflow: hidden; background: var(--feo-panel); }
+.feo-compendium .cp-seg button { all: unset; box-sizing: border-box; cursor: pointer; padding: 5px 13px; font-size: 13px; color: var(--feo-muted); }
+.feo-compendium .cp-seg button[aria-pressed="true"] { background: var(--feo-gold); color: var(--feo-gold-ink); font-weight: 700; }
+.feo-compendium .cp-seg button:focus-visible { box-shadow: inset 0 0 0 2px var(--feo-ink); }
+
+.feo-compendium .cp-picks { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 10px; }
+.feo-compendium .cp-body > .cp-picks { padding-top: 10px; border-bottom: 1px solid var(--feo-line-soft); }
+.feo-compendium .cp-pick {
+  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--feo-line-soft); background: var(--feo-raised); color: var(--feo-ink); font-size: 13.5px; font-weight: 700; white-space: nowrap;
+}
+.feo-compendium .cp-pick:hover { border-color: var(--feo-line); }
+.feo-compendium .cp-pick:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 2px; }
+.feo-compendium .cp-pick[aria-pressed="true"] { background: var(--feo-gold); color: var(--feo-gold-ink); border-color: transparent; }
+.feo-compendium .cp-pick small { font-weight: 500; opacity: .7; }
+.feo-compendium .cp-pick .dot { width: 9px; height: 9px; border-radius: 2px; transform: rotate(45deg); background: var(--cp-kind); }
+.feo-compendium .cp-pick .feo-icon { font-size: 15px; }
+.feo-compendium .cp-empty { padding: 48px 20px; text-align: center; color: var(--feo-faint); font-family: var(--feo-font-display); font-size: 17px; }
+
+/* ---------- Classes: the tree ---------- */
+
+/* Under the map, never over it: the key to the roads, between the arrows that pan it */
+.feo-compendium .cp-tree-foot {
+  flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; padding: 4px 14px;
+  border-top: 1px solid var(--feo-line); background: color-mix(in srgb, var(--feo-window) 70%, var(--feo-panel));
+}
+.feo-compendium .cp-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; font-size: 12.5px; color: var(--feo-muted); }
+.feo-compendium .cp-legend span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.feo-compendium .cp-legend i { width: 22px; height: 0; border-top: 3px solid var(--cp-edge); border-radius: 2px; }
+.feo-compendium .cp-legend i.sel { width: 13px; height: 13px; border: 2.5px solid var(--cp-trail); border-radius: 50%; box-shadow: 0 0 6px var(--cp-trail); }
+.feo-compendium .cp-legend i.to { border-color: var(--cp-route); }
+.feo-compendium .cp-legend i.from { border-color: var(--cp-trail); }
+.feo-compendium .cp-legend i.outside { border-top-style: dashed; border-top-width: 2px; border-color: var(--feo-faint); }
+
+.feo-compendium .cp-tree-view {
+  flex: 1; min-height: 0; overflow: auto; cursor: grab; overscroll-behavior: contain;
+  scrollbar-width: thin; scrollbar-color: var(--feo-line) transparent;
+  background:
+    repeating-linear-gradient(45deg, var(--cp-map-line) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(-45deg, var(--cp-map-line) 0 1px, transparent 1px 22px),
+    var(--cp-map);
+}
+.feo-compendium .cp-tree-view.dragging { cursor: grabbing; }
+.feo-compendium .cp-tree-view.dragging .cp-node { pointer-events: none; }
+.feo-compendium .cp-tree-row { display: flex; width: max-content; min-width: 100%; min-height: 100%; }
+.feo-compendium .cp-canvas { position: relative; flex: none; }
+
+/* The tiers' ribbons stand in a gutter beside the map, so panning never hides them or a class */
+.feo-compendium .cp-tiers { position: sticky; left: 0; z-index: 4; flex: none; width: var(--cp-gutter); background: var(--cp-gutter-bg); border-right: 1px solid var(--feo-line); }
+.feo-compendium .cp-rule { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed var(--feo-line); }
+.feo-compendium .cp-ribbon {
+  position: absolute; left: 0; width: 108px; padding: 6px 16px 6px 12px; color: var(--feo-cloth-ink);
+  background: var(--cp-lattice), linear-gradient(180deg, var(--feo-army-deep), var(--feo-army-dark));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
+  box-shadow: inset 0 2px 0 #caa450, inset 0 -2px 0 #caa450;
+}
+.feo-compendium .cp-ribbon b { display: block; font-family: var(--feo-font-display); font-weight: 400; font-size: 16px; line-height: 1.15; letter-spacing: .03em; white-space: nowrap; }
+.feo-compendium .cp-ribbon small { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; color: var(--feo-cloth-muted); white-space: nowrap; }
+
+/* The cloth strip behind each line, and its name hung at the head of it */
+.feo-compendium .cp-strip {
+  position: absolute; border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cp-dye) 17%, transparent), color-mix(in srgb, var(--cp-dye) 5%, transparent));
+  box-shadow: inset 1px 0 0 color-mix(in srgb, var(--cp-dye) 30%, transparent), inset -1px 0 0 color-mix(in srgb, var(--cp-dye) 30%, transparent);
+}
+.feo-compendium .cp-strip-tag {
+  position: absolute; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  margin-top: 5px; padding: 3px 16px 4px; font-size: 11.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--cp-crest-ink);
+  background: var(--cp-lattice), linear-gradient(180deg, var(--cp-dye), var(--cp-dye-deep));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%, 8px 50%);
+}
+.feo-compendium .cp-strip-tag .feo-icon { font-size: 14px; }
+.feo-compendium .cp-strip-tag span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Roads */
+.feo-compendium .cp-routes { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.feo-compendium .cp-routes path { fill: none; stroke: var(--cp-edge); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.feo-compendium .cp-routes path.outside { stroke-dasharray: 5 4; }
+.feo-compendium .cp-routes path.head { fill: var(--cp-edge); stroke-width: 1; stroke-dasharray: none; }
+.feo-compendium .cp-routes .to path { stroke: var(--cp-route); stroke-width: 3.2; }
+.feo-compendium .cp-routes .to path.head { fill: var(--cp-route); }
+.feo-compendium .cp-routes .to2 path { stroke: color-mix(in srgb, var(--cp-route) 58%, var(--cp-map)); stroke-width: 2.4; }
+.feo-compendium .cp-routes .to2 path.head { fill: color-mix(in srgb, var(--cp-route) 58%, var(--cp-map)); }
+.feo-compendium .cp-routes .from path { stroke: var(--cp-trail); stroke-width: 3.2; }
+.feo-compendium .cp-routes .from path.head { fill: var(--cp-trail); }
+.feo-compendium .cp-routes .from2 path { stroke: color-mix(in srgb, var(--cp-trail) 58%, var(--cp-map)); stroke-width: 2.4; }
+.feo-compendium .cp-routes .from2 path.head { fill: color-mix(in srgb, var(--cp-trail) 58%, var(--cp-map)); }
+.feo-compendium .cp-level {
+  position: absolute; z-index: 2; transform: translate(-50%, -50%); padding: 0 7px; height: 17px; line-height: 17px; border-radius: 4px;
+  font-size: 11px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; pointer-events: none;
+  background: var(--cp-route); color: var(--cp-route-ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .45);
+}
+.feo-compendium .cp-level:is(.from, .from2) { background: var(--cp-trail); color: var(--cp-trail-ink); }
+.feo-compendium .cp-level:is(.to2, .from2) { height: 15px; line-height: 15px; font-size: 10px; padding: 0 5px; opacity: .88; }
+
+/* A class on the map: a crest standing on a pedestal, with a nameplate */
+.feo-compendium .cp-node { all: unset; box-sizing: border-box; position: absolute; z-index: 1; width: 88px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.feo-compendium .cp-node .art { position: relative; display: block; width: 70px; height: 76px; }
+.feo-compendium .cp-ped {
+  position: absolute; left: 50%; bottom: 1px; width: 66px; height: 22px; margin-left: -33px; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 28%, var(--cp-ped-a), var(--cp-ped-b) 78%); border: 1px solid var(--cp-ped-line);
+  box-shadow: 0 3px 0 -1px var(--cp-ped-b), 0 4px 0 -1px var(--cp-ped-line), 0 9px 10px rgba(0, 0, 0, .32);
+}
+.feo-compendium .cp-ped::after { content: ""; position: absolute; inset: -6px -7px; border-radius: 50%; border: 0 solid transparent; pointer-events: none; }
+.feo-compendium .cp-node .cp-crest { position: absolute; left: 50%; bottom: 9px; width: 46px; height: 54px; margin-left: -23px; transition: transform .15s; }
+.feo-compendium .cp-node:hover .cp-crest, .feo-compendium .cp-node:focus-visible .cp-crest { transform: translateY(-4px); }
+.feo-compendium .cp-node:focus-visible .cp-plate { box-shadow: 0 0 0 2px var(--feo-gold); }
+.feo-compendium .cp-plate {
+  width: 82px; height: 30px; margin-top: 3px; padding: 0 3px; display: grid; place-items: center; text-align: center;
+  font-family: var(--feo-font-ui); font-size: 11.5px; font-weight: 700; line-height: 1.12; color: var(--feo-ink); overflow-wrap: anywhere; overflow: hidden;
+  background: var(--cp-plate); border: 1px solid var(--feo-line-soft); border-radius: 5px;
+}
+.feo-compendium .cp-node .npc { position: absolute; right: -2px; top: 6px; padding: 0 5px; border-radius: 999px; font-size: 9px; font-weight: 800; letter-spacing: .06em; line-height: 14px; background: var(--cp-plate); border: 1px solid var(--feo-faint); color: var(--feo-muted); }
+.feo-compendium .cp-node.to .cp-ped::after { border: 2.5px solid var(--cp-route); }
+.feo-compendium .cp-node.to .cp-plate { border-color: var(--cp-route); }
+.feo-compendium .cp-node.to2 .cp-ped::after { border: 2px solid color-mix(in srgb, var(--cp-route) 58%, var(--cp-map)); }
+.feo-compendium .cp-node.from .cp-ped::after { border: 2.5px dashed var(--cp-trail); }
+.feo-compendium .cp-node.from .cp-plate { border-color: var(--cp-trail); }
+.feo-compendium .cp-node.from2 .cp-ped::after { border: 2px dashed color-mix(in srgb, var(--cp-trail) 58%, var(--cp-map)); }
+.feo-compendium .cp-node.sel .cp-ped::after { border: 3px solid var(--cp-trail); box-shadow: 0 0 14px var(--cp-trail), inset 0 0 8px color-mix(in srgb, var(--cp-trail) 60%, transparent); animation: cp-ring 2.4s ease-in-out infinite; }
+.feo-compendium .cp-node.sel .cp-crest { transform: translateY(-4px); }
+.feo-compendium .cp-node.sel .cp-plate { background: linear-gradient(180deg, color-mix(in srgb, var(--cp-trail) 86%, #fff), var(--cp-trail)); color: var(--cp-trail-ink); border-color: transparent; box-shadow: 0 2px 8px rgba(0, 0, 0, .35); }
+@keyframes cp-ring {
+  0%, 100% { box-shadow: 0 0 8px var(--cp-trail), inset 0 0 6px color-mix(in srgb, var(--cp-trail) 60%, transparent); }
+  50% { box-shadow: 0 0 20px var(--cp-trail), inset 0 0 10px color-mix(in srgb, var(--cp-trail) 60%, transparent); }
+}
+
+.feo-compendium .cp-pan {
+  all: unset; box-sizing: border-box; flex: none; width: 28px; height: 28px;
+  display: grid; place-items: center; border-radius: 50%; cursor: pointer; font-size: 16px;
+  background: var(--feo-panel); border: 1px solid var(--feo-line); color: var(--feo-gold);
+  opacity: .3; pointer-events: none; transition: opacity .15s;
+}
+.feo-compendium .cp-pan:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 2px; }
+.feo-compendium .cp-pan.on { opacity: 1; pointer-events: auto; }
+.feo-compendium .cp-pan:hover { border-color: var(--feo-gold); }
+.feo-compendium .cp-scrim { display: none; }
+
+/* Crests: a shield in the line's dye, its rim the tier's metal, its charge the class's craft */
+.feo-compendium .cp-crest { display: block; overflow: visible; filter: drop-shadow(0 3px 2px rgba(0, 0, 0, .4)); }
+.feo-compendium .cp-crest .rim { fill: var(--cp-dye); stroke: var(--cp-metal); stroke-width: 2.6; stroke-linejoin: round; }
+.feo-compendium .cp-crest .shine { fill: url(#feo-crest-shine); }
+.feo-compendium .cp-crest .inner { fill: none; stroke: rgba(255, 255, 255, .22); stroke-width: 1.1; }
+.feo-compendium .cp-crest .charge { fill: none; stroke: var(--cp-crest-ink); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.feo-compendium .cp-crest .gem { fill: var(--cp-metal); stroke: #5d4712; stroke-width: 1; }
+.feo-compendium .cp-crest.t0 { --cp-metal: var(--cp-m0); }
+.feo-compendium .cp-crest.t1 { --cp-metal: var(--cp-m1); }
+.feo-compendium .cp-crest.t2 { --cp-metal: var(--cp-m2); }
+.feo-compendium .cp-crest.t3 { --cp-metal: var(--cp-m3); }
+.feo-compendium .cp-crest.t4 { --cp-metal: var(--cp-m4); }
+.feo-compendium .cp-crest.t4 .gem { fill: #7fd0ff; stroke: #1c4a72; }
+
+/* ---------- The class sheet and the skill sheet: one self-contained panel each ---------- */
+
+.feo-compendium .cp-sheet {
+  position: relative; display: flex; flex-direction: column; min-height: calc(100% - 8px); margin: 4px;
+  background: var(--feo-panel); border: 1px solid var(--feo-gold); border-radius: 4px;
+  box-shadow: 0 0 0 3px var(--feo-panel), 0 0 0 4px var(--feo-line), 0 10px 26px rgba(0, 0, 0, .3);
+}
+.feo-compendium .cp-sheet .corner { position: absolute; z-index: 2; width: 15px; height: 15px; border: 2px solid var(--cp-m3); pointer-events: none; }
+.feo-compendium .corner.tl { left: -5px; top: -5px; border-right: 0; border-bottom: 0; }
+.feo-compendium .corner.tr { right: -5px; top: -5px; border-left: 0; border-bottom: 0; }
+.feo-compendium .corner.bl { left: -5px; bottom: -5px; border-right: 0; border-top: 0; }
+.feo-compendium .corner.br { right: -5px; bottom: -5px; border-left: 0; border-top: 0; }
+.feo-compendium .cs-banner {
+  position: relative; display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 4px 13px; align-items: center;
+  padding: 14px 44px 17px 15px; color: var(--cp-crest-ink);
+  background: var(--cp-lattice), linear-gradient(170deg, var(--cp-dye), var(--cp-dye-deep));
+  border-radius: 3px 3px 0 0;
+}
+.feo-compendium .cs-banner[draggable="true"] { cursor: grab; }
+.feo-compendium .cs-banner::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--cp-brass); }
+.feo-compendium .cs-banner .cp-crest { width: 62px; height: 72px; }
+.feo-compendium .cs-tier {
+  display: inline-block; padding: 1px 14px 2px; font-size: 10.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #241a05;
+  background: linear-gradient(180deg, #f6dd96, #c9a14a);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%, 7px 50%);
+}
+.feo-compendium .cs-banner h3 { margin: 4px 0 1px; font-family: var(--feo-font-display); font-weight: 400; font-size: 24px; line-height: 1.12; overflow-wrap: anywhere; color: inherit; }
+.feo-compendium .cs-banner .sub { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--feo-cloth-muted); }
+.feo-compendium .cs-buttons { position: absolute; right: 9px; top: 9px; display: flex; gap: 5px; }
+.feo-compendium .cs-button { all: unset; box-sizing: border-box; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; cursor: pointer; font-size: 15px; color: var(--cp-crest-ink); background: rgba(0, 0, 0, .28); border: 1px solid var(--feo-cloth-line); }
+.feo-compendium .cs-button:hover, .feo-compendium .cs-button:focus-visible { border-color: #f0d48a; }
+.feo-compendium .cs-button.close { display: none; }
+.feo-compendium .sk-big { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; font-size: 29px; color: var(--cp-crest-ink); border: 2px solid var(--cp-m3); background: rgba(0, 0, 0, .24); box-shadow: 0 3px 6px rgba(0, 0, 0, .35); }
+.feo-compendium .cs-body { display: grid; gap: 13px; padding: 13px 14px 15px; }
+.feo-compendium .cs-desc {
+  padding: 9px 13px 10px; font-family: var(--feo-font-display); font-size: 15px; line-height: 1.4; color: var(--cp-parch-ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .28), transparent 40%), var(--cp-parch); border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--cp-parch-edge), inset 0 0 18px rgba(122, 92, 28, .18), 0 2px 5px rgba(0, 0, 0, .22);
+}
+.feo-compendium .cs-desc.effect { font-family: var(--feo-font-ui); font-size: 14.5px; line-height: 1.45; white-space: pre-line; }
+.feo-compendium .cs-sec > h4 { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-family: var(--feo-font-ui); font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--feo-muted); }
+.feo-compendium .cs-sec > h4::before { content: ""; width: 6px; height: 6px; transform: rotate(45deg); background: var(--feo-gold); flex: none; }
+.feo-compendium .cs-sec > h4::after { content: ""; flex: 1; height: 1px; background: var(--feo-line); }
+.feo-compendium .cs-sec > h4 small { font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 12px; color: var(--feo-faint); }
+.feo-compendium .cs-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+.feo-compendium .cs-stats div { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 0 4px; border-radius: 6px; background: var(--feo-raised); border: 1px solid var(--feo-line-soft); min-width: 0; }
+.feo-compendium .cs-stats span { font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--feo-muted); }
+.feo-compendium .cs-stats b { font-family: var(--feo-font-number); font-weight: 400; font-size: 18px; line-height: 1.1; }
+.feo-compendium .cs-stats b.up { color: var(--feo-good); }
+.feo-compendium .cs-stats b.down { color: var(--feo-bane); }
+.feo-compendium .cs-stats b.nil { color: var(--feo-faint); }
+.feo-compendium .cs-stats b.word { font-family: var(--feo-font-ui); font-size: 11.5px; font-weight: 700; line-height: 20px; }
+.feo-compendium .cs-stats .wt { border-color: var(--feo-line); background: color-mix(in srgb, var(--feo-gold) 9%, var(--feo-raised)); }
+.feo-compendium .cs-stats .wt span { color: var(--feo-gold); letter-spacing: .04em; }
+.feo-compendium .cs-stats + .cs-stats { margin-top: 5px; }
+.feo-compendium .cs-text { font-size: 14px; }
+.feo-compendium .cs-text.none { color: var(--feo-faint); }
+.feo-compendium .cs-pairs { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; font-size: 13.5px; }
+.feo-compendium .cs-pairs dt { color: var(--feo-muted); }
+.feo-compendium .cs-pairs dd { margin: 0; font-weight: 700; text-align: right; }
+.feo-compendium .cp-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.feo-compendium .cs-text + .cp-chips { margin-top: 7px; }
+.feo-compendium .cp-linkchip { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 7px; border-radius: 999px; cursor: pointer; border: 1px solid var(--feo-line-soft); background: var(--feo-raised); color: var(--feo-ink); font-size: 12.5px; font-weight: 700; }
+.feo-compendium .cp-linkchip:hover { border-color: var(--feo-gold); }
+.feo-compendium .cp-linkchip:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 2px; }
+.feo-compendium .cp-linkchip .feo-icon { font-size: 14px; color: var(--feo-gold); }
+.feo-compendium .cp-linkchip small { font-weight: 500; color: var(--feo-muted); }
+.feo-compendium .cp-quality { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 800; letter-spacing: .04em; border: 1px solid var(--feo-line); color: var(--feo-gold); }
+.feo-compendium .cs-skill { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 9px; padding: 7px 0; border-top: 1px solid var(--feo-line-soft); }
+.feo-compendium .cs-skill:first-of-type { border-top: 0; padding-top: 0; }
+.feo-compendium .cs-skill .kind { grid-row: span 2; align-self: start; margin-top: 2px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; color: var(--cp-kind); border: 1.5px solid var(--cp-kind); background: color-mix(in srgb, var(--cp-kind) 12%, transparent); }
+.feo-compendium .cs-skill .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.feo-compendium .cp-skill-link { all: unset; cursor: pointer; font-family: var(--feo-font-display); font-size: 16.5px; line-height: 1.2; color: var(--feo-ink); text-decoration: underline; text-decoration-color: var(--feo-line); text-underline-offset: 3px; }
+.feo-compendium .cp-skill-link:hover { text-decoration-color: var(--feo-gold); color: var(--feo-gold); }
+.feo-compendium .cp-skill-link:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 2px; border-radius: 3px; }
+.feo-compendium .cs-skill .when { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--cp-kind); }
+.feo-compendium .cs-skill .learned { grid-column: 2; font-size: 12px; color: var(--feo-faint); }
+.feo-compendium .cs-skill p { grid-column: 2; font-size: 13px; color: var(--feo-muted); display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.feo-compendium .cs-or { margin-bottom: 6px; font-size: 12.5px; color: var(--feo-faint); }
+.feo-compendium .cp-classchip { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 7px; padding: 3px 11px 3px 5px; border-radius: 6px; cursor: pointer; border: 1px solid var(--feo-line-soft); background: var(--feo-raised); color: var(--feo-ink); font-size: 13px; font-weight: 700; }
+.feo-compendium .cp-classchip:hover { border-color: var(--feo-gold); }
+.feo-compendium .cp-classchip:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 2px; }
+.feo-compendium .cp-classchip .cp-crest { width: 21px; height: 25px; filter: none; }
+.feo-compendium .cp-classchip small { font-weight: 500; color: var(--feo-muted); }
+.feo-compendium .cs-route { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 7px 10px; align-items: start; }
+.feo-compendium .cs-route .lbl { display: inline-flex; align-items: center; gap: 5px; padding-top: 5px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.feo-compendium .cs-route .lbl.from { color: var(--cp-trail); }
+.feo-compendium .cs-route .lbl.to { color: var(--cp-route); }
+.feo-compendium .cs-route .lbl .feo-icon { font-size: 14px; }
+.feo-compendium .cs-route .cs-text { padding-top: 3px; }
+.feo-compendium .cs-route .lvl { padding: 0 7px; border-radius: 4px; font-size: 11px; font-weight: 800; line-height: 17px; background: var(--cp-route); color: var(--cp-route-ink); }
+.feo-compendium .cs-route .lvl.from { background: var(--cp-trail); color: var(--cp-trail-ink); }
+.feo-compendium .cp-mark { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; border: 1px solid var(--feo-line); color: var(--feo-gold); }
+.feo-compendium .cp-mark.bane { border-color: color-mix(in srgb, var(--feo-bane) 60%, transparent); color: var(--feo-bane); }
+.feo-compendium .cp-mark.quiet { border-color: var(--feo-line-soft); color: var(--feo-muted); }
+.feo-compendium .sk-marklist { display: grid; gap: 7px; }
+.feo-compendium .sk-marklist div { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 9px; align-items: baseline; font-size: 13.5px; color: var(--feo-muted); }
+.feo-compendium .sk-marklist .cp-mark { justify-self: start; }
+
+/* ---------- Skills: a list to scan ---------- */
+
+.feo-compendium .sk-group {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 9px; padding: 7px 20px 6px;
+  font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--cp-kind);
+  background: color-mix(in srgb, var(--feo-window) 70%, var(--feo-panel)); border-bottom: 1px solid var(--feo-line);
+}
+.feo-compendium .sk-group small { font-weight: 500; letter-spacing: 0; color: var(--feo-faint); }
+.feo-compendium :is(.sk-group, .sk-row) .dot { flex: none; width: 8px; height: 8px; border-radius: 2px; transform: rotate(45deg); background: var(--cp-kind); }
+.feo-compendium .sk-row {
+  all: unset; box-sizing: border-box; display: grid; grid-template-columns: 8px minmax(110px, 200px) minmax(0, 1fr) auto; gap: 0 13px; align-items: baseline;
+  width: 100%; padding: 7px 20px 7px 21px; border-bottom: 1px solid var(--feo-line-soft); cursor: pointer; color: var(--feo-ink);
+}
+.feo-compendium .sk-row:hover { background: var(--feo-raised); }
+.feo-compendium .sk-row:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: -2px; }
+.feo-compendium .sk-row[aria-pressed="true"] { background: color-mix(in srgb, var(--feo-gold) 13%, var(--feo-raised)); box-shadow: inset 3px 0 0 var(--feo-gold); }
+.feo-compendium .sk-row .dot { align-self: center; }
+.feo-compendium .sk-row .nm { font-family: var(--feo-font-display); font-size: 16.5px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feo-compendium .sk-row .ex { font-size: 13px; color: var(--feo-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feo-compendium .sk-row .cap { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--feo-faint); white-space: nowrap; }
+.feo-compendium .sk-row .cap b { margin-left: 5px; font-family: var(--feo-font-number); font-weight: 400; font-size: 15px; letter-spacing: 0; color: var(--feo-ink); }
+.feo-compendium .sk-row.flash { animation: cp-flash 2.2s ease-out; }
+@keyframes cp-flash {
+  0%, 35% { box-shadow: inset 0 0 0 2px var(--feo-gold), inset 0 0 22px color-mix(in srgb, var(--feo-gold) 45%, transparent); }
+  100% { box-shadow: inset 3px 0 0 var(--feo-gold); }
+}
+
+/* ---------- Equipment ---------- */
+
+.feo-compendium .eq-list { display: grid; gap: 16px; padding: 12px 20px 20px; }
+.feo-compendium .eq-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-bottom: 6px; }
+.feo-compendium .eq-emblem { flex: none; width: 34px; height: 34px; display: grid; place-items: center; font-size: 19px; color: var(--feo-gold); border-radius: 50% 50% 50% 50% / 38% 38% 62% 62%; border: 1.5px solid var(--feo-gold); background: color-mix(in srgb, var(--feo-gold) 10%, transparent); }
+.feo-compendium .eq-head h3 { font-family: var(--feo-font-display); font-weight: 400; font-size: 20px; color: var(--feo-ink); }
+.feo-compendium .eq-head .count { font-size: 12px; color: var(--feo-faint); }
+.feo-compendium .eq-head::after { content: ""; flex: 1; min-width: 30px; height: 1px; background: linear-gradient(90deg, var(--feo-line), transparent); }
+.feo-compendium .eq-note { flex-basis: 100%; order: 3; font-size: 12.5px; color: var(--feo-muted); max-width: 110ch; }
+.feo-compendium .eq-table { background: var(--feo-panel); border: 1px solid var(--feo-line-soft); border-radius: var(--feo-radius); overflow: hidden; }
+.feo-compendium .eq-row { display: grid; align-items: center; gap: 0 8px; padding: 5px 13px; border-top: 1px solid var(--feo-line-soft); font-size: 13.5px; }
+.feo-compendium .eq-row:first-child { border-top: 0; }
+.feo-compendium .eq-row.head { padding: 6px 13px 5px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--feo-faint); background: color-mix(in srgb, var(--feo-raised) 60%, transparent); }
+.feo-compendium .eq-row:not(.head):hover { background: color-mix(in srgb, var(--feo-gold) 6%, transparent); }
+.feo-compendium .eq-row[draggable="true"] { cursor: grab; }
+.feo-compendium .eq-table.weapons .eq-row { grid-template-columns: minmax(130px, 1.25fr) 54px 62px 62px 56px 50px 50px 46px 58px minmax(150px, 2.3fr); }
+.feo-compendium .eq-table.items .eq-row { grid-template-columns: minmax(130px, 1fr) minmax(170px, 3.2fr) 78px 62px; }
+.feo-compendium .eq-row .c { min-width: 0; }
+.feo-compendium .eq-row .c.n { text-align: right; }
+.feo-compendium .eq-name { all: unset; cursor: pointer; font-weight: 700; color: var(--feo-ink); }
+.feo-compendium .eq-name:hover { color: var(--feo-gold); text-decoration: underline; text-underline-offset: 3px; }
+.feo-compendium .eq-name:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 2px; border-radius: 3px; }
+.feo-compendium .eq-row .fx { color: var(--feo-muted); font-size: 13px; }
+.feo-compendium .eq-row .fx.none { color: var(--feo-faint); }
+.feo-compendium .eq-row .gold { color: var(--feo-gold); }
+.feo-compendium .eq-rank { display: inline-flex; align-items: baseline; gap: 5px; }
+.feo-compendium .eq-rank b { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 5px; font-family: var(--feo-font-display); font-weight: 400; font-size: 14px; border: 1px solid var(--feo-line); color: var(--feo-ink); background: var(--feo-raised); }
+.feo-compendium .eq-rank b.hi { background: linear-gradient(180deg, color-mix(in srgb, var(--feo-gold) 86%, #fff), var(--feo-gold)); color: var(--feo-gold-ink); border-color: transparent; }
+.feo-compendium .eq-rank small { font-size: 11.5px; color: var(--feo-faint); }
+.feo-compendium .eq-row .brk { display: none; }
+
+/* ---------- Narrow windows ---------- */
+
+@container feo-codex (max-width: 960px) {
+  /* A sheet stops being docked and slides over what it belongs to */
+  .feo-compendium .cp-dock {
+    grid-column: 1 / -1; justify-self: end; z-index: 8; width: min(410px, 100%);
+    border-left: 1px solid var(--feo-gold); background: var(--feo-window);
+    transform: translateX(104%); visibility: hidden; transition: transform .22s ease, visibility 0s .22s;
+    box-shadow: -18px 0 40px rgba(0, 0, 0, .45);
+  }
+  .feo-compendium[data-sheet="open"] .cp-dock { transform: none; visibility: visible; transition: transform .22s ease; }
+  .feo-compendium .cp-body { grid-column: 1 / -1; }
+  .feo-compendium .cp-scrim { all: unset; display: block; position: absolute; inset: 0; z-index: 7; background: rgba(4, 6, 10, .5); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .feo-compendium[data-sheet="open"] .cp-scrim { opacity: 1; pointer-events: auto; cursor: pointer; }
+  .feo-compendium .cs-button.close { display: grid; }
+  .feo-compendium .eq-table .eq-row.head { display: none; }
+  .feo-compendium .eq-table .eq-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; padding: 9px 13px; }
+  .feo-compendium .eq-row .nm { flex: 1 1 auto; }
+  .feo-compendium .eq-name { font-family: var(--feo-font-display); font-weight: 400; font-size: 16.5px; }
+  .feo-compendium .eq-row .fx { flex-basis: 100%; }
+  .feo-compendium .eq-row .c[data-l]::before { content: attr(data-l) " "; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--feo-faint); }
+  .feo-compendium .eq-row .brk { display: block; flex-basis: 100%; height: 0; }
+}
+
+@container feo-codex (max-width: 720px) {
+  .feo.feo-compendium { --cp-gutter: 44px; }
+  .feo-compendium .cp-mast-rule, .feo-compendium .cp-mast-motto { display: none; }
+  .feo-compendium .cp-masthead { padding: 10px 14px 12px; gap: 11px; }
+  .feo-compendium .cp-mast-crest { width: 38px; height: 43px; }
+  .feo-compendium .cp-mast-title b { font-size: 23px; }
+  .feo-compendium .cp-pennants { padding: 0 10px; gap: 5px; }
+  .feo-compendium .cp-pennant { flex: 1; min-width: 0; padding: 7px 6px 17px; flex-direction: column; gap: 3px; text-align: center; }
+  .feo-compendium .cp-pennant[aria-selected="true"] { padding-bottom: 22px; }
+  .feo-compendium .cp-pennant .seal { width: 26px; height: 26px; font-size: 15px; }
+  .feo-compendium .cp-pennant b { font-size: 15px; }
+  .feo-compendium .cp-pennant small { font-size: 9.5px; letter-spacing: .04em; }
+  .feo-compendium .cp-head-row { padding: 8px 14px 10px; }
+  .feo-compendium .cp-head h2 { font-size: 21px; }
+  .feo-compendium .cp-head p, .feo-compendium .cp-legend { display: none; }
+  .feo-compendium .cp-head-row .cp-picks { flex-basis: 100%; }
+  .feo-compendium .cp-picks { padding-left: 14px; padding-right: 14px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .feo-compendium .cp-picks > * { flex: none; }
+  .feo-compendium .cp-search { max-width: none; flex-basis: 100%; }
+  .feo-compendium .cp-tools { flex-basis: 100%; }
+  .feo-compendium .eq-list { padding-left: 14px; padding-right: 14px; }
+  .feo-compendium .cs-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .feo-compendium .cp-ribbon { width: 38px; padding: 7px 9px 7px 0; text-align: center; clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%); }
+  .feo-compendium .cp-ribbon b { font-size: 12px; white-space: normal; line-height: 1.05; }
+  .feo-compendium .cp-ribbon small { display: none; }
+  .feo-compendium .sk-group { padding-left: 14px; padding-right: 14px; }
+  .feo-compendium .sk-row { padding-left: 15px; padding-right: 14px; }
+}
+
+@container feo-codex (max-width: 520px) {
+  .feo-compendium .sk-row { grid-template-columns: 8px minmax(0, 1fr) auto; }
+  .feo-compendium .sk-row .ex { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feo-compendium * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+/* ============================================================
+   Choosing for a unit: the button the Character Creator puts at
+   the foot of a class sheet or a skill sheet, and on each row
+   of the armoury
+   ============================================================ */
+
+/* Whom it is for, over the roll of skills or the armoury */
+.feo-compendium .cp-for {
+  flex: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 8px 20px;
+  border-bottom: 1px solid var(--feo-line); background: color-mix(in srgb, var(--feo-panel) 90%, var(--feo-gold));
+  font-size: 13px; color: var(--feo-muted);
+}
+.feo-compendium .cp-for > b { font-family: var(--feo-font-display); font-weight: 400; font-size: 17px; color: var(--feo-ink); }
+.feo-compendium .cp-for .tag { padding: 1px 10px; border: 1px solid var(--feo-line); border-radius: 999px; background: var(--feo-raised); white-space: nowrap; }
+.feo-compendium .cp-for .tag b { color: var(--feo-gold); font-variant-numeric: tabular-nums lining-nums; }
+.feo-compendium .cp-for small { flex-basis: 100%; font-size: 12.5px; color: var(--feo-faint); }
+
+/* The skill the unit has, and those that are not for it */
+.feo-compendium .sk-row .tk { display: inline-grid; place-items: center; width: 17px; height: 17px; margin-right: 6px; border-radius: 50%; border: 1.5px solid var(--feo-good); color: var(--feo-good); font-size: 11px; vertical-align: 1px; }
+.feo-compendium .sk-row.barred :is(.nm, .ex, .cap) { opacity: .5; }
+.feo-compendium .cs-choose.barred .txt { color: var(--feo-warn); }
+
+/* Buying from the armoury */
+.feo-compendium .eq-table.weapons.shop .eq-row { grid-template-columns: minmax(130px, 1.25fr) 54px 62px 62px 56px 50px 50px 46px 58px minmax(150px, 2.3fr) 58px; }
+.feo-compendium .eq-table.items.shop .eq-row { grid-template-columns: minmax(130px, 1fr) minmax(170px, 3.2fr) 78px 62px 58px; }
+.feo-compendium .eq-row .buy { text-align: right; }
+.feo-compendium .eq-buy {
+  all: unset; box-sizing: border-box; padding: 2px 13px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  font-family: var(--feo-font-ui); font-size: 12.5px; font-weight: 700; color: var(--feo-gold-ink);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--feo-gold) 86%, #fff), var(--feo-gold));
+}
+.feo-compendium .eq-buy:hover, .feo-compendium .eq-buy:focus-visible { filter: brightness(1.08); box-shadow: 0 0 0 3px color-mix(in srgb, var(--feo-gold) 35%, transparent); }
+.feo-compendium .eq-buy[disabled] { cursor: default; filter: none; box-shadow: none; color: var(--feo-faint); background: none; border: 1px solid var(--feo-line-soft); }
+.feo-compendium .eq-unfit { display: block; font-size: 11.5px; color: var(--feo-warn); }
+.feo-compendium .eq-row.unfit > .c:not(.nm, .buy) { opacity: .5; }
+.feo-compendium .cp-pick .fit { width: 7px; height: 7px; border-radius: 50%; background: var(--feo-good); }
+.feo-compendium .cp-pick[aria-pressed="true"] .fit { background: var(--feo-gold-ink); }
+
+.feo-compendium .cs-choose {
+  position: sticky; bottom: 0; z-index: 3; margin-top: auto;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 14px;
+  border-top: 1px solid var(--feo-line); border-radius: 0 0 3px 3px;
+  background: color-mix(in srgb, var(--feo-panel) 90%, var(--feo-gold));
+  font-size: 13px; color: var(--feo-muted);
+}
+.feo-compendium .cs-choose .txt { flex: 1; min-width: 150px; }
+.feo-compendium .cs-choose.chosen .txt { color: var(--feo-ink); font-weight: 700; }
+.feo-compendium .cp-choose {
+  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  font-family: var(--feo-font-ui); font-size: 13.5px; font-weight: 700; color: var(--feo-gold-ink);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--feo-gold) 86%, #fff), var(--feo-gold));
+}
+.feo-compendium .cp-choose:hover, .feo-compendium .cp-choose:focus-visible {
+  filter: brightness(1.08); box-shadow: 0 0 0 3px color-mix(in srgb, var(--feo-gold) 35%, transparent);
+}
+.feo-compendium .cp-chosen {
+  width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%;
+  border: 1.5px solid var(--feo-good); color: var(--feo-good); font-size: 15px;
+}

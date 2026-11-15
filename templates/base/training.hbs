@@ -1,0 +1,59 @@
+<section class="bs-panel bs-v-training">
+  {{#if none}}
+  <p class="bs-none bs-center">{{none}}</p>
+  {{else}}
+  <div class="bs-cols bs-wide-left">
+    <section class="bs-card">
+      <header class="bs-card-head">
+        <div class="bs-txt"><h3>{{localize "FEO.Base.training.title"}}</h3><p>{{lead}}</p></div>
+        <div class="bs-pickrow">
+          {{#each rivals as |rival|}}
+          <button type="button" class="bs-pick" data-action="foe" data-foe="{{rival.id}}" aria-pressed="{{rival.pressed}}"
+                  {{#if rival.disabled}}disabled{{/if}}>{{feoIcon rival.icon}}{{rival.name}}{{#if rival.note}}<small>{{rival.note}}</small>{{/if}}</button>
+          {{/each}}
+        </div>
+      </header>
+      {{#if foe}}
+      <div class="bs-lists">
+        <div class="bs-fighter">
+          <span class="bs-medal bs-lg">{{feoIcon me.icon}}</span>
+          <b>{{me.name}}</b><small>{{me.sub}}</small>
+          <span class="bs-arm">{{feoIcon me.weapon.icon}}{{me.weapon.name}}</span>
+          <span class="bs-bouts">{{#each me.pips as |pip|}}<i class="{{#if pip.on}}bs-on{{/if}}"></i>{{/each}}<span>{{me.left}}</span></span>
+        </div>
+        <div class="bs-versus">{{feoIcon "crossed"}}</div>
+        <div class="bs-fighter">
+          <span class="bs-medal bs-lg bs-foe">{{feoIcon foe.icon}}</span>
+          <b>{{foe.name}}</b><small>{{foe.sub}}</small>
+          <span class="bs-arm">{{feoIcon foe.weapon.icon}}{{foe.weapon.name}}</span>
+          <span class="bs-bouts">{{#each foe.pips as |pip|}}<i class="{{#if pip.on}}bs-on{{/if}}"></i>{{/each}}<span>{{foe.left}}</span></span>
+        </div>
+      </div>
+      <div class="bs-begin">
+        <button type="button" class="bs-btn bs-gold bs-block" data-action="spar" data-foe="{{foe.id}}" {{#unless canBegin}}disabled{{/unless}}>{{feoIcon "crossed"}}{{localize "FEO.Base.training.begin"}}</button>
+      </div>
+      {{else}}
+      <p class="bs-none bs-center">{{noRivals}}</p>
+      {{/if}}
+    </section>
+
+    <section class="bs-card">
+      <header class="bs-card-head">
+        <div class="bs-txt"><h3>{{localize "FEO.Base.training.stakes"}}</h3><p>{{localize "FEO.Base.training.stakesLead"}}</p></div>
+      </header>
+      <ul class="bs-stakes">
+        {{#each stakes as |stake|}}<li>{{feoIcon "banner"}}<span>{{stake}}</span></li>{{/each}}
+        <li>{{feoIcon "shield"}}<span>{{bonus}}</span></li>
+        <li>{{feoIcon "staff"}}<span>{{localize "FEO.Base.training.healerNote"}}</span></li>
+      </ul>
+      <div class="bs-field">
+        <label for="bs-healer">{{localize "FEO.Base.training.standingBy"}}</label>
+        <select id="bs-healer" data-change="healer">
+          {{#each healers as |healer|}}<option value="{{healer.value}}" {{#if healer.selected}}selected{{/if}}>{{healer.label}}</option>{{/each}}
+        </select>
+      </div>
+      <p class="bs-rule-note bs-inset">{{feoIcon "scroll"}}<span>{{limit}}</span></p>
+    </section>
+  </div>
+  {{/if}}
+</section>

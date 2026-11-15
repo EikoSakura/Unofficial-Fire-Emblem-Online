@@ -1,0 +1,63 @@
+<div class="item-body">
+
+  <header class="item-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-action="editImage" data-edit="img">
+    <div class="item-title">
+      <div class="eyebrow">{{feoIcon icon}} {{localize "TYPES.Item.art"}}</div>
+      <input class="name" type="text" name="name" value="{{source.name}}"
+             placeholder="{{localize "FEO.Item.name"}}" aria-label="{{localize "FEO.Item.name"}}">
+    </div>
+  </header>
+
+  <div class="card">
+    <h3>{{localize "FEO.Optional.combatArts.title"}} <span class="aside">{{localize "FEO.Optional.combatArts.sheetHint"}}</span></h3>
+    <div class="pairs three">
+      <label class="field">
+        <span>{{localize "FEO.Optional.combatArts.field.type"}}</span>
+        <select name="system.type">
+          {{selectOptions artTypes selected=system.type localize=true}}
+        </select>
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.combatArts.field.rankHint"}}">
+        <span>{{localize "FEO.Weapon.rank"}}</span>
+        <select name="system.rank">
+          {{selectOptions artRanks selected=system.rank localize=true blank=(localize "FEO.Optional.combatArts.innate")}}
+        </select>
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.combatArts.field.costHint"}}">
+        <span>{{localize "FEO.Optional.combatArts.field.cost"}}</span>
+        <input type="text" name="system.cost" value="{{system.cost}}" placeholder="3 HP, 5 WU">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.combatArts.field.alsoHint"}}">
+        <span>{{localize "FEO.Optional.combatArts.field.also"}}</span>
+        <input type="text" name="system.also" value="{{system.also}}">
+      </label>
+      <label class="field check" data-tooltip="{{localize "FEO.Optional.combatArts.field.automateHint"}}">
+        <span>{{localize "FEO.Optional.combatArts.field.automate"}}</span>
+        <input type="checkbox" name="system.automate" {{checked system.automate}}>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Weapon.effect"}} <span class="aside">{{localize "FEO.Optional.combatArts.effectHint"}}</span></h3>
+    <textarea name="system.effect" rows="4" aria-label="{{localize "FEO.Weapon.effect"}}">{{system.effect}}</textarea>
+    {{#if reading.applied.length}}<p class="art-reading"><b>{{localize "FEO.Optional.combatArts.applied"}}:</b> {{#each reading.applied as |part|}}{{#unless @first}} · {{/unless}}{{part}}{{/each}}</p>{{/if}}
+    {{#if reading.left}}<p class="art-reading"><b>{{localize "FEO.Optional.combatArts.byHand"}}:</b> {{reading.left}}</p>{{/if}}
+    <details class="skill-effects">
+      <summary>{{localize "FEO.Optional.combatArts.effectsOwn" count=effectCount}}</summary>
+      <p class="hint">{{localize "FEO.Optional.combatArts.effectsHint"}}</p>
+      <textarea name="effectsJson" rows="8" spellcheck="false" aria-label="{{localize "FEO.Skill.effects"}}">{{effectsJson}}</textarea>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.combatArts.field.leftHint"}}">
+        <span>{{localize "FEO.Optional.combatArts.byHand"}}</span>
+        <input type="text" name="system.left" value="{{system.left}}">
+      </label>
+    </details>
+  </div>
+
+  <div class="card biography">
+    <h3>{{localize "FEO.Weapon.description"}}</h3>
+    {{formInput systemFields.description value=system.description enriched=descriptionHTML toggled=true}}
+  </div>
+
+</div>

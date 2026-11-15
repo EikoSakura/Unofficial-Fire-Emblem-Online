@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+# Compendium databases are binary and must never have their line endings touched
+packs/** binary
+*.png binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.avif binary

@@ -1,0 +1,24 @@
+<section class="bs-panel bs-v-board">
+  <div class="bs-board">
+    {{#each notices as |notice|}}
+    <article class="bs-notice">
+      <h4>{{notice.title}}</h4>
+      {{#if notice.text}}<p>{{notice.text}}</p>{{/if}}
+      {{#if notice.tags.length}}<div class="bs-tags">{{#each notice.tags as |tag|}}<span class="bs-chip">{{tag}}</span>{{/each}}</div>{{/if}}
+      <div class="bs-notice-acts">
+        <button type="button" class="bs-btn bs-sm" data-action="join" data-notice="{{notice.id}}" {{#unless ../canJoin}}disabled{{/unless}}>{{notice.action}}</button>
+        {{#if ../isGM}}
+        <button type="button" class="bs-step" data-action="noticeRemove" data-notice="{{notice.id}}"
+                data-tooltip="{{localize "FEO.Base.board.remove"}}" aria-label="{{localize "FEO.Base.board.remove"}}">{{feoIcon "trash"}}</button>
+        {{/if}}
+      </div>
+    </article>
+    {{/each}}
+    {{#if isGM}}
+    <button type="button" class="bs-notice bs-blank" data-action="noticeAdd">
+      {{feoIcon "plus"}}<b>{{localize "FEO.Base.board.add"}}</b><span>{{localize "FEO.Base.board.addHint"}}</span>
+    </button>
+    {{/if}}
+  </div>
+  {{#unless notices.length}}{{#unless isGM}}<p class="bs-none bs-center">{{none}}</p>{{/unless}}{{/unless}}
+</section>

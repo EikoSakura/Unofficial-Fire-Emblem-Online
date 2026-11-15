@@ -1,0 +1,55 @@
+<section class="cp-body cp-tree v-classes">
+  {{#if empty}}
+  <p class="cp-empty">{{localize "FEO.Compendium.classes.none"}}</p>
+  {{else}}
+  <div class="cp-tree-view" tabindex="-1">
+    <div class="cp-tree-row">
+      <div class="cp-tiers" style="height:{{height}}px">
+        {{#each tiers as |tier|}}
+        {{#if tier.divider}}<i class="cp-rule" style="top:{{tier.divider}}px"></i>{{/if}}
+        <div class="cp-ribbon" style="top:{{tier.ribbon}}px" data-tooltip="{{tier.label}}{{#if tier.levels}}: {{tier.levels}}{{/if}}">
+          <b>{{tier.label}}</b>{{#if tier.levels}}<small>{{tier.levels}}</small>{{/if}}
+        </div>
+        {{/each}}
+      </div>
+      <div class="cp-canvas" style="width:{{width}}px;height:{{height}}px">
+        {{#each tiers as |tier|}}
+        {{#if tier.divider}}<i class="cp-rule" style="top:{{tier.divider}}px"></i>{{/if}}
+        {{/each}}
+        {{#each lines as |line|}}
+        <div class="cp-strip" data-dye="{{line.dye}}"
+             style="left:{{line.x}}px;width:{{line.width}}px;top:{{line.top}}px;height:{{line.height}}px"></div>
+        <div class="cp-strip-tag" data-dye="{{line.dye}}" style="left:{{line.middle}}px;top:{{line.top}}px;max-width:{{line.width}}px"
+             data-tooltip="{{line.label}}">{{{line.icon}}}<span>{{line.label}}</span></div>
+        {{/each}}
+        <svg class="cp-routes" width="{{width}}" height="{{height}}" viewBox="0 0 {{width}} {{height}}"
+             aria-hidden="true" focusable="false"></svg>
+        <div class="cp-levels"></div>
+        {{#each nodes as |node|}}
+        <button type="button" class="cp-node" data-action="selectClass" data-class-id="{{node.id}}"
+                style="left:{{node.left}}px;top:{{node.top}}px" aria-label="{{node.hint}}">
+          <span class="art"><span class="cp-ped"></span>{{{node.crest}}}{{#if node.npc}}<span class="npc">{{localize "FEO.Compendium.classes.npc"}}</span>{{/if}}</span>
+          <span class="cp-plate">{{node.name}}</span>
+        </button>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+  <footer class="cp-tree-foot">
+    <button type="button" class="cp-pan left" data-action="pan" data-way="-1"
+            data-tooltip="{{localize "FEO.Compendium.classes.panLeft"}}"
+            aria-label="{{localize "FEO.Compendium.classes.panLeft"}}">{{feoIcon "left"}}</button>
+    <div class="cp-legend" aria-hidden="true">
+      <span><i class="sel"></i>{{localize "FEO.Compendium.classes.legend.selected"}}</span>
+      <span><i class="to"></i>{{localize "FEO.Compendium.classes.legend.to"}}</span>
+      <span><i class="from"></i>{{localize "FEO.Compendium.classes.legend.from"}}</span>
+      <span><i class="outside"></i>{{localize "FEO.Compendium.classes.legend.outside"}}</span>
+    </div>
+    <button type="button" class="cp-pan right" data-action="pan" data-way="1"
+            data-tooltip="{{localize "FEO.Compendium.classes.panRight"}}"
+            aria-label="{{localize "FEO.Compendium.classes.panRight"}}">{{feoIcon "right"}}</button>
+  </footer>
+  <button type="button" class="cp-scrim" data-action="closeSheet" tabindex="-1"
+          aria-label="{{localize "FEO.Compendium.close"}}"></button>
+  {{/if}}
+</section>

@@ -1,0 +1,162 @@
+<!-- chapter: Growing Stronger | icon: up -->
+
+<section data-page="levelling" data-title="Levelling Up" data-source="Rules 3.0, Character Creation and Progress, “Character Creation” and “Leveling and Promotion”; Ability Checks, “How Ability Checks Actually Work”. Ruling: Book of Stipulations.">
+<p class="feo-lead">Units increase their stats through Leveling up, which is done by obtaining Experience Points.</p>
+
+<div class="feo-glance">
+  <div><b>100</b><span>EXP to gain a Level</span></div>
+  <div><b>D100</b><span>rolled against each Growth Rate</span></div>
+  <div><b>20</b><span>the last Level before promotion</span></div>
+</div>
+
+<h2>Earning Experience</h2>
+<p>EXP is primarily obtained through combat and using Staves or Skills, but can be given out by the GM as they see fit, such as for good roleplay. The amounts are listed in [[exp]].</p>
+<p>Units start at 0 EXP and require 100 to Level up, carrying over any excess EXP over 100.</p>
+
+<h2>When you Level up</h2>
+<ol class="feo-steps">
+  <li><span class="feo-step-title">Gain ability points</span>
+    <p>Every time you level up, and before stats are increased, you gain a number of points equal to the higher of CHA or INT + half of your LUK (rounded down), to be put into abilities and saving throws of your choice. An ability may only have an amount of points in it equal to 5 + your current level. See [[ability-checks]].</p></li>
+  <li><span class="feo-step-title">Roll your stat growths</span>
+    <p>Roll a D100 for each stat. If the roll is equal to or lower than your Growth Rate for that stat, it increases by 1.</p>
+    <p>In the event a Growth Rate exceeds 100%, its increase is guaranteed every level, with any amount above 100% being a chance to increase by 2.</p></li>
+</ol>
+
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>Tamsin reaches Level 2</strong></div>
+  <div class="feo-example-body">
+    <p>Tamsin, the Myrmidon built in [[character-creation]], rolls a D100 against each of her Growth Rates.</p>
+    <div class="feo-table-wrap"><table class="feo-table">
+      <thead><tr><th>Stat</th><th class="num">Growth</th><th class="num">Roll</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>HP</td><td class="num">60%</td><td class="num">34</td><td class="up">+1</td></tr>
+        <tr><td>STR</td><td class="num">45%</td><td class="num">71</td><td class="na">No change</td></tr>
+        <tr><td>MAG</td><td class="num">10%</td><td class="num">9</td><td class="up">+1</td></tr>
+        <tr><td>DEF</td><td class="num">30%</td><td class="num">88</td><td class="na">No change</td></tr>
+        <tr><td>RES</td><td class="num">20%</td><td class="num">20</td><td class="up">+1, because equal counts</td></tr>
+        <tr><td>DEX</td><td class="num">55%</td><td class="num">12</td><td class="up">+1</td></tr>
+        <tr><td>SPD</td><td class="num">60%</td><td class="num">97</td><td class="na">No change</td></tr>
+        <tr><td>LUK</td><td class="num">45%</td><td class="num">46</td><td class="na">No change, one too high</td></tr>
+      </tbody>
+    </table></div>
+    <p>A unit with a 120% Growth Rate in a stat would gain 1 every level, and on a roll of 20 or lower would gain 2 instead.</p>
+  </div>
+</aside>
+
+<aside class="feo-callout ruling">
+  <p class="feo-callout-label">Ruling · Book of Stipulations</p>
+  <p>The absolute minimum a growth can be is 5%.</p>
+</aside>
+
+<h2>Level 20 and beyond</h2>
+<p>Once a unit has reached Level 20 and Levels up again, it does not level up as normal, but instead Promotes. See [[promotion]].</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-progression|Manual Stat Gains]] replaces the growth rolls with points you place yourself, and [[opt-progression|Additional Growth Rates]] adds growths for CON and MOV. [[opt-glory]] rewards boss kills with permanent upgrades.</p>
+</aside>
+
+<aside class="feo-callout foundry">
+  <p class="feo-callout-label">In Foundry</p>
+  <p>The Growth tab of the unit sheet holds your Growth Rates and rolls them for you.</p>
+  <p>The rules name no highest Level, though the Seal of Eternity on the Reference Sheet “increases the level limit by 5”. A GM may turn on the <strong>Level Cap</strong> in the Optional Rules of the system settings: units then stop at <strong>Level 60</strong>, gaining no further Level and earning no EXP. A unit's own limit can be typed on the Optional tab of its sheet, which is where a Seal of Eternity is counted.</p>
+</aside>
+</section>
+
+<section data-page="promotion" data-title="Promotion" data-source="Rules 3.0, Character Creation and Progress, “Leveling and Promotion”; Non-Beorc; Intro and Basics, “Stats” (Proficiency); EXP (level reference)">
+<p class="feo-lead">Once a unit has reached Level 20 and Levels up again, it does not level up as normal, but instead Promotes. Units may also promote early through the use of special Promotion items.</p>
+
+<div class="feo-glance">
+  <div><b>21</b><span>the Level of a newly promoted Tier 2 unit</span></div>
+  <div><b>41</b><span>the Level at which a unit reaches Tier 3</span></div>
+  <div><b>50</b><span>the Level that grants an Occult Skill</span></div>
+</div>
+
+<h2>Promoting to Tier 2</h2>
+<p>When Promoting, the unit chooses 1 of the 3 Tier 2 classes available to it to become.</p>
+<dl class="feo-defs">
+  <div><dt>Stats</dt><dd>Add that Promotion's stat gains to the character's stats.</dd></div>
+  <div><dt>Skill</dt><dd>The unit gains a new Skill, either the Promotion Skill of the class chosen, or a Generic Skill of the unit's choice.</dd></div>
+  <div><dt>Proficiencies</dt><dd>Promotion typically grants new Proficiencies. New Proficiencies are <span class="feo-rank">D</span> Rank when promoting to Tier 2. All non-F Proficiencies the unit already has increase by 1 Rank.</dd></div>
+  <div><dt>Special Qualities</dt><dd>Promotion sometimes grants new Special Qualities.</dd></div>
+  <div><dt>Growth Rates</dt><dd>Each of the unit's Growth Rates increases by 5%, breaking caps if necessary. See below for moving growths around.</dd></div>
+  <div><dt>Level</dt><dd>Promoted units are Level 21, and continue leveling.</dd></div>
+</dl>
+
+<h3>Reallocating growths</h3>
+<p>Instead of 5% to each Growth Rate, players may reallocate any portion of the gained 40%, adding more than 5% to a growth, though they are still only allowed to break a growth cap by 5%.</p>
+<p>They are also able to reallocate 40% of their existing growths in addition to the 40% gained on promotion, though the GM may change how much they may reallocate from their stats.</p>
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>“The gained 40%” is 5% for each of eight stats. Characters have ten Growth Rates once CHA and INT are counted, and the rules do not say whether those two rise on promotion.</p>
+</aside>
+
+<h2>Promoting to Tier 3</h2>
+<p>Promoted units continue leveling until they reach Level 41, at which point they will promote to a Tier 3 Promoted class, repeating the previous process.</p>
+<ul>
+  <li>New Proficiencies are <span class="feo-rank">C</span> Rank when promoting to Tier 3, and <span class="feo-rank">B</span> Rank when promoting to a Heaven Seal class.</li>
+  <li>When promoting to Tier 3, units learn their <strong>Mastery Skill</strong>, but may not replace it with a Generic.</li>
+</ul>
+
+<h2>Occult Skills</h2>
+<p>After a unit reaches Tier 2, it can obtain their class's Occult Skill through the use of an Occult Scroll, or naturally by reaching Level 50.</p>
+
+<h2>Counting Levels</h2>
+<p>Levels keep counting upward through promotions. For reference: a Tier 2 unit is Level 21, and a Tier 3 unit is Level 41. A level 1 Sniper is level 22, and a level 1 Marksman is level 42, for example.</p>
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>That reference is quoted from the Experience tab. It gives both “a Tier 2 unit is level 21” and “a level 1 Sniper is level 22”, which are one Level apart.</p>
+</aside>
+
+<h2>Laguz, Manakete and Taguel</h2>
+<p>Laguz, Manakete and Taguel do not promote like Beorc do upon reaching a certain level. Instead they continue leveling up as normal, but do gain their Laguz, Manakete or Taguel Skill, which acts basically like a Promotion Skill and can be swapped for a Generic.</p>
+<ul>
+  <li>They gain +2 to STR, MAG, DEF, RES, DEX, SPD and LUK, +1 MOV and +5% to all Growths (and the ability to reassign them) each time they promote.</li>
+  <li>When using a promotion item, they are automatically set to Level 21 or 41, depending on the respective tier.</li>
+  <li>After that, they can get their Occult Skills just like Beorc can, with the use of an Occult Scroll or at Level 50.</li>
+  <li>Similarly, reaching Level 41 grants them their Mastery Skill.</li>
+</ul>
+<p>See [[non-beorc]].</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-heart-seals]] lets units change class sideways. With [[opt-lives]], promoting grants and restores a life. With [[opt-progression|Additional Growth Rates]], CON and MOV growths do not rise on promotion.</p>
+</aside>
+</section>
+
+<section data-page="exp" data-title="Experience Tables" data-source="Rules 3.0, EXP; Intro and Basics (Using an Item). Ruling: Book of Stipulations.">
+<p class="feo-lead">How much Experience a unit earns from fighting, from staves and from Skills. A unit needs 100 EXP to gain a Level.</p>
+
+<h2>Combat</h2>
+<p>A unit earns <strong>Kill EXP</strong> for defeating an enemy and <strong>Combat EXP</strong> for a combat in which the enemy survives. Both depend on how the unit's Level compares with the enemy's.</p>
+<!-- include: tables/exp-combat.html -->
+<p class="feo-table-note">For reference: a Tier 2 unit is Level 21, and a Tier 3 unit is Level 41. A level 1 Sniper is level 22, and a level 1 Marksman is level 42, for example.</p>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>Units receive <strong>1 pity EXP</strong> when dealing no damage in a combat they could, and <strong>0 EXP</strong> in combats they could not, such as when unable to counter.</p>
+  <p>When targeting multiple enemies at once, units gain the highest single amount of combat EXP from foes who do not die, and kill EXP for all foes killed.</p>
+</aside>
+<aside class="feo-callout ruling">
+  <p class="feo-callout-label">Ruling · Book of Stipulations</p>
+  <p>If you attack multiple enemies with a single attack, you gain EXP equal to the combat EXP of the highest amount you would earn from a combat between each of them, in addition to full kill EXP if any kills happen.</p>
+</aside>
+
+<h2>Staves</h2>
+<p>Using a staff earns the EXP below, by the staff used.</p>
+<!-- include: tables/exp-staff.html -->
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>Renew appears in two rows of this table, at 17 and 8, and again at 22 and 11.</p>
+</aside>
+
+<h2>Skills and items</h2>
+<!-- include: tables/exp-skill.html -->
+<p class="feo-table-note">A dash is where the rules give no value for unpromoted units.</p>
+
+<h2>Other ways to earn EXP</h2>
+<ul>
+  <li>The GM can give out EXP as they see fit, such as for good roleplay.</li>
+  <li>Sparring at a Base gives both units kill EXP. See [[base]].</li>
+  <li>Healing Wounds and Injuries earns EXP for the healer. See [[incapacitation]].</li>
+</ul>
+</section>

@@ -1,0 +1,12 @@
+<div class="bs-over">
+  {{#if backdrop}}<img class="bs-backdrop" src="{{backdrop}}" alt="">{{/if}}
+  <div class="bs-plaque">
+    {{feoIcon icon}}
+    <span><small>{{eyebrow}}</small><b>{{title}}</b></span>
+  </div>
+  {{#if isGM}}
+  <div class="bs-scene-tools">
+    <button type="button" class="bs-btn bs-sm bs-cloth" data-action="configure">{{feoIcon "quill"}}{{localize "FEO.Base.configure.button"}}</button>
+  </div>
+  {{/if}}
+</div>

@@ -1,0 +1,760 @@
+File names for your own skills images. Put an image in this folder, named as in the first column
+(for example iron-axe.webp or iron-axe.png; "Iron Axe.png" works too), and build the compendium again.
+Where two entries share a name, the second column is the name that picks out just one of them.
+This list is rewritten by every build.
+
+file name	more specific file name	entry	folder	image used now
+altesse		Altesse	Generic Skills	icons/sundries/flags/banner-standard-blue.webp
+accurate		Accurate	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+adept		Adept	Generic Skills	icons/skills/melee/strike-sword-steel-yellow.webp
+adrenaline		Adrenaline	Generic Skills	icons/skills/melee/weapons-crossed-swords-teal.webp
+advisor		Advisor	Generic Skills	icons/skills/social/peace-luck-insult.webp
+aggressor		Aggressor	Generic Skills	icons/skills/melee/strike-blade-poison-green.webp
+aid		Aid	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+antihex		Antihex	Generic Skills	icons/skills/melee/weapons-crossed-swords-white-blue.webp
+armsthrift		Armsthrift	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+arsonist		Arsonist	Generic Skills	icons/magic/fire/flame-burning-embers-yellow.webp
+artillerist		Artillerist	Generic Skills	icons/skills/melee/hand-grip-sword-white-brown.webp
+avoidant		Avoidant	Generic Skills	icons/skills/movement/feet-spurred-boots-brown.webp
+balm		Balm	Generic Skills	icons/magic/life/cross-yellow-green.webp
+barrier		Barrier	Generic Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-blue.webp
+barrage		Barrage	Generic Skills	icons/magic/control/fear-fright-shadow-monster-purple.webp
+bargain		Bargain	Generic Skills	icons/magic/control/buff-luck-fortune-green-gold.webp
+billow		Billow	Generic Skills	icons/magic/air/wind-tornado-funnel-blue-grey.webp
+blaze		Blaze	Generic Skills	icons/magic/fire/flame-burning-campfire-rocks.webp
+blow		Blow	Generic Skills	icons/skills/melee/strike-blade-scimitar-green-purple.webp
+blood		Blood	Generic Skills	icons/skills/wounds/blood-drip-droplet-red.webp
+blood-for-blood		Blood for Blood	Generic Skills	icons/skills/wounds/injury-stitched-flesh-red.webp
+bleeding-critical		Bleeding Critical	Generic Skills	icons/skills/wounds/injury-triple-slash-bleed.webp
+blockbreaker		Blockbreaker	Generic Skills	icons/magic/nature/stealth-hide-beast-eyes-green.webp
+blinding-critical		Blinding Critical	Generic Skills	icons/skills/melee/blade-tip-smoke-green.webp
+boost		Boost	Generic Skills	icons/skills/social/diplomacy-unity-alliance.webp
+bonfire		Bonfire	Generic Skills	icons/magic/fire/flame-burning-hand-purple.webp
+brash-assault		Brash Assault	Generic Skills	icons/skills/melee/strike-hammer-destructive-orange.webp
+bravery		Bravery	Generic Skills	icons/skills/melee/hand-grip-sword-red.webp
+brighten		Brighten	Generic Skills	icons/skills/melee/hand-grip-sword-white-brown.webp
+brute-force		Brute Force	Generic Skills	icons/skills/social/thumbs-up.webp
+cadet		Cadet	Generic Skills	icons/skills/social/handshake.webp
+cancel		Cancel	Generic Skills	icons/skills/melee/hand-grip-staff-blue.webp
+canto		Canto	Generic Skills	icons/skills/movement/arrow-upward-yellow.webp
+capote		Capote	Generic Skills	icons/skills/social/thumbsup-approval-like.webp
+celerity		Celerity	Generic Skills	icons/skills/movement/feet-winged-boots-blue.webp
+cheer		Cheer	Generic Skills	icons/skills/melee/weapons-crossed-swords-teal.webp
+chivalry		Chivalry	Generic Skills	icons/skills/targeting/target-strike-gray.webp
+charm		Charm	Generic Skills	icons/sundries/flags/banner-standard-moon.webp
+cleave		Cleave	Generic Skills	icons/skills/melee/strike-axe-energy-pink.webp
+close-call		Close Call	Generic Skills	icons/skills/social/theft-pickpocket-bribery-brown.webp
+close-counter		Close Counter	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+climber		Climber	Generic Skills	icons/skills/social/diplomacy-handshake.webp
+combat-expertise		Combat Expertise	Generic Skills	icons/skills/melee/strike-blade-scimitar-orange-blue.webp
+concussive		Concussive	Generic Skills	icons/skills/melee/maneuver-sword-katana-yellow.webp
+constraint		Constraint	Generic Skills	icons/skills/targeting/crosshair-hex-red.webp
+courteous		Courteous	Generic Skills	icons/skills/targeting/triangle-glow-blue.webp
+cold-rain		Cold Rain	Generic Skills	icons/magic/water/projectiles-ice-faceted-shard-teal.webp
+collector		Collector	Generic Skills	icons/skills/social/diplomacy-handshake-yellow.webp
+corrosion		Corrosion	Generic Skills	icons/skills/melee/weapons-crossed-swords-black.webp
+critical		Critical	Generic Skills	icons/skills/melee/blade-tip-energy-green.webp
+critical-force		Critical Force	Generic Skills	icons/skills/melee/strike-blade-hooked-blue-red.webp
+critical-accuracy		Critical Accuracy	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+critical-focus		Critical Focus	Generic Skills	icons/skills/targeting/crosshair-pointed-orange.webp
+improved-critical-focus		Improved Critical Focus	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+criticality		Criticality	Generic Skills	icons/skills/melee/strike-blade-knife-white-red.webp
+cruelty		Cruelty	Generic Skills	icons/magic/control/fear-fright-shadow-monster-purple.webp
+darken		Darken	Generic Skills	icons/magic/unholy/silhouette-robe-evil-glow.webp
+daunt		Daunt	Generic Skills	icons/skills/melee/maneuver-sword-katana-yellow.webp
+daze		Daze	Generic Skills	icons/skills/melee/strike-weapons-orange.webp
+dampen		Dampen	Generic Skills	icons/magic/water/elemental-water.webp
+dazzle		Dazzle	Generic Skills	icons/skills/social/diplomacy-writing-letter.webp
+despoil		Despoil	Generic Skills	icons/skills/social/trading-justice-scale-gold.webp
+defensive		Defensive	Generic Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue-yellow.webp
+deflect-arrows		Deflect Arrows	Generic Skills	icons/skills/ranged/archery-bow-attack-yellow.webp
+snatch-arrows		Snatch Arrows	Generic Skills	icons/skills/ranged/bow-arrows-blue.webp
+deathmatch		Deathmatch	Generic Skills	icons/magic/unholy/strike-beam-blood-small-red-teal.webp
+desperation		Desperation	Generic Skills	icons/skills/melee/strike-blade-knife-blue-red.webp
+disarm		Disarm	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+distant-counter		Distant Counter	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+discipline		Discipline	Generic Skills	icons/skills/social/diplomacy-offering-ritual.webp
+diversion		Diversion	Generic Skills	icons/skills/melee/strike-weapons-orange.webp
+dodge		Dodge	Generic Skills	icons/skills/movement/feet-winged-boots-brown.webp
+down-not-out		Down Not Out	Generic Skills	icons/skills/targeting/crosshair-bars-yellow.webp
+drench		Drench	Generic Skills	icons/skills/social/orb-gold-claw-yellow.webp
+eagle-eye		Eagle Eye	Generic Skills	icons/magic/perception/eye-ringed-glow-angry-small-red.webp
+endure		Endure	Generic Skills	icons/skills/melee/weapons-crossed-swords-yellow.webp
+enervation		Enervation	Generic Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+escutcheon		Escutcheon	Generic Skills	icons/skills/social/diplomacy-unity-alliance.webp
+executioners-mindset		Executioner's Mindset	Generic Skills	icons/skills/melee/strike-blade-scimitar-blue-red.webp
+fencers-grace		Fencer's Grace	Generic Skills	icons/magic/light/beam-rays-orange-large.webp
+feint		Feint	Generic Skills	icons/skills/social/diplomacy-offering-ritual.webp
+fight-or-flight		Fight or Flight	Generic Skills	icons/magic/control/buff-flight-wings-runes-red-yellow.webp
+first-blood		First Blood	Generic Skills	icons/skills/wounds/blood-cells-vessel-red.webp
+flame-walk		Flame Walk	Generic Skills	icons/magic/fire/flame-burning-embers-orange.webp
+flee		Flee	Generic Skills	icons/skills/melee/hand-grip-staff-teal.webp
+fleche		Flèche	Generic Skills	icons/skills/targeting/crosshair-hex-red.webp
+fluegel		Fluegel	Generic Skills	icons/skills/social/thumbs-down.webp
+flourish		Flourish	Generic Skills	icons/skills/targeting/crosshair-hex-red.webp
+foam		Foam	Generic Skills	icons/skills/targeting/target-glowing-yellow.webp
+focus		Focus	Generic Skills	icons/skills/targeting/crosshair-pointed-orange.webp
+foe		Foe	Generic Skills	icons/skills/targeting/triangle-glow-blue.webp
+fortune		Fortune	Generic Skills	icons/commodities/currency/coins-assorted-mix-silver.webp
+forecast		Forecast	Generic Skills	icons/skills/melee/weapons-crossed-daggers-orange.webp
+fracture		Fracture	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+fresh-start		Fresh Start	Generic Skills	icons/magic/holy/prayer-hands-glowing-yellow.webp
+frost		Frost	Generic Skills	icons/magic/water/orb-water-ice-pink.webp
+full-metal-body		Full Metal Body	Generic Skills	icons/skills/melee/weapons-crossed-swords-white-blue.webp
+gamble		Gamble	Generic Skills	icons/skills/melee/weapons-crossed-swords-purple.webp
+gash		Gash	Generic Skills	icons/skills/melee/maneuver-daggers-paired-orange.webp
+giant-swing		Giant Swing	Generic Skills	icons/skills/targeting/target-strike-gray.webp
+gigas-grip		Gigas Grip	Generic Skills	icons/skills/melee/hand-grip-staff-teal.webp
+glance		Glance	Generic Skills	icons/skills/melee/spear-tips-three-green.webp
+glimmer		Glimmer	Generic Skills	icons/skills/social/diplomacy-unity-alliance.webp
+glissade		Glissade	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+gore		Gore	Generic Skills	icons/skills/wounds/blood-cells-vessel-red-orange.webp
+guts		Guts	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+healthy		Healthy	Generic Skills	icons/magic/life/heart-cross-strong-flame-purple-orange.webp
+heroism		Heroism	Generic Skills	icons/skills/social/peace-luck-insult.webp
+heavy-strikes		Heavy Strikes	Generic Skills	icons/skills/melee/strikes-sword-triple-gray.webp
+heft		Heft	Generic Skills	icons/skills/targeting/triangle-glow-blue.webp
+hustle		Hustle	Generic Skills	icons/skills/social/orb-gold-claw-yellow.webp
+iceberg		Iceberg	Generic Skills	icons/skills/social/trading-justice-scale-yellow.webp
+imbue		Imbue	Generic Skills	icons/skills/targeting/target-strike-gray.webp
+impact		Impact	Generic Skills	icons/skills/melee/hand-grip-staff-yellow-brown.webp
+immolation		Immolation	Generic Skills	icons/skills/social/diplomacy-handshake-blue.webp
+intimidate		Intimidate	Generic Skills	icons/skills/social/thumbs-up.webp
+jeer		Jeer	Generic Skills	icons/skills/melee/hand-grip-staff-blue.webp
+keep-up		Keep Up	Generic Skills	icons/skills/melee/weapons-crossed-swords-black.webp
+live-to-serve		Live to Serve	Generic Skills	icons/magic/life/heart-shadow-red.webp
+loot		Loot	Generic Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+lull		Lull	Generic Skills	icons/skills/social/diplomacy-handshake-yellow.webp
+magekiller		Magekiller	Generic Skills	icons/skills/melee/blade-tip-chipped-blood-red.webp
+make-it-count		Make It Count	Generic Skills	icons/skills/targeting/target-strike-triple-blue.webp
+malison		Malison	Generic Skills	icons/skills/social/diplomacy-offering-ritual.webp
+mangle		Mangle	Generic Skills	icons/skills/melee/hand-grip-sword-white-brown.webp
+maneuver		Maneuver	Generic Skills	icons/skills/social/peace-luck-insult.webp
+miracle		Miracle	Generic Skills	icons/magic/light/beam-rays-teal-small.webp
+mighty-strike		Mighty Strike	Generic Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+mithridacy		Mithridacy	Generic Skills	icons/skills/targeting/crosshair-bars-yellow.webp
+moonlight		Moonlight	Generic Skills	icons/magic/light/explosion-star-small-teal.webp
+momentum		Momentum	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+mug		Mug	Generic Skills	icons/skills/social/wave-halt-stop.webp
+natural-cover		Natural Cover	Generic Skills	icons/skills/social/orb-gold-claw-yellow.webp
+nihil		Nihil	Generic Skills	icons/magic/unholy/hands-praying-fire-green.webp
+onrush		Onrush	Generic Skills	icons/magic/movement/trail-streak-zigzag-yellow.webp
+opportunist		Opportunist	Generic Skills	icons/skills/social/diplomacy-offering-ritual.webp
+overdrive		Overdrive	Generic Skills	icons/skills/social/wave-halt-stop.webp
+overwatch		Overwatch	Generic Skills	icons/magic/perception/hand-eye-fire-blue.webp
+parity		Parity	Generic Skills	icons/skills/social/trading-justice-scale-yellow.webp
+parry		Parry	Generic Skills	icons/skills/melee/sword-echo-stylized-tan.webp
+payment		Payment	Generic Skills	icons/skills/targeting/target-glowing-yellow.webp
+pebble		Pebble	Generic Skills	icons/skills/social/peace-luck-insult.webp
+perspicacious		Perspicacious	Generic Skills	icons/skills/targeting/crosshair-triple-strike-orange.webp
+perceptive		Perceptive	Generic Skills	icons/magic/perception/hand-eye-pink.webp
+pincer		Pincer	Generic Skills	icons/skills/targeting/target-strike-triple-blue.webp
+power-attack		Power Attack	Generic Skills	icons/skills/melee/weapons-crossed-swords-yellow.webp
+pragmatism		Pragmatism	Generic Skills	icons/skills/social/intimidation-impressing.webp
+pride		Pride	Generic Skills	icons/skills/social/diplomacy-writing-letter.webp
+protect		Protect	Generic Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-purple-orange.webp
+prowess		Prowess	Generic Skills	icons/skills/melee/hand-grip-sword-red.webp
+provoke		Provoke	Generic Skills	icons/skills/melee/weapons-crossed-poleaxes-white.webp
+proficient		Proficient	Generic Skills	icons/skills/targeting/crosshair-scope-sniper-green.webp
+punish		Punish	Generic Skills	icons/skills/social/diplomacy-handshake-blue.webp
+pursuit		Pursuit	Generic Skills	icons/skills/melee/strike-weapons-orange.webp
+rancor		Rancor	Generic Skills	icons/skills/targeting/crosshair-bars-yellow.webp
+reach		Reach	Generic Skills	icons/skills/melee/hand-grip-sword-orange.webp
+recovery		Recovery	Generic Skills	icons/magic/life/heart-shadow-red.webp
+reckless		Reckless	Generic Skills	icons/magic/control/fear-fright-monster-red.webp
+reciprocity		Reciprocity	Generic Skills	icons/skills/melee/hand-grip-staff-blue.webp
+relentless		Relentless	Generic Skills	icons/skills/melee/hand-grip-sword-white-brown.webp
+renewal		Renewal	Generic Skills	icons/magic/life/crosses-trio-red.webp
+rein		Rein	Generic Skills	icons/skills/melee/weapons-crossed-swords-teal.webp
+resolve		Resolve	Generic Skills	icons/skills/targeting/crosshair-hex-red.webp
+resilience		Resilience	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+resistor		Resistor	Generic Skills	icons/skills/social/diplomacy-handshake-yellow.webp
+reverb		Reverb	Generic Skills	icons/skills/melee/hand-grip-staff-yellow-brown.webp
+revitalize		Revitalize	Generic Skills	icons/skills/melee/blade-tip-energy-green.webp
+robust		Robust	Generic Skills	icons/skills/targeting/crosshair-pointed-orange.webp
+role-model		Role Model	Generic Skills	icons/skills/targeting/crosshair-ringed-gray.webp
+rumble		Rumble	Generic Skills	icons/skills/social/theft-pickpocket-bribery-brown.webp
+run		Run	Generic Skills	icons/skills/targeting/crosshair-arrowhead-blue.webp
+ruin		Ruin	Generic Skills	icons/skills/social/wave-halt-stop.webp
+ruse		Ruse	Generic Skills	icons/skills/targeting/crosshair-hex-red.webp
+sabre		Sabre	Generic Skills	icons/skills/melee/hand-grip-sword-white-brown.webp
+sagacity		Sagacity	Generic Skills	icons/skills/melee/weapons-crossed-swords-yellow-teal.webp
+sailor		Sailor	Generic Skills	icons/skills/social/thumbs-down.webp
+salve		Salve	Generic Skills	icons/skills/targeting/crosshair-bars-yellow.webp
+sapper		Sapper	Generic Skills	icons/skills/melee/weapons-crossed-swords-black.webp
+savior		Savior	Generic Skills	icons/skills/targeting/target-strike-gray.webp
+selfstaff		Selfstaff	Generic Skills	icons/magic/symbols/rune-sigil-green.webp
+sidearm		Sidearm	Generic Skills	icons/skills/melee/weapons-crossed-poleaxes-white.webp
+singular-strike		Singular Strike	Generic Skills	icons/skills/trades/music-singing-voice-blue.webp
+skillful		Skillful	Generic Skills	icons/skills/melee/weapons-crossed-swords-black.webp
+slayer		Slayer	Generic Skills	icons/skills/melee/strike-blade-poison-green.webp
+slumber		Slumber	Generic Skills	icons/skills/social/diplomacy-handshake.webp
+smite		Smite	Generic Skills	icons/skills/movement/feet-bladed-boots-fire.webp
+snare		Snare	Generic Skills	icons/skills/melee/maneuver-sword-katana-yellow.webp
+solidarity		Solidarity	Generic Skills	icons/skills/melee/strike-weapons-orange.webp
+splitting-slice		Splitting Slice	Generic Skills	icons/skills/melee/maneuver-greatsword-yellow.webp
+squall		Squall	Generic Skills	icons/magic/air/wind-tornado-funnel-damage-blue.webp
+staff-fighter		Staff Fighter	Generic Skills	icons/magic/symbols/star-yellow.webp
+staff-mage		Staff Mage	Generic Skills	icons/sundries/books/book-symbol-yellow-grey.webp
+stagger		Stagger	Generic Skills	icons/skills/social/orb-gold-claw-yellow.webp
+stance		Stance	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+stigma		Stigma	Generic Skills	icons/skills/targeting/target-glowing-yellow.webp
+strong-riposte		Strong Riposte	Generic Skills	icons/skills/melee/strike-sword-dagger-runes-red.webp
+stun		Stun	Generic Skills	icons/skills/social/thumbs-down.webp
+stunning-critical		Stunning Critical	Generic Skills	icons/skills/melee/blade-tip-smoke-green.webp
+stunt		Stunt	Generic Skills	icons/skills/melee/weapons-crossed-swords-white-blue.webp
+sunlight		Sunlight	Generic Skills	icons/magic/light/beam-rays-magenta.webp
+sweep		Sweep	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+swift		Swift	Generic Skills	icons/skills/movement/feet-winged-boots-blue.webp
+tackle		Tackle	Generic Skills	icons/skills/melee/weapons-crossed-swords-yellow-teal.webp
+tailwind		Tailwind	Generic Skills	icons/magic/air/wind-swirl-red-orange.webp
+terrain-fighter		Terrain Fighter	Generic Skills	icons/skills/melee/weapons-crossed-swords-purple.webp
+thrower		Thrower	Generic Skills	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+tough		Tough	Generic Skills	icons/skills/social/peace-luck-insult.webp
+toxin		Toxin	Generic Skills	icons/magic/acid/dissolve-vomit-green-brown.webp
+tremor		Tremor	Generic Skills	icons/magic/earth/projectile-spiked-stone-boulder-green.webp
+unnerve		Unnerve	Generic Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+unorthodox		Unorthodox	Generic Skills	icons/skills/social/diplomacy-handshake.webp
+underdog		Underdog	Generic Skills	icons/skills/melee/hand-grip-staff-teal.webp
+vantage		Vantage	Generic Skills	icons/skills/melee/strikes-sword-triple-gray.webp
+valor		Valor	Generic Skills	icons/skills/melee/maneuver-greatsword-yellow.webp
+vigor		Vigor	Generic Skills	icons/skills/targeting/crosshair-bars-yellow.webp
+vital-strike		Vital Strike	Generic Skills	icons/skills/melee/strike-blade-scimitar-gray-red.webp
+improved-vital-strike		Improved Vital Strike	Generic Skills	icons/skills/melee/strike-blade-knife-orange-blue.webp
+weapon-finesse		Weapon Finesse	Generic Skills	icons/skills/social/handshake.webp
+weapon-focus		Weapon Focus	Generic Skills	icons/skills/targeting/crosshair-bars-yellow.webp
+weaponfaire		Weaponfaire	Generic Skills	icons/skills/melee/hand-grip-axe-strike-orange.webp
+weaponbreaker		Weaponbreaker	Generic Skills	icons/skills/social/diplomacy-handshake-yellow.webp
+weaponkiller		Weaponkiller	Generic Skills	icons/skills/melee/strike-blade-knife-white-red.webp
+improved-weapon-focus		Improved Weapon Focus	Generic Skills	icons/skills/targeting/crosshair-arrowhead-blue.webp
+improved-weaponfaire		Improved Weaponfaire	Generic Skills	icons/skills/social/symbol-pyramid-eye.webp
+improved-weaponbreaker		Improved Weaponbreaker	Generic Skills	icons/skills/melee/weapons-crossed-swords-white-blue.webp
+improved-weaponkiller		Improved Weaponkiller	Generic Skills	icons/skills/melee/strike-blade-hooked-white-red.webp
+weapon-guard		Weapon Guard	Generic Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-blue-yellow.webp
+whet		Whet	Generic Skills	icons/skills/social/diplomacy-writing-letter.webp
+wrath		Wrath	Generic Skills	icons/magic/control/fear-fright-monster-grin-purple-blue.webp
+zeal		Zeal	Generic Skills	icons/skills/social/diplomacy-peace-alliance.webp
+rampart		Rampart	Class-Specific Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-blue-yellow.webp
+greed		Greed	Class-Specific Skills	icons/commodities/currency/coins-assorted-mix-copper-silver-gold.webp
+rouse		Rouse	Class-Specific Skills	icons/skills/trades/academics-astronomy-navigation-purple.webp
+gregarious		Gregarious	Class-Specific Skills	icons/skills/melee/hand-grip-sword-orange.webp
+shove		Shove	Class-Specific Skills	icons/skills/movement/arrow-upward-blue.webp
+rescue		Rescue	Class-Specific Skills	icons/skills/melee/hand-grip-sword-white-brown.webp
+batter		Batter	Class-Specific Skills	icons/skills/trades/construction-carpentry-hammer.webp
+jolly-cooperation		Jolly Cooperation	Class-Specific Skills	icons/skills/trades/academics-study-archaeology-bones.webp
+inspiring-song		Inspiring Song	Class-Specific Skills	icons/skills/social/diplomacy-writing-letter.webp
+cantrip		Cantrip	Class-Specific Skills	icons/skills/melee/hand-grip-sword-strike-orange.webp
+observant		Observant	Class-Specific Skills	icons/magic/perception/eye-ringed-glow-angry-small-teal.webp
+multiattack		Multiattack	Class-Specific Skills	icons/skills/melee/strikes-sword-triple-gray.webp
+bolter		Bolter	Class-Specific Skills	icons/magic/lightning/bolt-strike-hand-gray.webp
+incantation		Incantation	Class-Specific Skills	icons/skills/trades/smithing-anvil-silver-red.webp
+refresh		Refresh	Class-Specific Skills	icons/tools/instruments/pipe-flute-brown.webp
+unarmed-combat		Unarmed Combat	Class-Specific Skills	icons/skills/melee/hand-grip-sword-orange.webp
+beatdown		Beatdown	Class-Specific Skills	icons/skills/trades/academics-astronomy-navigation-blue.webp
+mountaineer		Mountaineer	Class-Specific Skills	icons/magic/earth/barrier-stone-brown-green.webp
+privateer		Privateer	Class-Specific Skills	icons/skills/movement/ball-spinning-blue.webp
+chop-down		Chop Down	Class-Specific Skills	icons/skills/melee/strike-axe-red.webp
+reckless-charge		Reckless Charge	Class-Specific Skills	icons/magic/control/fear-fright-shadow-monster-red.webp
+sojourner		Sojourner	Class-Specific Skills	icons/skills/movement/feet-winged-boots-brown.webp
+plunder		Plunder	Class-Specific Skills	icons/commodities/currency/coins-assorted-mix-copper-silver-gold.webp
+supporter		Supporter	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+verdant-faith		Verdant Faith	Class-Specific Skills	icons/magic/light/beam-rays-yellow.webp
+censure		Censure	Class-Specific Skills	icons/skills/targeting/triangle-glow-blue.webp
+uplift		Uplift	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-teal.webp
+rive		Rive	Class-Specific Skills	icons/skills/trades/construction-mason-stonecutter-sculpture.webp
+longarm		Longarm	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-purple.webp
+barge		Barge	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+blockade		Blockade	Class-Specific Skills	icons/skills/social/theft-pickpocket-bribery-brown.webp
+forager		Forager	Class-Specific Skills	icons/magic/control/fear-fright-shadow-monster-red.webp
+spellshield		Spellshield	Class-Specific Skills	icons/magic/defensive/shield-barrier-glowing-triangle-teal.webp
+teshuah		Teshuah	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+avert		Avert	Class-Specific Skills	icons/skills/melee/hand-grip-axe-strike-orange.webp
+hardy-fighter		Hardy Fighter	Class-Specific Skills	icons/skills/melee/strike-sword-blood-red.webp
+rencounter		Rencounter	Class-Specific Skills	icons/skills/trades/academics-book-study-runes.webp
+longshot		Longshot	Class-Specific Skills	icons/skills/ranged/arrow-flying-spiral-blue.webp
+authority		Authority	Class-Specific Skills	icons/sundries/flags/banner-standard-green.webp
+pomp-circumstance		Pomp & Circumstance	Class-Specific Skills	icons/sundries/flags/banner-symbol-axe-red.webp
+lineage		Lineage	Class-Specific Skills	icons/skills/social/diplomacy-handshake.webp
+practiced		Practiced	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-teal.webp
+animus		Animus	Class-Specific Skills	icons/skills/trades/academics-merchant-scribe.webp
+animose		Animose	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+adieu		Adieu	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-black.webp
+chant		Chant	Class-Specific Skills	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+sever		Sever	Class-Specific Skills	icons/skills/trades/academics-astronomy-navigation-blue.webp
+lethal-grace		Lethal Grace	Class-Specific Skills	icons/magic/light/explosion-star-large-blue-yellow.webp
+sky-clearing-cut		Sky-Clearing Cut	Class-Specific Skills	icons/magic/control/buff-flight-wings-purple.webp
+ebb-and-flow		Ebb and Flow	Class-Specific Skills	icons/magic/water/orb-water-bubbles-teal.webp
+true-strike		True Strike	Class-Specific Skills	icons/skills/melee/strike-sword-gray.webp
+agility		Agility	Class-Specific Skills	icons/skills/trades/construction-carpentry-hammer-gray.webp
+metal-coffin		Metal Coffin	Class-Specific Skills	icons/skills/trades/academics-astronomy-navigation-purple.webp
+penance		Penance	Class-Specific Skills	icons/skills/melee/hand-grip-sword-red.webp
+body-blow		Body Blow	Class-Specific Skills	icons/skills/melee/strike-blade-hooked-blue-red.webp
+knightly-tactics		Knightly Tactics	Class-Specific Skills	icons/magic/unholy/orb-rays-blue.webp
+imperial-tactics		Imperial Tactics	Class-Specific Skills	icons/sundries/flags/banner-symbol-axe-red.webp
+wappenschild		Wappenschild	Class-Specific Skills	icons/skills/melee/hand-grip-staff-teal.webp
+gold-silver-blade		Gold-Silver Blade	Class-Specific Skills	icons/magic/control/buff-luck-fortune-clover-green.webp
+cauterize		Cauterize	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-pink.webp
+chaos-style		Chaos Style	Class-Specific Skills	icons/skills/trades/academics-investigation-study-blue.webp
+precision		Precision	Class-Specific Skills	icons/skills/targeting/crosshair-hex-red.webp
+stratagem		Stratagem	Class-Specific Skills	icons/skills/trades/academics-merchant-scribe.webp
+thievery		Thievery	Class-Specific Skills	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+steal		Steal	Class-Specific Skills	icons/magic/nature/stealth-hide-beast-eyes-green.webp
+bypass		Bypass	Class-Specific Skills	icons/magic/nature/stealth-hide-eyes-green.webp
+ambulance		Ambulance	Class-Specific Skills	icons/skills/melee/spear-tips-three-green.webp
+gnash		Gnash	Class-Specific Skills	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+teleport	class-teleport	Teleport	Class-Specific Skills	icons/skills/trades/academics-merchant-scribe.webp
+demolish		Demolish	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-black-gray.webp
+imitate		Imitate	Class-Specific Skills	icons/skills/melee/hand-grip-sword-orange.webp
+summon		Summon	Class-Specific Skills	icons/skills/trades/academics-investigation-study-blue.webp
+spectral-form		Spectral Form	Class-Specific Skills	icons/skills/melee/hand-grip-staff-yellow-brown.webp
+aptitude		Aptitude	Class-Specific Skills	icons/skills/trades/academics-investigation-study-blue.webp
+greenhorn		Greenhorn	Class-Specific Skills	icons/skills/trades/academics-astronomy-navigation-blue.webp
+reverberate		Reverberate	Class-Specific Skills	icons/tools/instruments/harp-red.webp
+feral-instincts		Feral Instincts	Class-Specific Skills	icons/creatures/abilities/fangs-teeth-bite.webp
+aggression		Aggression	Class-Specific Skills	icons/skills/trades/academics-study-archaeology-bones.webp
+wildheart		Wildheart	Class-Specific Skills	icons/skills/melee/maneuver-daggers-paired-orange.webp
+untamed-persistence		Untamed Persistence	Class-Specific Skills	icons/creatures/abilities/mouth-teeth-human.webp
+primal-tenacity		Primal Tenacity	Class-Specific Skills	icons/creatures/abilities/mouth-teeth-crooked-blue.webp
+transformation-focus		Transformation Focus	Class-Specific Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+demiform		Demiform	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-white-blue.webp
+greatshift		Greatshift	Class-Specific Skills	icons/skills/trades/smithing-anvil-silver-red.webp
+swiftfoot		Swiftfoot	Promotion Skills	icons/skills/movement/feet-winged-sandals-tan.webp
+hawkeye		Hawkeye	Promotion Skills	icons/skills/ranged/arrow-barbed-flying-gray.webp
+crossbow-mastery		Crossbow Mastery	Promotion Skills	icons/magic/control/buff-luck-fortune-rainbow.webp
+flanking		Flanking	Promotion Skills	icons/magic/control/buff-flight-wings-runes-purple.webp
+trample		Trample	Promotion Skills	icons/skills/movement/portal-silhouette-pink.webp
+longearche		Longearche	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-teal-purple.webp
+lead-by-example		Lead by Example	Promotion Skills	icons/skills/social/diplomacy-handshake.webp
+hymn		Hymn	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-blue-yellow.webp
+staffsong		Staffsong	Promotion Skills	icons/tools/instruments/harp-yellow-teal.webp
+throw		Throw	Promotion Skills	icons/magic/defensive/shield-barrier-deflect-teal.webp
+fury		Fury	Promotion Skills	icons/magic/control/fear-fright-jackolantern-yellow.webp
+brazen		Brazen	Promotion Skills	icons/magic/control/buff-flight-wings-blue.webp
+frenzy		Frenzy	Promotion Skills	icons/magic/control/fear-fright-white.webp
+primal-fury		Primal Fury	Promotion Skills	icons/creatures/abilities/wolf-heads-swirl-purple.webp
+black-magic		Black Magic	Promotion Skills	icons/magic/symbols/rune-sigil-hook-white-red.webp
+maim-mend		Maim & Mend	Promotion Skills	icons/magic/life/heart-cross-strong-flame-purple-orange.webp
+requiescat		Requiescat	Promotion Skills	icons/creatures/abilities/mouth-teeth-rows-white.webp
+apocrypha		Apocrypha	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-magenta.webp
+weapon-insight		Weapon Insight	Promotion Skills	icons/magic/perception/eye-ringed-glow-angry-small-teal.webp
+counter		Counter	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-teal.webp
+breath-weapon		Breath Weapon	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-green.webp
+sacrifice		Sacrifice	Promotion Skills	icons/magic/control/buff-strength-muscle-damage-orange.webp
+lights-embrace		Light's Embrace	Promotion Skills	icons/magic/light/beam-rays-magenta-large.webp
+errant-breeze		Errant Breeze	Promotion Skills	icons/magic/air/wind-stream-purple.webp
+rise		Rise	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-acid.webp
+drain		Drain	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-purple-orange.webp
+lifetaker		Lifetaker	Promotion Skills	icons/magic/life/heart-hand-gold-green-light.webp
+proud-fighter		Proud Fighter	Promotion Skills	icons/skills/melee/strike-dagger-skull-white.webp
+redirect		Redirect	Promotion Skills	icons/magic/defensive/shield-barrier-blue.webp
+patience		Patience	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-blue.webp
+hemorrhage		Hemorrhage	Promotion Skills	icons/magic/control/buff-luck-fortune-rainbow.webp
+strongarm		Strongarm	Promotion Skills	icons/magic/control/buff-flight-wings-purple.webp
+your-shield		Your Shield	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-blue.webp
+quick-burn		Quick Burn	Promotion Skills	icons/magic/fire/flame-burning-tree-log.webp
+skirmisher		Skirmisher	Promotion Skills	icons/magic/control/buff-flight-wings-blue.webp
+heavy-blade		Heavy Blade	Promotion Skills	icons/skills/melee/strike-sword-gray.webp
+shieldwall		Shieldwall	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-teal.webp
+shield-bash		Shield Bash	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-green.webp
+bulldozer		Bulldozer	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-purple-orange.webp
+ambush		Ambush	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-blue-yellow.webp
+forester		Forester	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-teal.webp
+lone-wolf		Lone Wolf	Promotion Skills	icons/creatures/abilities/mouth-teeth-crooked-blue.webp
+magical-superiority		Magical Superiority	Promotion Skills	icons/magic/symbols/rune-sigil-green-purple.webp
+blast		Blast	Promotion Skills	icons/magic/control/buff-flight-wings-runes-blue-white.webp
+staff-protection		Staff Protection	Promotion Skills	icons/magic/defensive/shield-barrier-deflect-teal.webp
+anchor		Anchor	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-magenta.webp
+pavise		Pavise	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-orange.webp
+distant-defense		Distant Defense	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-teal-purple.webp
+juna-oil		Juna Oil	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-purple-orange.webp
+surety		Surety	Promotion Skills	icons/skills/targeting/target-glowing-yellow.webp
+alarm		Alarm	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp
+noble-strength		Noble Strength	Promotion Skills	icons/sundries/flags/banner-standard-green.webp
+offensive-tactics		Offensive Tactics	Promotion Skills	icons/skills/social/peace-luck-insult.webp
+magic-weapons		Magic Weapons	Promotion Skills	icons/magic/symbols/runes-carved-stone-green.webp
+staunch-shield		Staunch Shield	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-teal-purple.webp
+moonbow		Moonbow	Promotion Skills	icons/magic/control/buff-luck-fortune-clover-green.webp
+paralyze		Paralyze	Promotion Skills	icons/magic/control/buff-strength-muscle-damage-orange.webp
+aegis		Aegis	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-orange.webp
+phasing		Phasing	Promotion Skills	icons/tools/instruments/harp-yellow-teal.webp
+concentration		Concentration	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-purple-orange.webp
+weaponfaith		Weaponfaith	Promotion Skills	icons/magic/light/beam-rays-teal-large.webp
+harmonize		Harmonize	Promotion Skills	icons/magic/control/buff-flight-wings-red.webp
+spell-trap		Spell Trap	Promotion Skills	icons/sundries/books/book-symbol-yellow-grey.webp
+phantasm		Phantasm	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-teal.webp
+amaterasu		Amaterasu	Promotion Skills	icons/magic/life/heart-glowing-red.webp
+quixotic		Quixotic	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-magenta.webp
+dash		Dash	Promotion Skills	icons/magic/time/clock-stopwatch-white-blue.webp
+vigilance		Vigilance	Promotion Skills	icons/magic/perception/eye-ringed-glow-angry-small-teal.webp
+hollowness		Hollowness	Promotion Skills	icons/magic/control/buff-flight-wings-runes-red-yellow.webp
+infuse		Infuse	Promotion Skills	icons/magic/control/buff-strength-muscle-damage-orange.webp
+finesse		Finesse	Promotion Skills	icons/magic/defensive/shield-barrier-blue.webp
+bladebreaker		Bladebreaker	Promotion Skills	icons/skills/melee/strike-sword-steel-yellow.webp
+air-superiority		Air Superiority	Promotion Skills	icons/magic/control/buff-flight-wings-runes-red-yellow.webp
+holy-conduit		Holy Conduit	Promotion Skills	icons/magic/light/beam-rays-teal-purple-large.webp
+affliction		Affliction	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-magenta.webp
+haymaker		Haymaker	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-teal-purple.webp
+pugno-mortis		Pugno Mortis	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-teal.webp
+tools-of-the-trade		Tools of the Trade	Promotion Skills	icons/magic/control/buff-strength-muscle-damage-red.webp
+vindication		Vindication	Promotion Skills	icons/magic/control/buff-luck-fortune-green-gold.webp
+hastilude		Hastilude	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-red.webp
+leonine-lunge		Leonine Lunge	Promotion Skills	icons/magic/control/buff-flight-wings-runes-red.webp
+motivate		Motivate	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-teal-purple.webp
+lunge		Lunge	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-green.webp
+aspirant		Aspirant	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue-yellow.webp
+standardbearer		Standardbearer	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-purple-orange.webp
+penetration		Penetration	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-orange.webp
+sting		Sting	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-teal.webp
+camaraderie		Camaraderie	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue.webp
+adaptation		Adaptation	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-red.webp
+ploy		Ploy	Promotion Skills	icons/magic/control/buff-strength-muscle-damage-orange.webp
+poison-strike		Poison Strike	Promotion Skills	icons/magic/acid/dissolve-bone-ribs-skull.webp
+footwork		Footwork	Promotion Skills	icons/skills/movement/arrow-upward-blue.webp
+foul-play		Foul Play	Promotion Skills	icons/magic/control/buff-strength-muscle-damage-orange.webp
+voice-of-peace		Voice of Peace	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue.webp
+blessed-armor		Blessed Armor	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-orange.webp
+spur		Spur	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-purple-orange.webp
+hobble		Hobble	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-teal-purple.webp
+fulmination		Fulmination	Promotion Skills	icons/magic/control/buff-luck-fortune-clover-green.webp
+bloodthirst		Bloodthirst	Promotion Skills	icons/skills/wounds/blood-spurt-spray-red.webp
+heartseeker		Heartseeker	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue.webp
+flame-coat		Flame Coat	Promotion Skills	icons/magic/fire/flame-burning-creature-skeleton.webp
+arcane-reflex		Arcane Reflex	Promotion Skills	icons/sundries/books/book-symbol-reverse-blue.webp
+firebreathing		Firebreathing	Promotion Skills	icons/magic/fire/flame-burning-embers-orange.webp
+ironhide		Ironhide	Promotion Skills	icons/skills/social/theft-pickpocket-bribery-brown.webp
+tantivy		Tantivy	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-red.webp
+greater-imitate		Greater Imitate	Promotion Skills	icons/magic/control/buff-flight-wings-runes-purple.webp
+multi-phantom		Multi-Phantom	Promotion Skills	icons/magic/defensive/shield-barrier-glowing-triangle-teal.webp
+nimble		Nimble	Promotion Skills	icons/skills/movement/feet-winged-boots-brown.webp
+rend		Rend	Promotion Skills	icons/skills/wounds/blood-cells-vessel-blue.webp
+pack-hunter		Pack Hunter	Promotion Skills	icons/creatures/abilities/fang-tooth-venomous.webp
+grace		Grace	Promotion Skills	icons/magic/light/explosion-star-glow-blue.webp
+vortex		Vortex	Promotion Skills	icons/magic/air/wind-tornado-wall-blue.webp
+jetstream		Jetstream	Promotion Skills	icons/magic/air/wind-swirl-gray-blue.webp
+draconic-fury		Draconic Fury	Promotion Skills	icons/magic/control/fear-fright-shadow-monster-purple.webp
+chill-to-the-bone		Chill to the Bone	Promotion Skills	icons/magic/water/barrier-ice-crystal-wall-jagged.webp
+extract-power		Extract Power	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-red.webp
+serenity		Serenity	Promotion Skills	icons/magic/control/buff-flight-wings-runes-purple-orange.webp
+tempest		Tempest	Promotion Skills	icons/magic/control/buff-flight-wings-runes-blue.webp
+multishot		Multishot	Occult Skills	icons/skills/ranged/arrows-flying-triple-brown.webp
+deadeye		Deadeye	Occult Skills	icons/skills/ranged/target-bullseye-arrow-green.webp
+handgonne		Handgonne	Occult Skills	icons/magic/symbols/runes-star-magenta.webp
+master-horseman		Master Horseman	Occult Skills	icons/magic/symbols/runes-star-orange-purple.webp
+pierce		Pierce	Occult Skills	icons/skills/melee/spear-tips-quintuple-orange.webp
+point-blank		Point Blank	Occult Skills	icons/magic/symbols/runes-star-orange-purple.webp
+raucous-roar		Raucous Roar	Occult Skills	icons/creatures/abilities/mouth-teeth-sharp.webp
+resonance		Resonance	Occult Skills	icons/magic/symbols/triangle-glowing-green.webp
+bond		Bond	Occult Skills	icons/magic/symbols/runes-carved-stone-yellow.webp
+piledriver		Piledriver	Occult Skills	icons/magic/symbols/star-yellow.webp
+accost		Accost	Occult Skills	icons/magic/symbols/rune-sigil-horned-blue.webp
+iron-fist		Iron Fist	Occult Skills	icons/skills/melee/hand-grip-staff-teal.webp
+rage		Rage	Occult Skills	icons/magic/control/fear-fright-shadow-monster-red.webp
+barbaric-roar		Barbaric Roar	Occult Skills	icons/creatures/abilities/paw-print-tan.webp
+curse-siphon		Curse Siphon	Occult Skills	icons/magic/unholy/orb-swirling-teal.webp
+aurablast		Aurablast	Occult Skills	icons/magic/symbols/runes-star-pentagon-blue.webp
+expiacion		Expiacion	Occult Skills	icons/magic/symbols/runes-carved-stone-green.webp
+enlighten		Enlighten	Occult Skills	icons/magic/light/beam-rays-yellow.webp
+odds-manipulator		Odds Manipulator	Occult Skills	icons/magic/symbols/runes-triangle-blue.webp
+supremacy		Supremacy	Occult Skills	icons/magic/symbols/rune-sigil-red-orange.webp
+draconic-heritage		Draconic Heritage	Occult Skills	icons/magic/perception/orb-eye-scrying.webp
+holy-aura		Holy Aura	Occult Skills	icons/magic/light/beam-rays-blue-large.webp
+judgement		Judgement	Occult Skills	icons/magic/symbols/rune-sigil-horned-blue.webp
+white-pool		White Pool	Occult Skills	icons/magic/symbols/runes-star-pentagon-orange.webp
+hex		Hex	Occult Skills	icons/magic/unholy/orb-droplet-pink.webp
+possession		Possession	Occult Skills	icons/magic/symbols/star-inverted-yellow.webp
+cursed-blade		Cursed Blade	Occult Skills	icons/magic/unholy/orb-droplet-pink.webp
+forceful		Forceful	Occult Skills	icons/magic/symbols/rune-sigil-black-pink.webp
+rebuke		Rebuke	Occult Skills	icons/magic/symbols/rune-sigil-hook-white-red.webp
+iaido		Iaido	Occult Skills	icons/magic/symbols/rune-sigil-red-orange.webp
+loosen-up		Loosen Up	Occult Skills	icons/magic/symbols/runes-triangle-blue.webp
+cudgel		Cudgel	Occult Skills	icons/magic/symbols/rune-sigil-black-pink.webp
+suppress		Suppress	Occult Skills	icons/magic/symbols/star-rising-purple.webp
+sunder		Sunder	Occult Skills	icons/magic/light/beam-rays-red.webp
+mark		Mark	Occult Skills	icons/magic/symbols/rune-sigil-horned-blue.webp
+blood-tide		Blood Tide	Occult Skills	icons/magic/water/bubbles-air-water-light.webp
+obstruct		Obstruct	Occult Skills	icons/magic/symbols/star-solid-gold.webp
+bloody-glee		Bloody Glee	Occult Skills	icons/skills/wounds/injury-pain-impaled-hand-blood.webp
+convalescence		Convalescence	Occult Skills	icons/magic/symbols/runes-carved-stone-purple.webp
+robbery		Robbery	Occult Skills	icons/magic/symbols/rune-sigil-red-orange.webp
+camouflage		Camouflage	Occult Skills	icons/magic/symbols/rune-sigil-horned-white-purple.webp
+hunters-boon		Hunter's Boon	Occult Skills	icons/magic/perception/orb-crystal-ball-scrying-blue.webp
+runemail		Runemail	Occult Skills	icons/magic/symbols/rune-sigil-rough-white-teal.webp
+reactive-armor		Reactive Armor	Occult Skills	icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp
+metal-medicine		Metal Medicine	Occult Skills	icons/magic/life/heart-area-circle-red-green.webp
+iron-wall		Iron Wall	Occult Skills	icons/skills/melee/shield-block-bash-blue.webp
+charge		Charge	Occult Skills	icons/skills/movement/figure-running-gray.webp
+armored-boots		Armored Boots	Occult Skills	icons/skills/melee/shield-block-bash-yellow.webp
+spotting		Spotting	Occult Skills	icons/magic/symbols/circle-ouroboros.webp
+sidewinder		Sidewinder	Occult Skills	icons/magic/air/wind-swirl-gray-blue.webp
+sentry		Sentry	Occult Skills	icons/magic/symbols/runes-star-blue.webp
+dancing-blade		Dancing Blade	Occult Skills	icons/tools/instruments/pipe-flute-brown.webp
+veteran		Veteran	Occult Skills	icons/magic/perception/orb-eye-scrying.webp
+speculum		Speculum	Occult Skills	icons/magic/symbols/rune-sigil-green-purple.webp
+phalanx		Phalanx	Occult Skills	icons/magic/symbols/runes-carved-stone-purple.webp
+quick-riposte		Quick Riposte	Occult Skills	icons/skills/movement/feet-winged-boots-blue.webp
+fearsome-blow		Fearsome Blow	Occult Skills	icons/skills/melee/strike-blade-scimitar-blue-red.webp
+flare		Flare	Occult Skills	icons/magic/symbols/rune-sigil-white-pink.webp
+deeper-knowledge		Deeper Knowledge	Occult Skills	icons/skills/melee/sword-damaged-broken-purple.webp
+corona		Corona	Occult Skills	icons/magic/symbols/triangle-glowing-green.webp
+puissance		Puissance	Occult Skills	icons/magic/symbols/runes-star-pentagon-orange.webp
+manaward		Manaward	Occult Skills	icons/sundries/books/book-symbol-fire-gold-orange.webp
+razorspell		Razorspell	Occult Skills	icons/sundries/books/book-symbol-anchor.webp
+mirrorblade		Mirrorblade	Occult Skills	icons/skills/melee/hand-grip-sword-white-brown.webp
+future-sight		Future Sight	Occult Skills	icons/magic/perception/eye-ringed-green.webp
+rend-heaven		Rend Heaven	Occult Skills	icons/skills/wounds/blood-cells-vessel-red.webp
+moxie		Moxie	Occult Skills	icons/magic/symbols/rune-sigil-hook-white-red.webp
+diehard		Diehard	Occult Skills	icons/magic/symbols/rune-sigil-horned-white-purple.webp
+clarity		Clarity	Occult Skills	icons/magic/symbols/rune-sigil-green.webp
+arcane-rush		Arcane Rush	Occult Skills	icons/magic/movement/trail-streak-impact-blue.webp
+astra		Astra	Occult Skills	icons/skills/melee/strike-sword-dagger-runes-red.webp
+trilemma		Trilemma	Occult Skills	icons/magic/symbols/star-rising-purple.webp
+giantkiller		Giantkiller	Occult Skills	icons/skills/melee/blade-tips-triple-steel.webp
+favored		Favored	Occult Skills	icons/magic/perception/orb-crystal-ball-scrying.webp
+arcane-blade		Arcane Blade	Occult Skills	icons/skills/melee/hand-grip-sword-red.webp
+aquila		Aquila	Occult Skills	icons/magic/symbols/rune-sigil-hook-white-red.webp
+stalwart-command		Stalwart Command	Occult Skills	icons/sundries/flags/banner-standard-green.webp
+encore		Encore	Occult Skills	icons/magic/symbols/runes-carved-stone-red.webp
+staredown		Staredown	Occult Skills	icons/magic/light/explosion-star-small-teal-purple.webp
+resolute		Resolute	Occult Skills	icons/magic/perception/orb-eye-scrying.webp
+full-tilt		Full Tilt	Occult Skills	icons/magic/symbols/rune-sigil-red-orange.webp
+crusaders-ward		Crusader's Ward	Occult Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-blue.webp
+rally		Rally	Occult Skills	icons/skills/social/diplomacy-handshake-blue.webp
+impale		Impale	Occult Skills	icons/skills/melee/spear-tips-double-purple.webp
+loyalty		Loyalty	Occult Skills	icons/magic/symbols/circled-gem-pink.webp
+wave-the-flag		Wave The Flag	Occult Skills	icons/magic/water/projectile-water-ice-orb.webp
+waterwheel		Waterwheel	Occult Skills	icons/magic/water/bubbles-air-water-pink.webp
+taint		Taint	Occult Skills	icons/magic/symbols/rune-sigil-horned-blue.webp
+guidance		Guidance	Occult Skills	icons/tools/instruments/harp-white.webp
+harsh-command		Harsh Command	Occult Skills	icons/sundries/flags/banner-symbol-sun-gold-red.webp
+sabotage		Sabotage	Occult Skills	icons/magic/perception/orb-crystal-ball-scrying.webp
+reaper		Reaper	Occult Skills	icons/magic/symbols/star-rising-purple.webp
+fast-fingers		Fast Fingers	Occult Skills	icons/magic/symbols/runes-star-orange-purple.webp
+shade		Shade	Occult Skills	icons/magic/nature/stealth-hide-eyes-pink.webp
+radiance		Radiance	Occult Skills	icons/magic/symbols/runes-carved-stone-purple.webp
+banish		Banish	Occult Skills	icons/magic/perception/third-eye-blue-red.webp
+fortress		Fortress	Occult Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-green.webp
+flense		Flense	Occult Skills	icons/magic/symbols/runes-carved-stone-green.webp
+mistdancer		Mistdancer	Occult Skills	icons/tools/instruments/pipe-flute-yellow.webp
+omen		Omen	Occult Skills	icons/magic/symbols/rune-sigil-hook-white-red.webp
+bewitch		Bewitch	Occult Skills	icons/magic/symbols/runes-triangle-orange.webp
+blessing-of-vesta		Blessing of Vesta	Occult Skills	icons/magic/light/beam-rays-red-small.webp
+shadowgift		Shadowgift	Occult Skills	icons/magic/unholy/silhouette-robe-evil-glow.webp
+inferno		Inferno	Occult Skills	icons/magic/fire/flame-burning-fence.webp
+fearsome		Fearsome	Occult Skills	icons/magic/symbols/rune-sigil-black-pink.webp
+outrider		Outrider	Occult Skills	icons/magic/symbols/circle-ouroboros.webp
+lasting-imitate		Lasting Imitate	Occult Skills	icons/magic/symbols/runes-star-magenta.webp
+phantom-skill		Phantom Skill	Occult Skills	icons/magic/symbols/runes-triangle-orange-purple.webp
+pounce		Pounce	Occult Skills	icons/creatures/abilities/paw-print-tan.webp
+roar		Roar	Occult Skills	icons/creatures/abilities/wolf-heads-swirl-purple.webp
+howl		Howl	Occult Skills	icons/creatures/abilities/mouth-teeth-fire-orange.webp
+ancient-verse		Ancient Verse	Occult Skills	icons/tools/instruments/harp-gold-glowing.webp
+whirlwind		Whirlwind	Occult Skills	icons/magic/air/wind-tornado-funnel-gray.webp
+hit-and-run		Hit and Run	Occult Skills	icons/skills/targeting/crosshair-hex-red.webp
+scale-shield		Scale Shield	Occult Skills	icons/magic/defensive/shield-barrier-blue.webp
+flash-freeze		Flash Freeze	Occult Skills	icons/magic/water/projectile-ice-impact-stone.webp
+dragon-fang		Dragon Fang	Occult Skills	icons/creatures/abilities/dragon-breath-purple.webp
+beastbane		Beastbane	Occult Skills	icons/creatures/abilities/mouth-teeth-rows-needles-purple.webp
+wildkin		Wildkin	Mastery Skills	icons/magic/symbols/cog-glowing-green.webp
+transpierce		Transpierce	Mastery Skills	icons/skills/melee/spear-tips-quintuple-orange.webp
+perfect-shot		Perfect Shot	Mastery Skills	icons/skills/ranged/arrow-flying-white-blue.webp
+flurry		Flurry	Mastery Skills	icons/magic/symbols/cog-shield-white-blue.webp
+assault		Assault	Mastery Skills	icons/skills/melee/strike-scythe-fire-green.webp
+open-assault		Open Assault	Mastery Skills	icons/skills/melee/strike-blade-hooked-white-red.webp
+call-to-arms		Call to Arms	Mastery Skills	icons/magic/light/explosion-star-glow-blue.webp
+power-chord		Power Chord	Mastery Skills	icons/magic/light/explosion-star-small-orange.webp
+offensive-stafftics		Offensive Stafftics	Mastery Skills	icons/magic/symbols/runes-star-pentagon-blue.webp
+death-grip		Death Grip	Mastery Skills	icons/magic/unholy/strike-beam-blood-small-red-green.webp
+fighting-spirit		Fighting Spirit	Mastery Skills	icons/magic/light/explosion-star-large-teal-purple.webp
+counter-stance		Counter Stance	Mastery Skills	icons/magic/symbols/fleur-de-lis-yellow.webp
+bloodlust		Bloodlust	Mastery Skills	icons/skills/wounds/injury-triple-slash-bleed.webp
+show-of-force		Show of Force	Mastery Skills	icons/magic/symbols/cog-orange-red.webp
+dark-calling		Dark Calling	Mastery Skills	icons/magic/unholy/strike-beam-blood-red-purple.webp
+shatterheart		Shatterheart	Mastery Skills	icons/magic/symbols/star-inverted-yellow.webp
+confiteor		Confiteor	Mastery Skills	icons/magic/light/explosion-star-orange.webp
+dogma		Dogma	Mastery Skills	icons/magic/light/explosion-star-glow-purple.webp
+sol		Sol	Mastery Skills	icons/magic/life/heart-shadow-red.webp
+guard		Guard	Mastery Skills	icons/magic/defensive/shield-barrier-deflect-gold.webp
+dragonskin		Dragonskin	Mastery Skills	icons/creatures/abilities/dragon-breath-purple.webp
+blessing		Blessing	Mastery Skills	icons/magic/light/explosion-star-orange.webp
+retribution		Retribution	Mastery Skills	icons/magic/light/explosion-star-blue-large.webp
+holy-word		Holy Word	Mastery Skills	icons/magic/light/explosion-star-teal-purple.webp
+reanimate		Reanimate	Mastery Skills	icons/magic/symbols/runes-star-blue.webp
+dark-burst		Dark Burst	Mastery Skills	icons/magic/unholy/orb-hands-pink.webp
+malefic-aura		Malefic Aura	Mastery Skills	icons/magic/light/explosion-star-large-orange.webp
+got-your-back		Got Your Back	Mastery Skills	icons/magic/light/explosion-star-glow-yellow.webp
+colossus		Colossus	Mastery Skills	icons/magic/light/explosion-star-glow-silhouette.webp
+untouchable		Untouchable	Mastery Skills	icons/magic/light/explosion-star-blue.webp
+hook		Hook	Mastery Skills	icons/magic/symbols/star-yellow.webp
+savage-blow		Savage Blow	Mastery Skills	icons/creatures/abilities/cougar-roar-rush-orange.webp
+guardian		Guardian	Mastery Skills	icons/magic/defensive/shield-barrier-flaming-diamond-red.webp
+in-extremis		In Extremis	Mastery Skills	icons/magic/light/explosion-star-small-orange.webp
+repel		Repel	Mastery Skills	icons/magic/light/explosion-star-small-teal.webp
+grisly-wound		Grisly Wound	Mastery Skills	icons/skills/wounds/blood-cells-vessel-red.webp
+unerring		Unerring	Mastery Skills	icons/magic/light/explosion-star-teal-purple.webp
+shatter		Shatter	Mastery Skills	icons/magic/light/explosion-star-teal-purple.webp
+panoply		Panoply	Mastery Skills	icons/magic/symbols/fleur-de-lis-yellow.webp
+honor-among-thieves		Honor Among Thieves	Mastery Skills	icons/magic/light/explosion-star-small-pink.webp
+huntsman		Huntsman	Mastery Skills	icons/magic/symbols/star-rising-purple.webp
+pathfinder		Pathfinder	Mastery Skills	icons/magic/symbols/cog-orange-red.webp
+misery-mirror		Misery Mirror	Mastery Skills	icons/magic/light/explosion-star-glow-blue-purple.webp
+battery		Battery	Mastery Skills	icons/magic/light/explosion-star-blue.webp
+venerable		Venerable	Mastery Skills	icons/magic/light/explosion-star-small-orange-purple.webp
+luna		Luna	Mastery Skills	icons/skills/melee/sword-engraved-glow-purple.webp
+overpower		Overpower	Mastery Skills	icons/magic/light/explosion-star-large-pink.webp
+invincible		Invincible	Mastery Skills	icons/magic/light/explosion-star-small-teal.webp
+cannon		Cannon	Mastery Skills	icons/magic/light/explosion-star-teal-purple.webp
+collateral		Collateral	Mastery Skills	icons/magic/light/explosion-star-teal-purple.webp
+forward-observation		Forward Observation	Mastery Skills	icons/magic/perception/hand-eye-pink.webp
+golden-lotus		Golden Lotus	Mastery Skills	icons/commodities/currency/coins-plain-stack-gold.webp
+galeforce		Galeforce	Mastery Skills	icons/magic/air/wind-tornado-spiral-teal-green.webp
+synergy		Synergy	Mastery Skills	icons/magic/light/explosion-star-blue-large.webp
+ignis		Ignis	Mastery Skills	icons/magic/light/explosion-star-blue-large.webp
+wings-of-hope		Wings of Hope	Mastery Skills	icons/magic/control/buff-flight-wings-runes-red.webp
+dragon-ward		Dragon Ward	Mastery Skills	icons/magic/defensive/shield-barrier-flaming-diamond-orange.webp
+channel		Channel	Mastery Skills	icons/magic/light/explosion-star-large-pink.webp
+amplify		Amplify	Mastery Skills	icons/magic/light/explosion-star-large-teal.webp
+seal		Seal	Mastery Skills	icons/magic/light/explosion-star-large-orange-purple.webp
+northswains-glow		Northswain's Glow	Mastery Skills	icons/magic/symbols/fleur-de-lis-yellow.webp
+anathema		Anathema	Mastery Skills	icons/magic/light/explosion-star-small-pink.webp
+counterpart		Counterpart	Mastery Skills	icons/magic/light/explosion-star-pink.webp
+holy-vestments		Holy Vestments	Mastery Skills	icons/magic/light/explosion-star-glow-purple.webp
+farcast		Farcast	Mastery Skills	icons/magic/light/explosion-star-small-orange.webp
+pulverize		Pulverize	Mastery Skills	icons/magic/symbols/cog-orange-red.webp
+aether		Aether	Mastery Skills	icons/skills/melee/strikes-sword-scimitar.webp
+riposte		Riposte	Mastery Skills	icons/skills/melee/strike-sword-dagger-runes-gray.webp
+apotrope		Apotrope	Mastery Skills	icons/magic/symbols/cog-shield-white-blue.webp
+soulbond		Soulbond	Mastery Skills	icons/magic/symbols/star-yellow.webp
+life-and-death		Life and Death	Mastery Skills	icons/magic/unholy/hand-claw-glow-orange.webp
+art-of-war		Art of War	Mastery Skills	icons/magic/light/explosion-star-glow-purple.webp
+flyby		Flyby	Mastery Skills	icons/magic/control/buff-flight-wings-runes-red.webp
+breath-of-life		Breath of Life	Mastery Skills	icons/magic/light/explosion-star-orange.webp
+glacies		Glacies	Mastery Skills	icons/magic/water/snowflake-ice-blue.webp
+veni-vidi-vici		Veni, Vidi, Vici	Mastery Skills	icons/magic/light/explosion-star-small-teal-purple.webp
+roar-of-the-crowd		Roar of the Crowd	Mastery Skills	icons/creatures/abilities/wolf-howl-moon-white.webp
+fatality		Fatality	Mastery Skills	icons/magic/symbols/star-inverted-yellow.webp
+heros-blood		Hero's Blood	Mastery Skills	icons/skills/wounds/injury-body-pain-gray.webp
+override		Override	Mastery Skills	icons/magic/light/explosion-star-small-teal.webp
+devastate		Devastate	Mastery Skills	icons/magic/light/explosion-star-orange.webp
+influence		Influence	Mastery Skills	icons/magic/light/explosion-star-small-teal.webp
+sure-throw		Sure Throw	Mastery Skills	icons/skills/targeting/crosshair-hex-red.webp
+thunderstorm		Thunderstorm	Mastery Skills	icons/magic/lightning/bolt-strike-purple-pink.webp
+prevail		Prevail	Mastery Skills	icons/magic/light/explosion-star-orange-purple.webp
+fulgur		Fulgur	Mastery Skills	icons/magic/symbols/star-yellow.webp
+umbra		Umbra	Mastery Skills	icons/magic/light/explosion-star-large-teal.webp
+insight		Insight	Mastery Skills	icons/magic/perception/third-eye-blue-red.webp
+blue-flame		Blue Flame	Mastery Skills	icons/magic/fire/flame-burning-campfire-yellow-blue.webp
+tenacity		Tenacity	Mastery Skills	icons/magic/symbols/star-solid-gold.webp
+lethality		Lethality	Mastery Skills	icons/magic/perception/shadow-stealth-eyes-purple.webp
+smoke-bomb		Smoke Bomb	Mastery Skills	icons/magic/light/explosion-star-large-pink.webp
+lottery		Lottery	Mastery Skills	icons/magic/light/explosion-star-small-teal.webp
+miraculous-save		Miraculous Save	Mastery Skills	icons/magic/symbols/star-solid-gold.webp
+holy-war		Holy War	Mastery Skills	icons/magic/light/explosion-star-large-pink.webp
+shieldstrike		Shieldstrike	Mastery Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue.webp
+lunar-cry		Lunar Cry	Mastery Skills	icons/skills/melee/strike-blade-hooked-orange-blue.webp
+symbiosis		Symbiosis	Mastery Skills	icons/magic/light/explosion-star-small-teal-purple.webp
+hellhound		Hellhound	Mastery Skills	icons/magic/symbols/star-rising-purple.webp
+countercurse		Countercurse	Mastery Skills	icons/magic/unholy/orb-stone-pink.webp
+burning-desire		Burning Desire	Mastery Skills	icons/magic/fire/flame-burning-skeleton-explosion.webp
+agile-teleport		Agile Teleport	Mastery Skills	icons/magic/light/explosion-star-glow-purple.webp
+scorch		Scorch	Mastery Skills	icons/magic/fire/flame-burning-fist-strike.webp
+overwhelm		Overwhelm	Mastery Skills	icons/magic/light/explosion-star-large-orange-purple.webp
+kestrel		Kestrel	Mastery Skills	icons/magic/light/explosion-star-glow-blue-purple.webp
+imitiation-defense		Imitiation Defense	Mastery Skills	icons/magic/defensive/shield-barrier-glowing-triangle-orange.webp
+phantom-support		Phantom Support	Mastery Skills	icons/magic/light/explosion-star-blue-yellow.webp
+quickclaw		Quickclaw	Mastery Skills	icons/creatures/abilities/fang-tooth-poison-green.webp
+glare		Glare	Mastery Skills	icons/magic/perception/mask-stone-eyes-orange.webp
+savage		Savage	Mastery Skills	icons/creatures/abilities/wolf-howl-moon-purple.webp
+galdr		Galdr	Mastery Skills	icons/tools/instruments/harp-gold-glowing.webp
+ravage		Ravage	Mastery Skills	icons/magic/symbols/star-yellow.webp
+tear		Tear	Mastery Skills	icons/magic/light/explosion-star-glow-purple.webp
+ire		Ire	Mastery Skills	icons/magic/control/fear-fright-monster-grin-red-orange.webp
+primal-blast		Primal Blast	Mastery Skills	icons/creatures/abilities/fang-tooth-poison-green.webp
+evened-out		Evened Out	Mastery Skills	icons/magic/light/explosion-star-large-blue-yellow.webp
+better-odds		Better Odds	Mastery Skills	icons/magic/light/explosion-star-blue.webp
+acid-armor		Acid Armor	Misc. Skills	icons/magic/defensive/shield-barrier-flaming-pentagon-red.webp
+blossom		Blossom	Misc. Skills	icons/sundries/scrolls/scroll-bound-red.webp
+critical-experience		Critical Experience	Misc. Skills	icons/skills/melee/blade-tips-double-blue.webp
+cursed-blood		Cursed Blood	Misc. Skills	icons/skills/wounds/blood-cells-vessel-red-orange.webp
+defiance	misc-defiance	Defiance	Misc. Skills	icons/sundries/scrolls/scroll-bound-sealed-orange.webp
+devils-curse		Devil's Curse	Misc. Skills	icons/magic/unholy/orb-collecting-energy-green.webp
+devils-favor		Devil's Favor	Misc. Skills	icons/sundries/scrolls/scroll-symbol-eye-brown.webp
+devils-whim		Devil's Whim	Misc. Skills	icons/sundries/scrolls/scroll-runed-brown.webp
+elite		Elite	Misc. Skills	icons/sundries/scrolls/scroll-symbol-circle-white.webp
+formshift		Formshift	Misc. Skills	icons/sundries/scrolls/scroll-symbol-triangle-brown.webp
+greater-transformation		Greater Transformation	Misc. Skills	icons/sundries/scrolls/scroll-symbol-eye-brown.webp
+nullify		Nullify	Misc. Skills	icons/sundries/scrolls/scroll-runed-brown-blue.webp
+powerstaff		Powerstaff	Misc. Skills	icons/sundries/books/book-symbol-potion-blue.webp
+preparedness		Preparedness	Misc. Skills	icons/sundries/scrolls/scroll-bound-gold-brown.webp
+re-move		Re-Move	Misc. Skills	icons/skills/movement/feet-winged-boots-brown.webp
+revenge		Revenge	Misc. Skills	icons/sundries/scrolls/scroll-bound-skull-white.webp
+telekinesis		Telekinesis	Misc. Skills	icons/sundries/scrolls/scroll-symbol-eye-brown.webp
+triangle-attack		Triangle Attack	Misc. Skills	icons/skills/melee/maneuver-greatsword-yellow.webp
+righteousness		Righteousness	Misc. Skills	icons/magic/light/explosion-star-orange.webp
+impenetrable		Impenetrable	Misc. Skills	icons/sundries/scrolls/scroll-symbol-eye-blue.webp
+critical-mastery		Critical Mastery	Misc. Skills	icons/skills/melee/blade-tips-double-blue.webp
+spirit-call		Spirit Call	Misc. Skills	icons/sundries/scrolls/scroll-bound-green.webp
+ruined-sky		Ruined Sky	Misc. Skills	icons/magic/control/buff-flight-wings-red.webp
+atrocity		Atrocity	Misc. Skills	icons/sundries/scrolls/scroll-bound-brown-tan.webp
+top-dog		Top Dog	Misc. Skills	icons/sundries/scrolls/scroll-bound-grey-brown.webp
+conjure		Conjure	Misc. Skills	icons/sundries/scrolls/scroll-runed-white.webp
+demonologist		Demonologist	Misc. Skills	icons/magic/unholy/hand-fire-skeleton-pink.webp
+terrorguard		Terrorguard	Misc. Skills	icons/magic/defensive/shield-barrier-deflect-gold.webp
+night-tide		Night Tide	Misc. Skills	icons/magic/water/water-drop-swirl-blue.webp
+eclipse		Eclipse	Misc. Skills	icons/magic/unholy/strike-beam-blood-red-gray.webp
+divine-authority		Divine Authority	Misc. Skills	icons/magic/light/beam-rays-teal.webp
+shapeshift		Shapeshift	Misc. Skills	icons/sundries/scrolls/scroll-bound-skull-blue.webp
+aspected		Aspected	Misc. Skills	icons/sundries/scrolls/scroll-bound-black-tan.webp
+heavenly-gift		Heavenly Gift	Misc. Skills	icons/magic/light/explosion-star-blue-small.webp
+gods-wrath		God's Wrath	Misc. Skills	icons/magic/control/fear-fright-monster-green.webp
+greater-terror		Greater Terror	Monster Skills	icons/magic/unholy/strike-beam-blood-small-red-teal.webp
+infection		Infection	Monster Skills	icons/magic/acid/dissolve-bone-ribs-skull.webp
+sharpen-claws		Sharpen Claws	Monster Skills	icons/creatures/abilities/paw-print-yellow.webp
+malaise		Malaise	Monster Skills	icons/skills/toxins/poison-bottle-open-fire-purple.webp
+brutal-strength		Brutal Strength	Monster Skills	icons/magic/control/fear-fright-monster-grin-green.webp
+curse		Curse	Monster Skills	icons/magic/unholy/orb-swirling-teal.webp
+undead-tactics		Undead Tactics	Monster Skills	icons/magic/unholy/silhouette-evil-horned-giant.webp
+dark-veil		Dark Veil	Monster Skills	icons/magic/unholy/strike-beam-blood-small-red-gray.webp
+shriek		Shriek	Monster Skills	icons/creatures/abilities/stinger-poison-green.webp
+titanomachy		Titanomachy	Monster Skills	icons/creatures/abilities/mouth-teeth-tongue-purple.webp
+eerie-screech		Eerie Screech	Monster Skills	icons/creatures/unholy/demons-horned-glowing-pink.webp
+swarm		Swarm	Monster Skills	icons/creatures/unholy/demon-hairy-winged-pink.webp
+fogblade		Fogblade	Monster Skills	icons/skills/melee/sword-damaged-broken-blue.webp
+divide		Divide	Monster Skills	icons/creatures/unholy/demon-fire-imp.webp
+medusas-gaze		Medusa's Gaze	Monster Skills	icons/creatures/abilities/mouth-teeth-tongue-purple.webp
+executioner		Executioner	Monster Skills	icons/skills/melee/strike-blade-knife-orange-blue.webp
+unstoppable		Unstoppable	Monster Skills	icons/creatures/unholy/demon-horned-winged-laughing.webp
+vanquish		Vanquish	Monster Skills	icons/creatures/abilities/stinger-spine-horn-blood.webp
+general		General	Enemy-Exclusive Skills	icons/sundries/flags/banner-standard-brown.webp
+pillage		Pillage	Enemy-Exclusive Skills	icons/magic/control/modify-luck-fortune-red.webp
+teleport	enemy-teleport	Teleport	Enemy-Exclusive Skills	icons/magic/death/skull-horned-white-purple.webp
+noncombatant		Noncombatant	Enemy-Exclusive Skills	icons/skills/melee/strike-flail-spiked-red.webp
+immunity		Immunity	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-blue.webp
+killing-machine		Killing Machine	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-shackles-movement-purple.webp
+vengeance		Vengeance	Enemy-Exclusive Skills	icons/magic/unholy/strike-body-explode-disintegrate.webp
+advantage		Advantage	Enemy-Exclusive Skills	icons/skills/melee/strike-blade-knife-green-purple.webp
+spurn		Spurn	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-shackle-movement-red.webp
+defiance	enemy-defiance	Defiance	Enemy-Exclusive Skills	icons/magic/death/skull-pile-glowing-pink.webp
+godhood		Godhood	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-blue.webp
+lionheart		Lionheart	Enemy-Exclusive Skills	icons/magic/death/skull-humanoid-worn-teal.webp
+hound		Hound	Enemy-Exclusive Skills	icons/magic/death/skull-horned-goat-pentagram-red.webp
+bushwhack		Bushwhack	Enemy-Exclusive Skills	icons/magic/death/skull-energy-light-white.webp
+watchful		Watchful	Enemy-Exclusive Skills	icons/magic/perception/hand-eye-fire-blue.webp
+wary-fighter		Wary Fighter	Enemy-Exclusive Skills	icons/skills/melee/strike-club-red.webp
+imbecile		Imbecile	Enemy-Exclusive Skills	icons/magic/death/skull-trio-badge-purple.webp
+embolden		Embolden	Enemy-Exclusive Skills	icons/magic/death/skull-humanoid-white-red.webp
+discord		Discord	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-green.webp
+calm		Calm	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-net-white.webp
+action-surge		Action Surge	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-net-white.webp
+surehit		Surehit	Enemy-Exclusive Skills	icons/skills/targeting/crosshair-mark-rough-pink.webp
+bounty-hunter		Bounty Hunter	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-red.webp
+headhunter		Headhunter	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-net-white.webp
+staff-savant		Staff Savant	Enemy-Exclusive Skills	icons/magic/symbols/star-solid-gold.webp
+toxify		Toxify	Enemy-Exclusive Skills	icons/skills/toxins/poison-skull-herbs-bottle-pink.webp
+to-the-death		To the Death	Enemy-Exclusive Skills	icons/magic/unholy/hand-grasping-green.webp
+triangle-adept		Triangle Adept	Enemy-Exclusive Skills	icons/skills/melee/strike-blade-scimitar-orange-blue.webp
+delta-attack		Delta Attack	Enemy-Exclusive Skills	icons/skills/melee/strike-hammer-destructive-orange.webp
+reinforce		Reinforce	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-purple.webp
+aura		Aura	Enemy-Exclusive Skills	icons/magic/death/skull-sand-white-yellow.webp
+goddesss-blessing		Goddess's Blessing	Enemy-Exclusive Skills	icons/magic/holy/angel-winged-humanoid-blue.webp
+mantle		Mantle	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-blue.webp
+immortal		Immortal	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-purple.webp

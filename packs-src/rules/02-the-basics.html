@@ -1,0 +1,399 @@
+<!-- chapter: The Basics | icon: shield -->
+
+<section data-page="stats" data-title="Stats" data-source="Rules 3.0, Intro and Basics, “Stats”. Example numbers: Reference Sheet (Iron Sword).">
+<p class="feo-lead">All units have a variety of stats. The core of which are HP, STR, MAG, DEF, RES, DEX, SPD, LUK, MOV, CON, LoS, WT, INT and CHA.</p>
+
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>For all purposes, stats are always <strong>rounded down</strong> if applicable, and almost all negative numbers become <strong>0</strong> instead, barring one exception: Critical Avoid.</p>
+</aside>
+
+<h2>The core stats</h2>
+<dl class="feo-defs short">
+  <div><dt>HP</dt><dd>The unit's total Health Points. If a unit is reduced to 0 HP, they are incapacitated, or killed. See [[death]].</dd></div>
+  <div><dt>STR</dt><dd>Strength, determining their damage with physical weapons.</dd></div>
+  <div><dt>MAG</dt><dd>Magic, determining their damage with magical weapons.</dd></div>
+  <div><dt>DEF</dt><dd>Defense, which reduces damage taken from physical weapons.</dd></div>
+  <div><dt>RES</dt><dd>Resistance, which reduces damage taken from magical weapons.</dd></div>
+  <div><dt>DEX</dt><dd>Dexterity, which determines how accurate they are, their ability to score critical hits, and to activate most Skills. This may alternatively be known as Skill or SKL.</dd></div>
+  <div><dt>SPD</dt><dd>Speed, which determines their ability to dodge attacks and make follow-up attacks.</dd></div>
+  <div><dt>LUK</dt><dd>Luck, which slightly boosts a unit's accuracy and evasion, and determines their ability to perform and prevent critical hits.</dd></div>
+  <div><dt>MOV</dt><dd>Movement, which determines how far they can move in a turn. Units move in the cardinal directions, but not diagonally. Units can pass through their allies, but not enemies.</dd></div>
+  <div><dt>CON</dt><dd>Constitution, which determines the effect of their equipment's Weight on them, and their own Weight.</dd></div>
+  <div><dt>LoS</dt><dd>Line of Sight. This dictates how far the unit can see (or rather, what radius around the unit is revealed) in maps where vision is obscured or during fog.</dd></div>
+  <div><dt>WT</dt><dd>Weight. This represents how much the unit weighs, including their mount or the armor it is wearing. This determines what units can Shove or Rescue and who they can Shove or Rescue. WT is your CON plus your class's WT.</dd></div>
+  <div><dt>CHA</dt><dd>Charm. This is used for Ability Checks.</dd></div>
+  <div><dt>INT</dt><dd>Intelligence. This is used for Ability Checks.</dd></div>
+</dl>
+
+<h2>Beyond the numbers</h2>
+<p>In addition to these, every unit has:</p>
+<ul>
+  <li><strong>Skills</strong>, the powers and techniques it can use. See [[skills]].</li>
+  <li>An <strong>Affinity</strong>, which shapes its Supports. See [[affinity]].</li>
+  <li><strong>Special Qualities</strong> from its class, such as being Armored or Mounted. See [[special-qualities]].</li>
+  <li><strong>Proficiencies</strong> with weapons. See [[weapons]].</li>
+  <li>A <strong>Condition</strong> during maps. See [[conditions]].</li>
+  <li>For Laguz, a <strong>Shift Gauge</strong>. See [[non-beorc]].</li>
+  <li>And, if you count it as a stat, their <strong>Gold</strong>.</li>
+</ul>
+
+<h2>Gold</h2>
+<p>Gold is how much money the unit has. In order to buy items, a unit needs Gold. Items can also be sold for half of their cost, which decreases as durability is used up.</p>
+<div class="feo-formulas">
+  <div class="feo-formula wide">
+    <span class="feo-formula-name">What an item usually sells for</span>
+    <div class="feo-formula-expr">( <var class="w">Cost</var> ÷ <var class="w">Total Uses</var> × <var class="w">Current Uses</var> ) ÷ 2</div>
+  </div>
+</div>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>Selling a used Iron Sword</strong></div>
+  <div class="feo-example-body">
+    <div class="feo-statline"><em>Iron Sword</em><span class="feo-stat w">COST <b>460</b></span><span class="feo-stat w">USES <b>45</b></span><span class="feo-stat">USES LEFT <b>30</b></span></div>
+    <dl class="feo-calc">
+      <div><dt>Sale price</dt><dd class="work">(460 ÷ 45 × 30) ÷ 2 = 153.3 <small>rounded down</small></dd><dd class="res">153</dd></div>
+    </dl>
+  </div>
+</aside>
+</section>
+
+<section data-page="weapons" data-title="Weapons &amp; Proficiency" data-source="Rules 3.0, Intro and Basics, “Stats” (Proficiency, and the weapon paragraphs). Example numbers: Reference Sheet (Iron Sword, Halberd).">
+<p class="feo-lead">A unit's stats are only one piece of the puzzle. To fight and perform their roles, units need weapons, which have their own stats: Might, Hit, Critical, Range, Weight, Uses, Rank, Cost, wEXP and Effect.</p>
+
+<h2>Weapon stats</h2>
+<dl class="feo-defs short">
+  <div><dt>Might</dt><dd>Determines damage.</dd></div>
+  <div><dt>Hit</dt><dd>Determines accuracy.</dd></div>
+  <div><dt>Critical</dt><dd>Determines critical hits.</dd></div>
+  <div><dt>Range</dt><dd>What spaces a unit can attack with the weapon or tome.</dd></div>
+  <div><dt>Weight</dt><dd>How much the weapon weighs or, for tomes, how long it takes to cast. It affects Attack Speed.</dd></div>
+  <div><dt>Uses</dt><dd>The weapon's durability.</dd></div>
+  <div><dt>Rank</dt><dd>The Proficiency Rank needed to equip and use it.</dd></div>
+  <div><dt>Cost</dt><dd>How much the weapon costs in Gold to buy.</dd></div>
+  <div><dt>wEXP</dt><dd>How much Weapon Experience it gives on hit.</dd></div>
+  <div><dt>Effect</dt><dd>All additional effects the weapon possesses.</dd></div>
+</dl>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>Reading an Iron Sword</strong></div>
+  <div class="feo-example-body">
+    <div class="feo-statline"><span class="feo-stat w">MIGHT <b>6</b></span><span class="feo-stat w">HIT <b>85</b></span><span class="feo-stat w">CRIT <b>0</b></span><span class="feo-stat w">RANGE <b>1</b></span><span class="feo-stat w">WEIGHT <b>7</b></span><span class="feo-stat w">USES <b>45</b></span><span class="feo-stat w">RANK <b>E</b></span><span class="feo-stat w">COST <b>460</b></span><span class="feo-stat w">wEXP <b>1</b></span></div>
+    <p>It attacks adjacent tiles, can be used by anyone with Sword Rank E or better, and adds 1 to their Sword Proficiency each time it lands a hit.</p>
+  </div>
+</aside>
+
+<h2>Range and Midrange</h2>
+<p>Range determines what spaces a unit can attack with a certain weapon or tome, with 1 Range being an adjacent tile, 2 Range being two tiles away, and so on. All Range values past 1 allow you to attack diagonally.</p>
+<p>Certain weapons may also be <strong>Midrange</strong>. Midrange Weapons are able to attack adjacent tiles at “range”, such as a shorter ranged projectile weapon like a Crossbow, or a throwing weapon like a Francisca. In effect, these weapons can initiate at 1 Range without being countered, unless their opponent has a 1-2, 1-3 or similar Range weapon, or a Midrange weapon of their own.</p>
+<p>If the weapon's actual Range is 1, it can counter melee and non-Midrange 1 Range attacks. If not, it cannot counter melee attacks.</p>
+
+<h2>Uses</h2>
+<p>Uses are the weapon's durability. Once a weapon's Uses reach zero, it breaks, turning into a Broken Weapon of the same type.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Weapon</th><th>Loses a Use</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Melee and thrown weapons</strong></td><td>Only when landing an attack.</td></tr>
+    <tr><td><strong>Ranged weapons</strong> such as Bows and Crossbows</td><td>Whenever they make an attack.</td></tr>
+    <tr><td><strong>Magical weapons, Tomes and Staves</strong></td><td>Whenever they make an attack. Staves do not lose Uses when they are used in melee, however.</td></tr>
+  </tbody>
+</table></div>
+<p>Weapons can be repaired at places like Blacksmiths and Forges. Items, as in healing items and the like, also have Uses, but unless they are Shields, they simply disappear when their Uses reach zero.</p>
+<aside class="feo-callout ruling">
+  <p class="feo-callout-label">Ruling · Book of Stipulations</p>
+  <p>When a weapon breaks and turns into its Broken or Drained variant, you continue using it (if proficient in that weapon type) until another weapon is equipped or it is unequipped by another effect.</p>
+</aside>
+
+<h2>Effects</h2>
+<p>Effects can grant stat boosts, Skills, or can inflict Conditions or deal heavy damage to Special Qualities.</p>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>If a weapon has the name of a <strong>Condition</strong> in its Effect, it inflicts that Condition on hit.</p>
+  <p>If a weapon has the name of a <strong>Special Quality</strong> in its Effect, it deals Effective damage to units with that Special Quality, increasing the weapon's Might by 3×.</p>
+</aside>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>A Halberd against a mounted unit</strong></div>
+  <div class="feo-example-body">
+    <p>A Halberd has Might 10 and lists Mounted as its Effect.</p>
+    <dl class="feo-calc">
+      <div><dt>Might</dt><dd class="work">10 × 3 <small>against units with the Mounted Special Quality</small></dd><dd class="res">30</dd></div>
+    </dl>
+  </div>
+</aside>
+
+<h2>Proficiency</h2>
+<p>Proficiency is the unit's skill and familiarity with a weapon, tome or staff. Units may only equip and use weapons with the same Rank or lower as their Proficiency Rank with that weapon type.</p>
+<p>There are 9 Ranks: <span class="feo-rank">F</span> <span class="feo-rank">E</span> <span class="feo-rank">D</span> <span class="feo-rank">C</span> <span class="feo-rank">B</span> <span class="feo-rank">A</span> <span class="feo-rank top">S</span> <span class="feo-rank top">SS</span> <span class="feo-rank top">★</span></p>
+<p>F is equivalent to being nonproficient, and all your Proficiencies start at this Rank by default. S, SS and Star all represent increasing mastery over a given weapon type, and confer special bonuses to the unit whenever they use that weapon type.</p>
+
+<h3>Gaining Weapon Experience</h3>
+<p>Proficiency increases through usage of that weapon. Whenever a unit lands an attack with a weapon, the unit adds the wEXP value of the weapon to their Proficiency with that weapon type. If the attack is a killing blow, that attack gives double wEXP. Once a unit achieves enough wEXP, their Proficiency Rank with that weapon type will increase.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Rank up</th><th class="num">wEXP needed</th></tr></thead>
+  <tbody>
+    <tr><td><span class="feo-rank">F</span> to <span class="feo-rank">E</span></td><td class="num">45</td></tr>
+    <tr><td><span class="feo-rank">E</span> to <span class="feo-rank">D</span></td><td class="num">40</td></tr>
+    <tr><td><span class="feo-rank">D</span> to <span class="feo-rank">C</span></td><td class="num">60</td></tr>
+    <tr><td><span class="feo-rank">C</span> to <span class="feo-rank">B</span></td><td class="num">70</td></tr>
+    <tr><td><span class="feo-rank">B</span> to <span class="feo-rank">A</span></td><td class="num">80</td></tr>
+    <tr><td><span class="feo-rank">A</span> to <span class="feo-rank top">S</span></td><td class="num">90</td></tr>
+    <tr><td><span class="feo-rank top">S</span> to <span class="feo-rank top">SS</span></td><td class="num">100</td></tr>
+    <tr><td><span class="feo-rank top">SS</span> to <span class="feo-rank top">★</span></td><td class="num">250</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">Star Rank is also achievable with Holy Blood. See [[opt-holy-blood]].</p>
+<p>When promoting, all non-F Proficiencies the unit has increase by 1 Rank.</p>
+
+<h3>Mastery bonuses</h3>
+<div class="feo-table-wrap"><table class="feo-table top">
+  <thead><tr><th>Rank</th><th>Weapons</th><th>Staves</th></tr></thead>
+  <tbody>
+    <tr><td><span class="feo-rank top">S</span></td><td>+10 Accuracy, +5 Critical and +1 Damage with that weapon type.</td><td>+10 Accuracy, +1 HST and +5 HP healed.</td></tr>
+    <tr><td><span class="feo-rank top">SS</span></td><td>An additional +2 Damage and +10 Accuracy.</td><td>An additional +10 Accuracy, +1 HST and +5 HP healed.</td></tr>
+    <tr><td><span class="feo-rank top">★</span></td><td>An additional +5 Critical and +10 Skill Activation rate.</td><td>An additional +1 HST, +5 Critical Avoid and +10 Skill Activation.</td></tr>
+  </tbody>
+</table></div>
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>HST is Haste. The core rules use it here without explaining it. The Optional Affinities module defines it: Haste increases the ability to follow-up, without granting Dodge from increased Attack Speed.</p>
+</aside>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-progression|Weapon Level]] replaces Ranks and wEXP with a single stat that grows on level up. [[opt-ammunition]] makes Bows and Crossbows need arrows.</p>
+</aside>
+</section>
+
+<section data-page="combat-stats" data-title="Combat Stats" data-source="Rules 3.0, Intro and Basics, “Stats” (closing paragraphs). Example numbers: Class Sheet (Myrmidon) and Reference Sheet (Iron Sword, Steel Sword).">
+<p class="feo-lead">With your unit's stats and your weapon's stats, you arrive at your final Combat Stats: Damage, Accuracy, Critical, Attack Speed, Dodge, Critical Avoid, and Offensive Staff Hit and Avoid. These are the numbers you roll against.</p>
+
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>For all purposes, stats are always <strong>rounded down</strong> if applicable, and almost all negative numbers become <strong>0</strong> instead. The one exception is Critical Avoid.</p>
+</aside>
+
+<h2>The formulas</h2>
+<p class="feo-key"><span><var>STR</var> one of your unit's stats</span><span><var class="w">Might</var> a stat of the weapon in hand</span></p>
+<div class="feo-formulas">
+  <div class="feo-formula">
+    <span class="feo-formula-name">Damage</span>
+    <div class="feo-formula-expr"><var class="w">Might</var> + <var>STR or MAG</var></div>
+    <p class="feo-formula-note">Use the relevant stat: STR with physical weapons, MAG with magical weapons.</p>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Accuracy</span>
+    <div class="feo-formula-expr"><var>DEX</var> × 2 + <var>LUK</var> + <var class="w">Hit</var></div>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Critical</span>
+    <div class="feo-formula-expr"><var>DEX</var> ÷ 2 + <var>LUK</var> ÷ 2 + <var class="w">Critical</var></div>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Attack Speed</span>
+    <div class="feo-formula-expr"><var>SPD</var> − ( <var class="w">Weight</var> − <var>CON</var> )</div>
+    <p class="feo-formula-note">Weight is how much the weapon weighs or, for tomes, how long it takes to cast.</p>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Dodge</span>
+    <div class="feo-formula-expr"><var>Attack Speed</var> × 2 + <var>LUK</var></div>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Critical Avoid</span>
+    <div class="feo-formula-expr"><var>LUK</var></div>
+    <p class="feo-formula-note">The only stat that can normally go into the negatives.</p>
+  </div>
+</div>
+
+<h3>Offensive staves</h3>
+<div class="feo-formulas">
+  <div class="feo-formula">
+    <span class="feo-formula-name">Offensive Staff Hit</span>
+    <div class="feo-formula-expr"><var class="w">Hit</var> + <var>MAG</var> × 5 + <var>DEX</var></div>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Offensive Staff Avoid</span>
+    <div class="feo-formula-expr"><var>RES</var> × 5 + <var>Tiles away</var> × 2 + <var>SPD</var></div>
+    <p class="feo-formula-note">Tiles away is the number of tiles you are from the attacker.</p>
+  </div>
+</div>
+
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p><strong>Weapons lighter than your CON.</strong> The rules give Attack Speed only as SPD − (Weapon Weight − CON). The Character Sheet Template never lets this rise above your SPD: a weapon lighter than your CON costs no speed, and grants none.</p>
+  <p><strong>Staff Avoid or Staff Dodge.</strong> The rules call the defending number “OS Avoid” in the formula and “OS Dodge” when describing combat. They are the same number.</p>
+</aside>
+
+<h2>What each number is for</h2>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Combat stat</th><th>What it does</th><th>Works against</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Damage</strong></td><td>How much HP a hit takes off, before the foe's defence is subtracted.</td><td>Foe's DEF or RES</td></tr>
+    <tr><td><strong>Accuracy</strong></td><td>Your chance to hit on a D100.</td><td>Foe's Dodge</td></tr>
+    <tr><td><strong>Critical</strong></td><td>Your chance to land a Critical Hit, which deals 3× final damage.</td><td>Foe's Critical Avoid</td></tr>
+    <tr><td><strong>Attack Speed</strong></td><td>With 4 or more Attack Speed than your opponent, you make a second attack.</td><td>Foe's Attack Speed</td></tr>
+    <tr><td><strong>Dodge</strong></td><td>Lowers the Accuracy of attacks against you.</td><td>Attacker's Accuracy</td></tr>
+    <tr><td><strong>Critical Avoid</strong></td><td>Lowers the Critical of attacks against you.</td><td>Attacker's Critical</td></tr>
+  </tbody>
+</table></div>
+<p>How these numbers meet in a fight is covered in [[combat]].</p>
+
+<h2>Worked example</h2>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>A Myrmidon with an Iron Sword</strong></div>
+  <div class="feo-example-body">
+    <div class="feo-statline"><em>Myrmidon, base stats</em>
+      <span class="feo-stat">STR <b>6</b></span><span class="feo-stat">DEX <b>10</b></span><span class="feo-stat">SPD <b>10</b></span><span class="feo-stat">LUK <b>6</b></span><span class="feo-stat">CON <b>7</b></span>
+    </div>
+    <div class="feo-statline"><em>Iron Sword</em>
+      <span class="feo-stat w">MIGHT <b>6</b></span><span class="feo-stat w">HIT <b>85</b></span><span class="feo-stat w">CRIT <b>0</b></span><span class="feo-stat w">WEIGHT <b>7</b></span>
+    </div>
+    <dl class="feo-calc">
+      <div><dt>Damage</dt><dd class="work">6 + 6</dd><dd class="res">12</dd></div>
+      <div><dt>Accuracy</dt><dd class="work">10 × 2 + 6 + 85</dd><dd class="res">111</dd></div>
+      <div><dt>Critical</dt><dd class="work">10 ÷ 2 + 6 ÷ 2 + 0</dd><dd class="res">8</dd></div>
+      <div><dt>Attack Speed</dt><dd class="work">10 − (7 − 7)</dd><dd class="res">10</dd></div>
+      <div><dt>Dodge</dt><dd class="work">10 × 2 + 6</dd><dd class="res">26</dd></div>
+      <div><dt>Crit Avoid</dt><dd class="work">6</dd><dd class="res">6</dd></div>
+    </dl>
+    <p><strong>Now swap to a Steel Sword</strong> (Might 9, Hit 75, Critical 0, Weight 10). It is 3 heavier than the Myrmidon's CON, and that comes straight off their speed.</p>
+    <dl class="feo-calc">
+      <div><dt>Damage</dt><dd class="work">9 + 6</dd><dd class="res">15</dd></div>
+      <div><dt>Accuracy</dt><dd class="work">10 × 2 + 6 + 75</dd><dd class="res">101</dd></div>
+      <div><dt>Attack Speed</dt><dd class="work">10 − (10 − 7)</dd><dd class="res">7</dd></div>
+      <div><dt>Dodge</dt><dd class="work">7 × 2 + 6</dd><dd class="res">20</dd></div>
+    </dl>
+    <p>Three more damage, at the cost of 10 Accuracy, 3 Attack Speed and 6 Dodge.</p>
+  </div>
+</aside>
+
+<aside class="feo-callout foundry">
+  <p class="feo-callout-label">In Foundry</p>
+  <p>The Battle tab of your unit sheet works all of these out for the weapon you have equipped.</p>
+</aside>
+</section>
+
+<section data-page="skills" data-title="Skills" data-source="Rules 3.0, Intro and Basics, “Stats” (Skills) and “Actions, Combat and the Weapon Triangle” (activation). Skill markers: Reference Sheet, Skills tab.">
+<p class="feo-lead">Skills are various powers, techniques and the like that the unit possesses and can use.</p>
+
+<h2>Equipping Skills</h2>
+<p>Skills can be freely equipped or unequipped at any time out of combat, or at any other time the GM sees fit.</p>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>Typically the maximum amount of Skills a unit can have at once is <strong>four</strong>, but at GM discretion this can be expanded.</p>
+</aside>
+
+<h2>Learning Skills</h2>
+<p>Skills can be found, as any item can be, upon Skill Scrolls, which can be used to teach the unit that Skill.</p>
+<p>For Skills that have prerequisite Skills, such as Improved Vital Strike requiring Vital Strike, obtaining the upgraded version of that Skill will automatically replace the prerequisite, weaker version. This is so a unit cannot stack Weaponbreaker and Improved Weaponbreaker on one weapon type, or have access to two Vital Strikes per map.</p>
+<p>Units also gain Skills from their class: a starting Skill at [[character-creation|creation]], and more when they [[promotion|promote]].</p>
+
+<h2>Skills that activate by chance</h2>
+<p>Many Skills have a chance to activate when you make an attack, and in other circumstances. Their chances vary greatly: some might be DEX%, or DEX/2%, or maybe LUK%.</p>
+<p>Your chances increase by leveling that stat, or by obtaining a boost in <strong>Skill Activation Rate</strong>, which adds its value to all activation chances. As with hitting and critting, rolling equal to or below your activation chance on a D100 means you activate the Skill.</p>
+
+<h2>Reading the skill list</h2>
+<p>The Reference Sheet marks Skills with symbols after their names.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Mark</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td class="mid"><strong>*</strong></td><td>Choose when to activate.</td></tr>
+    <tr><td class="mid"><strong>**</strong></td><td>Cannot be imparted onto Skill Scrolls.</td></tr>
+    <tr><td class="mid"><strong>***</strong></td><td>Both of the former.</td></tr>
+    <tr><td class="mid"><strong>†</strong></td><td>Can be imparted onto Skill Scrolls, but only learnt by units of the same base class.</td></tr>
+    <tr><td class="mid"><strong>×</strong></td><td>Canceled in combat by Nihil.</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">Choose when to activate Skills always must be chosen when they are activated, and never apply automatically.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-progression|Skill Capacity]] replaces the four slots with nine slots and a points budget. [[opt-progression|Alternate Skill Activation]] changes the activation chances.</p>
+</aside>
+</section>
+
+<section data-page="special-qualities" data-title="Special Qualities" data-source="Rules 3.0, Intro and Basics, “Stats” (Special Qualities) and “Special Quality Effects”">
+<p class="feo-lead">Special Qualities are something particular about the unit and their class. A Special Quality is something like being heavily armored, or a bandit, or having a mount.</p>
+
+<p>Some Special Qualities do not inherently affect a unit's capabilities, while others do. For example:</p>
+<ul>
+  <li>Mounted and Flying units are able to use the remainder of their unused MOV after taking actions before ending their turn.</li>
+  <li>Armored units gain buffs when waiting and have a chance to improve the defenses of nearby allies.</li>
+  <li>Flying units can fly over most terrain and obstacles, ignoring both their penalties and positive effects, except for healing.</li>
+  <li>Ballisticians cannot be Rescued, but also move after acting.</li>
+</ul>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>All Special Qualities are additionally <strong>weaknesses</strong>, rendering units with them vulnerable to certain weapons. A weapon that names a Special Quality in its Effect deals Effective damage to units that have it. See [[weapons]].</p>
+</aside>
+
+<h2>Canto+</h2>
+<p><strong>Mounted, Flying and Ballistician.</strong> The unit can move the rest of their movement after:</p>
+<ul>
+  <li>attacking, using an item, trading or rescuing;</li>
+  <li>Refreshing, or using a staff;</li>
+  <li>using a skill action other than Hold or Bastion;</li>
+  <li>Shifting forms with Feral Instincts;</li>
+  <li>interacting with objects like doors or chests;</li>
+  <li>Visiting, Arriving (if the map does not end), and Seizing (if the map does not end).</li>
+</ul>
+
+<h2>Rampart</h2>
+<p><strong>Armored.</strong> When the unit Waits, they gain buffs based on their Special Qualities, listed below.</p>
+<p>When Waiting, allies 3 spaces from the unit gain a 35% chance to use this unit's DEF or RES (if higher) when taking damage, increasing to 55% at 2 spaces and 90% when adjacent.</p>
+
+<h2>Rouse</h2>
+<p><strong>Beast.</strong> At the start of this unit's turn, the unit may gain buffs until the start of their next turn, based on their Special Qualities and listed below. Rouse has a 2 Turn cooldown on use.</p>
+
+<h3>Rampart and Rouse buffs</h3>
+<p>The unit gains <strong>all</strong> the buffs that apply to its Special Qualities.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Special Quality</th><th>Rampart buff</th><th>Rouse buff</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Armored</strong></td><td>+2 RES, +1 STR/DEF/DEX</td><td>+1 END</td></tr>
+    <tr><td><strong>Mounted</strong></td><td>+1 STR/DEF/RES/DEX/SPD</td><td>+1 MOV</td></tr>
+    <tr><td><strong>Dragon</strong></td><td>+2 RES/DEF, +1 DEX/STR/MAG</td><td>+1 MAG/RES</td></tr>
+    <tr><td><strong>Flying</strong></td><td>+2 SPD, +1 RES/DEX</td><td>+1 SPD/RES</td></tr>
+    <tr><td><strong>Beast</strong></td><td>+2 RES, +1 SPD/DEX</td><td>+1 ATK/HST</td></tr>
+    <tr><td><strong>Laguz</strong></td><td>+2 DEF, +1 SPD/DEX</td><td>+1 ATK END</td></tr>
+    <tr><td><strong>Ballistician</strong></td><td>+2 DEX, +1 SPD/MAG</td><td>+2 DEX</td></tr>
+    <tr><td><strong>Terror</strong></td><td>+2 DEF/RES, +1 DEX</td><td>+1 DEF/RES</td></tr>
+    <tr><td><strong>Bandit</strong></td><td>+2 STR, +1 DEX/SPD</td><td>+2 STR</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">END is Endurance, which reduces all damage taken, like DEF and RES together. See [[affinity]].</p>
+
+<h2>Greedy</h2>
+<p><strong>Bandit.</strong> The unit gains a STR/2% chance to activate the Plunder Skill. If the unit has Plunder, this effect instead increases Plunder's Gold gain to 100 Gold.</p>
+
+<h2>Gregarious</h2>
+<p><strong>Laguz.</strong> When the unit starts their turn next to another allied Laguz unit, both units may Shift until the start of their next turn. See [[non-beorc]].</p>
+</section>
+
+<section data-page="affinity" data-title="Affinity" data-source="Rules 3.0, Intro and Basics, “Stats” (Affinity)">
+<p class="feo-lead">Affinity is like the unit's birthsign, which influences the stat boosts received by or provided to those you Support.</p>
+
+<h2>Affinity stat boosts</h2>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Affinity</th><th>Boosts</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Fire</strong></td><td>+1 ATK, +2.5 Hit</td></tr>
+    <tr><td><strong>Thunder</strong></td><td>+1 END, +2.5 Dodge</td></tr>
+    <tr><td><strong>Wind</strong></td><td>+2.5 Hit, +2.5 Dodge</td></tr>
+    <tr><td><strong>Water</strong></td><td>+1 ATK, +1 END</td></tr>
+    <tr><td><strong>Dark</strong></td><td>+1 ATK, +2.5 Dodge</td></tr>
+    <tr><td><strong>Light</strong></td><td>+1 END, +2.5 Hit</td></tr>
+    <tr><td><strong>Ice</strong></td><td>+2 END</td></tr>
+    <tr><td><strong>Anima</strong></td><td>+2 ATK</td></tr>
+    <tr><td><strong>Heaven</strong></td><td>+5 Hit</td></tr>
+    <tr><td><strong>Earth</strong></td><td>+5 Dodge</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">Endurance, or END, reduces all damage taken, like DEF and RES together.</p>
+<p>These boosts are multiplied by Support level and apply when Support partners are near each other. See [[supports]].</p>
+
+<h2>Map Affinity</h2>
+<p>Alongside this, maps may have their own Affinity. If a unit's Affinity is the same as the map's, they receive a +5 bonus to Hit and Dodge.</p>
+
+<aside class="feo-callout optional">
+  <p class="feo-callout-label">Optional module</p>
+  <p>[[opt-affinities]] adds 27 more Affinities, and can give every Affinity an innate effect of its own.</p>
+</aside>
+</section>

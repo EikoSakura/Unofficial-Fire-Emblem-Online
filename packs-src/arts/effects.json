@@ -1,0 +1,1385 @@
+{
+  "source": "What the system applies of each Combat Art beyond what it reads from the Art's Effect, by the Art's name, in the notation that module/rules/skills.mjs explains. The effects count while a unit performs the Art in a fight it initiates. `left` is what the table still applies of an Art listed here; an Art that is not listed leaves whatever the system cannot read from its Effect. tools/build-arts.mjs lays these over the Arts of the Optional Content Sheet.",
+  "arts": {
+    "Subdue (Ranged)": {
+      "effects": [
+        {
+          "when": {
+            "range": {
+              "min": 3
+            }
+          },
+          "combat": {
+            "hit": {
+              "of": "distanceBeyond1",
+              "times": -5,
+              "plus": 5
+            }
+          }
+        }
+      ],
+      "left": "Unit does not gain wEXP when attacking an enemy at 1 HP with Subdue."
+    },
+    "Lob": {
+      "effects": [
+        {
+          "damageStat": "str"
+        }
+      ],
+      "left": "The user cannot counter-attack until the start of its next turn."
+    },
+    "Survivor's Instinct": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "recover": {
+            "of": "hpMax",
+            "times": 0.15
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Lacerate": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            "bleed"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Quickness": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "self",
+            "effects": [
+              {
+                "stats": {
+                  "spd": 1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "next": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Mutilate": {
+      "effects": [
+        {
+          "proc": {
+            "on": "hit",
+            "sure": true
+          },
+          "recover": 2
+        }
+      ],
+      "left": ""
+    },
+    "Dizzying Blow": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            {
+              "id": "tremor",
+              "dice": 4
+            }
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Scale Tipper": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "def": -1,
+                  "res": -1,
+                  "spd": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 2,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Sunset Blade": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true
+          },
+          "inflicts": [
+            "burn"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Inner Emblem": {
+      "effects": [
+        {
+          "combat": {
+            "activation": 10
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Even The Odds": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "dex": -1,
+                  "spd": -1,
+                  "luk": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 2,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Earth's Boon": {
+      "effects": [
+        {
+          "proc": {
+            "on": "kill",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "On defeating the foe the unit gains a single-use unmixed Herb of its choice."
+    },
+    "Plentitude": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "heal": 100
+        }
+      ],
+      "left": ""
+    },
+    "Mordhau Strike": {
+      "effects": [
+        {
+          "when": {
+            "lacks": [
+              "Armored"
+            ]
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damageMultiplier": 1.5
+        },
+        {
+          "when": {
+            "quality": [
+              "Armored"
+            ]
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damageMultiplier": 2
+        }
+      ],
+      "left": ""
+    },
+    "Twisting Blade": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            "bleed"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Shadow Sword": {
+      "effects": [
+        {
+          "when": {
+            "foeCounters": false
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": 4
+        }
+      ],
+      "left": ""
+    },
+    "Hexblade": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "res",
+            "times": 0.3
+          }
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": 3
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "damageStat": "mag"
+        },
+        {
+          "weaponRange": {
+            "max": 2
+          }
+        }
+      ],
+      "left": "At 1 Range the attack is resisted by RES."
+    },
+    "Sword Dance": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "luk",
+            "times": 0.4
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Finesse Blade": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "dex",
+            "times": 0.4
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Roundhouse": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "ignore": {
+            "percent": 50
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Serpent's Fang": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            "poison"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Eliminate": {
+      "effects": [
+        {
+          "when": {
+            "foeHp": {
+              "op": "le",
+              "percent": 50
+            }
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": 4
+        }
+      ],
+      "left": ""
+    },
+    "Exploit the Gap": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "ignore": {
+            "percent": 50
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Full-Stop To Life": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "percent": 50,
+            "fixed": true
+          },
+          "inflicts": [
+            "feeble"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Gutbuster": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 20,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "daze"
+          ]
+        },
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 20,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "bleed"
+          ]
+        },
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": "foe"
+        }
+      ],
+      "left": "The unit attacks last. The enemy is knocked back 1 tile after combat, 1 more if the user hit, and 1 more if the user has Smite or a similar skill."
+    },
+    "Lightning Axe": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "res",
+            "times": 0.3
+          }
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": 3
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "damageStat": "mag"
+        },
+        {
+          "weaponRange": {
+            "max": 2
+          }
+        }
+      ],
+      "left": "At 1 Range the attack is resisted by RES."
+    },
+    "Vengeance": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "hpMissing"
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Armored Strike": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "def",
+            "times": 0.4
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Brainshaker": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 30,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "stun"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Leaping Charge": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "The user moves one space towards the target after combat."
+    },
+    "Axe Uppercut": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": "foe"
+        }
+      ],
+      "left": "The target moves one space backwards after combat."
+    },
+    "Shoulder Pin": {
+      "effects": [
+        {
+          "proc": {
+            "on": "hit",
+            "sure": true,
+            "once": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "statPercent": {
+                  "mov": -50
+                }
+              }
+            ],
+            "ends": "turnEnd"
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Hit and Run": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "The user moves one space away after combat."
+    },
+    "Frozen Lance": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "res",
+            "times": 0.3
+          }
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": 3
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "damageStat": "mag"
+        },
+        {
+          "weaponRange": {
+            "max": 2
+          }
+        }
+      ],
+      "left": "At 1 Range the attack is resisted by RES."
+    },
+    "Mage's Boon": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "res": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Shatter Slash": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "def": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Mistdancer": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "self",
+            "effects": [
+              {
+                "when": {
+                  "foeWeapon": [
+                    "magic"
+                  ]
+                },
+                "takenPercent": -50
+              }
+            ],
+            "ends": "turnStart"
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Jab": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "spd",
+            "times": 0.3
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Overrun": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": "foe"
+        }
+      ],
+      "left": "The enemy is pushed one space away after combat."
+    },
+    "Gouge": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 50,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "blind"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Heaven Piercer": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "ignore": {
+            "percent": 50
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Decisive Leap": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "The user moves one space towards the target after combat."
+    },
+    "Vault": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "The user moves one space towards the target after combat."
+    },
+    "Leg Sweep": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": "foe",
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "def": -3
+                }
+              }
+            ],
+            "ends": "turnEnd"
+          }
+        }
+      ],
+      "left": "The target moves one space back after combat."
+    },
+    "Wallop": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 33,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "daze"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Angel's Strike": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "luk",
+            "times": 0.4
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Loss Of Senses": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            "sedate"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Celestial Bow": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "res",
+            "times": 0.3
+          }
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": 3
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "damageStat": "mag"
+        },
+        {
+          "weaponRange": {
+            "min": 1
+          }
+        }
+      ],
+      "left": "At 1 Range the attack is resisted by RES."
+    },
+    "Ward Arrow": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            {
+              "id": "silence",
+              "turns": 1
+            }
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Lethargy Arrow": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            {
+              "id": "heavy",
+              "turns": 1
+            }
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Waning Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "str": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Drain Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "mag": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Break Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "def": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Schism Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "res": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Befuddling Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "dex": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Exhaust Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "spd": -1
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "stacks": 5,
+            "fades": true
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Encloser": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "statPercent": {
+                  "mov": -100
+                }
+              }
+            ],
+            "ends": "turnEnd"
+          }
+        }
+      ],
+      "left": ""
+    },
+    "Ring the Bell": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damageMultiplier": 1.5,
+          "inflicts": [
+            "daze"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Palm Thrust": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": "foe"
+        }
+      ],
+      "left": "The target is pushed one space back after combat."
+    },
+    "Fading Blow": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "The user moves one space back after combat."
+    },
+    "Mystic Fist": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "res",
+            "times": 0.3
+          }
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": 3
+        },
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "damageStat": "mag"
+        },
+        {
+          "weaponRange": {
+            "max": 2
+          }
+        }
+      ],
+      "left": "At 1 Range the attack is resisted by RES."
+    },
+    "Rushing Blow": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "The user moves one space past the target after combat."
+    },
+    "Ferrous Guard": {
+      "effects": [
+        {
+          "stats": {
+            "def": 5
+          }
+        }
+      ],
+      "left": "The unit attacks last."
+    },
+    "Draining Blow": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "heal": 50
+        }
+      ],
+      "left": ""
+    },
+    "Dropkick": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 25,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "stun"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Heat Knuckle": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "mag",
+            "times": 0.4
+          }
+        }
+      ],
+      "left": "The attack deals magic damage."
+    },
+    "Knock Out Punch": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 50,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "sleep"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Iron Shoulder": {
+      "effects": [
+        {
+          "when": {
+            "range": {
+              "min": 2
+            }
+          },
+          "rules": [
+            "foeNoCounter"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Rising Fist": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "damage": {
+            "of": "def"
+          }
+        },
+        {
+          "when": {
+            "foeCounters": true
+          },
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "heal": 25
+        }
+      ],
+      "left": ""
+    },
+    "Skull Cracker": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "once": true
+          },
+          "inflicts": [
+            "bleed"
+          ]
+        },
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 50,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "confuse"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Crippling Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "percent": 25,
+            "fixed": true,
+            "once": true
+          },
+          "inflicts": [
+            "heavy"
+          ]
+        }
+      ],
+      "left": ""
+    },
+    "Parting Shot": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "sure": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "The unit moves 1 space back after combat."
+    }
+  }
+}

@@ -1,0 +1,28 @@
+<section class="standard-form">
+    <p>{{localize "FEO.Discord.menu.about"}}</p>
+    <div class="form-group">
+        <label for="{{id}}-webhook">{{localize "FEO.Discord.webhook.name"}}</label>
+        <div class="form-fields">
+            <input type="text" name="webhook" id="{{id}}-webhook" placeholder="https://discord.com/api/webhooks/…"
+                   autocomplete="off" spellcheck="false">
+        </div>
+        <p class="hint">{{status}}</p>
+        <p class="hint">{{localize "FEO.Discord.webhook.hint"}}</p>
+        <p class="hint">{{localize "FEO.Discord.webhook.private"}}</p>
+    </div>
+    {{#if saved}}
+    <div class="form-group">
+        <label for="{{id}}-forget">{{localize "FEO.Discord.webhook.forget"}}</label>
+        <div class="form-fields">
+            <input type="checkbox" name="forget" id="{{id}}-forget">
+        </div>
+    </div>
+    {{/if}}
+    <div class="form-group">
+        <label for="{{id}}-pictures">{{localize "FEO.Discord.pictures.name"}}</label>
+        <div class="form-fields">
+            <input type="checkbox" name="pictures" id="{{id}}-pictures" {{checked pictures}}>
+        </div>
+        <p class="hint">{{localize "FEO.Discord.pictures.hint"}}</p>
+    </div>
+</section>

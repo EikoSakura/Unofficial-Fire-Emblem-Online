@@ -1,0 +1,32 @@
+<section class="cp-body cp-skills v-skills">
+  {{#if banner}}
+  <div class="cp-for">
+    <b>{{banner.text}}</b>
+    {{#each banner.tags as |tag|}}<span class="tag">{{tag.label}} <b>{{tag.value}}</b></span>{{/each}}
+    {{#if banner.note}}<small>{{banner.note}}</small>{{/if}}
+  </div>
+  {{/if}}
+  <div class="cp-picks" role="group" aria-label="{{localize "FEO.Skill.kind"}}">
+    {{#each kinds as |kind|}}
+    <button type="button" class="cp-pick" data-action="kind" data-kind-key="{{kind.key}}" data-kind="{{kind.key}}"
+            aria-pressed="{{kind.pressed}}">{{#if kind.dot}}<i class="dot"></i>{{/if}}{{kind.label}}<small class="num">{{kind.count}}</small></button>
+    {{/each}}
+  </div>
+  <div class="cp-scroll cp-skill-list">
+    {{#each groups as |group|}}
+    <div class="sk-group" data-kind="{{group.kind}}"><i class="dot"></i>{{group.label}}<small class="num">{{group.rows.length}}</small></div>
+    {{#each group.rows as |row|}}
+    <button type="button" class="sk-row{{#if row.taken}} taken{{/if}}{{#if row.barred}} barred{{/if}}" data-action="selectSkill" data-skill-id="{{row.id}}" data-kind="{{group.kind}}"
+            aria-pressed="{{row.pressed}}" {{#if row.uuid}}draggable="true" data-drag-uuid="{{row.uuid}}"{{/if}}>
+      <i class="dot"></i>
+      <span class="nm">{{#if row.taken}}<i class="tk" data-tooltip="{{localize "FEO.Compendium.skills.taken"}}">{{feoIcon "check"}}</i>{{/if}}{{row.name}}</span>
+      <span class="ex">{{row.effect}}</span>
+      <span class="cap" data-tooltip="{{localize "FEO.Skill.capacity"}}">{{#if row.capacity}}{{localize "FEO.Compendium.skills.cap"}}<b class="num">{{row.capacity}}</b>{{/if}}</span>
+    </button>
+    {{/each}}
+    {{/each}}
+    {{#if empty}}<p class="cp-empty">{{localize "FEO.Compendium.skills.none"}}</p>{{/if}}
+  </div>
+  <button type="button" class="cp-scrim" data-action="closeSheet" tabindex="-1"
+          aria-label="{{localize "FEO.Compendium.close"}}"></button>
+</section>

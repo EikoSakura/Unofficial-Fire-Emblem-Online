@@ -1,0 +1,91 @@
+<!-- chapter: Death &amp; Defeat | icon: moon -->
+
+<section data-page="death" data-title="Handling Death" data-source="Rules 3.0, Death, “Death”">
+<p class="feo-lead">In Fire Emblem, for the longest time, when the HP of a unit reached zero, it died. In a tabletop game, where a character is one you have worked hard on and had a journey with alongside others, that does not always feel so good.</p>
+
+<aside class="feo-callout gm">
+  <p class="feo-callout-label">GM advice</p>
+  <p>It is vital to establish to players, as GM, how you wish to handle Death, as there are a number of ways of handling it. Settle this before play begins.</p>
+</aside>
+
+<h2>Four ways to handle it</h2>
+<ol class="feo-steps">
+  <li><span class="feo-step-title">Permadeath</span>
+    <p>Permadeath, through and through. When a unit's HP reaches zero, it dies.</p></li>
+  <li><span class="feo-step-title">Casual Mode</span>
+    <p>Units retreat instead of die.</p></li>
+  <li><span class="feo-step-title">Multiple lives</span>
+    <p>Units have a number of lives to lose before they are gone for good. See the [[opt-lives]] Optional Module.</p></li>
+  <li><span class="feo-step-title">Incapacitation</span>
+    <p>Incapacitation is a bit more complex, but also provides a more fair in-between of permadeath and not dying, giving units a chance to get back up after reaching 0 HP and allowing players to choose their fate. See [[incapacitation]].</p></li>
+</ol>
+</section>
+
+<section data-page="incapacitation" data-title="Incapacitation" data-source="Rules 3.0, Death, “Incapacitation System”">
+<p class="feo-lead">Under the Incapacitation system, a unit that is defeated goes down for a few turns instead of dying, and carries the Wounds and Injuries of battle with it afterwards.</p>
+
+<aside class="feo-callout gm">
+  <p class="feo-callout-label">GM advice</p>
+  <p>This page applies only if your GM has chosen Incapacitation as the way to handle death. See [[death]].</p>
+</aside>
+
+<h2>Wounds</h2>
+<p>When a character takes their maximum HP divided by 1.5 in damage from a single hit, they take a Wound.</p>
+<ul>
+  <li>Wounds decrease your maximum HP by one, and linger between maps until healed.</li>
+  <li>For every multiple of 5 (5, 10, 15, and so on) of Wounds you have, you gain a <strong>Grave Wound</strong>, and your STR, MAG, DEF, RES, DEX, SPD, LUK, MOV and CON decrease by 1, all to a minimum of 1.</li>
+</ul>
+<h3>Healing Wounds</h3>
+<p>Wounds are healed by another unit using their action to make a Medicine check, base DC 60, which increases by 5 for each Wound you have. Out of combat, this action takes 1 hour per Wound.</p>
+<p>If the unit succeeds their Medicine check, you lose Wounds equal to the tens place of their Medicine ability. Units who succeed this check gain +5 EXP per Wound healed.</p>
+
+<h2>Going down</h2>
+<p>When a unit is defeated in combat, they become Incapacitated.</p>
+<div class="feo-formulas">
+  <div class="feo-formula">
+    <span class="feo-formula-name">Rounds of Incapacitation</span>
+    <div class="feo-formula-expr"><var>Endurance or Willpower</var> ÷ 10</div>
+    <p class="feo-formula-note">Grave Wounds decrease your total Incapacitation rounds by 1 per Grave Wound.</p>
+  </div>
+  <div class="feo-formula">
+    <span class="feo-formula-name">Overkill damage kept</span>
+    <div class="feo-formula-expr"><var>Damage past 0</var> − <var>Endurance or Willpower</var> ÷ 10</div>
+    <p class="feo-formula-note">This HP must be healed before the unit can be brought up.</p>
+  </div>
+</div>
+<p>While Incapacitated:</p>
+<ul>
+  <li>The unit no longer occupies their spot and is automatically hit by all attacks.</li>
+  <li>A unit may spend 1 round of Incapacitation to take one Action, or move half of their total movement.</li>
+  <li>If a unit with negative HP is healed, their Incapacitation timer is paused for 1 round, ending at the start of their next turn, or until they are hit.</li>
+  <li>A unit is allowed to take their action when brought back if they did not take it before they went down.</li>
+</ul>
+
+<h2>Injuries</h2>
+<p>When recovering from Incapacitation, the unit suffers an Injury. Each Injury lowers your maximum HP by 2.</p>
+<h3>Healing Injuries</h3>
+<p>Injuries are only healed out of combat, requiring a day of downtime doing nothing but healing, and another unit spending their time dedicated to healing you.</p>
+<p>For each day spent like this, your healer rolls a Medicine check, base DC 70, which increases by 5 for every Injury you have. If they succeed, you lose Injuries equal to the tens place of their Medicine ability. Units who succeed this check gain +10 EXP per Injury healed. A unit may heal Wounds in the same check that they would be healing Injuries.</p>
+
+<h3>Wounds and Injuries side by side</h3>
+<div class="feo-table-wrap"><table class="feo-table top">
+  <thead><tr><th></th><th>Wound</th><th>Injury</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Caused by</strong></td><td>Taking maximum HP ÷ 1.5 in damage from a single hit</td><td>Recovering from Incapacitation</td></tr>
+    <tr><td><strong>Maximum HP</strong></td><td>−1 each</td><td>−2 each</td></tr>
+    <tr><td><strong>Healed</strong></td><td>By an action in combat, or 1 hour per Wound out of combat</td><td>Only out of combat, a day at a time</td></tr>
+    <tr><td><strong>Medicine check</strong></td><td>DC 60, +5 per Wound</td><td>DC 70, +5 per Injury</td></tr>
+    <tr><td><strong>Removed on success</strong></td><td>The tens place of the healer's Medicine ability</td><td>The tens place of the healer's Medicine ability</td></tr>
+    <tr><td><strong>Healer's EXP</strong></td><td>+5 per Wound healed</td><td>+10 per Injury healed</td></tr>
+  </tbody>
+</table></div>
+
+<h2>The final choice</h2>
+<p>When a unit reaches 5 Injuries, takes damage equal to 3× their Maximum HP before or while Incapacitated, or their Incapacitation timer runs out, they must choose one of the following options:</p>
+<ol class="feo-steps">
+  <li><span class="feo-step-title">Retreat</span>
+    <p>They are forced to retreat, and leave the map. If the party succeeds in the map, they return to the party and may be treated as normal.</p></li>
+  <li><span class="feo-step-title">Death</span>
+    <p>The unit is killed.</p></li>
+</ol>
+</section>

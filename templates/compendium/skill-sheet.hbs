@@ -1,0 +1,88 @@
+<aside class="cp-dock v-skills" aria-label="{{localize "FEO.Compendium.sheet.skill"}}">
+  {{#if sheet}}
+  {{#with sheet}}
+  <article class="cp-sheet skill-sheet" data-kind="{{kind}}" aria-label="{{name}}">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+    <header class="cs-banner" {{#if uuid}}draggable="true" data-drag-uuid="{{uuid}}" data-tooltip="{{localize "FEO.Compendium.dragHint"}}"{{/if}}>
+      <span class="sk-big">{{{icon}}}</span>
+      <div>
+        <span class="cs-tier">{{kindLabel}}</span>
+        <h3>{{name}}</h3>
+        <div class="sub">{{capacity}}</div>
+      </div>
+      <div class="cs-buttons">
+        {{#if uuid}}
+        <button type="button" class="cs-button" data-action="openItem" data-uuid="{{uuid}}"
+                data-tooltip="{{localize "FEO.Compendium.openItem"}}"
+                aria-label="{{localize "FEO.Compendium.openItem"}}">{{feoIcon "open"}}</button>
+        {{/if}}
+        <button type="button" class="cs-button close" data-action="closeSheet"
+                aria-label="{{localize "FEO.Compendium.close"}}">{{feoIcon "x"}}</button>
+      </div>
+    </header>
+
+    <div class="cs-body">
+      {{#if effect}}<p class="cs-desc effect">{{effect}}</p>{{/if}}
+
+      {{#if marks.length}}
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Compendium.skills.marks"}}</h4>
+        <div class="sk-marklist">
+          {{#each marks as |mark|}}
+          <div><span class="cp-mark {{mark.css}}">{{mark.label}}</span><span>{{mark.text}}</span></div>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}}
+
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Skill.prerequisite"}}</h4>
+        {{#if prerequisite}}
+        <p class="cs-text">{{prerequisite}}</p>
+        {{else}}
+        <p class="cs-text none">{{localize "FEO.Compendium.skills.noPrerequisite"}}</p>
+        {{/if}}
+      </section>
+
+      {{#if taught.length}}
+      <section class="cs-sec">
+        <h4>{{localize "FEO.Compendium.skills.taught"}}</h4>
+        <div class="cp-chips">
+          {{#each taught as |chip|}}
+          <button type="button" class="cp-classchip" data-action="selectClass" data-class-id="{{chip.id}}">
+            {{{chip.crest}}}<span>{{chip.name}}</span>{{#if chip.note}}<small>{{chip.note}}</small>{{/if}}
+          </button>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}}
+
+      {{#if bearers.length}}
+      <section class="cs-sec">
+        <h4>{{quality}}</h4>
+        <div class="cp-chips">
+          {{#each bearers as |chip|}}
+          <button type="button" class="cp-classchip" data-action="selectClass" data-class-id="{{chip.id}}">
+            {{{chip.crest}}}<span>{{chip.name}}</span>{{#if chip.note}}<small>{{chip.note}}</small>{{/if}}
+          </button>
+          {{/each}}
+        </div>
+      </section>
+      {{/if}}
+    </div>
+
+    {{#if ../choose}}
+    <footer class="cs-choose{{#if ../choose.chosen}} chosen{{/if}}{{#if ../choose.barred}} barred{{/if}}">
+      <span class="txt">{{../choose.text}}</span>
+      {{#if ../choose.can}}
+      <button type="button" class="cp-choose" data-action="chooseSkill">{{feoIcon "check"}}{{../choose.label}}</button>
+      {{else if ../choose.chosen}}
+      <span class="cp-chosen">{{feoIcon "check"}}</span>
+      {{/if}}
+    </footer>
+    {{/if}}
+  </article>
+  {{/with}}
+  {{/if}}
+</aside>

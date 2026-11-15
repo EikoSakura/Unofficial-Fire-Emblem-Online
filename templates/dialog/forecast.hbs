@@ -1,0 +1,34 @@
+<div class="distance">
+  <label for="feo-forecast-distance">{{localize "FEO.Exchange.distance"}}</label>
+  <input type="number" id="feo-forecast-distance" name="distance" value="{{distance}}" min="1" step="1">
+  <span class="unit">{{localize "FEO.Exchange.tiles"}}</span>
+  <span class="hint">{{distanceHint}}</span>
+</div>
+<div class="matchup">
+  {{#each sides as |side|}}
+  <section class="side {{#unless side.active}}idle{{/unless}}" data-side="{{side.key}}">
+    <header>
+      <span class="role">{{side.role}}</span>
+      <h3>{{side.name}}</h3>
+      <p>{{side.weapon}}</p>
+    </header>
+    <p class="hp">
+      {{localize "FEO.Stat.hp.abbr"}} <b>{{side.hp}}</b>{{#if side.hpChanges}} → <b class="after">{{side.hpAfter}}</b>{{/if}}
+    </p>
+    {{#if side.active}}
+    <dl>
+      <div><dt>{{localize "FEO.Combat.hit"}}</dt><dd>{{side.hit}}%</dd></div>
+      <div><dt>{{localize "FEO.Combat.damage"}}</dt><dd>{{side.damage}}{{#if side.damageLater includeZero=true}} <span class="times">+ {{side.damageLater}}</span>{{else}}{{#if side.repeats}} <span class="times">× {{side.attacks}}</span>{{/if}}{{/if}}</dd></div>
+      <div><dt>{{localize "FEO.Combat.critAbbr"}}</dt><dd>{{side.crit}}%</dd></div>
+    </dl>
+    {{else}}
+    <p class="blocked">{{side.blocked}}</p>
+    {{/if}}
+    {{#if side.tags.length}}
+    <ul class="tags">
+      {{#each side.tags as |tag|}}<li class="{{tag.cls}}">{{tag.label}}</li>{{/each}}
+    </ul>
+    {{/if}}
+  </section>
+  {{/each}}
+</div>

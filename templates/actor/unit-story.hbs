@@ -1,0 +1,99 @@
+<section class="tab panel-tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.bonds"}}
+      <span class="aside">{{{localize "FEO.Bond.rangeHint" range=config.supportRange}}} · {{localize "FEO.Bond.dropHint"}}</span>
+      {{#if editable}}<button type="button" class="add edit-only" data-action="addBond" data-tooltip="{{localize "FEO.Bond.add"}}" aria-label="{{localize "FEO.Bond.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+    </h3>
+    {{#each bonds as |bond|}}
+    <div class="bond" data-bond="{{bond.index}}">
+      <span class="aff" {{#if bond.affinityLabel}}data-tooltip="{{localize bond.affinityLabel}}"{{/if}}>{{feoIcon bond.icon}}</span>
+      <div class="who">
+        <div class="bond-fields">
+          <input type="text" name="system.bonds.{{bond.index}}.name" value="{{bond.name}}"
+                 placeholder="{{localize "FEO.Bond.name"}}" aria-label="{{localize "FEO.Bond.name"}}">
+          <select name="system.bonds.{{bond.index}}.affinity" aria-label="{{localize "FEO.Unit.affinity"}}">
+            {{selectOptions @root.config.affinities selected=bond.affinity localize=true blank="–"}}
+          </select>
+          <select name="system.bonds.{{bond.index}}.rank" aria-label="{{localize "FEO.Bond.rank"}}">
+            {{selectOptions @root.supportRankChoices selected=bond.rank localize=true}}
+          </select>
+          <label class="points" {{#if bond.pointsNext}}data-tooltip="{{localize "FEO.Bond.nextAt" points=bond.pointsNext}}"{{/if}}>
+            <input type="number" name="system.bonds.{{bond.index}}.points" value="{{bond.points}}" min="0" step="1"
+                   aria-label="{{localize "FEO.Bond.points"}}">
+            <span>{{localize "FEO.Bond.pointsShort"}}</span>
+          </label>
+          <label class="kin edit-only" data-tooltip="{{localize "FEO.Bond.kinHint"}}">
+            <input type="checkbox" name="system.bonds.{{bond.index}}.kin" {{checked bond.kin}}>
+            <span>{{localize "FEO.Bond.kin"}}</span>
+          </label>
+          {{#if @root.supportEvents}}{{#if @root.editable}}
+          <select class="chip ghost" data-bond-points aria-label="{{localize "FEO.Support.addPoints"}}">
+            <option value="">+ {{localize "FEO.Bond.pointsShort"}}</option>
+            {{#each @root.supportEvents as |entry key|}}<option value="{{key}}">{{localize entry.label}} (+{{entry.amount}})</option>{{/each}}
+          </select>
+          {{/if}}{{/if}}
+        </div>
+        <small>
+          {{#if bond.kin}}{{localize "FEO.Bond.kin"}} · {{/if}}{{#each bond.parts as |part|}}+{{part.amount}} {{localize part.label}}{{#unless @last}} · {{/unless}}{{else}}{{localize "FEO.Bond.noBonus"}}{{/each}}
+          {{#if bond.linked}}· {{localize "FEO.Bond.linked"}}{{/if}}
+          {{#unless bond.auto}}{{#if @root.editable}}· <button type="button" class="link" data-action="autoBond" data-tooltip="{{localize "FEO.Bond.autoHint"}}">{{localize "FEO.Bond.auto"}}</button>{{/if}}{{/unless}}
+        </small>
+      </div>
+      <button type="button" class="in-range" data-action="toggleBond" aria-pressed="{{bond.inRange}}"
+              data-tooltip="{{#if bond.auto}}{{localize "FEO.Bond.autoOn"}}{{else}}{{localize "FEO.Bond.autoOff"}}{{/if}} {{localize "FEO.Rail.toggleBond"}}">{{#if bond.adjacent}}{{localize "FEO.Bond.adjacent"}}{{else}}{{localize "FEO.Bond.inRange"}}{{/if}}</button>
+      <span class="letters" aria-hidden="true">{{#each bond.letters as |letter|}}<i class="{{#if letter.on}}on{{/if}}">{{localize letter.label}}</i>{{/each}}</span>
+      {{#if @root.editable}}
+      <button type="button" class="remove edit-only" data-action="deleteBond" data-tooltip="{{localize "FEO.Bond.delete"}}" aria-label="{{localize "FEO.Bond.delete"}}">{{feoIcon "trash"}}</button>
+      {{/if}}
+    </div>
+    {{else}}
+    <p class="empty">{{localize "FEO.Bond.none"}}</p>
+    {{/each}}
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Section.profile"}}</h3>
+    <div class="facts">
+      <label class="field"><span>{{localize "FEO.Unit.player"}}</span><input type="text" name="system.player" value="{{system.player}}"></label>
+      <label class="field"><span>{{localize "FEO.Profile.age"}}</span><input type="text" name="system.profile.age" value="{{system.profile.age}}"></label>
+      <label class="field"><span>{{localize "FEO.Profile.gender"}}</span><input type="text" name="system.profile.gender" value="{{system.profile.gender}}"></label>
+      <label class="field"><span>{{localize "FEO.Profile.race"}}</span><input type="text" name="system.profile.race" value="{{system.profile.race}}"></label>
+      <label class="field"><span>{{localize "FEO.Profile.homeland"}}</span><input type="text" name="system.profile.homeland" value="{{system.profile.homeland}}"></label>
+      <label class="field"><span>{{localize "FEO.Profile.allegiance"}}</span><input type="text" name="system.profile.allegiance" value="{{system.profile.allegiance}}"></label>
+      <label class="field"><span>{{localize "FEO.Profile.occupation"}}</span><input type="text" name="system.profile.occupation" value="{{system.profile.occupation}}"></label>
+      <label class="field" {{#if affinity.effect}}data-tooltip="{{localize affinity.effect.text}} {{localize affinity.effect.mode}}"{{/if}}>
+        <span>{{localize "FEO.Unit.affinity"}}</span>
+        <select name="system.affinity">{{selectOptions config.affinities selected=system.affinity localize=true blank="–"}}</select>
+      </label>
+      <label class="field"><span>{{localize "FEO.Unit.specialQualities"}}</span><input type="text" name="system.specialQualities" value="{{system.specialQualities}}"></label>
+      <label class="field" data-tooltip="{{localize "FEO.Army.hint"}}">
+        <span>{{localize "FEO.Army.label"}}</span>
+        <select name="system.army">{{selectOptions config.armies selected=systemSource.army localize=true blank=(localize "FEO.Army.auto")}}</select>
+      </label>
+    </div>
+  </div>
+
+  <div class="cols story">
+    <div class="card biography">
+      <h3>{{localize "FEO.Unit.biography"}}</h3>
+      {{#if editMode}}
+      {{formInput systemFields.biography value=system.biography enriched=biographyHTML toggled=true}}
+      {{else}}
+      <div class="prose">{{{biographyHTML}}}</div>
+      {{/if}}
+    </div>
+    <div class="card">
+      <h3>{{localize "FEO.Section.linesVeils"}}</h3>
+      <label class="field">
+        <span>{{localize "FEO.Profile.lines"}}</span>
+        <textarea name="system.profile.lines" rows="3">{{system.profile.lines}}</textarea>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Profile.veils"}}</span>
+        <textarea name="system.profile.veils" rows="3">{{system.profile.veils}}</textarea>
+      </label>
+    </div>
+  </div>
+
+</section>

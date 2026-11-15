@@ -1,0 +1,32 @@
+<header class="bs-masthead">
+  <svg class="bs-mast-crest" viewBox="0 0 50 56" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="#f0d48a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="25" cy="3.5" r="1.8" fill="#f0d48a"/>
+      <path d="M25 5.5v5M18 10.5h14"/>
+      <path d="M7 11h36v18c0 11-7 17.5-18 22C14 46.5 7 40 7 29V11z" fill="#0f2146" stroke-width="2.2"/>
+      <path d="M25 18.5L14 35.5h22L25 18.5zM25 18.5v-2.5M25 27l-3 8.5M25 27l3 8.5" stroke="#f8f1de" stroke-width="1.7"/>
+      <path d="M25 16.5l5 1.5-5 1.5" fill="#f0d48a" stroke="none"/>
+      <path d="M25 40.5l1.3 2.2 2.5.4-1.8 1.8.4 2.5-2.4-1.2-2.4 1.2.4-2.5-1.8-1.8 2.5-.4 1.3-2.200z" fill="#f0d48a" stroke="none"/>
+    </g>
+  </svg>
+  <div class="bs-mast-title">
+    <small>{{localize "FEO.Base.over"}}</small>
+    <b>{{name}}</b>
+  </div>
+  <div class="bs-mast-rule"></div>
+  {{#if visitor}}
+  <button type="button" class="bs-visitor" data-action="visitor" {{#unless choice}}disabled{{/unless}}
+          {{#if choice}}data-tooltip="{{localize "FEO.Base.visitorHint"}}"{{/if}}>
+    <span class="bs-medal">{{feoIcon visitor.icon}}</span>
+    <span><small>{{localize "FEO.Base.visitingAs"}}</small><b>{{visitor.name}} <i>{{visitor.sub}}</i></b></span>
+  </button>
+  <div class="bs-purse">
+    <small>{{localize "FEO.Unit.gold"}}</small>
+    <b class="bs-num">{{feoIcon "coin"}}<span>{{gold}}</span></b>
+  </div>
+  {{else}}
+  <div class="bs-visitor bs-nobody">
+    <span><small>{{localize "FEO.Base.visitingAs"}}</small><b>{{localize "FEO.Base.nobody"}}</b></span>
+  </div>
+  {{/if}}
+</header>

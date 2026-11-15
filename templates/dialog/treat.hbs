@@ -1,0 +1,17 @@
+<div class="feo-rules-dialog">
+  <p class="hint">{{localize "FEO.Treat.hint" patient=patient wounds=wounds injuries=injuries}}</p>
+  <label class="line">
+    <span>{{localize "FEO.Treat.healer"}}</span>
+    <select name="healer">
+      {{#each healers as |healer|}}
+      <option value="{{healer.uuid}}">{{healer.name}} ({{localize "FEO.Ability.medicine"}} +{{healer.medicine}})</option>
+      {{/each}}
+    </select>
+  </label>
+  {{#if injuries}}
+  <label class="line check">
+    <input type="checkbox" name="downtime">
+    <span>{{localize "FEO.Treat.downtime"}}</span>
+  </label>
+  {{/if}}
+</div>

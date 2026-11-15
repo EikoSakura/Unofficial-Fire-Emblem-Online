@@ -1,0 +1,82 @@
+File names for your own battalions images. Put an image in this folder, named as in the first column
+(for example iron-axe.webp or iron-axe.png; "Iron Axe.png" works too), and build the compendium again.
+Where two entries share a name, the second column is the name that picks out just one of them.
+This list is rewritten by every build.
+
+file name	more specific file name	entry	folder	image used now
+church-soldiers		Church Soldiers	Authority E	icons/environment/people/group.webp
+church-brawlers		Church Brawlers	Authority E	icons/environment/people/infantry.webp
+church-holy-monks		Church Holy Monks	Authority E	icons/environment/people/cleric-grey.webp
+church-mercenaries		Church Mercenaries	Authority E	icons/environment/people/group.webp
+church-sacred-monks		Church Sacred Monks	Authority E	icons/environment/people/cleric-grey.webp
+empire-brawlers		Empire Brawlers	Authority E	icons/environment/people/infantry.webp
+empire-infantry		Empire Infantry	Authority E	icons/environment/people/infantry.webp
+empire-warriors		Empire Warriors	Authority E	icons/environment/people/group.webp
+kingdom-brawlers		Kingdom Brawlers	Authority E	icons/environment/people/infantry.webp
+kingdom-infantry		Kingdom Infantry	Authority E	icons/environment/people/infantry.webp
+kingdom-lance-co		Kingdom Lance Co.	Authority E	icons/environment/people/spearfighter.webp
+union-brawlers		Union Brawlers	Authority E	icons/environment/people/infantry-army.webp
+union-duelists		Union Duelists	Authority E	icons/environment/people/infantry.webp
+union-infantry		Union Infantry	Authority E	icons/environment/people/infantry.webp
+church-magic-corps		Church Magic Corps	Authority D	icons/environment/people/cleric-orange.webp
+church-archers		Church Archers	Authority D	icons/environment/people/archer.webp
+church-armored-corps		Church Armored Corps	Authority D	icons/environment/people/infantry-armored.webp
+church-pegasus-corps		Church Pegasus Corps	Authority D	icons/environment/creatures/horse-white.webp
+empire-magic-corps		Empire Magic Corps	Authority D	icons/environment/people/cleric-orange.webp
+empire-archers		Empire Archers	Authority D	icons/environment/people/archer.webp
+empire-cavalry		Empire Cavalry	Authority D	icons/environment/people/cavalry.webp
+empire-armored-co		Empire Armored Co.	Authority D	icons/environment/people/infantry-armored.webp
+empire-pegasus-co		Empire Pegasus Co.	Authority D	icons/environment/creatures/horse-white.webp
+kingdom-magic-corps		Kingdom Magic Corps	Authority D	icons/environment/people/cleric-grey.webp
+kingdom-archers		Kingdom Archers	Authority D	icons/environment/people/archer.webp
+kingdom-cavalry		Kingdom Cavalry	Authority D	icons/environment/people/charge.webp
+kingdom-armored-co		Kingdom Armored Co.	Authority D	icons/environment/people/infantry-armored.webp
+kingdom-pegasus-co		Kingdom Pegasus Co.	Authority D	icons/environment/creatures/horse-white.webp
+union-magic-corps		Union Magic Corps	Authority D	icons/environment/people/cleric-orange.webp
+union-archers		Union Archers	Authority D	icons/environment/people/archer.webp
+union-cavalry		Union Cavalry	Authority D	icons/environment/people/cavalry-heavy.webp
+union-armored-co		Union Armored Co.	Authority D	icons/environment/people/infantry-armored.webp
+union-pegasus-co		Union Pegasus Co.	Authority D	icons/environment/creatures/horse-white.webp
+church-knights		Church Knights	Authority C	icons/environment/people/cavalry-heavy.webp
+empire-knights		Empire Knights	Authority C	icons/environment/people/cavalry-heavy.webp
+empire-snipers		Empire Snipers	Authority C	icons/environment/people/archer.webp
+empire-magic-users		Empire Magic Users	Authority C	icons/environment/people/cleric-grey.webp
+empire-pavise-co		Empire Pavise Co.	Authority C	icons/environment/people/infantry-armored.webp
+empire-wyvern-co		Empire Wyvern Co.	Authority C	icons/sundries/flags/banner-standard-green.webp
+kingdom-knights		Kingdom Knights	Authority C	icons/environment/people/charge.webp
+kingdom-snipers		Kingdom Snipers	Authority C	icons/environment/people/archer.webp
+kingdom-magic-users		Kingdom Magic Users	Authority C	icons/environment/people/cleric-orange.webp
+kingdom-brave-lance-co		Kingdom Brave Lance Co.	Authority C	icons/environment/people/spearfighter.webp
+kingdom-wyvern-co		Kingdom Wyvern Co.	Authority C	icons/sundries/flags/banner-standard-moon.webp
+union-knights		Union Knights	Authority C	icons/environment/people/cavalry-heavy.webp
+union-snipers		Union Snipers	Authority C	icons/environment/people/archer.webp
+union-magic-users		Union Magic Users	Authority C	icons/environment/people/cleric-orange.webp
+union-veteran-duelists		Union Veteran Duelists	Authority C	icons/environment/people/infantry.webp
+union-wyvern-co		Union Wyvern Co.	Authority C	icons/sundries/flags/banner-standard-purple.webp
+holy-knights		Holy Knights	Authority B	icons/environment/people/cavalry.webp
+empire-heavy-soldiers		Empire Heavy Soldiers	Authority B	icons/environment/people/infantry-armored.webp
+empire-holy-magic-users		Empire Holy Magic Users	Authority B	icons/environment/people/cleric-grey.webp
+empire-raiders		Empire Raiders	Authority B	icons/environment/people/group.webp
+imperial-guard		Imperial Guard	Authority B	icons/environment/people/group.webp
+empire-elite-wyvern-co		Empire Elite Wyvern Co.	Authority B	icons/sundries/flags/banner-standard-blue.webp
+kingdom-heavy-soldiers		Kingdom Heavy Soldiers	Authority B	icons/environment/people/infantry-armored.webp
+kingdom-holy-knights		Kingdom Holy Knights	Authority B	icons/environment/people/cavalry.webp
+kingdom-heavy-knights		Kingdom Heavy Knights	Authority B	icons/environment/people/infantry-armored.webp
+royal-guard		Royal Guard	Authority B	icons/environment/people/infantry.webp
+kingdom-priests		Kingdom Priests	Authority B	icons/environment/people/cleric-orange.webp
+union-pavise-co		Union Pavise Co.	Authority B	icons/environment/people/infantry-armored.webp
+union-physicians		Union Physicians	Authority B	icons/environment/people/cleric-grey.webp
+union-sages		Union Sages	Authority B	icons/environment/people/cleric-orange.webp
+union-master-archers		Union Master Archers	Authority B	icons/environment/people/archer.webp
+union-guard		Union Guard	Authority B	icons/environment/people/group.webp
+elite-sword-fighters		Elite Sword Fighters	Authority A	icons/environment/people/infantry-army.webp
+evil-repelling-co		Evil Repelling Co.	Authority A	icons/environment/people/group.webp
+black-heavy-axes		Black Heavy Axes	Authority A	icons/environment/people/infantry-armored.webp
+black-cavalry		Black Cavalry	Authority A	icons/environment/people/cavalry-heavy.webp
+black-pegasus-co		Black Pegasus Co.	Authority A	icons/environment/creatures/horse-white.webp
+leonine-knights		Leonine Knights	Authority A	icons/environment/people/cavalry.webp
+leonine-magic-corps		Leonine Magic Corps	Authority A	icons/environment/people/cleric-orange.webp
+leonine-dancers		Leonine Dancers	Authority A	icons/environment/people/cleric-orange.webp
+golden-wyvern-co		Golden Wyvern Co.	Authority A	icons/sundries/flags/banner-standard-moon.webp
+golden-archers		Golden Archers	Authority A	icons/environment/people/archer.webp
+golden-cavalry		Golden Cavalry	Authority A	icons/environment/people/charge.webp

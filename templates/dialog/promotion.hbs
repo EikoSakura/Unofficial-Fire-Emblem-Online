@@ -1,0 +1,84 @@
+<p class="hint">{{localize "FEO.Promotion.lead" from=from}}</p>
+{{#if missing}}<p class="hint warn">{{localize "FEO.Promotion.missing" names=missing}}</p>{{/if}}
+
+<div class="choices">
+  {{#each classes as |cls|}}
+  <section class="choice" data-choose="{{#if cls.mustChoose}}{{cls.choose}}{{else}}0{{/if}}" {{#if cls.generic}}data-generic{{/if}}>
+    <label class="pick">
+      <input type="radio" name="target" value="{{cls.index}}" {{checked cls.checked}}>
+      <span class="title">
+        <b>{{cls.name}}</b>
+        <small>{{localize cls.tierLabel}}</small>
+      </span>
+    </label>
+    {{#if cls.description}}<p class="about">{{cls.description}}</p>{{/if}}
+    <ul class="gains">
+      {{#each cls.gains as |gain|}}<li><b>{{gain.value}}</b> {{localize gain.abbr}}</li>{{/each}}
+    </ul>
+    <dl>
+      <div><dt>{{localize "FEO.Unit.classWt"}}</dt><dd>{{cls.weight}}</dd></div>
+      <div>
+        <dt>{{localize "FEO.Class.proficienciesGained"}}</dt>
+        <dd>
+          {{#each cls.proficiencies as |proficiency|}}
+          {{#if cls.mustChoose}}
+          <label class="tick">
+            <input type="checkbox" name="prof.{{cls.index}}.{{proficiency.key}}"
+                   {{checked proficiency.checked}} {{#if proficiency.known}}disabled{{/if}}>
+            {{localize proficiency.label}}
+          </label>
+          {{else}}
+          <span class="{{#if proficiency.known}}known{{/if}}"
+                {{#if proficiency.known}}data-tooltip="{{localize "FEO.Promotion.known"}}"{{/if}}>{{localize proficiency.label}}</span>
+          {{/if}}
+          {{else}}
+          {{#if cls.proficiencyNote}}{{cls.proficiencyNote}}{{else}}–{{/if}}
+          {{/each}}
+          {{#if cls.anyNew}}{{#if cls.newRank}}<small>{{localize "FEO.Promotion.atRank" rank=(localize cls.newRank)}}</small>{{/if}}{{/if}}
+          {{#if cls.mustChoose}}<small>{{localize "FEO.Promotion.chooseCount" count=cls.choose}}</small>{{/if}}
+        </dd>
+      </div>
+      <div>
+        <dt>{{localize cls.skillLabel}}</dt>
+        <dd>
+          {{#if cls.skillOptions}}
+          <select name="pick.{{cls.index}}" aria-label="{{localize "FEO.Promotion.skillPick"}}">
+            {{#each cls.skillOptions as |option|}}<option value="{{option}}">{{option}}</option>{{/each}}
+          </select>
+          <small>{{localize "FEO.Promotion.skillPick"}}</small>
+          {{else}}{{#if cls.skill}}{{cls.skill}}{{else}}–{{/if}}{{/if}}
+        </dd>
+      </div>
+      {{#if cls.occult}}<div><dt>{{localize "FEO.Class.skill.occult"}}</dt><dd>{{cls.occult}}</dd></div>{{/if}}
+      {{#if cls.qualities}}<div><dt>{{localize "FEO.Unit.specialQualities"}}</dt><dd>{{cls.qualities}}</dd></div>{{/if}}
+    </dl>
+  </section>
+  {{/each}}
+</div>
+
+<p class="hint">{{localize "FEO.Promotion.ranksHint"}}</p>
+
+{{#if anyGeneric}}
+<fieldset class="skill-choice">
+  <legend>{{localize "FEO.Promotion.skill"}}</legend>
+  <label><input type="radio" name="skill" value="class" checked> {{localize "FEO.Promotion.skillClass"}}</label>
+  <label><input type="radio" name="skill" value="generic"> {{localize "FEO.Promotion.skillGeneric"}}</label>
+</fieldset>
+{{/if}}
+
+<fieldset class="growths">
+  <legend>{{localize "FEO.Class.card.growths"}}</legend>
+  <p class="hint">{{localize "FEO.Promotion.growthHint" gain=gain expected=expected reallocate=reallocate over=capBreak}}</p>
+  <div class="growth-grid">
+    {{#each growths as |growth|}}
+    <label>
+      <span>{{localize growth.abbr}}</span>
+      <input type="number" name="growth.{{growth.key}}" value="{{growth.to}}" min="0" step="5"
+             data-growth="{{growth.key}}">
+      <small>{{localize "FEO.Promotion.was" value=growth.from}}</small>
+    </label>
+    {{/each}}
+  </div>
+  <p class="tally" data-tally></p>
+  <ul class="problems" data-problems></ul>
+</fieldset>

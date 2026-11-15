@@ -1,0 +1,22 @@
+<section class="standard-form scrollable">
+    {{#each groups as |group|}}
+    <fieldset>
+        <legend>{{localize group.label}}</legend>
+        {{#each group.settings as |setting|}}
+        <div class="form-group">
+            <label for="{{setting.id}}">{{localize setting.name}}</label>
+            <div class="form-fields">
+                {{#if setting.choices}}
+                <select name="{{setting.key}}" id="{{setting.id}}">
+                    {{selectOptions setting.choices selected=setting.value localize=true}}
+                </select>
+                {{else}}
+                <input type="checkbox" name="{{setting.key}}" id="{{setting.id}}" {{checked setting.value}}>
+                {{/if}}
+            </div>
+            <p class="hint">{{localize setting.hint}}</p>
+        </div>
+        {{/each}}
+    </fieldset>
+    {{/each}}
+</section>

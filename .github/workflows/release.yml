@@ -1,0 +1,42 @@
+name: Release
+
+# Pushing a tag such as v0.2.0 publishes a release with the two files Foundry and The Forge install from:
+# system.json (the manifest) and fire-emblem-online.zip (the system itself).
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that the tag matches the manifest
+        run: |
+          version=$(jq -r .version system.json)
+          download=$(jq -r .download system.json)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "The tag $GITHUB_REF_NAME does not match the version in system.json ($version)." >&2
+            exit 1
+          fi
+          case "$download" in
+            */releases/download/"$GITHUB_REF_NAME"/fire-emblem-online.zip) ;;
+            *)
+              echo "The download link in system.json does not point at $GITHUB_REF_NAME: $download" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Package the system
+        run: zip -r fire-emblem-online.zip system.json fire-emblem-online.mjs assets lang module packs styles templates
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" fire-emblem-online.zip system.json --title "$GITHUB_REF_NAME" --generate-notes

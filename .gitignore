@@ -1,0 +1,15 @@
+# Source spreadsheets and design mockups, kept locally only
+References/
+
+# LevelDB files that Foundry rewrites every time a compendium is opened
+packs/**/LOCK
+packs/**/LOG
+packs/**/LOG.old
+
+# Local tooling and editor files
+node_modules/
+.vscode/
+.idea/
+*.zip
+Thumbs.db
+.DS_Store

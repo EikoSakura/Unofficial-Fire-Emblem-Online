@@ -1,0 +1,72 @@
+<p class="hint">{{localize "FEO.HeartSeal.dialog.lead" from=from}}</p>
+<p class="hint">{{seal}}</p>
+{{#if missing}}<p class="hint warn">{{localize "FEO.HeartSeal.dialog.missing" names=missing}}</p>{{/if}}
+
+<div class="choices">
+  {{#each classes as |cls|}}
+  <section class="choice" data-index="{{cls.index}}">
+    <label class="pick">
+      <input type="radio" name="target" value="{{cls.index}}" {{checked cls.checked}}>
+      <span class="title">
+        <b>{{cls.name}}</b>
+        <small>{{cls.line}}</small>
+      </span>
+    </label>
+    {{#if cls.comparable}}
+    <ul class="gains">
+      {{#each cls.shifts as |shift|}}<li class="{{shift.cls}}"><b>{{shift.value}}</b> {{localize shift.abbr}}</li>{{/each}}
+    </ul>
+    {{else}}
+    <p class="about">{{localize "FEO.HeartSeal.dialog.statsUnknown"}}</p>
+    {{/if}}
+    <dl>
+      <div><dt>{{localize "FEO.Unit.classWt"}}</dt><dd>{{cls.weight}}</dd></div>
+      <div>
+        <dt>{{localize "FEO.HeartSeal.dialog.raise"}}</dt>
+        <dd>
+          {{#each cls.proficiencies as |proficiency|}}
+          <label class="tick">
+            <input type="checkbox" name="gain.{{cls.index}}.{{proficiency.key}}" data-gain="{{proficiency.key}}">
+            {{localize proficiency.label}}{{#if proficiency.rank}} <small>({{localize proficiency.rank}})</small>{{/if}}
+          </label>
+          {{else}}–{{/each}}
+          {{#if cls.proficiencies.length}}<small>{{localize "FEO.HeartSeal.dialog.raiseCount" count=cls.most}}</small>{{/if}}
+        </dd>
+      </div>
+      <div>
+        <dt>{{localize "FEO.Section.skills"}}</dt>
+        <dd>
+          {{#if cls.skills}}{{cls.skills}}{{else}}{{#unless cls.choices.length}}–{{/unless}}{{/if}}
+          {{#each cls.choices as |choice|}}
+          <select name="pick.{{cls.index}}.{{choice.at}}" aria-label="{{localize "FEO.Promotion.skillPick"}}">
+            {{#each choice.names as |option|}}<option value="{{option}}">{{option}}</option>{{/each}}
+          </select>
+          {{/each}}
+          {{#if cls.occultWaits}}<small>{{localize "FEO.HeartSeal.dialog.occult" skill=cls.occultWaits level=@root.occultLevel}}</small>{{/if}}
+        </dd>
+      </div>
+      {{#if cls.qualities}}<div><dt>{{localize "FEO.Unit.specialQualities"}}</dt><dd>{{cls.qualities}}</dd></div>{{/if}}
+    </dl>
+  </section>
+  {{/each}}
+</div>
+
+<fieldset class="growths">
+  <legend>{{localize "FEO.HeartSeal.dialog.lower"}}</legend>
+  <p class="hint">{{localize "FEO.HeartSeal.dialog.lowerHint"}}</p>
+  {{#if held.length}}
+  <div class="growth-grid">
+    {{#each held as |proficiency|}}
+    <label>
+      <span>{{localize proficiency.label}}</span>
+      <input type="number" name="lose.{{proficiency.key}}" value="0" min="0" step="1" data-lose="{{proficiency.key}}">
+      <small>{{#if proficiency.rank}}{{localize proficiency.rank}}{{/if}}</small>
+    </label>
+    {{/each}}
+  </div>
+  {{else}}
+  <p class="hint">{{localize "FEO.HeartSeal.dialog.nothingHeld"}}</p>
+  {{/if}}
+  <p class="tally" data-tally></p>
+  <ul class="problems" data-problems></ul>
+</fieldset>

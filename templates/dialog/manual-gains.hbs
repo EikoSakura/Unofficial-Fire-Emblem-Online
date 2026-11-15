@@ -1,0 +1,28 @@
+<p class="hint">{{localize lead}}</p>
+
+<fieldset class="growths">
+  <legend>{{localize "FEO.Optional.manualGains.dialog.points"}}</legend>
+  <div class="growth-grid">
+    <label>
+      <span>{{localize "FEO.Optional.manualGains.dialog.toPlace"}}</span>
+      <input type="number" name="points" value="{{points}}" min="0" step="1" {{#unless isGM}}readonly{{/unless}}>
+      <small>{{#if isGM}}{{localize "FEO.Optional.manualGains.dialog.gmPoints"}}{{/if}}</small>
+    </label>
+  </div>
+</fieldset>
+
+<fieldset class="growths">
+  <legend>{{localize "FEO.Section.stats"}}</legend>
+  <div class="growth-grid">
+    {{#each rows as |row|}}
+    <label class="{{#if row.capped}}capped{{/if}}{{#if row.proc}} proc{{/if}}">
+      <span>{{localize row.label}} <small>{{row.value}}</small></span>
+      <input type="number" name="gain.{{row.key}}" value="0" min="0" max="{{row.most}}" step="1" data-gain="{{row.key}}"
+             {{#if row.capped}}disabled{{/if}}>
+      <small>{{#if row.note}}{{localize row.note}}{{/if}}</small>
+    </label>
+    {{/each}}
+  </div>
+  <p class="tally" data-tally></p>
+  <ul class="problems" data-problems></ul>
+</fieldset>

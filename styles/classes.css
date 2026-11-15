@@ -1,0 +1,309 @@
+/* ============================================================
+   Fire Emblem Online: classes and promotion
+   The class sheet, the class path on a unit's Growth tab, the
+   dialogs for taking a class and promoting, and their chat card.
+   ============================================================ */
+
+/* ---------- Class sheet ---------- */
+
+.feo .pairs.six { grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); }
+.feo .pairs.spaced { margin-top: 10px; }
+.feo .pairs .span-two { grid-column: span 2; }
+
+.feo .ticks { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px 10px; }
+.feo .tick { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 14px; cursor: pointer; }
+.feo .tick input { flex: none; }
+
+.feo .line { display: flex; align-items: center; gap: 6px; }
+.feo .line + .line { margin-top: 6px; }
+.feo .line > input[type="text"] { flex: 1 1 0; }
+.feo .note-line > input[type="text"]:first-of-type { flex: 1.4 1 0; }
+
+.feo .link-mark {
+  all: unset;
+  box-sizing: border-box;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: 999px;
+  color: var(--feo-faint);
+  font-family: var(--feo-font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.feo button.link-mark { border-color: var(--feo-line); color: var(--feo-gold); cursor: pointer; }
+.feo button.link-mark:hover { border-color: var(--feo-gold); }
+.feo .window-content button.link-mark:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 1px; }
+
+/* ---------- Stat caps that come from the class ---------- */
+
+.feo .from-class {
+  display: inline-block;
+  min-width: 44px;
+  border-bottom: 1px dotted var(--feo-faint);
+  color: var(--feo-muted);
+  font-family: var(--feo-font-number);
+  font-size: 15px;
+  line-height: 22px;
+  cursor: help;
+}
+
+/* ---------- The class on the rail ---------- */
+
+.feo .rail .identity button.class {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin-top: 2px;
+  border-bottom: 1px solid transparent;
+  color: var(--feo-cloth-muted);
+  font-family: var(--feo-font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.feo .rail .identity button.class:hover { border-bottom-color: var(--feo-cloth-line); color: var(--feo-cloth-ink); }
+.feo .rail .identity button.class:focus-visible { outline: 2px solid var(--feo-brass); outline-offset: 2px; }
+
+/* ---------- Class path ---------- */
+
+.feo .path { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.feo .path li { position: relative; margin: 0; padding: 0 0 13px 26px; }
+.feo .path li:last-child { padding-bottom: 0; }
+
+.feo .path li::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  transform: rotate(45deg);
+  border: 1.5px solid var(--feo-faint);
+  background: var(--feo-panel);
+}
+
+.feo .path li::after {
+  content: "";
+  position: absolute;
+  left: 10.5px;
+  top: 15px;
+  bottom: -5px;
+  width: 1px;
+  background: var(--feo-line-soft);
+}
+
+.feo .path li:last-child::after { display: none; }
+.feo .path li.done::before { background: var(--feo-faint); }
+
+.feo .path li.now::before {
+  border-color: var(--feo-gold);
+  background: var(--feo-gold);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--feo-gold) 25%, transparent);
+}
+
+.feo .path li.option::before { border-color: var(--feo-gold); }
+.feo .path li.option + li.option { margin-top: -5px; }
+.feo .path li.missing .step-name { color: var(--feo-faint); }
+.feo .path li.missing small { color: var(--feo-warn); }
+.feo .path .step-head { display: flex; align-items: center; gap: 4px; }
+
+.feo .path .step-name {
+  all: unset;
+  min-width: 0;
+  color: var(--feo-ink);
+  font-family: var(--feo-font-display);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.feo .path li:is(.option, .later) .step-name { color: var(--feo-muted); }
+.feo .path button.step-name { cursor: pointer; }
+.feo .path button.step-name:hover { color: var(--feo-gold); }
+.feo .window-content .path button.step-name:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 2px; }
+.feo .path .remove { width: 20px; height: 20px; font-size: 12px; }
+.feo .path small { display: block; font-size: 12.5px; color: var(--feo-muted); }
+.feo .class-path .btn { margin-top: 12px; }
+.feo .class-path .empty { padding: 0 2px; }
+
+/* ---------- Dialogs: taking a class and promoting ---------- */
+
+.feo-class-dialog {
+  --feo-good: #2c8a57;
+  --feo-bane: #c14040;
+  --feo-accent: #94701c;
+  display: grid;
+  gap: 10px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.theme-dark .feo-class-dialog:not(.theme-dark .theme-light *) {
+  --feo-good: #62c48d;
+  --feo-bane: #f07a7a;
+  --feo-accent: #d9b662;
+}
+
+.feo-class-dialog .hint { margin: 0; font-size: .9em; opacity: .75; }
+.feo-class-dialog .hint.warn { color: var(--feo-bane); opacity: 1; }
+.feo-class-dialog small { font-size: .82em; opacity: .7; }
+.feo-class-dialog input[type="checkbox"], .feo-class-dialog input[type="radio"] { flex: none; margin: 0; accent-color: var(--feo-accent); }
+
+.feo-class-dialog .lead h3 { margin: 0; border: 0; font-size: 1.35em; font-weight: 700; }
+.feo-class-dialog .lead p { margin: 0; font-size: .78em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .6; }
+
+.feo-class-assign .options { display: grid; gap: 6px; }
+
+.feo-class-assign .option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.feo-class-assign .option > input { margin-top: 3px; }
+.feo-class-assign label.option { cursor: pointer; }
+.feo-class-assign .what { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.feo-class-assign .what > small { flex: 1 0 100%; }
+.feo-class-assign .stat-list { flex: 1 0 100%; display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.feo-class-assign .stat-list span { white-space: nowrap; }
+.feo-class-assign .stat-list b { font-size: 1.1em; }
+.feo-class-assign .rank-picks { flex: 1 0 100%; display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 4px 0 2px; }
+.feo-class-assign .rank-picks label { display: inline-flex; align-items: center; gap: 6px; }
+.feo-class-assign .rank-picks select { width: 58px; height: 26px; }
+.feo-class-assign .skill-pick { flex: 1 0 100%; margin: 4px 0 2px; }
+.feo-class-assign .skill-pick select { width: 100%; height: 26px; }
+
+.feo-promotion .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+
+.feo-promotion .choice {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-top-width: 3px;
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  cursor: pointer;
+}
+
+.feo-promotion .choice.selected,
+.feo-promotion .choice:has(input[name="target"]:checked) {
+  border-color: var(--feo-accent);
+  background: color-mix(in srgb, var(--feo-accent) 10%, transparent);
+}
+
+.feo-promotion .pick { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+.feo-promotion .pick .title { display: grid; min-width: 0; }
+.feo-promotion .pick b { font-size: 1.2em; line-height: 1.15; }
+.feo-promotion .pick small { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.feo-promotion .about { margin: 0; font-size: .88em; font-style: italic; opacity: .75; }
+.feo-promotion .gains { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin: 0; padding: 0; list-style: none; }
+
+.feo-promotion .gains li {
+  padding: 2px 4px;
+  border-radius: 5px;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  font-size: .8em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.feo-promotion .gains b { font-size: 1.2em; color: var(--feo-good); }
+.feo-promotion .gains li.bad b { color: var(--feo-bane); }
+.feo-reclass .growth-grid { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }
+.feo-manual-gains .growth-grid { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); }
+.feo-manual-gains .growth-grid label.capped { opacity: .5; }
+.feo-manual-gains .growth-grid label.proc span { color: var(--feo-good); }
+.feo-manual-gains .growth-grid small { min-height: 1.2em; text-align: center; }
+
+/* Heart Seal Classes on the Growth tab */
+.feo .heart-seals .seal-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.feo .heart-seals .seal-list .tag { display: inline-flex; align-items: center; gap: 4px; }
+.feo .heart-seals .seal-list .remove { display: inline-flex; padding: 0; border: 0; background: none; color: inherit; opacity: .6; cursor: pointer; }
+.feo .heart-seals .seal-list .remove:hover { opacity: 1; }
+.feo .heart-seals .seal-list .remove .feo-icon { width: 12px; height: 12px; }
+.feo .heart-seals .empty { margin: 0; }
+.feo-promotion dl { display: grid; gap: 5px; margin: 0; }
+.feo-promotion dl > div { display: grid; gap: 0; }
+.feo-promotion dt { font-size: .72em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .65; }
+.feo-promotion dd { margin: 0; font-weight: 600; }
+.feo-promotion dd small { display: block; font-weight: 400; }
+.feo-promotion dd span + span::before { content: ", "; }
+.feo-promotion dd .known { font-weight: 400; opacity: .7; cursor: help; }
+.feo-promotion dd .tick { display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
+.feo-promotion dd select { width: 100%; height: 26px; margin-top: 2px; }
+
+.feo-skill-pick { display: grid; gap: 10px; }
+.feo-skill-pick .picks { display: grid; gap: 6px; }
+
+.feo-skill-pick .pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  cursor: pointer;
+}
+
+.feo-skill-pick .pick:has(input:checked) {
+  border-color: var(--feo-accent);
+  background: color-mix(in srgb, var(--feo-accent) 10%, transparent);
+}
+
+.feo-promotion fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px 10px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 8px;
+}
+
+.feo-promotion fieldset[hidden] { display: none; }
+.feo-promotion legend { padding: 0 6px; font-size: .78em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.feo-promotion .skill-choice label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.feo-promotion .growth-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 8px; }
+.feo-promotion .growth-grid label { display: grid; justify-items: center; gap: 2px; }
+.feo-promotion .growth-grid span { font-size: .78em; font-weight: 700; letter-spacing: .06em; }
+.feo-promotion .growth-grid input { width: 100%; height: 28px; text-align: center; }
+.feo-promotion .tally { margin: 0; font-weight: 700; color: var(--feo-good); }
+.feo-promotion .tally.bad { color: var(--feo-bane); }
+.feo-promotion .problems { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; font-size: .9em; color: var(--feo-bane); }
+.feo-promotion .problems:empty { display: none; }
+
+/* ---------- Chat card: what a class changed ---------- */
+
+.feo-card.feo-class-change { display: grid; gap: 8px; }
+.feo-class-change section { display: grid; gap: 3px; }
+
+.feo-class-change h4 {
+  margin: 0;
+  padding-bottom: 2px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  font-size: .72em;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .7;
+}
+
+.feo-class-change .note + .note { margin-top: -4px; }

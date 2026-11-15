@@ -1,0 +1,110 @@
+<div class="item-body">
+
+  <header class="item-header">
+    <img class="portrait" src="{{item.img}}" alt="{{item.name}}" data-action="editImage" data-edit="img">
+    <div class="item-title">
+      <div class="eyebrow">{{feoIcon icon}} {{localize "TYPES.Item.battalion"}}</div>
+      <input class="name" type="text" name="name" value="{{source.name}}"
+             placeholder="{{localize "FEO.Item.name"}}" aria-label="{{localize "FEO.Item.name"}}">
+    </div>
+  </header>
+
+  <div class="card">
+    <h3>{{localize "TYPES.Item.battalion"}} <span class="aside">{{localize "FEO.Optional.battalions.sheetHint"}}</span></h3>
+    <div class="pairs three">
+      <label class="field" data-tooltip="{{localize "FEO.Optional.battalions.field.rankHint"}}">
+        <span>{{localize "FEO.Optional.battalions.authorityRank"}}</span>
+        <select name="system.rank">
+          {{selectOptions battalionRanks selected=system.rank localize=true}}
+        </select>
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.battalions.field.qualityHint"}}">
+        <span>{{localize "FEO.Optional.battalions.field.quality"}}</span>
+        <input type="text" name="system.quality" value="{{system.quality}}">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.cost"}}</span>
+        <input type="number" name="system.cost" value="{{system.cost}}" min="0" step="1">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.battalions.field.hpHint"}}">
+        <span>{{localize "FEO.Optional.battalions.field.hp"}}</span>
+        <input type="number" name="system.hp.value" value="{{system.hp.value}}" min="0" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Optional.battalions.field.hpMax"}}</span>
+        <input type="number" name="system.hp.max" value="{{system.hp.max}}" min="0" step="1">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.battalions.field.levelHint" max=levels.max exp=levels.exp}}">
+        <span>{{localize "FEO.Unit.level"}}</span>
+        <input type="number" name="system.level" value="{{system.level}}" min="1" max="{{levels.max}}" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Optional.battalions.field.exp"}}</span>
+        <input type="number" name="system.exp" value="{{system.exp}}" min="0" step="1">
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Optional.battalions.field.bonuses"}} <span class="aside">{{localize "FEO.Optional.battalions.field.bonusesHint"}}</span></h3>
+    <div class="battalion-bonuses">
+      <span class="lbl"></span><span class="lbl">{{localize "FEO.Optional.battalions.field.base"}}</span><span class="lbl">{{localize "FEO.Optional.battalions.field.perLevel"}}</span><span class="lbl">{{localize "FEO.Optional.battalions.field.now"}}</span>
+      <span class="lbl"></span><span class="lbl">{{localize "FEO.Optional.battalions.field.base"}}</span><span class="lbl">{{localize "FEO.Optional.battalions.field.perLevel"}}</span><span class="lbl">{{localize "FEO.Optional.battalions.field.now"}}</span>
+      {{#each bonuses as |bonus|}}
+      <span class="nm">{{localize bonus.label}}</span>
+      <input type="number" name="system.bonuses.{{bonus.key}}.base" value="{{bonus.base}}" step="any" aria-label="{{localize bonus.label}} {{localize "FEO.Optional.battalions.field.base"}}">
+      <input type="number" name="system.bonuses.{{bonus.key}}.perLevel" value="{{bonus.perLevel}}" min="0" step="any" aria-label="{{localize bonus.label}} {{localize "FEO.Optional.battalions.field.perLevel"}}">
+      <b class="now">{{bonus.now}}</b>
+      {{/each}}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>{{localize "FEO.Optional.battalions.gambit"}} <span class="aside">{{localize "FEO.Optional.battalions.gambitHint"}}</span></h3>
+    <div class="pairs three">
+      <label class="field wide">
+        <span>{{localize "FEO.Item.name"}}</span>
+        <input type="text" name="system.gambit.name" value="{{system.gambit.name}}">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.battalions.field.kindHint"}}">
+        <span>{{localize "FEO.Optional.battalions.field.kind"}}</span>
+        <select name="system.gambit.kind">
+          {{selectOptions gambitKinds selected=system.gambit.kind localize=true}}
+        </select>
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.might"}}</span>
+        <input type="number" name="system.gambit.might" value="{{system.gambit.might}}" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Combat.hit"}}</span>
+        <input type="number" name="system.gambit.hit" value="{{system.gambit.hit}}" step="1">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.Optional.battalions.field.usesHint"}}">
+        <span>{{localize "FEO.Optional.battalions.field.usesLeft"}}</span>
+        <input type="number" name="system.gambit.uses.value" value="{{system.gambit.uses.value}}" min="0" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.uses"}}</span>
+        <input type="number" name="system.gambit.uses.max" value="{{system.gambit.uses.max}}" min="0" step="1">
+      </label>
+      <label class="field">
+        <span>{{localize "FEO.Weapon.range"}}</span>
+        <input type="text" name="system.gambit.range" value="{{system.gambit.range}}" placeholder="1-2">
+      </label>
+      <label class="field wide" data-tooltip="{{localize "FEO.Optional.battalions.field.areaHint"}}">
+        <span>{{localize "FEO.Optional.battalions.field.area"}}</span>
+        <input type="text" name="system.gambit.area" value="{{system.gambit.area}}">
+      </label>
+    </div>
+    <textarea name="system.gambit.effect" rows="3" aria-label="{{localize "FEO.Weapon.effect"}}" placeholder="{{localize "FEO.Optional.battalions.field.effectHint"}}">{{system.gambit.effect}}</textarea>
+    {{#if reading.applied.length}}<p class="art-reading"><b>{{localize "FEO.Optional.combatArts.applied"}}:</b> {{#each reading.applied as |part|}}{{#unless @first}} · {{/unless}}{{part}}{{/each}}</p>{{/if}}
+    {{#if reading.left}}<p class="art-reading"><b>{{localize "FEO.Optional.combatArts.byHand"}}:</b> {{reading.left}}</p>{{/if}}
+  </div>
+
+  <div class="card biography">
+    <h3>{{localize "FEO.Weapon.description"}}</h3>
+    {{formInput systemFields.description value=system.description enriched=descriptionHTML toggled=true}}
+  </div>
+
+</div>

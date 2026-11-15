@@ -1,0 +1,108 @@
+<section class="bs-panel bs-v-roster">
+  <section class="bs-card bs-muster">
+    <header class="bs-card-head">
+      <div class="bs-txt"><h3>{{title}}</h3><p>{{lead}}</p></div>
+      <div class="bs-pickrow">
+        {{#each kinds as |kind|}}
+        <button type="button" class="bs-pick" data-action="muster" data-kind="{{kind.key}}" aria-pressed="{{kind.pressed}}">{{kind.label}}</button>
+        {{/each}}
+      </div>
+    </header>
+
+    <div class="bs-table">
+      <span class="bs-eyebrow">{{localize "FEO.Base.roster.table"}}</span>
+      {{#each seats as |seat|}}<span class="bs-seat{{#if seat.away}} bs-away{{/if}}"><i></i>{{seat.name}}</span>{{/each}}
+      {{#if isGM}}
+      <span class="bs-gm-tools">
+        <span class="bs-allow">{{localize "FEO.Base.roster.allowed"}}
+          <button type="button" class="bs-step" data-action="limit" data-delta="-1" aria-label="{{localize "FEO.Base.roster.fewer"}}">{{feoIcon "minus"}}</button>
+          <b class="bs-num">{{limit}}</b>
+          <button type="button" class="bs-step" data-action="limit" data-delta="1" aria-label="{{localize "FEO.Base.roster.more"}}">{{feoIcon "plus"}}</button>
+        </span>
+        <button type="button" class="bs-btn bs-sm bs-gmb" data-action="enlist">{{feoIcon "plus"}}{{localize "FEO.Base.roster.enlist"}}</button>
+      </span>
+      {{/if}}
+      <span class="bs-count bs-num{{#if full}} bs-full{{/if}}"><b>{{count}}</b> {{countText}}</span>
+    </div>
+
+    <div class="bs-deck">
+      {{#each groups as |group|}}
+      <h4 class="bs-rank"><b>{{group.title}}</b><span>{{group.note}}</span></h4>
+      <div class="bs-cards">
+        {{#each group.cards as |card|}}
+        <div class="bs-flip{{#if card.flipped}} bs-flipped{{/if}}" data-action="flip" data-unit="{{card.id}}" data-state="{{card.mode}}"
+             tabindex="0" role="button" aria-label="{{card.name}}">
+          <div class="bs-flip-in">
+            <div class="bs-side bs-front">
+              <img class="bs-art" src="{{card.img}}" alt="">
+              <span class="bs-badge">{{feoIcon card.icon}}</span>
+              {{#if card.cost}}
+              <span class="bs-tag"><span class="bs-cost bs-num">{{feoIcon "coin"}}{{card.cost}}</span></span>
+              {{else if card.tag}}
+              <span class="bs-tag{{#if card.tagAway}} bs-away{{/if}}">{{card.tag}}</span>
+              {{/if}}
+              {{#if card.band}}<span class="bs-band">{{card.band}}</span>{{/if}}
+              <div class="bs-plate">
+                <span class="bs-plate-name"><b>{{card.name}}</b><small>{{card.sub}}</small></span>
+                {{#if card.toggle}}
+                {{#if card.toggle.lock}}
+                <span class="bs-tog bs-lock" data-tooltip="{{card.toggle.title}}">{{feoIcon "lock"}}</span>
+                {{else}}
+                <button type="button" class="bs-tog{{#if card.toggle.on}} bs-on{{/if}}" data-action="{{card.toggle.action}}"
+                        data-actor="{{card.id}}" {{#if card.toggle.disabled}}disabled{{/if}} data-tooltip="{{card.toggle.title}}"
+                        aria-label="{{card.toggle.title}}">{{feoIcon "banner"}}</button>
+                {{/if}}
+                {{/if}}
+              </div>
+            </div>
+
+            <div class="bs-side bs-back">
+              <b>{{card.name}}</b>
+              <small>{{card.sub}}</small>
+              <div class="bs-hp bs-num">
+                <span>{{localize "FEO.Stat.hp.abbr"}}</span>
+                <div class="bs-bar{{#if card.hp.low}} bs-low{{/if}}"><i style="width:{{card.hp.pct}}%"></i></div>
+                <span>{{card.hp.value}}/{{card.hp.max}}</span>
+              </div>
+              <dl class="bs-stats bs-num">
+                {{#each card.stats as |stat|}}<div><dt>{{stat.label}}</dt><dd>{{stat.value}}</dd></div>{{/each}}
+              </dl>
+              {{#if card.weapon}}<span class="bs-arm">{{feoIcon card.weapon.icon}}{{card.weapon.name}}</span>{{/if}}
+              {{#each card.chips as |chip|}}<span class="bs-chip">{{chip}}</span>{{/each}}
+              <div class="bs-foot">
+                {{#if card.leads}}
+                <select data-change="lead" data-actor="{{card.id}}" aria-label="{{localize "FEO.Base.roster.leadLabel"}}">
+                  {{#each card.leads as |lead|}}<option value="{{lead.value}}" {{#if lead.selected}}selected{{/if}}>{{lead.label}}</option>{{/each}}
+                </select>
+                {{/if}}
+                <button type="button" class="bs-btn bs-sm{{#if card.button.gold}} bs-gold{{/if}}"
+                        {{#if card.button.action}}data-action="{{card.button.action}}"{{/if}} data-actor="{{card.id}}"
+                        {{#if card.offer}}data-offer="{{card.offer}}"{{/if}} {{#if card.button.disabled}}disabled{{/if}}>{{card.button.label}}</button>
+              </div>
+              {{#if card.dismiss}}
+              <span class="bs-corner">
+                <button type="button" class="bs-step" data-action="dismiss" data-actor="{{card.id}}"
+                        data-tooltip="{{localize "FEO.Base.roster.dismiss"}}" aria-label="{{localize "FEO.Base.roster.dismiss"}}">{{feoIcon "trash"}}</button>
+              </span>
+              {{/if}}
+              {{#if card.admit}}
+              <span class="bs-corner">
+                <button type="button" class="bs-step" data-action="admit" data-offer="{{card.offer}}"
+                        data-tooltip="{{localize "FEO.Base.roster.admit"}}" aria-label="{{localize "FEO.Base.roster.admit"}}">{{feoIcon "check"}}</button>
+                <button type="button" class="bs-step" data-action="withdraw" data-offer="{{card.offer}}"
+                        data-tooltip="{{localize "FEO.Base.roster.withdraw"}}" aria-label="{{localize "FEO.Base.roster.withdraw"}}">{{feoIcon "x"}}</button>
+              </span>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+        {{/each}}
+        {{#each group.blanks}}
+        <div class="bs-flip bs-open">{{feoIcon "plus"}}<b>{{localize "FEO.Base.roster.openPlace"}}</b><span>{{localize "FEO.Base.roster.openHint"}}</span></div>
+        {{/each}}
+        {{#if group.none}}<p class="bs-none">{{group.none}}</p>{{/if}}
+      </div>
+      {{/each}}
+    </div>
+  </section>
+</section>

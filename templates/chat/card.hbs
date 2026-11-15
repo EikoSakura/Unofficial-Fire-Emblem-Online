@@ -1,0 +1,15 @@
+<div class="feo-card{{#if cls}} {{cls}}{{/if}}">
+  <header>
+    <h3>{{title}}</h3>
+    {{#if subtitle}}<p>{{subtitle}}</p>{{/if}}
+  </header>
+  {{#if outcome}}<div class="outcome {{outcome.cls}}">{{outcome.label}}</div>{{/if}}
+  {{#if rows.length}}
+  <dl>
+    {{#each rows as |row|}}
+    <div class="{{row.cls}}"><dt>{{row.label}}</dt><dd>{{row.value}}</dd></div>
+    {{/each}}
+  </dl>
+  {{/if}}
+  {{#if note}}<p class="note">{{note}}</p>{{/if}}
+</div>

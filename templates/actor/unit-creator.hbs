@@ -1,0 +1,494 @@
+<section class="creator-part{{#if creator.open}} open{{else if creator.banner}} banner{{/if}}" aria-label="{{localize "FEO.Creator.title"}}">
+
+  {{#*inline "crStepper"}}
+  <span class="cr-stepper" data-fl="{{fl}}">
+    <button type="button" id="{{@root.creator.uid}}-{{kind}}-{{key}}-less" data-action="creatorAdjust" data-kind="{{kind}}" data-key="{{key}}" data-delta="-1"
+            {{#unless canDown}}disabled{{/unless}} aria-label="{{localize "FEO.Creator.less"}}">{{feoIcon "minus"}}</button>
+    <b>{{shown}}</b>
+    <button type="button" id="{{@root.creator.uid}}-{{kind}}-{{key}}-more" data-action="creatorAdjust" data-kind="{{kind}}" data-key="{{key}}" data-delta="1"
+            {{#unless canUp}}disabled{{/unless}} aria-label="{{localize "FEO.Creator.more"}}">{{feoIcon "plus"}}</button>
+  </span>
+  {{/inline}}
+
+  {{#*inline "crApproval"}}
+  <div class="cr-signoff{{#if approval.approved}} approved{{/if}}" data-fl="creation.{{which}}">
+    <span class="txt">{{approval.text}}</span>
+    {{#unless approval.none}}
+    {{#if approval.isGM}}
+    <button type="button" class="btn{{#unless approval.approved}} primary{{/unless}}" data-action="creatorApprove" data-which="{{which}}"
+            data-approved="{{#if approval.approved}}false{{else}}true{{/if}}">
+      {{#if approval.approved}}{{localize "FEO.Creator.approval.withdraw"}}{{else}}{{feoIcon "check"}}{{localize "FEO.Creator.approval.approve"}}{{/if}}
+    </button>
+    {{else}}
+    <span class="tag {{#if approval.approved}}good{{else}}warn{{/if}}">
+      {{#if approval.approved}}{{feoIcon "check"}}{{localize "FEO.Creator.approval.tagApproved"}}{{else}}{{feoIcon "lock"}}{{localize "FEO.Creator.approval.tagWaiting"}}{{/if}}
+    </span>
+    {{/if}}
+    {{/unless}}
+  </div>
+  {{/inline}}
+
+  {{#if creator.open}}
+  {{#with creator}}
+  <header class="cr-head">
+    <div class="cr-top">
+      <h2>{{title}}</h2>
+      {{#each watchers as |watcher|}}
+      <button type="button" class="cr-who" data-action="creatorGoto" data-step="{{watcher.step}}" style="--cr-seat: {{watcher.color}}"
+              data-tooltip="{{localize "FEO.Creator.follow"}}"><i>{{watcher.initial}}</i>{{watcher.text}}</button>
+      {{/each}}
+      <button type="button" class="btn small quiet" data-action="creatorToggle">{{feoIcon "x"}}{{localize "FEO.Creator.back"}}</button>
+    </div>
+    <div class="cr-prog">
+      <div class="cr-segs">{{#each segments as |segment|}}<i class="{{segment.state}}{{#if segment.current}} cur{{/if}}"></i>{{/each}}</div>
+      <span>{{progress}}</span>
+    </div>
+  </header>
+
+  <div class="cr-body">
+    <nav class="cr-nav" aria-label="{{localize "FEO.Creator.steps"}}">
+      {{#each steps as |step|}}
+      <button type="button" class="cr-step {{step.state}}" data-action="creatorGoto" data-step="{{step.id}}"
+              {{#if step.current}}aria-current="step"{{/if}} {{#if step.locked}}disabled{{/if}}>
+        <span class="mark">{{#if step.done}}{{feoIcon "check"}}{{else}}{{step.mark}}{{/if}}</span>
+        <span class="txt"><b>{{step.title}}</b><small>{{step.note}}</small></span>
+        <span class="flags">
+          {{#if step.fresh}}<i class="cr-bdg new">{{localize "FEO.Creator.flag.new"}}</i>{{/if}}
+          {{#if step.module}}<i class="cr-bdg module">{{localize "FEO.Creator.flag.module"}}</i>{{/if}}
+          {{#if step.help}}<span class="cr-hand" data-tooltip="{{localize "FEO.Creator.help.flag"}}">{{feoIcon "hand"}}</span>{{/if}}
+          {{#each step.watchers as |watcher|}}<i class="cr-here" style="--cr-seat: {{watcher.color}}" data-tooltip="{{watcher.name}}"></i>{{/each}}
+        </span>
+      </button>
+      {{/each}}
+    </nav>
+
+    <div class="cr-panel">
+      <div class="cr-phead">
+        <div class="eyebrow"><span>{{step.eyebrow}}</span>{{#if step.module}}<span class="tag module">{{step.module}}</span>{{/if}}</div>
+        <h3>{{step.title}}</h3>
+        <p>{{step.lead}}</p>
+      </div>
+
+      {{#if panel.locked}}
+      <div class="cr-signoff"><span class="txt">{{localize "FEO.Creator.locked"}}</span></div>
+      {{/if}}
+
+      {{!-- ---------- Class ---------- --}}
+      {{#if is.class}}
+      {{#if panel.chosen}}
+      <div class="card cr-class" data-fl="classId">
+        <div class="cr-class-top">
+          <span class="cr-crest">{{feoIcon "shield"}}</span>
+          <span class="who"><small>{{panel.chosen.sub}}</small><b>{{panel.chosen.name}}</b></span>
+          <button type="button" class="btn small" data-action="editItem" data-item-id="{{panel.chosen.id}}">{{feoIcon "open"}}{{localize "FEO.Class.open"}}</button>
+        </div>
+        <div class="cr-cells">
+          {{#each panel.chosen.cells as |cell|}}<div><span>{{cell.abbr}}</span><b>{{cell.value}}</b></div>{{/each}}
+        </div>
+        <dl class="cr-sum">
+          {{#if panel.chosen.proficiencies}}<div><dt>{{localize "FEO.Creator.step.ranks.title"}}</dt><dd>{{panel.chosen.proficiencies}}</dd></div>{{/if}}
+          {{#if panel.chosen.skills}}<div><dt>{{localize "FEO.Creator.class.skill"}}</dt><dd>{{panel.chosen.skills}}</dd></div>{{/if}}
+          {{#if panel.chosen.qualities}}<div><dt>{{localize "FEO.Unit.specialQualities"}}</dt><dd>{{panel.chosen.qualities}}</dd></div>{{/if}}
+        </dl>
+      </div>
+      {{else}}
+      <div class="cr-signoff"><span class="txt"><b>{{localize "FEO.Creator.class.none"}}</b> {{localize "FEO.Creator.class.noneHint"}}</span></div>
+      {{/if}}
+      {{#if panel.open}}
+      <div class="cr-signoff tree">
+        <span class="txt">{{localize "FEO.Creator.class.treeHint"}}</span>
+        <button type="button" class="btn primary" data-action="creatorTree">{{feoIcon "shield"}}{{#if panel.chosen}}{{localize "FEO.Creator.class.change"}}{{else}}{{localize "FEO.Creator.class.choose"}}{{/if}}</button>
+      </div>
+      {{else}}
+      <div class="cr-signoff"><span class="txt">{{localize "FEO.Creator.class.promoted"}}</span></div>
+      {{/if}}
+      {{#if panel.wt}}
+      <div class="card">
+        <h3>{{localize "FEO.Unit.classWt"}}</h3>
+        <div class="cr-line" data-tooltip="{{panel.wt.hint}}">
+          <span class="abbr">{{localize "FEO.Stat.wt.abbr"}}</span>
+          <span class="mid">{{localize "FEO.Creator.class.weightBase"}} <b>{{panel.wt.base}}</b> <span class="to">→ {{panel.wt.total}}</span></span>
+          {{> crStepper kind="wt" key="wt" fl="wt.class" shown=panel.wt.shown canUp=panel.wt.canUp canDown=panel.wt.canDown}}
+        </div>
+      </div>
+      {{/if}}
+      {{/if}}
+
+      {{!-- ---------- Charm and Intelligence ---------- --}}
+      {{#if is.sources}}
+      {{#each panel.abilities as |ability|}}
+      <div class="card">
+        <h3>{{ability.label}}</h3>
+        <div class="cr-pills" data-fl="abilities.{{ability.key}}.source">
+          {{#each ability.options as |option|}}
+          <button type="button" class="cr-pick" data-action="creatorPick" data-field="source" data-ability="{{ability.key}}" data-value="{{option.stat}}"
+                  aria-pressed="{{option.pressed}}" {{#if option.disabled}}disabled{{/if}}>{{option.abbr}}<small>{{option.value}}</small></button>
+          {{/each}}
+        </div>
+        <p class="cr-hint">{{ability.formula}}</p>
+      </div>
+      {{/each}}
+      {{/if}}
+
+      {{!-- ---------- Starting Skills ---------- --}}
+      {{#if is.skills}}
+      <div class="cr-sub">{{panel.classSkills.title}}</div>
+      {{#if panel.classSkills.none}}
+      <p class="cr-hint">{{localize "FEO.Creator.skills.noClassSkill"}}</p>
+      {{else}}
+      <div class="cr-opts wide" data-fl="creation.skills.class">
+        {{#each panel.classSkills.rows as |row|}}
+        <button type="button" class="cr-opt" data-action="creatorPick" data-field="classSkill" data-value="{{row.name}}" aria-pressed="{{row.pressed}}"
+                {{#unless ../panel.classSkills.choice}}disabled{{/unless}}><b>{{row.name}}</b><small>{{row.effect}}</small></button>
+        {{/each}}
+      </div>
+      {{/if}}
+      <div class="cr-sub">{{localize "FEO.Creator.skills.generic"}}</div>
+      {{#if panel.generic.picked}}
+      <div class="cr-picked" data-fl="creation.skills.generic">
+        <small>{{localize "FEO.Creator.skills.picked"}}</small>
+        <b>{{panel.generic.picked.name}}</b>
+        {{#if panel.generic.picked.capacity}}<i class="cr-mark">{{panel.generic.picked.capacity}}</i>{{/if}}
+        <span>{{panel.generic.picked.effect}}</span>
+      </div>
+      {{else}}
+      <div class="cr-signoff" data-fl="creation.skills.generic"><span class="txt"><b>{{localize "FEO.Creator.skills.none"}}</b> {{localize "FEO.Creator.skills.noneHint"}}</span></div>
+      {{/if}}
+      {{#if panel.generic.missing}}<p class="cr-hint">{{localize "FEO.Creator.noLibrary"}}</p>{{/if}}
+      <div class="cr-signoff tree">
+        <span class="txt">{{localize "FEO.Creator.skills.rollHint"}}</span>
+        <button type="button" class="btn primary" data-action="creatorSkillRoll">{{feoIcon "spark"}}{{#if panel.generic.picked}}{{localize "FEO.Creator.skills.change"}}{{else}}{{localize "FEO.Creator.skills.choose"}}{{/if}}</button>
+      </div>
+      {{/if}}
+
+      {{!-- ---------- Proficiencies ---------- --}}
+      {{#if is.ranks}}
+      {{#if panel.note}}<div class="cr-budget"><span class="tag"><b>{{panel.note}}</b></span></div>{{/if}}
+      {{#if panel.none}}<p class="cr-hint">{{localize "FEO.Creator.ranks.none"}}</p>{{/if}}
+      {{#if panel.choose}}
+      <div class="card">
+        <h3>{{panel.choose.title}}</h3>
+        <div class="cr-pills" data-fl="creation.ranks.take">
+          {{#each panel.choose.options as |option|}}
+          <button type="button" class="cr-pick" data-action="creatorTake" data-value="{{option.key}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+      {{#if panel.first}}
+      <div class="card">
+        <h3>{{localize "FEO.Creator.ranks.first"}}</h3>
+        <div class="cr-pills" data-fl="creation.ranks.first">
+          {{#each panel.first as |option|}}
+          <button type="button" class="cr-pick" data-action="creatorPick" data-field="first" data-value="{{option.key}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+      <div class="card">
+        <h3>{{localize "FEO.Creator.ranks.result"}}</h3>
+        <div class="cr-budget">
+          {{#each panel.result as |entry|}}<span class="tag"><b>{{entry.label}}</b> {{entry.rank}}</span>{{else}}<span class="tag">{{localize "FEO.Creator.ranks.nothing"}}</span>{{/each}}
+        </div>
+        <p class="cr-hint">{{localize "FEO.Creator.ranks.other"}}</p>
+      </div>
+      {{/if}}
+
+      {{!-- ---------- Starting Gold ---------- --}}
+      {{#if is.gold}}
+      <div class="cr-budget" data-fl="gold">
+        <span class="tag left">{{{localize "FEO.Creator.gold.left" left=panel.left total=panel.total}}}</span>
+        {{#if panel.wields}}<span class="tag">{{localize "FEO.Creator.gold.wields"}} <b>{{panel.wields}}</b></span>{{/if}}
+      </div>
+      <div class="card" data-fl="creation.purchases">
+        <h3>{{localize "FEO.Creator.gold.bought"}}</h3>
+        {{#each panel.purchases as |purchase|}}
+        <div class="cr-line shop">
+          <span class="mid"><b>{{purchase.name}}</b></span><span class="price">{{purchase.cost}}</span>
+          <button type="button" class="btn small" data-action="creatorRefund" data-id="{{purchase.id}}">{{localize "FEO.Creator.gold.refund"}}</button>
+        </div>
+        {{else}}
+        <p class="cr-hint">{{localize "FEO.Creator.gold.nothing"}}</p>
+        {{/each}}
+      </div>
+      {{#if panel.unranked}}
+      <div class="cr-signoff"><span class="txt">{{localize "FEO.Creator.gold.unranked"}}</span>
+        <button type="button" class="btn small" data-action="creatorGoto" data-step="ranks">{{localize "FEO.Creator.gold.toRanks"}}</button></div>
+      {{/if}}
+      <div class="cr-signoff tree">
+        <span class="txt">{{localize "FEO.Creator.gold.armouryHint"}}</span>
+        <button type="button" class="btn primary" data-action="creatorArmoury" data-tab="weapons">{{feoIcon "crossed"}}{{localize "FEO.Creator.gold.weapons"}}</button>
+        <button type="button" class="btn primary" data-action="creatorArmoury" data-tab="items">{{feoIcon "flask"}}{{localize "FEO.Creator.gold.items"}}</button>
+      </div>
+      {{/if}}
+
+      {{!-- ---------- Bonus Points ---------- --}}
+      {{#if is.bonus}}
+      <div class="cr-budget">
+        <span class="tag {{#if panel.placed}}ok{{else}}left{{/if}}">{{{localize "FEO.Creator.bonus.left" left=panel.left total=panel.points}}}</span>
+        <span class="tag">{{panel.perStat}}</span>
+        {{#if panel.costly}}<span class="tag">{{panel.costly}}</span>{{/if}}
+      </div>
+      <div class="card">
+        {{#each panel.rows as |row|}}
+        <div class="cr-line">
+          <span class="abbr">{{row.abbr}}{{#if row.doubled}}<span class="x2">{{row.doubled}}</span>{{/if}}</span>
+          <span class="mid">{{#if row.source}}{{row.source}} {{/if}}<b>{{row.from}}</b>{{#if row.to}} <span class="to">→ {{row.to}}</span>{{/if}}</span>
+          {{> crStepper kind="bonus" key=row.key fl=(concat "creation.bonus." row.key) shown=row.points canUp=row.canUp canDown=row.canDown}}
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- ---------- Growth Rates ---------- --}}
+      {{#if is.growths}}
+      <div class="cr-budget">
+        <span class="tag {{#if panel.freeDone}}ok{{else}}left{{/if}}">{{{localize "FEO.Creator.growths.free" left=panel.free total=panel.freeTotal}}}</span>
+        <span class="tag {{#if panel.abilitiesDone}}ok{{else}}left{{/if}}">{{{localize "FEO.Creator.growths.abilities" left=panel.abilities total=panel.abilitiesTotal}}}</span>
+        <span class="tag">{{{localize "FEO.Creator.growths.total" total=panel.total}}}</span>
+      </div>
+      <div class="card">
+        {{#each panel.rows as |row|}}
+        <div class="cr-line">
+          <span class="abbr">{{row.abbr}}</span>
+          <span class="mid">
+            <span class="gauge gold"><i style="width: {{row.percent}}%"></i></span>
+            <span class="cap">{{row.cap}}{{#if row.shift}} · {{row.shift}}{{/if}}{{#if row.module}} <i class="cr-bdg new">{{localize "FEO.Creator.flag.module"}}</i>{{/if}}</span>
+          </span>
+          {{> crStepper kind="growth" key=row.key fl=(concat "growths." row.key) shown=(concat row.value "%") canUp=row.canUp canDown=row.canDown}}
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- ---------- Boon and Bane ---------- --}}
+      {{#if is.boon}}
+      {{#each panel.sides as |side|}}
+      <div class="card">
+        <h3>{{side.title}}</h3>
+        <div class="cr-pills" data-fl="{{side.which}}">
+          {{#each side.options as |option|}}
+          <button type="button" class="cr-pick" data-action="creatorPick" data-field="{{side.which}}" data-value="{{option.key}}"
+                  aria-pressed="{{option.pressed}}" {{#if option.disabled}}disabled{{/if}}>{{option.label}}</button>
+          {{/each}}
+        </div>
+        <p class="cr-hint">{{side.effect}}</p>
+      </div>
+      {{/each}}
+      <p class="cr-hint">{{localize "FEO.Creator.boon.rules"}}</p>
+      {{/if}}
+
+      {{!-- ---------- Ability Points ---------- --}}
+      {{#if is.abilities}}
+      <div class="cr-budget">
+        <span class="tag {{#if panel.generalDone}}ok{{else}}left{{/if}}">{{{localize "FEO.Creator.abilities.general" left=panel.general total=panel.generalTotal}}}</span>
+        <span class="tag {{#if panel.savesDone}}ok{{else}}left{{/if}}">{{{localize "FEO.Creator.abilities.saves" left=panel.saves total=panel.savesTotal}}}</span>
+        <span class="tag">{{{localize "FEO.Creator.abilities.limit" limit=panel.limit}}}</span>
+        <span class="tag">{{panel.basis}}</span>
+      </div>
+      <div class="cr-abgrid">
+        {{#each panel.groups as |group|}}
+        <div class="card">
+          <h3>{{group.label}}</h3>
+          {{#each group.rows as |row|}}
+          <div class="cr-abrow">
+            <span>{{row.label}}</span><span class="st">{{row.stat}}</span>
+            {{> crStepper kind="check" key=row.key fl=(concat "checks." row.key) shown=row.points canUp=row.canUp canDown=row.canDown}}
+          </div>
+          {{/each}}
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+
+      {{!-- ---------- Affinity ---------- --}}
+      {{#if is.affinity}}
+      <div class="cr-opts tight" data-fl="affinity">
+        {{#each panel.tiles as |tile|}}
+        <button type="button" class="cr-opt" data-action="creatorPick" data-field="affinity" data-value="{{tile.key}}" aria-pressed="{{tile.pressed}}"{{#if tile.effect}} data-tooltip="{{tile.effect}}"{{/if}}>
+          <b>{{feoIcon tile.icon}} {{tile.label}}</b><small>{{tile.boosts}}</small></button>
+        {{/each}}
+      </div>
+      {{#if panel.more}}
+      <div class="cr-sub">{{panel.more.label}}</div>
+      <div class="cr-opts tight">
+        {{#each panel.more.tiles as |tile|}}
+        <button type="button" class="cr-opt" data-action="creatorPick" data-field="affinity" data-value="{{tile.key}}" aria-pressed="{{tile.pressed}}"{{#if tile.effect}} data-tooltip="{{tile.effect}}"{{/if}}>
+          <b>{{feoIcon tile.icon}} {{tile.label}}</b><small>{{tile.boosts}}</small></button>
+        {{/each}}
+      </div>
+      {{/if}}
+      {{#if panel.chosen}}
+      <p class="cr-hint"><b>{{panel.chosen.label}}:</b> {{panel.chosen.effect}}</p>
+      {{/if}}
+      {{/if}}
+
+      {{!-- ---------- Heart Seal Classes ---------- --}}
+      {{#if is.heartSeals}}
+      <div class="cr-budget">
+        <span class="tag {{#if panel.full}}ok{{else}}left{{/if}}">{{{panel.tally}}}</span>
+      </div>
+      <div class="cr-pills" data-fl="heartSeals">
+        {{#if panel.starting}}
+        <span class="cr-pick" aria-pressed="true" data-tooltip="{{localize "FEO.HeartSeal.starting"}}">{{panel.starting}}<small>{{localize "FEO.Creator.heartSeals.starting"}}</small></span>
+        {{/if}}
+        {{#each panel.chosen as |entry|}}
+        <button type="button" class="cr-pick" aria-pressed="true" data-action="creatorSealRemove" data-name="{{entry.name}}"
+                data-tooltip="{{localize "FEO.HeartSeal.remove"}}">{{entry.name}}<small>{{feoIcon "x"}}</small></button>
+        {{/each}}
+      </div>
+      <div class="cr-signoff tree">
+        <span class="txt">{{localize "FEO.Creator.heartSeals.treeHint"}}</span>
+        <button type="button" class="btn primary" data-action="creatorSealTree">{{feoIcon "shield"}}{{localize "FEO.Creator.heartSeals.choose"}}</button>
+      </div>
+      {{/if}}
+
+      {{!-- ---------- Holy Blood ---------- --}}
+      {{#if is.holyBlood}}
+      <div class="cr-pills" data-fl="creation.holyBlood">
+        {{#each panel.options as |option|}}
+        <button type="button" class="cr-pick" data-action="creatorPick" data-field="lineage" data-value="{{option.key}}" aria-pressed="{{option.pressed}}">
+          {{option.label}}{{#if option.small}}<small>{{option.small}}</small>{{/if}}</button>
+        {{/each}}
+      </div>
+      {{#if panel.grades}}
+      <div class="cr-pills">
+        {{#each panel.grades as |grade|}}
+        <button type="button" class="cr-pick" data-action="creatorPick" data-field="bloodGrade" data-value="{{grade.grade}}" aria-pressed="{{grade.pressed}}">{{grade.label}}</button>
+        {{/each}}
+      </div>
+      {{/if}}
+      {{#if panel.effect}}
+      <div class="card">
+        <h3>{{panel.effect.title}}</h3>
+        <div class="cr-budget">
+          {{#each panel.effect.growths as |growth|}}<span class="tag"><b>{{growth.abbr}}</b> +{{growth.amount}}%</span>{{/each}}
+          <span class="tag"><b>{{panel.effect.rank}}</b></span>
+        </div>
+      </div>
+      {{/if}}
+      {{> crApproval approval=panel.approval which="holyBlood"}}
+      {{/if}}
+
+      {{!-- ---------- Crest ---------- --}}
+      {{#if is.crest}}
+      <div class="cr-pills">
+        <button type="button" class="cr-pick" data-action="creatorPick" data-field="crest" data-value="" aria-pressed="{{panel.none.pressed}}">{{panel.none.label}}</button>
+        {{#each panel.grades as |grade|}}
+        <button type="button" class="cr-pick" data-action="creatorPick" data-field="crestGrade" data-value="{{grade.grade}}" aria-pressed="{{grade.pressed}}">{{grade.label}}</button>
+        {{/each}}
+      </div>
+      <div class="cr-opts" data-fl="creation.crest">
+        {{#each panel.rows as |row|}}
+        <button type="button" class="cr-opt" data-action="creatorPick" data-field="crest" data-value="{{row.key}}" aria-pressed="{{row.pressed}}">
+          <b>{{row.label}}</b><small><em>{{row.chance}}%</em> {{row.effect}}</small></button>
+        {{/each}}
+      </div>
+      {{> crApproval approval=panel.approval which="crest"}}
+      {{/if}}
+
+      {{!-- ---------- Profile ---------- --}}
+      {{#if is.profile}}
+      <div class="cr-fields">
+        {{#each panel.fields as |field|}}
+        <label class="cr-field" data-fl="{{field.fl}}"><span>{{field.label}}</span>
+          <input type="text" value="{{field.value}}" data-creator-field="{{field.path}}"></label>
+        {{/each}}
+      </div>
+      {{#each panel.wide as |field|}}
+      <label class="cr-field" data-fl="{{field.fl}}"><span>{{field.label}}</span>
+        <input type="text" value="{{field.value}}" data-creator-field="{{field.path}}"></label>
+      {{/each}}
+      <p class="cr-hint">{{localize "FEO.Creator.profile.biography"}}</p>
+      {{/if}}
+
+      {{!-- ---------- Review and Finish ---------- --}}
+      {{#if is.review}}
+      {{#unless panel.locked}}
+      {{#if panel.pending.length}}
+      <div class="card">
+        <h3>{{localize "FEO.Creator.review.todo"}}</h3>
+        <ul class="cr-todo">
+          {{#each panel.pending as |entry|}}
+          <li><button type="button" class="lnk" data-action="creatorGoto" data-step="{{entry.id}}">{{entry.title}}</button>
+            <span class="tag{{#if entry.waiting}} warn{{/if}}">{{entry.note}}</span></li>
+          {{/each}}
+        </ul>
+      </div>
+      {{/if}}
+      <div class="card">
+        <h3>{{localize "FEO.Section.growth"}}</h3>
+        <table class="cr-table">
+          <thead><tr>
+            <th>{{localize "FEO.Creator.review.stat"}}</th><th>{{localize "FEO.Unit.class"}}</th><th>{{localize "FEO.Creator.review.bonus"}}</th>
+            <th>{{localize "FEO.Section.boonBane"}}</th><th>{{localize "FEO.Creator.review.now"}}</th><th>{{localize "FEO.Creator.review.growth"}}</th>
+          </tr></thead>
+          <tbody>
+            {{#each panel.rows as |row|}}
+            <tr><td>{{row.abbr}}</td><td>{{row.base}}</td><td class="up">{{row.bonus}}</td><td class="{{row.markCss}}">{{row.mark}}</td><td class="total">{{row.now}}</td><td>{{row.growth}}</td></tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>{{localize "FEO.Creator.review.rest"}}</h3>
+        <dl class="cr-sum">
+          {{#each panel.summary as |entry|}}
+          <div><dt>{{entry.label}}{{#if entry.module}} <i class="cr-bdg new">{{localize "FEO.Creator.flag.module"}}</i>{{/if}}</dt><dd>{{entry.value}}</dd></div>
+          {{/each}}
+        </dl>
+      </div>
+      <div class="cr-signoff">
+        {{#if panel.complete}}
+        <span class="txt">{{localize "FEO.Creator.review.complete"}}</span>
+        <span class="tag good">{{feoIcon "check"}}{{localize "FEO.Creator.review.finished"}}</span>
+        {{else}}
+        <span class="txt">{{#if panel.ready}}{{localize "FEO.Creator.review.ready"}}{{else}}{{localize "FEO.Creator.review.notReady"}}{{/if}}</span>
+        <button type="button" class="btn primary" data-action="creatorFinish" {{#unless panel.ready}}disabled{{/unless}}>{{feoIcon "check"}}{{localize "FEO.Creator.review.finish"}}</button>
+        {{/if}}
+      </div>
+      {{/unless}}
+      {{/if}}
+
+      {{!-- ---------- Help and notes ---------- --}}
+      {{#unless step.review}}
+      <div class="cr-assist{{#if assist.asked}} asked{{/if}}" data-fl="creation.help">
+        <div class="cr-assist-top">
+          {{#if assist.isGM}}
+          <span>{{#if assist.asked}}<b>{{localize "FEO.Creator.help.askedGM"}}</b>{{else}}{{localize "FEO.Creator.help.notesGM"}}{{/if}}</span>
+          {{#if assist.asked}}<button type="button" class="btn small" data-action="creatorHelp" data-asking="false">{{feoIcon "check"}}{{localize "FEO.Creator.help.answered"}}</button>{{/if}}
+          {{else}}
+          <span>{{#if assist.asked}}<b>{{localize "FEO.Creator.help.asked"}}</b>{{else}}{{localize "FEO.Creator.help.stuck"}}{{/if}}</span>
+          <button type="button" class="btn small" data-action="creatorHelp" data-asking="{{#if assist.asked}}false{{else}}true{{/if}}">
+            {{feoIcon "hand"}}{{#if assist.asked}}{{localize "FEO.Creator.help.cancel"}}{{else}}{{localize "FEO.Creator.help.ask"}}{{/if}}</button>
+          {{/if}}
+        </div>
+        <div class="cr-notes" data-fl="creation.notes">
+          {{#each assist.notes as |note|}}
+          <div class="cr-note{{#if note.gm}} gm{{/if}}"><small>{{note.name}}</small><span>{{note.text}}</span></div>
+          {{/each}}
+        </div>
+        <div class="cr-note-add">
+          <input type="text" id="{{@root.creator.uid}}-note" data-creator-note value="{{assist.draft}}" maxlength="500"
+                 placeholder="{{localize "FEO.Creator.note.placeholder"}}" aria-label="{{localize "FEO.Creator.note.placeholder"}}">
+          <button type="button" class="btn small" data-action="creatorNote">{{feoIcon "quill"}}{{localize "FEO.Creator.note.add"}}</button>
+        </div>
+      </div>
+      {{/unless}}
+    </div>
+  </div>
+
+  <footer class="cr-foot">
+    <button type="button" class="btn small" id="{{@root.creator.uid}}-prev" data-action="creatorGoto" data-step="{{prev}}" {{#unless hasPrev}}disabled{{/unless}}>{{feoIcon "left"}}{{localize "FEO.Creator.prev"}}</button>
+    <span class="act">{{#if last}}{{last}}{{else}}{{feoIcon "check"}}{{localize "FEO.Creator.saved"}}{{/if}}</span>
+    <button type="button" class="btn small primary" id="{{@root.creator.uid}}-next" data-action="creatorNext" data-step="{{next}}" {{#unless hasNext}}disabled{{/unless}}>{{localize "FEO.Creator.next"}}{{feoIcon "right"}}</button>
+  </footer>
+  {{/with}}
+
+  {{else if creator.banner}}
+  <div class="cr-banner {{creator.banner.kind}}">
+    <span class="txt"><b>{{creator.banner.title}}</b><span>{{creator.banner.text}}</span></span>
+    <button type="button" class="btn primary" data-action="creatorToggle">{{creator.banner.button}}</button>
+  </div>
+  {{/if}}
+</section>

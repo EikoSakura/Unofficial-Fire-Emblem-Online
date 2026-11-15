@@ -1,0 +1,96 @@
+<!-- chapter: Ability Checks | icon: dice -->
+
+<section data-page="ability-checks" data-title="How Ability Checks Work" data-source="Rules 3.0, Ability Checks, “Introduction to Ability Checks” and “How Ability Checks Actually Work”">
+<p class="feo-lead">Ability Checks are a version of mechanics like Skill Checks from D&amp;D or Pathfinder, reimagined and retooled to fit with Fire Emblem Online better. With them, the options for out-of-combat play expand greatly.</p>
+
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>Roll a D100 and <strong>add</strong> your bonus. If the result is <strong>equal to or over</strong> the target number, the attempt was successful. This is the reverse of combat, where you want to roll low.</p>
+</aside>
+
+<h2>Charm and Intelligence</h2>
+<p>At character creation, the unit chooses two stats to serve as the basis for their CHA and INT.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>Stat</th><th>Based on one of</th></tr></thead>
+  <tbody>
+    <tr><td><strong>CHA</strong></td><td>DEX, SPD or DEF</td></tr>
+    <tr><td><strong>INT</strong></td><td>MAG, DEX or RES</td></tr>
+  </tbody>
+</table></div>
+<p class="feo-table-note">You cannot use DEX for both CHA and INT.</p>
+
+<h2>Ability points</h2>
+<p>Points give a bonus to the rolls of the ability or saving throw they are placed in.</p>
+<div class="feo-table-wrap"><table class="feo-table">
+  <thead><tr><th>When</th><th>Points gained</th><th>Spent on</th></tr></thead>
+  <tbody>
+    <tr><td><strong>At creation</strong></td><td>5 × the higher of CHA or INT</td><td>All of your abilities and saving throws</td></tr>
+    <tr><td><strong>At creation</strong></td><td>5 extra points</td><td>Saving throws only</td></tr>
+    <tr><td><strong>Each level up</strong>, before stats are increased</td><td>The higher of CHA or INT + half of your LUK (rounded down)</td><td>Abilities and saving throws of your choice</td></tr>
+  </tbody>
+</table></div>
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>An ability may only have an amount of points in it equal to <strong>5 + your current level</strong>.</p>
+</aside>
+
+<h2>The three kinds of check</h2>
+<dl class="feo-defs">
+  <div><dt>Regular Ability Check</dt><dd>This is used most of the time. Whenever a unit wishes to do something the GM deems worthy of a check, usually when a battle is not being fought (though depending on the action a GM may allow it to be attempted mid-combat), the player will roll D100 and add the bonus from the appropriate ability to the result. If the result is equal to or over the target number set by the GM, the attempt was successful.</dd></div>
+  <div><dt>Opposed Ability Check</dt><dd>The target number is not set by the GM beforehand but is instead the total of the responding Ability Check. For example, if person A was trying to lie to person B, the target number for A's Deception check would be B's Intuition check. If B rolled higher than A did, they did not believe the lie.</dd></div>
+  <div><dt>Saving Throw</dt><dd>In certain events, players may be required to perform a Saving Throw. This will usually occur when the players are in some sort of danger that does not involve combat, or the players are unaware of a danger and are reacting to it.</dd></div>
+</dl>
+<p>Every ability, what it is used for and how its bonus is worked out is listed in [[abilities]].</p>
+
+<h2>Setting a target number</h2>
+<aside class="feo-callout gm">
+  <p class="feo-callout-label">GM advice</p>
+  <p>To determine the target number for a check, decide on what the success rate should be. As the game is played using D100s, a check with a target number of 50 should have a success rate of 50%, and a target number of 75 should have a success rate of 25% (100 − target number).</p>
+  <p>However, since players have bonuses added to their rolls, the success rates are actually a bit higher. For lower-level parties the bonuses are rather small, but as levels become higher these bonuses increase with them. Therefore it is a good idea to look at what bonuses the party has and work from there.</p>
+  <p>As opposed to combat, the GM does not need to tell players the likelihood of success, merely hint at the difficulty if desired.</p>
+</aside>
+<aside class="feo-example">
+  <div class="feo-example-head"><span><i class="feo-ico dice"></i>Worked example</span><strong>A 60% chance for a +25 bonus</strong></div>
+  <div class="feo-example-body">
+    <p>A player has a bonus of +25 in Acrobatics, and the GM would like their success rate to be 60%.</p>
+    <dl class="feo-calc">
+      <div><dt>Target number</dt><dd class="work">25 + (100 − 60)</dd><dd class="res">65</dd></div>
+    </dl>
+    <p>Note that a player with an Acrobatics bonus of +10 would have a 45% chance of success with this check, should multiple people attempt it.</p>
+  </div>
+</aside>
+
+<aside class="feo-callout foundry">
+  <p class="feo-callout-label">In Foundry</p>
+  <p>The Abilities tab of the unit sheet lists every ability with its bonus, and rolls the check for you.</p>
+</aside>
+</section>
+
+<section data-page="abilities" data-title="Abilities &amp; Saving Throws" data-source="Rules 3.0, Ability Checks, “List of Abilities” and “Ability Calculations”">
+<p class="feo-lead">Every ability, when the GM might call for it, and the formula that gives its bonus. Each formula is printed under the ability's name.</p>
+
+<aside class="feo-callout rule">
+  <p class="feo-callout-label">Key rule</p>
+  <p>LUK/3 is a third of your Luck, rounded down like every other stat. Points are the ability points you have placed in that ability.</p>
+</aside>
+
+<h2>Physical abilities</h2>
+<!-- include: tables/abilities-physical.html -->
+
+<h2>Knowledge abilities</h2>
+<!-- include: tables/abilities-knowledge.html -->
+
+<h2>Social abilities</h2>
+<!-- include: tables/abilities-social.html -->
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>The rules list these two abilities as Animal Handling and Intimidation, and name them Handle Animal and Intimidate in the formulas.</p>
+</aside>
+
+<h2>Saving throws</h2>
+<!-- include: tables/abilities-saving.html -->
+<aside class="feo-callout source">
+  <p class="feo-callout-label">Source note</p>
+  <p>The saving throw formulas add your Level where the abilities add Points, although the rules also give 5 points at creation that can only be spent on saving throws.</p>
+</aside>
+</section>

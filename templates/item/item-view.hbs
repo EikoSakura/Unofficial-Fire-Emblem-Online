@@ -1,0 +1,89 @@
+{{!-- An item while it is read: one panel, dressed as the Compendium's sheets are (styles/compendium.css) --}}
+<div class="item-body item-view feo-compendium">
+  {{#with view}}
+  <article class="cp-sheet"{{#if kind}} data-kind="{{kind}}"{{/if}}{{#if dye}} data-dye="{{dye}}"{{/if}} aria-label="{{name}}">
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+    <header class="cs-banner">
+      {{#if crest}}
+      {{{crest}}}
+      {{else if art}}
+      <span class="sk-big art"><img src="{{art}}" alt=""></span>
+      {{else}}
+      <span class="sk-big">{{{emblem}}}</span>
+      {{/if}}
+      <div>
+        <span class="cs-tier">{{ribbon}}</span>
+        <h3>{{name}}</h3>
+        {{#if sub}}<div class="sub">{{sub}}</div>{{/if}}
+      </div>
+    </header>
+
+    <div class="cs-body">
+      {{#if effect}}<p class="cs-desc effect">{{effect}}</p>{{/if}}
+      {{#if lore}}<div class="cs-desc iv-prose">{{{lore}}}</div>{{/if}}
+
+      {{#each sections as |section|}}
+      <section class="cs-sec">
+        <h4>{{section.title}}{{#if section.hint}} <small>{{section.hint}}</small>{{/if}}</h4>
+
+        {{#if section.text}}<p class="cs-text{{#if section.none}} none{{/if}}">{{section.text}}</p>{{/if}}
+
+        {{#if section.cells.length}}
+        <div class="cs-stats">
+          {{#each section.cells as |cell|}}
+          <div{{#if cell.box}} class="{{cell.box}}"{{/if}}{{#if cell.label}} data-tooltip="{{cell.label}}"{{/if}}>
+            <span>{{cell.abbr}}</span><b class="num {{cell.css}}">{{cell.value}}</b>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if section.marks.length}}
+        <div class="sk-marklist">
+          {{#each section.marks as |mark|}}
+          <div><span class="cp-mark {{mark.css}}">{{mark.label}}</span><span>{{mark.text}}</span></div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if section.pairs.length}}
+        <dl class="cs-pairs">
+          {{#each section.pairs as |pair|}}<dt>{{pair.label}}</dt><dd>{{pair.value}}</dd>{{/each}}
+        </dl>
+        {{/if}}
+
+        {{#each section.skills as |skill|}}
+        <div class="cs-skill" data-kind="{{skill.slot}}">
+          <span class="kind">{{{skill.icon}}}</span>
+          <div class="top">
+            <span class="iv-skill">{{skill.name}}</span>
+            <span class="when">{{skill.label}}</span>
+          </div>
+        </div>
+        {{/each}}
+
+        {{#if section.chips.length}}
+        <div class="cp-chips">
+          {{#each section.chips as |chip|}}
+          {{#if chip.quality}}
+          <span class="cp-quality">{{chip.name}}</span>
+          {{else if chip.linked}}
+          <button type="button" class="cp-linkchip" data-action="openPromotion" data-index="{{chip.index}}"
+                  data-tooltip="{{localize "FEO.Class.openLinked"}}">{{feoIcon "banner"}}{{chip.name}}</button>
+          {{else}}
+          <span class="cp-linkchip iv-named" data-tooltip="{{localize "FEO.Class.byNameHint"}}">
+            {{feoIcon "banner"}}{{chip.name}}<small>{{chip.note}}</small>
+          </span>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if section.prose}}<div class="iv-prose">{{{section.prose}}}</div>{{/if}}
+      </section>
+      {{/each}}
+    </div>
+  </article>
+  {{/with}}
+</div>

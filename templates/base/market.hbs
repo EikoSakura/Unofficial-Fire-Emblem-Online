@@ -1,0 +1,162 @@
+<section class="bs-panel bs-v-market">
+  {{#if setup}}
+  <section class="bs-card bs-setup">
+    <span class="bs-setup-seal">{{feoIcon "coin"}}</span>
+    <h3>{{localize "FEO.Base.market.setupTitle"}}</h3>
+    {{#if isGM}}
+    <p>{{localize "FEO.Base.market.setupGM"}}</p>
+    <div class="bs-setup-acts">
+      <button type="button" class="bs-btn bs-gold" data-action="stalls">{{feoIcon "coin"}}{{localize "FEO.Base.market.setupStalls"}}</button>
+      <button type="button" class="bs-btn" data-action="stallAdd">{{feoIcon "plus"}}{{localize "FEO.Base.market.stallAdd"}}</button>
+    </div>
+    {{else}}
+    <p>{{localize "FEO.Base.market.setupPlayer"}}</p>
+    {{/if}}
+  </section>
+  {{else}}
+
+  <div class="bs-stalls">
+    <div class="bs-hung">
+      {{#each stalls as |stall|}}
+      <button type="button" class="bs-stall{{#if stall.shut}} bs-shut{{/if}}" data-action="stall" data-shop="{{stall.id}}"
+              aria-pressed="{{stall.pressed}}" {{#if stall.disabled}}disabled{{/if}}>
+        <span class="bs-seal">{{feoIcon stall.icon}}</span>
+        <span><b>{{stall.name}}</b><small>{{stall.note}}</small></span>
+      </button>
+      {{/each}}
+    </div>
+    <div class="bs-side-tools">
+      {{#if isGM}}
+      <button type="button" class="bs-btn bs-sm bs-gmb" data-action="stockFill">{{feoIcon "plus"}}{{localize "FEO.Base.market.fill"}}</button>
+      <button type="button" class="bs-btn bs-sm bs-gmb" data-action="stallEdit">{{feoIcon "quill"}}{{localize "FEO.Base.market.stallEdit"}}</button>
+      <button type="button" class="bs-step bs-gmb" data-action="stallAdd" data-tooltip="{{localize "FEO.Base.market.stallAdd"}}"
+              aria-label="{{localize "FEO.Base.market.stallAdd"}}">{{feoIcon "plus"}}</button>
+      {{/if}}
+      <div class="bs-seg-buttons">
+        <button type="button" data-action="mode" data-mode="buy" aria-pressed="{{buying}}">{{localize "FEO.Base.market.buy"}}</button>
+        <button type="button" data-action="mode" data-mode="sell" aria-pressed="{{#if buying}}false{{else}}true{{/if}}"
+                {{#unless canSell}}disabled{{/unless}}>{{localize "FEO.Base.market.sell"}}</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-mtools">
+    <label class="bs-search">{{feoIcon "search"}}<input type="search" name="bs-query" data-search value="{{query}}"
+           placeholder="{{placeholder}}" aria-label="{{placeholder}}" autocomplete="off"></label>
+    {{#each kinds as |kind|}}
+    <button type="button" class="bs-pick" data-action="wareKind" data-kind="{{kind.key}}" aria-pressed="{{kind.pressed}}"
+            data-tooltip="{{kind.label}}" aria-label="{{kind.label}}">{{#if kind.icon}}{{feoIcon kind.icon}}{{else}}{{kind.label}}{{/if}}<small class="bs-num">{{kind.count}}</small></button>
+    {{/each}}
+    {{#if buying}}
+    <span class="bs-sep"></span>
+    <button type="button" class="bs-pick" data-action="wareFlag" data-flag="fit" aria-pressed="{{fit}}">{{feoIcon "check"}}{{fitLabel}}</button>
+    <button type="button" class="bs-pick" data-action="wareFlag" data-flag="afford" aria-pressed="{{afford}}">{{feoIcon "coin"}}{{localize "FEO.Base.market.afford"}}</button>
+    {{/if}}
+  </div>
+
+  <div class="bs-market">
+    <section class="bs-card bs-ledger">
+      <div class="bs-lgrid bs-lhead">
+        <span></span>
+        {{#each columns as |column|}}
+        {{#if column.key}}
+        <button type="button" class="bs-th{{#if column.cls}} bs-{{column.cls}}{{/if}}{{#if column.on}} bs-on{{/if}}" data-dir="{{column.dir}}"
+                data-action="sort" data-sort="{{column.key}}" data-tooltip="{{localize "FEO.Base.market.sortHint"}}">{{column.label}}</button>
+        {{else}}
+        <span class="bs-th">{{column.label}}</span>
+        {{/if}}
+        {{/each}}
+      </div>
+      <div class="bs-lbody">
+        {{#each groups as |group|}}
+        {{#if group.kind}}
+        <div class="bs-grp" data-kind="{{group.kind}}">{{feoIcon group.icon}}<b>{{group.label}}</b><span class="bs-num">{{group.count}}</span></div>
+        {{/if}}
+        {{#each group.rows as |row|}}
+        <div class="bs-lgrid bs-row{{#if row.poor}} bs-poor{{/if}}{{#if row.soldOut}} bs-sold{{/if}}" role="row" tabindex="0"
+             data-action="ware" data-ware="{{row.id}}" data-kind="{{row.kind}}" aria-selected="{{row.selected}}">
+          <span class="bs-tile">{{feoIcon row.icon}}</span>
+          <span class="bs-name"><b>{{row.name}}</b>{{#if row.special}}<i data-tooltip="{{row.effect}}"></i>{{/if}}{{#if row.left}}<em>{{row.left}}</em>{{/if}}</span>
+          {{#if row.item}}
+          <span class="bs-fx">{{row.effect}}</span>
+          {{else}}
+          <span class="bs-rk bs-{{row.fit}}">{{row.rank}}</span>
+          {{#each row.cells as |cell|}}<span class="bs-n{{#if cell.zero}} bs-z{{/if}}">{{cell.value}}</span>{{/each}}
+          <span class="bs-n">{{row.range}}</span>
+          {{/if}}
+          <span class="bs-n">{{row.uses}}</span>
+          <span class="bs-price bs-cost bs-num">{{feoIcon "coin"}}{{row.price}}</span>
+        </div>
+        {{/each}}
+        {{else}}
+        <p class="bs-none bs-center">{{none}}</p>
+        {{/each}}
+      </div>
+      <div class="bs-lfoot">
+        <span><span class="bs-rk bs-fit">D</span>{{legend.fit}}</span>
+        <span><span class="bs-rk bs-unfit">A</span>{{localize "FEO.Base.market.legendUnfit"}}</span>
+        <span><span class="bs-rk bs-other">E</span>{{legend.other}}</span>
+        <span><i></i>{{localize "FEO.Base.market.legendSpecial"}}</span>
+        <b class="bs-num">{{shown}}</b>
+      </div>
+      {{#if isGM}}<p class="bs-rule-note bs-inset">{{feoIcon "hand"}}<span>{{localize "FEO.Base.market.dropHint"}}</span></p>{{/if}}
+    </section>
+
+    {{#if ware}}
+    {{#with ware}}
+    <aside class="bs-card bs-ware" data-kind="{{kind}}">
+      <div class="bs-ware-top">
+        <span class="bs-tile bs-xl">{{feoIcon icon}}</span>
+        <div><b>{{name}}</b><small>{{sub}}</small></div>
+      </div>
+      <div class="bs-ware-body">
+        <span class="bs-chip{{#if verdict.cls}} bs-{{verdict.cls}}{{/if}}">{{#if verdict.icon}}{{feoIcon verdict.icon}}{{/if}}{{verdict.text}}</span>
+        {{#if note}}<p class="bs-ware-note">{{note}}{{#if left}} <b>{{left}}</b>{{/if}}</p>{{else}}{{#if left}}<p class="bs-ware-note"><b>{{left}}</b></p>{{/if}}{{/if}}
+        {{#if stats.length}}
+        <div class="bs-wstats bs-num">
+          {{#each stats as |stat|}}
+          <div><small>{{stat.label}}</small><b>{{stat.value}}</b><i class="{{#if stat.delta.cls}}bs-{{stat.delta.cls}}{{/if}}">{{stat.delta.text}}</i></div>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{#if versus}}<p class="bs-ware-vs">{{versus}}</p>{{/if}}
+        {{#if users.length}}
+        <div class="bs-eyebrow">{{localize "FEO.Base.market.forWhom"}}</div>
+        <div class="bs-who-list">{{#each users as |user|}}<span class="bs-chip{{#if user.me}} bs-gold{{/if}}">{{user.name}}</span>{{/each}}</div>
+        {{/if}}
+      </div>
+      <div class="bs-ware-foot">
+        {{#if buying}}
+        <div class="bs-qrow">
+          <button type="button" class="bs-step" data-action="quantity" data-delta="-1" {{#if fewer}}disabled{{/if}}
+                  aria-label="{{localize "FEO.Base.market.fewer"}}">{{feoIcon "minus"}}</button>
+          <b class="bs-num">{{quantity}}</b>
+          <button type="button" class="bs-step" data-action="quantity" data-delta="1" {{#if more}}disabled{{/if}}
+                  aria-label="{{localize "FEO.Base.market.more"}}">{{feoIcon "plus"}}</button>
+          <select data-change="dest" aria-label="{{localize "FEO.Base.market.destLabel"}}">
+            <option value="pack" {{#unless toConvoy}}selected{{/unless}}>{{destPack}}</option>
+            <option value="convoy" {{#if toConvoy}}selected{{/if}}>{{localize "FEO.Base.market.toConvoy"}}</option>
+          </select>
+        </div>
+        <div class="bs-sum bs-num"><span>{{localize "FEO.Base.market.goldLeft"}}</span><b class="{{#if short}}bs-short{{/if}}">{{goldLeft}}</b></div>
+        <button type="button" class="bs-btn bs-gold bs-block" data-action="buy" data-name="{{name}}" {{#unless canBuy}}disabled{{/unless}}>{{feoIcon "coin"}}{{buyLabel}}</button>
+        {{#if forge}}
+        <button type="button" class="bs-forge-tip" data-action="view" data-view="forge">{{feoIcon "anvil"}}{{localize "FEO.Base.market.forgeTip"}}</button>
+        {{/if}}
+        {{#if gm}}
+        <button type="button" class="bs-btn bs-sm bs-gmb bs-block" data-action="stockEdit" data-ware="{{id}}">{{feoIcon "quill"}}{{localize "FEO.Base.market.stockEdit"}}</button>
+        {{/if}}
+        {{else}}
+        {{#if hasUses}}<div class="bs-sum bs-num"><span>{{localize "FEO.Base.market.usesLeftLabel"}}</span><b>{{usesLeft}}</b></div>{{/if}}
+        <div class="bs-sum bs-num"><span>{{localize "FEO.Base.market.goldAfter"}}</span><b>{{goldAfter}}</b></div>
+        <button type="button" class="bs-btn bs-gold bs-block" data-action="sell" data-worth="{{worth}}">{{feoIcon "coin"}}{{sellLabel}}</button>
+        {{/if}}
+      </div>
+    </aside>
+    {{/with}}
+    {{else}}
+    <aside class="bs-card bs-ware"><p class="bs-none bs-center">{{localize "FEO.Base.market.choose"}}</p></aside>
+    {{/if}}
+  </div>
+  {{/if}}
+</section>

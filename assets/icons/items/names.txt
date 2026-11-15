@@ -1,0 +1,361 @@
+File names for your own items images. Put an image in this folder, named as in the first column
+(for example iron-axe.webp or iron-axe.png; "Iron Axe.png" works too), and build the compendium again.
+Where two entries share a name, the second column is the name that picks out just one of them.
+This list is rewritten by every build.
+
+file name	more specific file name	entry	folder	image used now
+pastilles		Pastilles	Healing	icons/tools/medical/medication-pills-red-blue.webp
+potion		Potion	Healing	icons/consumables/potions/potion-flask-corked-yellow.webp
+vulnerary		Vulnerary	Healing	icons/consumables/potions/potion-flask-corked-shiny-red.webp
+concoction		Concoction	Healing	icons/consumables/potions/bottle-conical-corked-tied-blue.webp
+elixir		Elixir	Healing	icons/consumables/potions/flask-ornate-skull-green.webp
+tincture		Tincture	Healing	icons/consumables/potions/potion-flask-corled-pink-red.webp
+cordial		Cordial	Healing	icons/consumables/potions/bottle-round-corked-yellow.webp
+snake-oil		Snake Oil	Healing	icons/consumables/potions/bottle-round-label-cork-blue.webp
+black-draught		Black Draught	Healing	icons/consumables/potions/vial-ornet-silver-black.webp
+ether		Ether	Healing	icons/consumables/potions/bottle-corked-red.webp
+painkillers		Painkillers	Healing	icons/tools/medical/medkit-pills-blue.webp
+laudanum		Laudanum	Healing	icons/consumables/drinks/alcohol-jug-spirits-brown.webp
+aum-fragment		Aum Fragment	Healing	icons/consumables/potions/bottle-pear-corked-pink.webp
+soul-ember		Soul Ember	Healing	icons/consumables/potions/bottle-metal-yellow-gray.webp
+fire-water		Fire Water	Healing	icons/consumables/potions/potion-jar-corked-labeled-red.webp
+chardonnay		Chardonnay	Healing	icons/consumables/drinks/wine-amphora-cup-gray.webp
+cabernet		Cabernet	Healing	icons/consumables/drinks/alcohol-spirits-bottle-blue.webp
+sauvignon-blanc		Sauvignon Blanc	Healing	icons/consumables/drinks/wine-amphora-clay-blue.webp
+rice-wine		Rice Wine	Healing	icons/consumables/drinks/alcohol-beer-stein-wooden-brown.webp
+cream-spirit		Cream Spirit	Healing	icons/consumables/drinks/alcohol-beer-stein-wooden-brown.webp
+melon-liqueur		Melon Liqueur	Healing	icons/consumables/drinks/wine-amphora-clay-pink.webp
+vintage-port		Vintage Port	Healing	icons/consumables/drinks/wine-amphora-clay-blue.webp
+muscat		Muscat	Healing	icons/consumables/drinks/wine-amphora-clay-red.webp
+shiraz		Shiraz	Healing	icons/consumables/drinks/wine-amphora-clay-gray.webp
+bandage		Bandage	Healing	icons/tools/medical/bandage-rough.webp
+antitoxin		Antitoxin	Healing	icons/consumables/potions/potion-jug-corked-skull-poison-brown-green.webp
+ointment		Ointment	Healing	icons/consumables/potions/bottle-round-flask-fumes-purple.webp
+antiplegic		Antiplegic	Healing	icons/tools/medical/medication-pills-red-blue.webp
+liquid-courage		Liquid Courage	Healing	icons/consumables/drinks/wine-bottle-glass-white.webp
+echo-herbs		Echo Herbs	Healing	icons/consumables/plants/heart-cordate-leaf-yellow-green.webp
+stimulant		Stimulant	Healing	icons/tools/medical/medication-pills-bottle.webp
+sedative		Sedative	Healing	icons/tools/medical/medication-pills-bottle.webp
+gold-needle		Gold Needle	Healing	icons/tools/hand/needle-grey.webp
+panacea		Panacea	Healing	icons/consumables/potions/bottle-bulb-corked-purple.webp
+divine-blessing		Divine Blessing	Healing	icons/consumables/potions/potion-jar-corked-glowing-blue.webp
+mossfruit		Mossfruit	Buffing Items	icons/consumables/plants/fern-sprig-stem-leaf-herb-green.webp
+ablative-powders		Ablative Powders	Buffing Items	icons/commodities/materials/bowl-powder-blue.webp
+clarifying-bolus		Clarifying Bolus	Buffing Items	icons/tools/medical/medication-pills.webp
+incense		Incense	Buffing Items	icons/commodities/materials/bowl-powder-grey.webp
+lily-of-the-valley		Lily of the Valley	Buffing Items	icons/consumables/plants/grass-bundle-green.webp
+herbal-tea		Herbal Tea	Buffing Items	icons/consumables/drinks/tea-jug-glowing-brown-pink.webp
+clover-jelly		Clover Jelly	Buffing Items	icons/consumables/plants/dried-leaf-stem-herb-brown.webp
+boiled-prawn		Boiled Prawn	Buffing Items	icons/consumables/food/berries-cream-bowl-mint-red.webp
+exalted-flesh		Exalted Flesh	Buffing Items	icons/consumables/meat/steak-spoiled-yellow.webp
+green-blossom		Green Blossom	Buffing Items	icons/consumables/plants/leaf-stem-bush-branch-green-brown.webp
+coffee		Coffee	Buffing Items	icons/consumables/drinks/coffee.webp
+fermented-unhold-heart		Fermented Unhold Heart	Buffing Items	icons/consumables/meat/pork-shank-bone-glowing-tan.webp
+life-of-the-gods		Life of the Gods	Buffing Items	icons/consumables/potions/potion-bottle-corked-fancy-blue.webp
+lives-of-the-thousand-gods		Lives of the Thousand Gods	Buffing Items	icons/consumables/potions/bottle-round-corked-orange.webp
+pure-water		Pure Water	Buffing Items	icons/consumables/potions/bottle-round-corked-blue.webp
+barkskin-potion		Barkskin Potion	Buffing Items	icons/consumables/potions/potion-bottle-labeled-stopped-purple.webp
+font-of-strength		Font of Strength	Buffing Items	icons/consumables/potions/bottle-conical-corked-cyan.webp
+wizard-oil		Wizard Oil	Buffing Items	icons/consumables/potions/bottle-round-corked-orange.webp
+sphynx-salts		Sphynx Salts	Buffing Items	icons/tools/laboratory/mortar-powder-green.webp
+aged-spice		Aged Spice	Buffing Items	icons/consumables/food/skewer-bug-insect-worm-purple.webp
+rusted-coin		Rusted Coin	Buffing Items	icons/commodities/currency/coin-engraved-slot-one-copper.webp
+einheris-mead		Einheri's Mead	Buffing Items	icons/consumables/drinks/wine-amphora-clay-gray.webp
+lofns-tears		Lofn's Tears	Buffing Items	icons/consumables/potions/potion-jar-corked-orange.webp
+torch		Torch	Buffing Items	icons/sundries/lights/torch-brown.webp
+rose-philter		Rose Philter	Buffing Items	icons/consumables/potions/flask-corked-yellow-glow.webp
+devils-way-mushroom		Devil's Way Mushroom	Buffing Items	icons/consumables/mushrooms/umbontae-bumpy-purple.webp
+potion-of-fleetfoot		Potion of Fleetfoot	Buffing Items	icons/consumables/potions/potion-tube-corked-bat-gold-red.webp
+draught-of-the-watcher		Draught of the Watcher	Buffing Items	icons/consumables/potions/potion-flask-corked-capped-green.webp
+draught-of-the-protector		Draught of the Protector	Buffing Items	icons/consumables/potions/potion-flask-corked-green.webp
+potion-of-oblivion		Potion of Oblivion	Buffing Items	icons/consumables/potions/potion-tube-corked-green.webp
+armor-wax		Armor Wax	Buffing Items	icons/consumables/potions/bottle-round-empty-glass.webp
+snake-wine		Snake Wine	Buffing Items	icons/consumables/drinks/wine-bottle-glass-white.webp
+elixir-of-experience		Elixir of Experience	Buffing Items	icons/consumables/potions/flask-ornate-skull-green.webp
+contact-medicine		Contact Medicine	Buffing Items	icons/tools/medical/medication-pill-powder.webp
+smoldering-pellets		Smoldering Pellets	Buffing Items	icons/tools/medical/medkit-pills-silver.webp
+tincture-of-emberblood		Tincture of Emberblood	Buffing Items	icons/consumables/potions/flask-decorated-label-pink.webp
+blue-elixir		Blue Elixir	Buffing Items	icons/consumables/potions/potion-bottle-corked-fancy-blue.webp
+scalestone		Scalestone	Buffing Items	icons/commodities/gems/gem-rough-brilliant-green.webp
+shield-grease		Shield Grease	Buffing Items	icons/consumables/potions/vial-cork-red.webp
+holy-water		Holy Water	Buffing Items	icons/consumables/potions/potion-jar-corked-glowing-blue.webp
+aromatic-ooze		Aromatic Ooze	Buffing Items	icons/consumables/potions/vial-cork-red.webp
+cutpurses-blade-polish		Cutpurse's Blade Polish	Buffing Items	icons/consumables/potions/bottle-round-corked-yellow.webp
+bleeding-serum		Bleeding Serum	Buffing Items	icons/consumables/potions/conical-mushroom-poison-red.webp
+charcoal-pine-resin		Charcoal Pine Resin	Buffing Items	icons/consumables/potions/bottle-round-label-cork-yellow.webp
+vial-of-venin		Vial of Venin	Buffing Items	icons/consumables/potions/bottle-conical-corked-labeled-skull-poison-green.webp
+dream-powder		Dream Powder	Buffing Items	icons/commodities/materials/bowl-powder-pink.webp
+gorgonite-shavings		Gorgonite Shavings	Buffing Items	icons/commodities/materials/powder-teal.webp
+chaos-medallion		Chaos Medallion	Buffing Items	icons/commodities/treasure/token-runed-spiral-grey.webp
+nails		Nails	Combat Items	icons/tools/fasteners/nails-worn-steel.webp
+spectre-card		Spectre Card	Combat Items	icons/sundries/gaming/playing-cards.webp
+reaper-card		Reaper Card	Combat Items	icons/sundries/gaming/playing-cards-black.webp
+daemon-card		Daemon Card	Combat Items	icons/sundries/gaming/playing-cards-brown.webp
+alchemists-fire		Alchemist's Fire	Combat Items	icons/weapons/thrown/bomb-fuse-red-black.webp
+grenade		Grenade	Combat Items	icons/weapons/thrown/bomb-spiked-purple.webp
+incendiary-bomb		Incendiary Bomb	Combat Items	icons/weapons/thrown/bomb-fuse-pink.webp
+stun-bomb		Stun Bomb	Combat Items	icons/weapons/thrown/grenade-round.webp
+spiked-ball		Spiked Ball	Combat Items	icons/weapons/thrown/ball-spiked.webp
+liquid-malice		Liquid Malice	Combat Items	icons/consumables/potions/potion-bottle-skull-label-poison-teal.webp
+bolas		Bolas	Combat Items	icons/weapons/thrown/bolas-steel.webp
+duel-charm		Duel Charm	Combat Items	icons/equipment/neck/amulet-round-engraved-gold.webp
+strange-horn		Strange Horn	Combat Items	icons/commodities/bones/horn-jagged-gold.webp
+lullaby-lyre		Lullaby Lyre	Combat Items	icons/tools/instruments/harp-yellow-teal.webp
+shine-barrier		Shine Barrier	Combat Items	icons/weapons/thrown/bomb-metal-brown.webp
+mine		Mine	Combat Items	icons/weapons/ammunition/explosive-mine.webp
+frey-bomb		Frey Bomb	Combat Items	icons/weapons/thrown/grenade-frag-green.webp
+bear-trap		Bear Trap	Combat Items	icons/environment/traps/spiked-wall.webp
+warp-trap		Warp Trap	Combat Items	icons/environment/traps/pressure-plate.webp
+silence-trap		Silence Trap	Combat Items	icons/environment/traps/trap-jaw-tan.webp
+stun-mine		Stun Mine	Combat Items	icons/weapons/ammunition/explosive-mine.webp
+sleep-trap		Sleep Trap	Combat Items	icons/environment/traps/trap-jaw-steel.webp
+poison-trap		Poison Trap	Combat Items	icons/environment/traps/trap-jaw-green.webp
+magic-seal		Magic Seal	Combat Items	icons/sundries/documents/document-sealed-white-orange.webp
+chest-key		Chest Key	Keys	icons/sundries/misc/key-short-gold.webp
+door-key		Door Key	Keys	icons/sundries/misc/key-steel.webp
+master-key		Master Key	Keys	icons/sundries/misc/key-short-gold.webp
+lockpick		Lockpick	Keys	icons/skills/trades/security-lockpicking-chest-blue.webp
+trainee-seal		Trainee Seal	Promotion	icons/sundries/documents/document-sealed-beige-red.webp
+master-seal		Master Seal	Promotion	icons/sundries/documents/document-sealed-red-white.webp
+master-crown		Master Crown	Promotion	icons/commodities/treasure/crown-gold-laurel-wreath.webp
+heaven-seal		Heaven Seal	Promotion	icons/sundries/documents/document-sealed-red-yellow.webp
+fell-contract		Fell Contract	Promotion	icons/sundries/documents/document-sealed-white-red.webp
+guiding-ring		Guiding Ring	Promotion	icons/equipment/finger/ring-cabochon-silver.webp
+hero-crest		Hero Crest	Promotion	icons/commodities/treasure/token-gold-gem-red.webp
+knight-crest		Knight Crest	Promotion	icons/commodities/treasure/token-engraved-eye-red.webp
+orions-bolt		Orion's Bolt	Promotion	icons/weapons/ammunition/arrows-bodkin-yellow-red.webp
+elysian-whip		Elysian Whip	Promotion	icons/weapons/misc/whip-red-yellow.webp
+satori-sign		Satori Sign	Promotion	icons/sundries/documents/document-sealed-red-tan.webp
+dragons-seal		Dragon's Seal	Promotion	icons/sundries/documents/envelope-sealed-red-tan.webp
+beasts-seal		Beast's Seal	Promotion	icons/sundries/documents/document-sealed-beige-red.webp
+occult-scroll		Occult Scroll	Promotion	icons/sundries/scrolls/scroll-bound-diamond-brown.webp
+wild-stone		Wild Stone	Laguz, Manakete, Taguel	icons/commodities/stone/geode-raw-teal.webp
+demi-stone		Demi Stone	Laguz, Manakete, Taguel	icons/commodities/stone/stone-porous-blue.webp
+laguz-stone		Laguz Stone	Laguz, Manakete, Taguel	icons/commodities/stone/rock-gift.webp
+shift-sapper		Shift Sapper	Laguz, Manakete, Taguel	icons/commodities/gems/gem-fragments-rough-grey.webp
+laguz-pearl		Laguz Pearl	Laguz, Manakete, Taguel	icons/commodities/gems/pearl-pink.webp
+laguz-gem		Laguz Gem	Laguz, Manakete, Taguel	icons/commodities/gems/gem-rough-pendeloque-blue.webp
+shift-smasher		Shift Smasher	Laguz, Manakete, Taguel	icons/commodities/gems/gem-shattered-blue.webp
+laguz-ruby		Laguz Ruby	Laguz, Manakete, Taguel	icons/commodities/gems/gem-rough-cushion-red-white.webp
+laguzbane		Laguzbane	Laguz, Manakete, Taguel	icons/commodities/gems/gem-fragmented-pink.webp
+demi-gem		Demi Gem	Laguz, Manakete, Taguel	icons/commodities/gems/gem-rough-cushion-orange-white.webp
+laguz-diamond		Laguz Diamond	Laguz, Manakete, Taguel	icons/commodities/gems/gem-rough-drop-red.webp
+forge-coin		Forge Coin	Barter	icons/commodities/currency/coin-inset-compass-silver.webp
+bullion		Bullion	Barter	icons/commodities/metal/ingot-worn-gold.webp
+green-gem		Green Gem	Barter	icons/commodities/gems/gem-rough-navette-yellow-green.webp
+red-gem		Red Gem	Barter	icons/commodities/gems/gem-rough-square-red.webp
+blue-gem		Blue Gem	Barter	icons/commodities/gems/gem-faceted-hexagon-blue.webp
+purple-gem		Purple Gem	Barter	icons/commodities/gems/gem-rough-navette-purple-pink.webp
+white-gem		White Gem	Barter	icons/commodities/gems/gem-faceted-round-white.webp
+pink-gem		Pink Gem	Barter	icons/commodities/gems/gem-rough-cushion-red-pink.webp
+black-gem		Black Gem	Barter	icons/commodities/gems/gem-faceted-cushion-teal-black.webp
+rainbow-gem		Rainbow Gem	Barter	icons/commodities/gems/gem-faceted-radiant-blue.webp
+lantern		Lantern	Accessories	icons/sundries/lights/lantern-iron-yellow.webp
+soldiers-bracelet		Soldier's Bracelet	Accessories	icons/equipment/wrist/bracer-spiked-steel.webp
+knights-bracelet		Knight's Bracelet	Accessories	icons/equipment/wrist/bracelet-spiked-black.webp
+mercenarys-bracelet		Mercenary's Bracelet	Accessories	icons/equipment/wrist/bracelet-embossed-steel.webp
+orrachea-armlet		Orrachea Armlet	Accessories	icons/equipment/wrist/bracer-shadow.webp
+bangle		Bangle	Accessories	icons/equipment/wrist/bracer-orange-small.webp
+warding-talisman		Warding Talisman	Accessories	icons/equipment/neck/necklace-simple-carved-wood-green.webp
+snakeskin-gloves		Snakeskin Gloves	Accessories	icons/equipment/hand/glove-armored-leather-worn-brown.webp
+bag-of-pebbles		Bag of Pebbles	Accessories	icons/commodities/stone/stone-chunk-teal.webp
+partisans-memento		Partisan's Memento	Accessories	icons/commodities/treasure/medal-ribbon-star-gold-red.webp
+warning-charm		Warning Charm	Accessories	icons/equipment/neck/necklace-simple-mushroom.webp
+charred-ring		Charred Ring	Accessories	icons/equipment/finger/ring-faceted-gold-green.webp
+travelers-cane		Traveler's Cane	Accessories	icons/weapons/staves/staff-simple-brown.webp
+veterans-memento		Veteran's Memento	Accessories	icons/commodities/treasure/token-worn-yang-brown.webp
+blade-polishing-kit		Blade Polishing Kit	Accessories	icons/tools/smithing/hammer-sledge-steel-grey.webp
+quicksilver-breastplate		Quicksilver Breastplate	Accessories	icons/equipment/chest/breastplate-scale-leather.webp
+trauma-kit		Trauma Kit	Accessories	icons/tools/medical/medkit-heavy.webp
+tearstone-ring		Tearstone Ring	Accessories	icons/equipment/finger/ring-cabochon-white-blue.webp
+pheasant-netsuke		Pheasant Netsuke	Accessories	icons/equipment/neck/amulet-round-engraved-gold.webp
+bandit-cuffs		Bandit Cuffs	Accessories	icons/equipment/wrist/bracer-spiked-steel-pink.webp
+return-band		Return Band	Accessories	icons/equipment/wrist/wrap-cloth-brown.webp
+crit-charm		Crit Charm	Accessories	icons/equipment/neck/necklace-animal-spider-silver.webp
+magic-dice		Magic Dice	Accessories	icons/sundries/gaming/dice-runed-tan.webp
+thief-glove		Thief Glove	Accessories	icons/equipment/hand/glove-frayed-cloth-grey.webp
+full-guard		Full Guard	Accessories	icons/equipment/shield/round-wooden-boss-notched-red.webp
+laguzguard		Laguzguard	Accessories	icons/equipment/shield/kite-wooden-boss-steel-red.webp
+hoplon-guard		Hoplon Guard	Accessories	icons/equipment/shield/round-wooden-boss-notched-red.webp
+knight-ward		Knight Ward	Accessories	icons/equipment/shield/kite-wooden-axe-blue-black.webp
+rafail-gem		Rafail Gem	Accessories	icons/commodities/gems/gem-rough-oval-purple.webp
+rudol-gem		Rudol Gem	Accessories	icons/commodities/gems/gem-faceted-diamond-pink-gold.webp
+circlet		Circlet	Accessories	icons/equipment/head/crown-gold-blue.webp
+lightsphere		Lightsphere	Accessories	icons/commodities/materials/glass-orb-blue-gold.webp
+darksphere		Darksphere	Accessories	icons/commodities/gems/pearl-swirl-teal.webp
+lifesphere		Lifesphere	Accessories	icons/commodities/gems/pearl-natural.webp
+geosphere		Geosphere	Accessories	icons/commodities/gems/pearl-red-oval.webp
+starsphere		Starsphere	Accessories	icons/commodities/gems/pearl-swirl-teal.webp
+accuracy-ring		Accuracy Ring	Accessories	icons/equipment/finger/ring-band-gold.webp
+action-ring		Action Ring	Accessories	icons/equipment/finger/ring-band-thick-rounded-gold.webp
+angel-ring		Angel Ring	Accessories	icons/equipment/finger/ring-winged-gold-blue.webp
+animus-ring		Animus Ring	Accessories	icons/equipment/finger/ring-band-worn-gold.webp
+archery-ring		Archery Ring	Accessories	icons/equipment/finger/ring-band-worn-gold.webp
+bargain-ring		Bargain Ring	Accessories	icons/equipment/finger/ring-cabochon-silver-green.webp
+barrier-ring		Barrier Ring	Accessories	icons/equipment/finger/ring-crown-crystal.webp
+blessed-ring		Blessed Ring	Accessories	icons/equipment/finger/ring-winged-gold-blue.webp
+body-ring		Body Ring	Accessories	icons/equipment/finger/ring-cabochon-rounded-gold-teal.webp
+brave-ring		Brave Ring	Accessories	icons/equipment/finger/ring-eye-gold-green.webp
+coral-ring		Coral Ring	Accessories	icons/equipment/finger/ring-thin-gold-blue.webp
+critical-ring		Critical Ring	Accessories	icons/equipment/finger/ring-eye-purple-yellow.webp
+demon-ring		Demon Ring	Accessories	icons/equipment/finger/ring-inlay-skull-silver.webp
+energy-ring		Energy Ring	Accessories	icons/equipment/finger/ring-band-studded-gold-blue.webp
+evasion-ring		Evasion Ring	Accessories	icons/equipment/finger/ring-cabochon-copper-red.webp
+flame-ring		Flame Ring	Accessories	icons/equipment/finger/ring-cabochon-notched-silver-red.webp
+follow-up-ring		Follow-up Ring	Accessories	icons/equipment/finger/ring-band-notched-gold.webp
+goddess-ring		Goddess Ring	Accessories	icons/equipment/finger/ring-winged-gold-blue.webp
+grimoire-ring		Grimoire Ring	Accessories	icons/equipment/finger/ring-faceted-gold-green.webp
+healer-ring		Healer Ring	Accessories	icons/equipment/finger/ring-shield-silver.webp
+hero-ring		Hero Ring	Accessories	icons/equipment/finger/ring-horned-gold-blue.webp
+holy-ring		Holy Ring	Accessories	icons/equipment/finger/ring-winged-gold-blue.webp
+kings-ring		King's Ring	Accessories	icons/equipment/finger/ring-cabochon-notched-gold-green.webp
+knight-ring		Knight Ring	Accessories	icons/equipment/finger/ring-cabochon-rough-gold-teal.webp
+knowledge-ring		Knowledge Ring	Accessories	icons/equipment/finger/ring-cabochon-rounded-gold-red.webp
+leg-ring		Leg Ring	Accessories	icons/equipment/finger/ring-faceted-white.webp
+life-ring		Life Ring	Accessories	icons/equipment/finger/ring-cabochon-gold-green.webp
+lucky-ring		Lucky Ring	Accessories	icons/equipment/finger/ring-bone-horned-spike.webp
+mage-ring		Mage Ring	Accessories	icons/equipment/finger/ring-crown-crystal.webp
+magic-ring		Magic Ring	Accessories	icons/equipment/finger/ring-crown-crystal.webp
+march-ring		March Ring	Accessories	icons/equipment/finger/ring-cabochon-rough-copper-red.webp
+miracle-ring		Miracle Ring	Accessories	icons/equipment/finger/ring-winged-gold-blue.webp
+paragon-ring		Paragon Ring	Accessories	icons/equipment/finger/ring-band-engraved-silver-teal.webp
+purity-ring		Purity Ring	Accessories	icons/equipment/finger/ring-bone-spiked-skull.webp
+pursuit-ring		Pursuit Ring	Accessories	icons/equipment/finger/ring-faceted-silver-red.webp
+savior-ring		Savior Ring	Accessories	icons/equipment/finger/ring-faceted-gold-green.webp
+shield-ring		Shield Ring	Accessories	icons/equipment/finger/ring-eye-purple-yellow.webp
+skill-ring		Skill Ring	Accessories	icons/equipment/finger/ring-band-engraved-silver.webp
+speed-ring		Speed Ring	Accessories	icons/equipment/finger/ring-cabochon-thin-silver-purple.webp
+strength-ring		Strength Ring	Accessories	icons/equipment/finger/ring-band-notched-gold.webp
+vision-ring		Vision Ring	Accessories	icons/equipment/finger/ring-band-engraved-silver-teal.webp
+aegis-band		Aegis Band	Accessories	icons/equipment/wrist/wrap-wide-cloth-pink.webp
+archer-band		Archer Band	Accessories	icons/equipment/wrist/bracer-armored-steel-blue.webp
+armor-band		Armor Band	Accessories	icons/equipment/wrist/wrap-wide-cloth-green.webp
+bard-band		Bard Band	Accessories	icons/equipment/wrist/bracer-banded-leather-black.webp
+bishop-band		Bishop Band	Accessories	icons/equipment/wrist/bracer-simple-leather.webp
+blood-band		Blood Band	Accessories	icons/equipment/wrist/bracer-padded-leather.webp
+chaplain-band		Chaplain Band	Accessories	icons/equipment/wrist/wrap-wide-cloth-white.webp
+dancer-band		Dancer Band	Accessories	icons/equipment/wrist/bracer-belted-leather-brown.webp
+dark-band		Dark Band	Accessories	icons/equipment/wrist/bracer-banded-leather-black.webp
+fighter-band		Fighter Band	Accessories	icons/equipment/wrist/wrap-cloth-brown.webp
+fixer-band		Fixer Band	Accessories	icons/equipment/wrist/bracer-banded-leather-pink.webp
+guru-band		Guru Band	Accessories	icons/equipment/wrist/bracer-simple-wide-leather.webp
+heart-band		Heart Band	Accessories	icons/equipment/wrist/bracer-red-silver.webp
+hero-band		Hero Band	Accessories	icons/equipment/wrist/bracer-ornate-gold-purple.webp
+hoplite-band		Hoplite Band	Accessories	icons/equipment/wrist/bracer-simple-leather-gold.webp
+horse-band		Horse Band	Accessories	icons/equipment/wrist/bracer-orange-spiked-small.webp
+knight-band		Knight Band	Accessories	icons/equipment/wrist/bracer-straight-copper-green.webp
+lord-band		Lord Band	Accessories	icons/equipment/wrist/bracer-simple.webp
+mage-band		Mage Band	Accessories	icons/equipment/wrist/bracer-jeweled-blue-red.webp
+monk-band		Monk Band	Accessories	icons/equipment/wrist/bracer-orange-spiked-small.webp
+myrmidon-band		Myrmidon Band	Accessories	icons/equipment/wrist/bracer-armored-steel-blue.webp
+oni-band		Oni Band	Accessories	icons/equipment/wrist/bracer-simple-leather-gold.webp
+paladin-band		Paladin Band	Accessories	icons/equipment/wrist/bracer-banded-leather-pink-gold.webp
+pegasus-band		Pegasus Band	Accessories	icons/equipment/wrist/bracer-spiked-steel-pink.webp
+pirate-band		Pirate Band	Accessories	icons/equipment/wrist/bracer-red-silver.webp
+priest-band		Priest Band	Accessories	icons/equipment/wrist/bracer-ornate-pink-green.webp
+reaper-band		Reaper Band	Accessories	icons/equipment/wrist/bracelet-spiked-black.webp
+ritter-band		Ritter Band	Accessories	icons/equipment/wrist/bracer-spiked-steel.webp
+sage-band		Sage Band	Accessories	icons/equipment/wrist/bracer-orange-fancy.webp
+soldier-band		Soldier Band	Accessories	icons/equipment/wrist/bracer-spiked-steel-pink.webp
+spellblade-band		Spellblade Band	Accessories	icons/equipment/wrist/bracer-jeweled-blue-red.webp
+sword-band		Sword Band	Accessories	icons/equipment/wrist/bracer-orange-small.webp
+tactician-band		Tactician Band	Accessories	icons/equipment/wrist/bracer-shadow.webp
+thief-band		Thief Band	Accessories	icons/equipment/wrist/bracer-purple-stitched.webp
+troubadour-band		Troubadour Band	Accessories	icons/equipment/wrist/bracer-armored-steel-blue.webp
+warrior-band		Warrior Band	Accessories	icons/equipment/wrist/bracer-ornate-pink-green.webp
+witch-band		Witch Band	Accessories	icons/equipment/wrist/bracelet-spiked-steel.webp
+wyvern-band		Wyvern Band	Accessories	icons/equipment/wrist/bracer-leather-purple-steel.webp
+pouch		Pouch	Storage	icons/containers/bags/pouch-silver-purple.webp
+satchel		Satchel	Storage	icons/containers/bags/satchel-leather-white-tan.webp
+rucksack		Rucksack	Storage	icons/containers/bags/sack-cloth-purple.webp
+field-pack		Field Pack	Storage	icons/containers/bags/pack-leather-tan.webp
+carryall-bag		Carryall Bag	Storage	icons/containers/bags/sack-leather-grey.webp
+bottomless-bag		Bottomless Bag	Storage	icons/containers/bags/pack-simple-leather-fur-tan.webp
+broken-shield		Broken Shield	Shields	icons/equipment/shield/Scutum-steel-worn.webp
+buckler		Buckler	Shields	icons/equipment/shield/heater-steel-sword-yellow-black.webp
+leather-shield		Leather Shield	Shields	icons/equipment/shield/heater-wooden-boss-brown.webp
+enchanted-shield		Enchanted Shield	Shields	icons/equipment/shield/buckler-wooden-boss-glowing-blue.webp
+round-shield		Round Shield	Shields	icons/equipment/shield/buckler-wooden-round-hole.webp
+heavy-shield		Heavy Shield	Shields	icons/equipment/shield/round-wooden-boss-steel-brown.webp
+heater-shield		Heater Shield	Shields	icons/equipment/shield/buckler-wooden-boss-brown.webp
+kite-shield		Kite Shield	Shields	icons/equipment/shield/round-wooden-boss-steel-red.webp
+hexlock-shield		Hexlock Shield	Shields	icons/equipment/shield/shield-round-boss-wood-brown.webp
+dhal		Dhal	Shields	icons/equipment/shield/round-wooden-axe-brown.webp
+greatshield		Greatshield	Shields	icons/equipment/shield/round-wooden-boss-steel-red.webp
+tower-shield		Tower Shield	Shields	icons/equipment/shield/wardoor-wooden-boss-brown.webp
+aegis-shield		Aegis Shield	Shields	icons/equipment/shield/buckler-iron-cross-gray.webp
+wyrmskin-shield		Wyrmskin Shield	Shields	icons/equipment/shield/oval-wooden-boss-bronze.webp
+fire-shield		Fire Shield	Shields	icons/equipment/shield/round-wooden-boss-notched-red.webp
+wind-shield		Wind Shield	Shields	icons/equipment/shield/pavise-wooden-wings-blue-white.webp
+thunder-shield		Thunder Shield	Shields	icons/equipment/shield/buckler-wooden-boss-lightning.webp
+water-shield		Water Shield	Shields	icons/consumables/potions/potion-jar-corked-glowing-blue.webp
+earth-shield		Earth Shield	Shields	icons/equipment/shield/heater-stone-orange.webp
+light-shield		Light Shield	Shields	icons/equipment/shield/buckler-wooden-boss-glowing-blue.webp
+dark-shield		Dark Shield	Shields	icons/equipment/shield/targe-copper-eye.webp
+spiked-shield		Spiked Shield	Shields	icons/equipment/shield/round-wooden-boss-notched-red.webp
+officers-shield		Officer's Shield	Shields	icons/equipment/shield/heater-steel-grey.webp
+emblem-shield		Emblem Shield	Shields	icons/equipment/shield/oval-wooden-clover-green-gold.webp
+riot-shield		Riot Shield	Shields	icons/equipment/shield/buckler-boss-iron-wood-brown.webp
+guardian-shield		Guardian Shield	Shields	icons/equipment/shield/buckler-iron-cross-gray.webp
+devil-shield		Devil Shield	Shields	icons/equipment/shield/targe-copper-eye.webp
+magic-mirror		Magic Mirror	Shields	icons/sundries/survival/mirror-plain.webp
+sacred-shield		Sacred Shield	Shields	icons/equipment/shield/buckler-wooden-boss-glowing-blue.webp
+lampos-shield		Lampos Shield	Shields	icons/equipment/shield/shield-round-boss-wood-brown.webp
+kadmos-shield		Kadmos Shield	Shields	icons/equipment/shield/round-wooden-boss-notched-red.webp
+fili-shield		Fili Shield	Shields	icons/equipment/shield/oval-wooden-boss-bronze.webp
+iote-shield		Iote Shield	Shields	icons/equipment/shield/heater-stone-orange.webp
+gazzak-shield		Gazzak Shield	Shields	icons/equipment/shield/kite-wooden-boss-steel-blue.webp
+porcine-shield		Porcine Shield	Shields	icons/equipment/shield/heater-steel-spiral.webp
+beorcguard		Beorcguard	Shields	icons/equipment/shield/kite-bronze-boss-brown.webp
+aiantos		Aiantos	Shields	icons/equipment/shield/oval-wooden-clover-green-gold.webp
+hestia		Hestia	Shields	icons/equipment/shield/shield-round-boss-wood-brown.webp
+forenden		Forenden	Shields	icons/equipment/shield/oval-wooden-clover-green-gold.webp
+perseid		Perseid	Shields	icons/equipment/shield/targe-boss-steel-brown.webp
+binding-shield		Binding Shield	Shields	icons/equipment/shield/buckler-wooden-boss-glowing-blue.webp
+jaivardhan		Jaivardhan	Shields	icons/equipment/shield/round-wooden-reinforced-boss-steel.webp
+potion-of-knowledge		Potion of Knowledge	Stat Boosters	icons/consumables/potions/bottle-round-corked-red.webp
+juna-fruit		Juna Fruit	Stat Boosters	icons/consumables/fruit/banana-ripe-yellow.webp
+seal-of-eternity		Seal of Eternity	Stat Boosters	icons/sundries/documents/envelope-sealed-red-brown.webp
+afas-drop		Afa's Drop	Stat Boosters	icons/commodities/materials/liquid-orange.webp
+afas-drops		Afa's Drops	Stat Boosters	icons/commodities/materials/liquid-blue.webp
+metiss-tome		Metis's Tome	Stat Boosters	icons/sundries/books/book-tooled-silver-blue.webp
+metiss-tomes		Metis's Tomes	Stat Boosters	icons/sundries/books/book-red-cross.webp
+weapon-manual		Weapon Manual	Stat Boosters	icons/sundries/books/book-worn-green.webp
+morphstone		Morphstone	Stat Boosters	icons/commodities/gems/gem-faceted-radiant-teal.webp
+olivi-grass		Olivi Grass	Stat Boosters	icons/consumables/plants/leaf-elm-tree-grlowing-green.webp
+olivi-herb		Olivi Herb	Stat Boosters	icons/consumables/plants/leaf-old-dried-curled-green.webp
+olivi-leaf		Olivi Leaf	Stat Boosters	icons/consumables/plants/basil-herb-green.webp
+olivi-pepper		Olivi Pepper	Stat Boosters	icons/consumables/fruit/lingonberry-cluster-red.webp
+ichor		Ichor	Stat Boosters	icons/consumables/potions/bottle-pear-corked-labeled-green.webp
+seraph-robe		Seraph Robe	Stat Boosters	icons/equipment/chest/robe-layered-purple.webp
+energy-drop		Energy Drop	Stat Boosters	icons/commodities/materials/liquid-orange.webp
+spirit-dust		Spirit Dust	Stat Boosters	icons/commodities/materials/powder-teal.webp
+dracoshield		Dracoshield	Stat Boosters	icons/equipment/shield/round-wooden-pointed-boss-steel-brown.webp
+talisman		Talisman	Stat Boosters	icons/equipment/neck/necklace-animal-lizard.webp
+secret-book		Secret Book	Stat Boosters	icons/sundries/books/book-embossed-roots-green.webp
+speedwing		Speedwing	Stat Boosters	icons/commodities/materials/feather-colored-red.webp
+goddess-icon		Goddess Icon	Stat Boosters	icons/commodities/treasure/token-engraved-red-glowing.webp
+statue-frag		Statue Frag	Stat Boosters	icons/commodities/treasure/statue-gold-laurel-wreath.webp
+philosophers-stone		Philosopher's Stone	Stat Boosters	icons/commodities/gems/gem-faceted-round-white.webp
+bardic-perfume		Bardic Perfume	Stat Boosters	icons/consumables/potions/bottle-conical-bubbling-blue.webp
+swiftsoles		Swiftsoles	Stat Boosters	icons/equipment/feet/boots-leather-laced-brown.webp
+binoculars		Binoculars	Stat Boosters	icons/tools/navigation/spyglass-telescope-brass-blue.webp
+arms-scroll		Arms Scroll	Stat Boosters	icons/sundries/scrolls/scroll-bound-red.webp
+skill-scroll		Skill Scroll	Stat Boosters	icons/sundries/scrolls/scroll-bound-sealed-orange.webp
+dragon-herb		Dragon Herb	Stat Boosters	icons/consumables/plants/herb-tied-bundle-yellow-green.webp
+hp-tonic		HP Tonic	Stat Boosters	icons/consumables/potions/bottle-conical-bubbling-blue.webp
+strength-tonic		Strength Tonic	Stat Boosters	icons/consumables/potions/potion-vial-tube-yellow.webp
+magic-tonic		Magic Tonic	Stat Boosters	icons/consumables/potions/potion-jar-corked-glowing-blue.webp
+defense-tonic		Defense Tonic	Stat Boosters	icons/consumables/potions/potion-flask-corked-teal.webp
+resistance-tonic		Resistance Tonic	Stat Boosters	icons/consumables/potions/potion-bottle-corked-blue.webp
+dexterity-tonic		Dexterity Tonic	Stat Boosters	icons/consumables/potions/potion-bottle-corked-stopper-ornate-yellow.webp
+speed-tonic		Speed Tonic	Stat Boosters	icons/consumables/potions/flask-corked-green.webp
+luck-tonic		Luck Tonic	Stat Boosters	icons/consumables/potions/bottle-conical-corked-cyan.webp
+constitution-tonic		Constitution Tonic	Stat Boosters	icons/consumables/potions/potion-bottle-labeled-medicine-capped-red-black.webp
+movement-tonic		Movement Tonic	Stat Boosters	icons/consumables/potions/potion-flask-corked-tied-necklace-teal.webp
+rainbow-tonic		Rainbow Tonic	Stat Boosters	icons/consumables/potions/potion-flask-corked-orange.webp
+repairstone		Repairstone	Misc. Items	icons/commodities/gems/gem-rough-heart-teal.webp
+repair-kit		Repair Kit	Misc. Items	icons/tools/smithing/hammer-maul-steel-grey.webp
+lantern-oil		Lantern Oil	Misc. Items	icons/consumables/potions/potion-jug-corked-skull-poison-brown-green.webp
+member-card		Member Card	Misc. Items	icons/sundries/gaming/rune-card.webp
+warp-powder		Warp Powder	Misc. Items	icons/tools/laboratory/bowl-powder-purple.webp

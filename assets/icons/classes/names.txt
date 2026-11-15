@@ -1,0 +1,370 @@
+File names for your own classes images. Put an image in this folder, named as in the first column
+(for example iron-axe.webp or iron-axe.png; "Iron Axe.png" works too), and build the compendium again.
+Where two entries share a name, the second column is the name that picks out just one of them.
+This list is rewritten by every build.
+
+file name	more specific file name	entry	folder	image used now
+archer	archer-a2	Archer	Beorc	icons/weapons/bows/shortbow-recurve-red.webp
+crossbowman	crossbowman-h2	Crossbowman	Beorc	icons/weapons/bows/bow-recurve-black.webp
+ranger		Ranger	Beorc	icons/skills/ranged/arrows-flying-triple-brown.webp
+sniper		Sniper	Beorc	icons/weapons/bows/shortbow-recurve-yellow.webp
+bowgunner		Bowgunner	Beorc	icons/weapons/bows/shortbow-recurve-bone.webp
+warden		Warden	Beorc	icons/skills/ranged/arrow-flying-ornate-gold.webp
+marksman		Marksman	Beorc	icons/skills/ranged/arrow-flying-ornate-gold.webp
+arbalester		Arbalester	Beorc	icons/skills/ranged/arrows-flying-triple-gray.webp
+arch-knight	arch-knight-a33	Arch Knight	Beorc	icons/weapons/bows/shortbow-recurve-red.webp
+horseman		Horseman	Beorc	icons/skills/ranged/arrows-flying-salvo-gray.webp
+chasseur		Chasseur	Beorc	icons/skills/ranged/arrow-barbed-flying-poisoned-green.webp
+trooper		Trooper	Beorc	icons/skills/ranged/arrow-barbed-flying-poisoned-green.webp
+silver-knight		Silver Knight	Beorc	icons/equipment/head/helm-spangen.webp
+sharpshooter		Sharpshooter	Beorc	icons/equipment/head/helm-barbute-rounded-steel-worn.webp
+oliphantier		Oliphantier	Beorc	icons/equipment/head/helm-spangen-reticulated.webp
+arcanist		Arcanist	Beorc	icons/sundries/books/book-embossed-blue.webp
+necromancer		Necromancer	Beorc	icons/creatures/eyes/humanoid-single-yellow.webp
+warlock		Warlock	Beorc	icons/sundries/books/book-symbol-triangle-silver-blue.webp
+dark-knight		Dark Knight	Beorc	icons/sundries/books/book-embossed-spiral-purple-white.webp
+deathlord		Deathlord	Beorc	icons/commodities/treasure/crown-gold-laurel-wreath.webp
+sorcerer		Sorcerer	Beorc	icons/equipment/head/hat-pointed-leather-red.webp
+abyss-knight		Abyss Knight	Beorc	icons/equipment/head/helm-spangen-reticulated.webp
+bard-dancer		Bard/Dancer	Beorc	icons/tools/instruments/lute-gold-brown.webp
+skald		Skald	Beorc	icons/tools/instruments/harp-red.webp
+minstrel		Minstrel	Beorc	icons/tools/instruments/harp-red.webp
+chanteuse		Chanteuse	Beorc	icons/magic/control/buff-flight-wings-red.webp
+battle-herald		Battle Herald	Beorc	icons/equipment/head/cap-steel.webp
+balladeer		Balladeer	Beorc	icons/sundries/flags/banner-standard-blue.webp
+diva		Diva	Beorc	icons/creatures/abilities/wing-batlike-red-pink.webp
+brawler	brawler-a126	Brawler	Beorc	icons/skills/melee/maneuver-greatsword-yellow.webp
+wrestler		Wrestler	Beorc	icons/skills/melee/weapons-crossed-swords-teal.webp
+bellator		Bellator	Beorc	icons/equipment/head/helm-norman-engraved.webp
+brute		Brute	Beorc	icons/equipment/head/mask-horned-brown.webp
+grappler		Grappler	Beorc	icons/skills/melee/weapons-crossed-swords-purple.webp
+war-master		War Master	Beorc	icons/equipment/head/helm-spangen-rounded.webp
+juggernaut		Juggernaut	Beorc	icons/equipment/head/helm-sallet-horned.webp
+brigand	brigand-a158	Brigand	Beorc	icons/equipment/head/hood-cloth-blue.webp
+pirate	pirate-h158	Pirate	Beorc	icons/equipment/head/hood-cloth-green-white.webp
+berserker		Berserker	Beorc	icons/equipment/head/hood-cloth-teal-gold.webp
+barbarian-buccaneer		Barbarian/Buccaneer	Beorc	icons/equipment/head/hood-cloth-gold-pink.webp
+shaman		Shaman	Beorc	icons/sundries/books/book-symbol-skull-grey.webp
+ulfhedinn		Ulfhedinn	Beorc	icons/equipment/head/mask-hood-camo.webp
+marauder-corsair		Marauder/Corsair	Beorc	icons/equipment/head/hood-green-gilded.webp
+druid		Druid	Beorc	icons/equipment/head/hat-pointed-leather-red.webp
+cavalier	cavalier-a189	Cavalier	Beorc	icons/equipment/head/helm-barbute-steel.webp
+social-knight	social-knight-h189	Social Knight	Beorc	icons/equipment/head/helm-sallet-horned.webp
+paladin		Paladin	Beorc	icons/magic/life/cross-worn-green.webp
+vanguard		Vanguard	Beorc	icons/equipment/head/helm-sallet-steel.webp
+wyrmknight		Wyrmknight	Beorc	icons/creatures/reptiles/dragon-horned-blue.webp
+exemplar		Exemplar	Beorc	icons/skills/ranged/arrow-strike-glowing-teal.webp
+warlord		Warlord	Beorc	icons/commodities/treasure/crown-gold-laurel-wreath.webp
+wyrmlord		Wyrmlord	Beorc	icons/creatures/reptiles/dragon-horned-blue.webp
+chaplain-martial-monk		Chaplain/Martial Monk	Beorc	icons/magic/life/crosses-trio-red.webp
+friar		Friar	Beorc	icons/magic/life/cross-worn-green.webp
+hospiteler		Hospiteler	Beorc	icons/equipment/head/helm-norman-horned-blue.webp
+apostle		Apostle	Beorc	icons/equipment/head/hood-cloth-blue-white.webp
+vicar		Vicar	Beorc	icons/equipment/head/helm-spangen-reticulated.webp
+templar		Templar	Beorc	icons/magic/holy/meditation-chi-focus-blue.webp
+hierophant		Hierophant	Beorc	icons/sundries/flags/banner-flag-pirate.webp
+cleric	cleric-a251	Cleric	Beorc	icons/magic/holy/projectiles-blades-salvo-yellow.webp
+bishop		Bishop	Beorc	icons/magic/holy/yin-yang-balance-symbol.webp
+paragon		Paragon	Beorc	icons/equipment/head/helm-barbute-white-purple.webp
+drifter		Drifter	Beorc	icons/sundries/flags/banner-standard-moon.webp
+saint		Saint	Beorc	icons/magic/life/cross-beam-green.webp
+inquisitor		Inquisitor	Beorc	icons/equipment/head/helm-bassinet-kettle-steel.webp
+leofwin		Leofwin	Beorc	icons/equipment/head/cap-leather-brown.webp
+fighter	fighter-a282	Fighter	Beorc	icons/equipment/head/helm-norman-bird.webp
+voulgier	voulgier-h282	Voulgier	Beorc	icons/equipment/head/helm-norman-brutal.webp
+guardian		Guardian	Beorc	icons/equipment/head/helm-bassinet-pointed-steel.webp
+warrior		Warrior	Beorc	icons/skills/ranged/arrow-gem-flying-poisoned-green.webp
+duelist		Duelist	Beorc	icons/equipment/head/helm-norman-rounded.webp
+shepherd		Shepherd	Beorc	icons/equipment/head/helm-norman-horned-gold.webp
+reaver		Reaver	Beorc	icons/sundries/flags/banner-flag-skull-red.webp
+swashbuckler		Swashbuckler	Beorc	icons/equipment/head/helm-norman-padded-leather.webp
+fixer	fixer-a313	Fixer	Beorc	icons/equipment/head/helm-spangen-ridged.webp
+enforcer		Enforcer	Beorc	icons/equipment/head/hood-cloth-trimmed-pink-gold.webp
+catanach		Catanach	Beorc	icons/weapons/bows/shortbow-recurve-red.webp
+bodyguard		Bodyguard	Beorc	icons/equipment/head/helm-spangen-ridged.webp
+sweeper		Sweeper	Beorc	icons/equipment/head/cap-simple-leather-pink.webp
+galloglass		Galloglass	Beorc	icons/equipment/head/hood-cloth-blue-white.webp
+parivir		Parivir	Beorc	icons/equipment/head/hood-cloth-brown.webp
+free-knight	free-knight-a344	Free Knight	Beorc	icons/skills/ranged/arrow-flying-poisoned-green.webp
+uhlan		Uhlan	Beorc	icons/equipment/head/helm-barbute-horned-copper.webp
+jaeger		Jaeger	Beorc	icons/equipment/head/greathelm-banded-steel.webp
+highlander		Highlander	Beorc	icons/equipment/head/helm-barbute-rounded-gold.webp
+bogatyr		Bogatyr	Beorc	icons/equipment/head/helm-spangen.webp
+commando		Commando	Beorc	icons/equipment/head/helm-barbute-rounded-purple.webp
+slayer		Slayer	Beorc	icons/equipment/head/helm-bassinet-pointed-steel.webp
+guard	guard-a375	Guard	Beorc	icons/equipment/head/helm-barbute-rounded-orange.webp
+chalkaspides		Chalkaspides	Beorc	icons/equipment/head/helm-barbute-horned-copper.webp
+viking		Viking	Beorc	icons/commodities/treasure/crown-gold-satin-gems-red.webp
+iron-knight		Iron Knight	Beorc	icons/equipment/head/helm-plated-heavy.webp
+spartan		Spartan	Beorc	icons/equipment/head/helm-spangen-ridged.webp
+randgrith		Randgrith	Beorc	icons/sundries/flags/banner-flag-white-mountain.webp
+custodian		Custodian	Beorc	icons/equipment/head/helm-basinet-slotted-steel.webp
+hunter-huntress	hunter-huntress-a406	Hunter/Huntress	Beorc	icons/weapons/bows/longbow-recurve-brown.webp
+ruffian		Ruffian	Beorc	icons/equipment/head/hood-pink-gilded.webp
+grassrunner		Grassrunner	Beorc	icons/equipment/head/helm-spangen-engraved.webp
+nomad		Nomad	Beorc	icons/skills/ranged/arrows-flying-triple-gray.webp
+highwayman		Highwayman	Beorc	icons/equipment/head/hood-cloth-pink-gold.webp
+mosstrooper		Mosstrooper	Beorc	icons/weapons/bows/bow-simple-small.webp
+mamluke		Mamluke	Beorc	icons/equipment/head/helm-armored-tech-heavy.webp
+hoplite	hoplite-a437	Hoplite	Beorc	icons/equipment/head/helm-bassinet-steel.webp
+ezer	ezer-h437	Ezer	Beorc	icons/magic/holy/meditation-chi-focus-blue.webp
+rune-knight		Rune Knight	Beorc	icons/equipment/head/helm-bassinet-steel-white.webp
+mage-cannon		Mage Cannon	Beorc	icons/sundries/books/book-symbol-link-brown.webp
+curate		Curate	Beorc	icons/equipment/head/helm-kettle-worn.webp
+magister		Magister	Beorc	icons/equipment/head/helm-barbute-band.webp
+foudroyant		Foudroyant	Beorc	icons/equipment/head/helm-barbute-horned.webp
+provost		Provost	Beorc	icons/equipment/head/helm-sallet-horned-grey.webp
+knight	knight-a468	Knight	Beorc	icons/weapons/bows/longbow-recurve-brown.webp
+heavy-knight	heavy-knight-h468	Heavy Knight	Beorc	icons/equipment/head/helm-sallet-grey.webp
+light-knight		Light Knight	Beorc	icons/skills/ranged/arrow-strike-glowing-teal.webp
+general		General	Beorc	icons/skills/ranged/person-archery-bow-attack-gray.webp
+great-knight		Great Knight	Beorc	icons/equipment/head/helm-bassinet-horned.webp
+fortress-knight		Fortress Knight	Beorc	icons/equipment/head/helm-spangen-rounded.webp
+marshall		Marshall	Beorc	icons/skills/ranged/person-archery-bow-attack-gray.webp
+cerberus		Cerberus	Beorc	icons/equipment/head/helm-sallet-horned-grey.webp
+colossus		Colossus	Beorc	icons/equipment/head/helm-barbute-steel-grey.webp
+longbowman	longbowman-a499	Longbowman	Beorc	icons/skills/ranged/arrows-triple-yellow-red.webp
+ballistician	ballistician-a509	Ballistician	Beorc	icons/skills/ranged/arrow-gem-flying-poisoned-green.webp
+tiratore		Tiratore	Beorc	icons/skills/ranged/arrow-barbed-flying-gray.webp
+picket		Picket	Beorc	icons/equipment/head/helm-sallet-horned-grey.webp
+siegemaster		Siegemaster	Beorc	icons/weapons/bows/bow-simple-small.webp
+bersagliere		Bersagliere	Beorc	icons/skills/ranged/arrows-flying-salvo-blue-light.webp
+vedette		Vedette	Beorc	icons/equipment/head/helm-barbute-reinforced.webp
+lord	lord-a530	Lord	Beorc	icons/commodities/treasure/crown-blue-gold.webp
+great-lord		Great Lord	Beorc	icons/commodities/treasure/crown-gold-laurel-wreath.webp
+lord-knight		Lord Knight	Beorc	icons/equipment/head/crown-horns-brown.webp
+mage-lord		Mage Lord	Beorc	icons/equipment/head/crown-fur-red-white.webp
+lodestar		Lodestar	Beorc	icons/skills/ranged/arrow-flying-white-blue.webp
+conqueror		Conqueror	Beorc	icons/weapons/bows/shortbow-recurve-bone.webp
+archmage		Archmage	Beorc	icons/sundries/books/book-symbol-skull-grey.webp
+armor-lord		Armor Lord	Beorc	icons/commodities/treasure/crown-blue-gold.webp
+flier-lord-pegasus		Flier Lord (Pegasus)	Beorc	icons/magic/control/buff-flight-wings-red.webp
+flier-lord-wyvern		Flier Lord (Wyvern)	Beorc	icons/creatures/abilities/dragon-fire-breath-orange.webp
+emperor		Emperor	Beorc	icons/equipment/head/crown-gold-blue.webp
+skylord-pegasus		Skylord (Pegasus)	Beorc	icons/magic/control/buff-flight-wings-purple.webp
+skylord-wyvern		Skylord (Wyvern)	Beorc	icons/creatures/reptiles/dragon-winged-blue.webp
+mage	mage-a581	Mage	Beorc	icons/sundries/books/book-symbol-canterbury-cross.webp
+mage-knight		Mage Knight	Beorc	icons/sundries/books/book-symbol-canterbury-cross.webp
+sage		Sage	Beorc	icons/sundries/books/book-symbol-square-blue-green.webp
+mage-fighter		Mage Fighter	Beorc	icons/sundries/books/book-tooled-eye-gold-red.webp
+arcane-general		Arcane General	Beorc	icons/sundries/books/book-embossed-jewel-gold-green.webp
+archsage		Archsage	Beorc	icons/sundries/books/book-symbol-spiral-silver-blue.webp
+warmage		Warmage	Beorc	icons/sundries/books/book-embossed-jewel-blue-red.webp
+magus	magus-a612	Magus	Beorc	icons/sundries/books/book-symbol-link-brown.webp
+gnosis		Gnosis	Beorc	icons/equipment/head/helm-barbute-leather.webp
+hexer		Hexer	Beorc	icons/equipment/head/helm-barbute-horned.webp
+mirror-knight		Mirror Knight	Beorc	icons/equipment/head/helm-kettle-worn.webp
+archon		Archon	Beorc	icons/equipment/head/helm-basinet-shemagh-steel.webp
+cursemonger		Cursemonger	Beorc	icons/equipment/head/helm-kettle-worn.webp
+doppelganger		Doppelgänger	Beorc	icons/equipment/head/helm-barbute-horned-tan.webp
+monk	monk-a643	Monk	Beorc	icons/magic/holy/chalice-glowing-yellow-blue.webp
+war-monk		War Monk	Beorc	icons/magic/life/cross-flared-green.webp
+diviner		Diviner	Beorc	icons/equipment/head/hood-simple-leather-purple.webp
+souhei		Souhei	Beorc	icons/equipment/head/hood-cloth-green-white.webp
+arbiter		Arbiter	Beorc	icons/equipment/head/helm-bassinet-pointed-steel.webp
+guru		Guru	Beorc	icons/equipment/head/cap-simple-leather-brown.webp
+basara		Basara	Beorc	icons/equipment/head/hood-cloth-teal-gold.webp
+mercenary-swordfighter	mercenary-swordfighter-a674	Mercenary/Swordfighter	Beorc	icons/skills/melee/hand-grip-hammer-spiked-blue.webp
+doppelsoldner	doppelsoldner-h674	Doppelsöldner	Beorc	icons/sundries/flags/banner-flag-white.webp
+hero		Hero	Beorc	icons/equipment/head/helm-spangen-rounded.webp
+watcher		Watcher	Beorc	icons/equipment/head/helm-spangen-rounded.webp
+dread-fighter		Dread Fighter	Beorc	icons/skills/melee/hand-grip-sword-orange.webp
+champion		Champion	Beorc	icons/sundries/flags/banner-standard-purple.webp
+sentinel		Sentinel	Beorc	icons/equipment/head/helm-bassinet-steel-white.webp
+yasha		Yasha	Beorc	icons/equipment/head/helm-norman-simple-leather.webp
+myrmidon	myrmidon-a705	Myrmidon	Beorc	icons/equipment/head/helm-spangen.webp
+soulblade		Soulblade	Beorc	icons/equipment/head/hood-cloth-teal.webp
+swordmaster		Swordmaster	Beorc	icons/equipment/head/helm-spangen-engraved-brown.webp
+man-at-arms		Man-at-Arms	Beorc	icons/equipment/head/hood-cloth-pink-red.webp
+soulmaster		Soulmaster	Beorc	icons/sundries/flags/banner-flag-blue.webp
+trueblade		Trueblade	Beorc	icons/equipment/head/helm-spangen-ridged.webp
+master-of-arms		Master of Arms	Beorc	icons/equipment/head/helm-norman-reticulated.webp
+pegasus-knight	pegasus-knight-a736	Pegasus Knight	Beorc	icons/magic/control/buff-flight-wings-blue.webp
+falcoknight		Falcoknight	Beorc	icons/magic/control/buff-flight-wings-runes-purple.webp
+angel		Angel	Beorc	icons/magic/control/buff-flight-wings-runes-blue.webp
+dark-flier		Dark Flier	Beorc	icons/magic/control/buff-flight-wings-runes-red.webp
+skyknight		Skyknight	Beorc	icons/magic/control/buff-flight-wings-runes-purple-orange.webp
+seraph		Seraph	Beorc	icons/creatures/abilities/wing-batlike-red-pink.webp
+harrier		Harrier	Beorc	icons/magic/control/buff-flight-wings-runes-blue-white.webp
+pugilist		Pugilist	Beorc	icons/equipment/head/helm-barbute-rounded-steel.webp
+companion		Companion	Beorc	icons/equipment/head/helm-barbute-horned-gold-pink.webp
+centurion		Centurion	Beorc	icons/equipment/head/helm-barbute-brass-steel.webp
+gladiator		Gladiator	Beorc	icons/equipment/head/helm-basinet-slotted-steel.webp
+bounty-hunter		Bounty Hunter	Beorc	icons/equipment/head/hood-cloth-gold-pink.webp
+praetorian		Praetorian	Beorc	icons/equipment/head/helm-barbute-thin-steel.webp
+murmillo		Murmillo	Beorc	icons/equipment/head/helm-barbute-reinforced.webp
+venator		Venator	Beorc	icons/equipment/head/hood-simple-leather-brown.webp
+ritter		Ritter	Beorc	icons/skills/ranged/archery-bow-attack-yellow.webp
+knecht		Knecht	Beorc	icons/equipment/head/helm-barbute-horned-grey.webp
+magier		Magier	Beorc	icons/sundries/books/book-symbol-tree-silver-green.webp
+rittmeister		Rittmeister	Beorc	icons/skills/ranged/arrows-flying-triple-blue.webp
+jouster		Jouster	Beorc	icons/equipment/head/helm-barbute-tan.webp
+shocktrooper		Shocktrooper	Beorc	icons/weapons/bows/shortbow-recurve-yellow.webp
+gold-knight		Gold Knight	Beorc	icons/skills/ranged/arrow-flying-poisoned-green.webp
+duke-knight		Duke Knight	Beorc	icons/equipment/head/helm-barbute-leather.webp
+foebreaker		Foebreaker	Beorc	icons/equipment/head/helm-barbute-horned-gold-red.webp
+soldier-lancer	soldier-lancer-a829	Soldier/Lancer	Beorc	icons/equipment/head/helm-spangen-horned-gold.webp
+pikeneer		Pikeneer	Beorc	icons/equipment/head/helm-spangen-rounded.webp
+officer		Officer	Beorc	icons/skills/melee/hand-grip-staff-yellow-brown.webp
+halberdier		Halberdier	Beorc	icons/equipment/head/helm-spangen-tan.webp
+knight-captain		Knight-Captain	Beorc	icons/equipment/head/helm-bassinet-steel-white.webp
+commander		Commander	Beorc	icons/equipment/head/cap-steel.webp
+spearlord		Spearlord	Beorc	icons/equipment/head/crown-gold-blue.webp
+royal-knight		Royal Knight	Beorc	icons/equipment/head/helm-barbute-horned.webp
+skirmisher	skirmisher-a860	Skirmisher	Beorc	icons/equipment/head/helm-norman-gray-banded.webp
+banneret		Banneret	Beorc	icons/equipment/head/hood-cloth-white-worn.webp
+spearmaster		Spearmaster	Beorc	icons/equipment/head/hood-cloth-white-worn.webp
+occultist		Occultist	Beorc	icons/sundries/books/book-symbol-yellow-grey.webp
+oriflamme		Oriflamme	Beorc	icons/equipment/head/helm-norman-horned-gold.webp
+forrest		Forrest	Beorc	icons/equipment/head/helm-norman-leather-studded.webp
+avesta		Avesta	Beorc	icons/sundries/flags/banner-standard-tattered-red.webp
+tactician	tactician-a891	Tactician	Beorc	icons/equipment/head/hat-pointed-buckle-leather-purple.webp
+strategist		Strategist	Beorc	icons/sundries/flags/banner-flag-pink.webp
+sergeant		Sergeant	Beorc	icons/equipment/head/helm-spangen-horned-worn.webp
+schemer		Schemer	Beorc	icons/equipment/head/cap-simple-leather.webp
+grandmaster		Grandmaster	Beorc	icons/sundries/books/book-symbol-bat-red.webp
+commissar		Commissar	Beorc	icons/equipment/head/helm-barbute-brass-steel.webp
+mastermind		Mastermind	Beorc	icons/equipment/head/helm-spangen-engraved.webp
+thief-outlaw	thief-outlaw-a922	Thief/Outlaw	Beorc	icons/equipment/head/mask-knit-balaclava.webp
+assassin		Assassin	Beorc	icons/equipment/head/hood-cloth-blue.webp
+rogue		Rogue	Beorc	icons/equipment/head/hood-cloth-white-worn.webp
+adventurer		Adventurer	Beorc	icons/equipment/head/hood-cloth-blue.webp
+whisper		Whisper	Beorc	icons/equipment/head/hood-cloth-pink-red.webp
+shadow		Shadow	Beorc	icons/equipment/head/hood-cloth-white.webp
+trickster		Trickster	Beorc	icons/equipment/head/hood-cloth-pink-red.webp
+troubadour	troubadour-a953	Troubadour	Beorc	icons/tools/instruments/harp-red.webp
+protector		Protector	Beorc	icons/equipment/head/helm-barbute-steel.webp
+holy-knight		Holy Knight	Beorc	icons/equipment/head/helm-bassinet-steel-white.webp
+defender		Defender	Beorc	icons/skills/ranged/target-bullseye-arrow-glowing.webp
+valkyrie		Valkyrie	Beorc	icons/magic/control/buff-flight-wings-runes-red.webp
+crusader		Crusader	Beorc	icons/magic/life/cross-embers-glow-yellow-purple.webp
+skogul		Skogul	Beorc	icons/equipment/head/helm-spangen-reticulated.webp
+wolf-knight	wolf-knight-a984	Wolf Knight	Beorc	icons/creatures/abilities/wolf-heads-swirl-purple.webp
+wolfssenger		Wolfssenger	Beorc	icons/creatures/abilities/paw-print-yellow.webp
+malig-knight		Malig Knight	Beorc	icons/equipment/head/greathelm-shemagh.webp
+mauthe-doog		Mauthe Doog	Beorc	icons/equipment/head/helm-basinet-slotted-steel.webp
+beowulf		Beowulf	Beorc	icons/skills/ranged/bow-arrows-red.webp
+razgriz		Razgriz	Beorc	icons/equipment/head/helm-bassinet-steel-white.webp
+gwyllgi		Gwyllgi	Beorc	icons/creatures/eyes/lizard-single-slit-pink.webp
+witch	witch-a1015	Witch	Beorc	icons/sundries/books/book-embossed-bound-brown.webp
+enchanter-enchantress		Enchanter/Enchantress	Beorc	icons/sundries/books/book-symbol-triangle-blue.webp
+vestal		Vestal	Beorc	icons/magic/holy/chalice-glowing-gold-water.webp
+harpy		Harpy	Beorc	icons/equipment/head/helm-norman-bird.webp
+gremory		Gremory	Beorc	icons/sundries/flags/banner-standard-moon.webp
+lamia		Lamia	Beorc	icons/equipment/head/hood-cloth-trimmed-pink-gold.webp
+morrigan		Morrigan	Beorc	icons/equipment/head/helm-norman-horned-blue.webp
+wyvern-knight	wyvern-knight-a1046	Wyvern Knight	Beorc	icons/creatures/abilities/dragon-breath-purple.webp
+dracoknight		Dracoknight	Beorc	icons/creatures/abilities/dragon-breath-purple.webp
+wyvern-lord		Wyvern Lord	Beorc	icons/creatures/reptiles/dragon-horned-blue.webp
+windrider		Windrider	Beorc	icons/creatures/reptiles/dragon-horned-blue.webp
+dracomaster		Dracomaster	Beorc	icons/creatures/abilities/dragon-fire-breath-orange.webp
+wyvern-sovereign		Wyvern Sovereign	Beorc	icons/creatures/reptiles/serpent-horned-green.webp
+barbarossa		Barbarossa	Beorc	icons/creatures/reptiles/serpent-horned-green.webp
+ballistician	ballistician-a1080	Ballistician	Beorc / Special Classes	icons/skills/ranged/arrow-gem-flying-poisoned-green.webp
+freelancer		Freelancer	Beorc / Special Classes	icons/skills/melee/hand-grip-staff-blue.webp
+summoner		Summoner	Beorc / Special Classes	icons/sundries/books/book-tooled-eye-gold-red.webp
+phantom		Phantom	Beorc / Special Classes	icons/magic/death/undead-ghost-scream-teal.webp
+villager		Villager	Beorc / Special Classes	icons/equipment/head/hood-cloth-blue.webp
+acolyte		Acolyte	Beorc / Trainee Classes	icons/magic/holy/saint-glass-portrait-halo.webp
+cleric	cleric-a1158	Cleric	Beorc / Trainee Classes	icons/magic/holy/projectiles-blades-salvo-yellow.webp
+monk	monk-h1158	Monk	Beorc / Trainee Classes	icons/magic/holy/chalice-glowing-yellow-blue.webp
+troubadour	troubadour-o1158	Troubadour	Beorc / Trainee Classes	icons/tools/instruments/harp-white.webp
+ezer	ezer-a1168	Ezer	Beorc / Trainee Classes	icons/magic/holy/barrier-shield-winged-blue.webp
+journeyman		Journeyman	Beorc / Trainee Classes	icons/equipment/head/hood-cloth-gold-pink.webp
+brawler	brawler-a1189	Brawler	Beorc / Trainee Classes	icons/skills/melee/maneuver-greatsword-yellow.webp
+brigand	brigand-h1189	Brigand	Beorc / Trainee Classes	icons/equipment/head/hood-cloth-blue.webp
+pirate	pirate-o1189	Pirate	Beorc / Trainee Classes	icons/equipment/head/hood-cloth-green-white.webp
+fighter	fighter-a1199	Fighter	Beorc / Trainee Classes	icons/equipment/head/helm-norman-bird.webp
+voulgier	voulgier-h1199	Voulgier	Beorc / Trainee Classes	icons/equipment/head/helm-norman-brutal.webp
+fixer	fixer-o1199	Fixer	Beorc / Trainee Classes	icons/equipment/head/helm-spangen-ridged.webp
+novice		Novice	Beorc / Trainee Classes	icons/sundries/flags/banner-flag-pirate.webp
+pupil		Pupil	Beorc / Trainee Classes	icons/equipment/head/hood-cloth-blue-white.webp
+mage	mage-a1231	Mage	Beorc / Trainee Classes	icons/sundries/books/book-symbol-link-brown.webp
+arcanist-dark-mage		Arcanist/Dark Mage	Beorc / Trainee Classes	icons/sundries/books/book-embossed-steel-brown.webp
+tactician	tactician-o1231	Tactician	Beorc / Trainee Classes	icons/equipment/head/hat-pointed-leather-purple.webp
+witch	witch-a1241	Witch	Beorc / Trainee Classes	icons/sundries/books/book-embossed-clasp-gold-brown.webp
+hoplite	hoplite-h1241	Hoplite	Beorc / Trainee Classes	icons/equipment/head/helm-barbute-tan.webp
+magus	magus-o1241	Magus	Beorc / Trainee Classes	icons/sundries/books/book-embossed-jewel-blue-red.webp
+pegasus-rider		Pegasus Rider	Beorc / Trainee Classes	icons/creatures/abilities/wing-batlike-white-blue.webp
+wyvern-rider		Wyvern Rider	Beorc / Trainee Classes	icons/creatures/reptiles/dragon-horned-blue.webp
+pegasus-knight	pegasus-knight-a1262	Pegasus Knight	Beorc / Trainee Classes	icons/magic/control/buff-flight-wings-runes-blue.webp
+wyvern-knight	wyvern-knight-h1262	Wyvern Knight	Beorc / Trainee Classes	icons/creatures/reptiles/serpent-horned-green.webp
+recruit		Recruit	Beorc / Trainee Classes	icons/equipment/head/helm-spangen-horned-gold.webp
+soldier-lancer	soldier-lancer-a1283	Soldier/Lancer	Beorc / Trainee Classes	icons/equipment/head/helm-spangen-horned.webp
+pikeman		Pikeman	Beorc / Trainee Classes	icons/skills/melee/weapons-crossed-swords-black-gray.webp
+skirmisher	skirmisher-o1283	Skirmisher	Beorc / Trainee Classes	icons/equipment/head/helm-norman-brutal.webp
+cavalier	cavalier-a1293	Cavalier	Beorc / Trainee Classes	icons/equipment/head/helm-barbute-rounded-steel-worn.webp
+guard	guard-h1293	Guard	Beorc / Trainee Classes	icons/equipment/head/helm-barbute-horned.webp
+knight	knight-o1293	Knight	Beorc / Trainee Classes	icons/weapons/bows/shortbow-recurve-blue.webp
+heavy-knight	heavy-knight-a1303	Heavy Knight	Beorc / Trainee Classes	icons/equipment/head/helm-spangen-ridged.webp
+scout		Scout	Beorc / Trainee Classes	icons/skills/ranged/bow-arrows-red.webp
+archer	archer-a1324	Archer	Beorc / Trainee Classes	icons/weapons/bows/shortbow-recurve-red.webp
+crossbowman	crossbowman-h1324	Crossbowman	Beorc / Trainee Classes	icons/weapons/bows/bow-recurve-black.webp
+arch-knight	arch-knight-o1324	Arch Knight	Beorc / Trainee Classes	icons/weapons/bows/shortbow-recurve-red.webp
+thief-outlaw	thief-outlaw-a1334	Thief/Outlaw	Beorc / Trainee Classes	icons/equipment/head/hood-green-gilded.webp
+hunter-huntress	hunter-huntress-h1334	Hunter/Huntress	Beorc / Trainee Classes	icons/weapons/bows/longbow-recurve-brown.webp
+longbowman	longbowman-o1334	Longbowman	Beorc / Trainee Classes	icons/skills/ranged/arrows-triple-yellow-red.webp
+wolf-knight	wolf-knight-a1344	Wolf Knight	Beorc / Trainee Classes	icons/creatures/abilities/wolf-heads-swirl-purple.webp
+squire		Squire	Beorc / Trainee Classes	icons/equipment/head/hood-cloth-pink-red.webp
+social-knight	social-knight-a1365	Social Knight	Beorc / Trainee Classes	icons/equipment/head/helm-barbute-horned-gold-pink.webp
+free-knight	free-knight-h1365	Free Knight	Beorc / Trainee Classes	icons/skills/ranged/arrows-flying-salvo-blue-light.webp
+mercenary-swordfighter	mercenary-swordfighter-o1365	Mercenary/Swordfighter	Beorc / Trainee Classes	icons/equipment/head/helm-spangen.webp
+doppelsoldner	doppelsoldner-a1375	Doppelsöldner	Beorc / Trainee Classes	icons/sundries/flags/banner-standard-brown.webp
+myrmidon	myrmidon-h1375	Myrmidon	Beorc / Trainee Classes	icons/skills/melee/weapons-crossed-swords-teal.webp
+lord	lord-o1375	Lord	Beorc / Trainee Classes	icons/commodities/treasure/crown-gold-satin-gems-red.webp
+cat		Cat	Laguz, Manakete and Taguel / Laguz	icons/creatures/mammals/cat-hunched-glowing-red.webp
+tiger		Tiger	Laguz, Manakete and Taguel / Laguz	icons/creatures/abilities/paw-print-pair-purple.webp
+wolf		Wolf	Laguz, Manakete and Taguel / Laguz	icons/creatures/abilities/paw-print-yellow.webp
+heron		Heron	Laguz, Manakete and Taguel / Laguz	icons/creatures/birds/corvid-watchful-glowing-green.webp
+raven		Raven	Laguz, Manakete and Taguel / Laguz	icons/creatures/birds/corvid-flying-wings-purple.webp
+hawk		Hawk	Laguz, Manakete and Taguel / Laguz	icons/creatures/birds/dove-pigeon-flying-white.webp
+red-dragon		Red Dragon	Laguz, Manakete and Taguel / Laguz	icons/creatures/reptiles/dragon-winged-blue.webp
+white-dragon		White Dragon	Laguz, Manakete and Taguel / Laguz	icons/creatures/abilities/dragon-ice-breath-blue.webp
+black-dragon	black-dragon-o37	Black Dragon	Laguz, Manakete and Taguel / Laguz	icons/creatures/reptiles/dragon-horned-blue.webp
+manakete-dragonstone		Manakete (Dragonstone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/reptiles/dragon-winged-blue.webp
+manakete-firestone		Manakete (Firestone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/abilities/dragon-ice-breath-blue.webp
+manakete-icestone		Manakete (Icestone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/abilities/dragon-fire-breath-orange.webp
+manakete-earthstone		Manakete (Earthstone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/abilities/dragon-fire-breath-orange.webp
+manakete-thunderstone		Manakete (Thunderstone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/reptiles/dragon-horned-blue.webp
+manakete-windstone		Manakete (Windstone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/abilities/dragon-ice-breath-blue.webp
+manakete-magestone		Manakete (Magestone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/reptiles/serpent-horned-green.webp
+manakete-darkstone		Manakete (Darkstone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/abilities/dragon-breath-purple.webp
+manakete-lightstone		Manakete (Lightstone)	Laguz, Manakete and Taguel / Manakete	icons/creatures/reptiles/dragon-winged-blue.webp
+fauskin		Fauskin	Laguz, Manakete and Taguel / Taguel	icons/creatures/abilities/paw-print-yellow.webp
+beaskin		Beaskin	Laguz, Manakete and Taguel / Taguel	icons/creatures/abilities/paw-print-yellow.webp
+revenant		Revenant	Monster Classes	icons/creatures/magical/spirit-undead-ghost-purple.webp
+ghoul		Ghoul	Monster Classes	icons/magic/death/undead-skeleton-fire-green.webp
+entombed		Entombed	Monster Classes	icons/magic/death/skeleton-snake-skull-pink.webp
+goliath		Goliath	Monster Classes	icons/magic/death/skull-humanoid-crown-white-blue.webp
+tomblord		Tomblord	Monster Classes	icons/magic/death/undead-skeleton-lich-armor.webp
+bonewalker		Bonewalker	Monster Classes	icons/magic/death/undead-zombie-grave-green.webp
+wight		Wight	Monster Classes	icons/magic/death/skeleton-reptile-while-purple.webp
+wraith		Wraith	Monster Classes	icons/magic/death/undead-skeleton-lich-armor.webp
+lich		Lich	Monster Classes	icons/magic/death/skeleton-snake-skull-pink.webp
+deimos		Deimos	Monster Classes	icons/creatures/eyes/slime-single-red.webp
+titan		Titan	Monster Classes	icons/creatures/unholy/demon-fire-horned-clawed.webp
+gargoyle		Gargoyle	Monster Classes	icons/creatures/magical/construct-golem-stone-blue.webp
+deathgoyle		Deathgoyle	Monster Classes	icons/creatures/magical/construct-golem-stone-blue.webp
+garuda		Garuda	Monster Classes	icons/creatures/unholy/demon-horned-black-yellow.webp
+mogall		Mogall	Monster Classes	icons/creatures/eyes/humanoid-single-blind.webp
+archmogall		Archmogall	Monster Classes	icons/creatures/unholy/demon-winged-cyclops-drooling.webp
+balor		Balor	Monster Classes	icons/creatures/unholy/demon-fire-horned-winged-roar.webp
+demon		Demon	Monster Classes	icons/creatures/unholy/demon-winged-horned-orange.webp
+fiend		Fiend	Monster Classes	icons/creatures/magical/spirit-fear-energy-pink.webp
+gigas		Gigas	Monster Classes	icons/creatures/unholy/demon-hairy-winged-pink.webp
+necrodragon		Necrodragon	Monster Classes	icons/creatures/reptiles/serpent-horned-green.webp
+nidhogg		Nidhogg	Monster Classes	icons/creatures/abilities/dragon-fire-breath-orange.webp
+master-knight		Master Knight	Misc. Classes / Heaven Seal Classes	icons/equipment/head/crown-gold-blue.webp
+baron		Baron	Misc. Classes / Heaven Seal Classes	icons/equipment/head/crown-gold-blue.webp
+overwarrior		Overwarrior	Misc. Classes / Heaven Seal Classes	icons/equipment/head/helm-norman-rounded.webp
+master-mage		Master Mage	Misc. Classes / Heaven Seal Classes	icons/sundries/books/book-symbol-spiral-silver-blue.webp
+skybreaker		Skybreaker	Misc. Classes / Heaven Seal Classes	icons/magic/control/buff-flight-wings-runes-blue.webp
+wyvern-master		Wyvern Master	Misc. Classes / Heaven Seal Classes	icons/creatures/reptiles/dragon-horned-blue.webp
+boss		Boss	Misc. Classes / Enemy/NPC Classes	icons/equipment/head/mask-knit-balaclava.webp
+cutthroat		Cutthroat	Misc. Classes / Enemy/NPC Classes	icons/equipment/head/hood-green-gilded.webp
+deserter		Deserter	Misc. Classes / Enemy/NPC Classes	icons/equipment/head/hood-leather-fur-brown.webp
+thug		Thug	Misc. Classes / Enemy/NPC Classes	icons/equipment/head/hood-cloth-white-worn.webp
+cantor		Cantor	Misc. Classes / Enemy/NPC Classes	icons/creatures/eyes/void-single-black-purple.webp
+diabolist		Diabolist	Misc. Classes / Enemy/NPC Classes	icons/creatures/eyes/humanoid-single-yellow.webp
+black-dragon	black-dragon-a92	Black Dragon	Misc. Classes / Enemy/NPC Classes	icons/creatures/reptiles/dragon-horned-blue.webp
+deity		Deity	Misc. Classes / Enemy/NPC Classes	icons/equipment/head/crown-horns-brown.webp

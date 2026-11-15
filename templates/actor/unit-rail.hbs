@@ -1,0 +1,297 @@
+<aside class="rail" aria-label="{{localize "FEO.Rail.label"}}">
+
+  <div class="portrait-wrap">
+    <img class="portrait" src="{{actor.img}}" alt="{{actor.name}}" data-action="editImage" data-edit="img">
+    {{#if affinity}}
+    <div class="crest" data-tooltip="{{localize "FEO.Unit.affinity"}}: {{localize affinity.label}}{{#if affinity.effect}}. {{localize affinity.effect.text}} {{localize affinity.effect.mode}}{{/if}}">{{feoIcon affinity.icon}}</div>
+    {{/if}}
+    <label class="medal">
+      <small>{{localize "FEO.Unit.levelAbbr"}}</small>
+      <input type="number" name="system.level" value="{{system.level}}" min="1" step="1"
+             aria-label="{{localize "FEO.Unit.level"}}">
+    </label>
+  </div>
+
+  <div class="identity">
+    <input class="name" type="text" name="name" value="{{source.name}}"
+           placeholder="{{localize "FEO.Unit.name"}}" aria-label="{{localize "FEO.Unit.name"}}">
+    {{#if classPath.current}}
+    <button type="button" class="class linked" data-action="editItem" data-item-id="{{classPath.current.itemId}}"
+            data-tooltip="{{localize "FEO.Class.open"}}">{{classPath.current.name}}</button>
+    {{else}}
+    <input class="class" type="text" name="system.className" value="{{system.className}}"
+           placeholder="{{localize "FEO.Unit.class"}}" aria-label="{{localize "FEO.Unit.class"}}">
+    {{/if}}
+    {{#if system.specialQualities}}<div class="qualities">{{system.specialQualities}}</div>{{/if}}
+  </div>
+
+  <div class="vital">
+    <div class="vital-head">
+      <span class="label" data-tooltip="{{localize "FEO.Stat.hp.label"}}">{{localize "FEO.Stat.hp.abbr"}}</span>
+      <button type="button" class="step" data-action="adjustHp" data-delta="-1"
+              aria-label="{{localize "FEO.Rail.loseHp"}}" data-tooltip="{{localize "FEO.Rail.loseHp"}}">{{feoIcon "minus"}}</button>
+      <button type="button" class="step" data-action="adjustHp" data-delta="1"
+              aria-label="{{localize "FEO.Rail.gainHp"}}" data-tooltip="{{localize "FEO.Rail.gainHp"}}">{{feoIcon "plus"}}</button>
+      <span class="value">
+        <input type="number" name="system.hp.value" value="{{system.hp.value}}" step="1" data-play
+               aria-label="{{localize "FEO.Unit.hpCurrent"}}">
+        <span class="of">/ {{system.hp.max}}</span>
+      </span>
+    </div>
+    <div class="bar hp {{vitals.hpState}}"><i style="width: {{vitals.hpPct}}%"></i></div>
+    {{#if vitals.health}}
+    <div class="vital-foot">
+      <span class="wounds" data-tooltip="{{localize "FEO.Rail.woundsHint"}}">
+        {{localize "FEO.Health.wounds"}}
+        <span class="pips">
+          {{#each vitals.woundPips as |pip|}}
+          <button type="button" class="pip{{#if pip.on}} on{{/if}}" data-action="setWounds" data-number="{{pip.number}}"
+                  aria-label="{{localize "FEO.Health.wounds"}} {{pip.number}}" aria-pressed="{{pip.on}}"></button>
+          {{/each}}
+        </span>
+      </span>
+      {{#if vitals.graveWounds}}<span>{{localize "FEO.Health.graveWounds"}} {{vitals.graveWounds}}</span>{{/if}}
+      <span>{{localize "FEO.Health.injuries"}} {{system.injuries}}</span>
+    </div>
+    <div class="vital-foot health-foot">
+      {{#if vitals.woundThreshold}}<span data-tooltip="{{localize "FEO.Defeat.woundAtHint"}}">{{localize "FEO.Defeat.woundAt" damage=vitals.woundThreshold}}</span>{{/if}}
+      {{#if vitals.treatable}}{{#if editable}}
+      <button type="button" class="link" data-action="treat" data-tooltip="{{localize "FEO.Treat.buttonHint"}}">{{localize "FEO.Treat.button"}}</button>
+      {{/if}}{{/if}}
+    </div>
+    {{/if}}
+  </div>
+
+  {{#if defeat.show}}
+  <div class="rail-group defeat{{#if defeat.mustChoose}} must-choose{{/if}}" data-state="{{defeat.state}}">
+    <div class="rail-label">
+      <span>{{#if defeat.stateLabel}}{{localize defeat.stateLabel}}{{else}}{{localize "FEO.Defeat.title"}}{{/if}}</span>
+      {{#if defeat.down}}
+      <label class="turns" data-tooltip="{{localize "FEO.Defeat.turnsHint"}}">
+        <input type="number" name="system.defeat.turns" value="{{defeat.turns}}" min="0" step="1" data-play
+               aria-label="{{localize "FEO.Defeat.turnsLeft"}}">
+        <span>{{localize "FEO.Defeat.turnsShort"}}</span>
+      </label>
+      {{/if}}
+    </div>
+    {{#if defeat.down}}
+    <p class="rail-note">{{localize "FEO.Defeat.downNote"}}{{#if defeat.paused}} <b>{{localize "FEO.Defeat.pausedTag"}}</b>{{/if}}</p>
+    {{/if}}
+    {{#if defeat.mustChoose}}
+    <p class="rail-note warn">{{localize "FEO.Defeat.mustChoose"}} {{#each defeat.fate as |reason|}}{{localize reason}}{{#unless @last}}, {{/unless}}{{/each}}.</p>
+    {{/if}}
+    {{#if defeat.captured}}
+    <p class="rail-note">{{#if capture.captured.held}}{{localize "FEO.Optional.capturing.heldBy" name=capture.captured.by}}{{else}}{{localize "FEO.Optional.capturing.subduedBy" name=capture.captured.by}}{{/if}}</p>
+    {{#if editable}}
+    <div class="rail-actions">
+      <button type="button" data-action="freeCaptured" data-tooltip="{{localize "FEO.Optional.capturing.freeHint"}}">{{localize "FEO.Optional.capturing.free"}}</button>
+    </div>
+    {{/if}}
+    {{else}}
+    {{#if editable}}
+    <div class="rail-actions">
+      {{#if defeat.out}}
+      <button type="button" data-action="setFate" data-state="" data-tooltip="{{localize "FEO.Defeat.returnHint"}}">{{localize "FEO.Defeat.return"}}</button>
+      {{else}}
+      {{#if defeat.down}}
+      <button type="button" data-action="spendRound" {{#unless defeat.canSpend}}disabled{{/unless}} data-tooltip="{{localize "FEO.Defeat.spendHint"}}">{{localize "FEO.Defeat.spend"}}</button>
+      {{/if}}
+      <button type="button" data-action="setFate" data-state="retreated" data-tooltip="{{localize "FEO.Defeat.retreatHint"}}">{{localize "FEO.Defeat.retreat"}}</button>
+      <button type="button" class="danger" data-action="setFate" data-state="dead" data-tooltip="{{localize "FEO.Defeat.killHint"}}">{{localize "FEO.Defeat.kill"}}</button>
+      {{/if}}
+    </div>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{#if capture.captive}}
+  <div class="rail-group captive">
+    <div class="rail-label"><span>{{localize "FEO.Optional.capturing.captive"}}</span></div>
+    <p class="rail-note">{{#if capture.captive.held}}{{localize "FEO.Optional.capturing.holds" name=capture.captive.name}}{{else}}{{localize "FEO.Optional.capturing.waits" name=capture.captive.name turns=capture.captive.turns}}{{/if}}</p>
+    {{#if editable}}
+    <div class="rail-actions">
+      {{#unless capture.captive.held}}
+      <button type="button" data-action="pickUpCaptive" data-tooltip="{{localize "FEO.Optional.capturing.pickUpHint"}}">{{localize "FEO.Optional.capturing.pickUp"}}</button>
+      {{/unless}}
+      <button type="button" data-action="releaseCaptive" data-tooltip="{{#if capture.captive.held}}{{localize "FEO.Optional.capturing.releaseHint"}}{{else}}{{localize "FEO.Optional.capturing.letGoHint"}}{{/if}}">{{localize "FEO.Optional.capturing.release"}}</button>
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{#if optional.lives.used}}
+  <div class="rail-group lives{{#if optional.lives.none}} none{{/if}}">
+    <div class="rail-label">
+      <span>{{localize "FEO.Optional.lives.title"}}</span>
+      <span class="value small">{{optional.lives.left}} <span class="of">/ {{optional.lives.limit}}</span></span>
+    </div>
+    <div class="rail-actions">
+      <span class="pips lives" data-tooltip="{{localize "FEO.Optional.lives.railHint"}}">{{#each optional.lives.pips as |on|}}<i class="{{#if on}}on{{/if}}"></i>{{/each}}</span>
+      {{#if editable}}
+      <button type="button" class="step" data-action="adjustLives" data-delta="-1" aria-label="{{localize "FEO.Optional.lives.takeOne"}}" data-tooltip="{{localize "FEO.Optional.lives.takeOne"}}">{{feoIcon "minus"}}</button>
+      <button type="button" class="step" data-action="adjustLives" data-delta="1" aria-label="{{localize "FEO.Optional.lives.giveOne"}}" data-tooltip="{{localize "FEO.Optional.lives.giveOne"}}">{{feoIcon "plus"}}</button>
+      {{/if}}
+    </div>
+    {{#if optional.lives.last}}<p class="rail-note warn">{{localize "FEO.Optional.lives.lastNote"}}</p>{{/if}}
+    {{#if optional.lives.none}}<p class="rail-note warn">{{localize "FEO.Optional.lives.noneNote"}}</p>{{/if}}
+  </div>
+  {{/if}}
+
+  <div class="vital">
+    <div class="vital-head">
+      <span class="label">{{localize "FEO.Unit.exp"}}</span>
+      <span class="value small">
+        <input type="number" name="system.exp" value="{{system.exp}}" min="0" step="1" data-play
+               aria-label="{{localize "FEO.Unit.exp"}}">
+        <span class="of">/ {{vitals.expPerLevel}}</span>
+      </span>
+    </div>
+    <div class="bar exp"><i style="width: {{vitals.expPct}}%"></i></div>
+  </div>
+
+  <div class="quick">
+    <div data-tooltip="{{localize "FEO.Stat.mov.label"}}"><b>{{system.stats.mov.total}}</b><span>{{localize "FEO.Stat.mov.abbr"}}</span></div>
+    <div data-tooltip="{{localize "FEO.Stat.wt.label"}}"><b>{{system.wt.total}}</b><span>{{localize "FEO.Stat.wt.abbr"}}</span></div>
+    <div data-tooltip="{{localize "FEO.Stat.los.label"}}"><b>{{system.stats.los.total}}</b><span>{{localize "FEO.Stat.los.abbr"}}</span></div>
+  </div>
+
+  {{#if shift.mode}}
+  <div class="rail-group shift{{#if shift.transformed}} transformed{{/if}}" data-mode="{{shift.mode}}">
+    <div class="rail-label">
+      <span>{{#if shift.isGauge}}{{localize "FEO.Shift.gauge"}}{{else}}{{localize "FEO.Shift.transforms"}}{{/if}}</span>
+      {{#if shift.isGauge}}
+      <span class="value small">
+        <input type="number" name="system.shift.value" value="{{shift.value}}" min="0" max="{{shift.max}}" step="1" data-play
+               aria-label="{{localize "FEO.Shift.gauge"}}">
+        <span class="of">/ {{shift.max}}</span>
+      </span>
+      {{else}}
+      <span class="value small">{{#if shift.endless}}∞{{else}}{{shift.left}} <span class="of">/ {{shift.limit}}</span>{{/if}}</span>
+      {{/if}}
+    </div>
+    {{#if shift.isGauge}}
+    <div class="bar shift{{#if shift.active}} active{{/if}}{{#if shift.ready}} ready{{/if}}"
+         data-tooltip="{{localize "FEO.Shift.gaugeHint" at=shift.shiftAt turn=shift.turnChange combat=shift.combatChange}}">
+      <i style="width: {{shift.pct}}%"></i><b style="left: {{shift.markPct}}%"></b>
+    </div>
+    <div class="rail-actions">
+      <span class="form">{{#if shift.active}}{{localize "FEO.Shift.animal"}}{{else}}{{localize "FEO.Shift.humanoid"}}{{/if}}</span>
+      {{#if editable}}
+      <button type="button" class="{{#if shift.ready}}primary{{/if}}" data-action="toggleShift"
+              data-tooltip="{{localize "FEO.Shift.shiftHint" at=shift.shiftAt}}">{{#if shift.active}}{{localize "FEO.Shift.revert"}}{{else}}{{localize "FEO.Shift.shift"}}{{/if}}</button>
+      <button type="button" data-action="resetGauge" data-tooltip="{{localize "FEO.Shift.resetHint"}}">{{localize "FEO.Shift.reset"}}</button>
+      {{/if}}
+    </div>
+    {{else}}
+    <div class="rail-actions">
+      <span class="pips stone" data-tooltip="{{localize "FEO.Shift.stoneHint" limit=shift.limitText}}">{{#each shift.pips as |on|}}<i class="{{#if on}}on{{/if}}"></i>{{/each}}</span>
+      {{#if editable}}
+      <button type="button" class="step" data-action="adjustTransforms" data-delta="1" aria-label="{{localize "FEO.Shift.useOne"}}" data-tooltip="{{localize "FEO.Shift.useOne"}}">{{feoIcon "minus"}}</button>
+      <button type="button" class="step" data-action="adjustTransforms" data-delta="-1" aria-label="{{localize "FEO.Shift.giveOne"}}" data-tooltip="{{localize "FEO.Shift.giveOne"}}">{{feoIcon "plus"}}</button>
+      <button type="button" data-action="toggleBoosted" aria-pressed="{{shift.boosted}}" data-tooltip="{{localize "FEO.Shift.boostedHint"}}">{{localize "FEO.Shift.boostedToggle"}}</button>
+      {{/if}}
+    </div>
+    {{/if}}
+    {{#if shift.bonuses.length}}
+    <p class="rail-note" data-tooltip="{{localize "FEO.Shift.shareHint"}}">
+      {{#if shift.isStone}}{{localize "FEO.Shift.inCombat"}}{{/if}}
+      {{#each shift.bonuses as |bonus|}}{{bonus.amount}} {{localize bonus.label}}{{#unless @last}} · {{/unless}}{{/each}}
+    </p>
+    {{/if}}
+    {{#if shift.skills}}<p class="rail-note">{{localize "FEO.Shift.bySkills" skills=shift.skills share=shift.share}}</p>{{/if}}
+  </div>
+  {{/if}}
+
+  {{#if editable}}
+  <div class="rail-group shift-setup edit-only">
+    <div class="rail-label"><span>{{localize "FEO.Shift.title"}}</span></div>
+    <label class="rail-field">
+      <span>{{localize "FEO.Shift.kind"}}</span>
+      <select name="system.shift.kind">{{selectOptions shift.choices.kinds selected=shift.kind localize=true blank=(localize "FEO.Shift.kindAuto")}}</select>
+    </label>
+    {{#if shift.mode}}
+    <label class="rail-field" data-tooltip="{{localize "FEO.Shift.shareHint"}}">
+      <span>{{localize "FEO.Shift.percent"}}</span>
+      <select name="system.shift.percent" data-dtype="Number">{{selectOptions shift.choices.percents selected=shift.percent blank=(localize "FEO.Shift.percentUsual")}}</select>
+    </label>
+    {{#if shift.isGauge}}
+    {{#each shift.profile as |entry|}}
+    <label class="rail-field" data-tooltip="{{localize "FEO.Shift.profileHint"}}">
+      <span>{{localize entry.label}}</span>
+      <input type="number" name="system.shift.{{entry.key}}" value="{{entry.own}}" step="1" placeholder="{{entry.display}}">
+    </label>
+    {{/each}}
+    {{else}}
+    <label class="rail-field">
+      <span>{{localize "FEO.Shift.usesMax"}}</span>
+      <input type="number" name="system.shift.usesMax" value="{{shift.usesMax}}" min="0" step="1" placeholder="{{shift.limit}}">
+    </label>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  <div class="rail-group">
+    <div class="rail-label">
+      <span>{{localize "FEO.Rail.conditions"}}</span>
+      {{#if turnControls}}
+      <span class="turn-controls">
+        <button type="button" data-action="startTurn" data-tooltip="{{localize "FEO.Rail.startTurnHint"}}">{{localize "FEO.Rail.startTurn"}}</button>
+        <button type="button" data-action="endTurn" data-tooltip="{{localize "FEO.Rail.endTurnHint"}}">{{localize "FEO.Rail.endTurn"}}</button>
+      </span>
+      {{else if turnTracked}}
+      <span class="turn-tracked" data-tooltip="{{localize "FEO.Rail.trackedHint"}}">{{localize "FEO.Rail.tracked"}}</span>
+      {{/if}}
+      {{#if waitControl}}
+      <span class="turn-controls">
+        <button type="button" data-action="wait" aria-pressed="{{#if system.waiting}}true{{else}}false{{/if}}" data-tooltip="{{localize "FEO.Wait.hint"}}">{{#if system.waiting}}{{localize "FEO.Wait.waiting"}}{{else}}{{localize "FEO.Wait.label"}}{{/if}}</button>
+      </span>
+      {{/if}}
+    </div>
+    <div class="chips">
+      {{#each conditions as |condition|}}
+      <button type="button" class="chip condition{{#if condition.last}} last{{/if}}" data-action="removeCondition" data-effect-id="{{condition.id}}"
+              data-tooltip="{{#if condition.hint}}{{localize condition.hint}} {{/if}}{{#each condition.parts as |part|}}{{part.amount}} {{localize part.label}}. {{/each}}{{#if condition.counted}}{{#if condition.last}}{{localize "FEO.Rail.endsThisTurn"}}{{else}}{{localize "FEO.Rail.turnsLeft" turns=condition.turns}}{{/if}} {{/if}}{{#if condition.stacks}}{{localize "FEO.Rail.stacks"}} {{/if}}{{localize "FEO.Rail.clearCondition"}}">
+        {{feoIcon "drop"}}{{condition.name}}{{#if condition.statusId}} <small>{{#if condition.last}}{{localize "FEO.Rail.lastTurn"}}{{else}}{{#if condition.stacks}}×{{/if}}{{condition.turns}}{{/if}}</small>{{/if}}
+      </button>
+      {{/each}}
+      {{#if breaking}}
+      {{#if breaking.on}}
+      <button type="button" class="chip condition break" data-action="toggleBreak"{{#unless editable}} disabled{{/unless}} data-tooltip="{{localize "FEO.Optional.breaking.hint"}} {{localize "FEO.Optional.breaking.clear"}}">{{feoIcon "x"}}{{localize "FEO.Optional.breaking.break"}}</button>
+      {{else}}{{#if editable}}
+      <button type="button" class="chip ghost edit-only" data-action="toggleBreak" data-tooltip="{{localize "FEO.Optional.breaking.set"}}">+ {{localize "FEO.Optional.breaking.break"}}</button>
+      {{/if}}{{/if}}
+      {{/if}}
+      {{#if editable}}
+      <select class="chip ghost" data-add-condition aria-label="{{localize "FEO.Rail.addCondition"}}">
+        <option value="">+ {{localize "FEO.Rail.add"}}</option>
+        {{selectOptions conditionChoices localize=true sort=true}}
+      </select>
+      {{/if}}
+    </div>
+  </div>
+
+  {{#if bonds.length}}
+  <div class="rail-group">
+    <div class="rail-label">{{localize "FEO.Rail.bondsInRange"}}</div>
+    <div class="chips">
+      {{#each bonds as |bond|}}
+      <button type="button" class="chip kin{{#if bond.adjacent}} adjacent{{/if}}{{#unless bond.auto}} manual{{/unless}}" data-action="toggleBond" data-bond="{{bond.index}}"
+              aria-pressed="{{bond.inRange}}"
+              data-tooltip="{{#each bond.parts as |part|}}+{{part.amount}} {{localize part.label}}. {{/each}}{{#if bond.auto}}{{localize "FEO.Bond.autoOn"}}{{else}}{{localize "FEO.Bond.autoOff"}}{{/if}} {{localize "FEO.Rail.toggleBond"}}">
+        {{feoIcon bond.icon}}{{#if bond.name}}{{bond.name}}{{else}}{{localize "FEO.Bond.unnamed"}}{{/if}} <small>{{localize bond.rankLabel}}{{#if bond.adjacent}} · {{localize "FEO.Bond.adjacentShort"}}{{/if}}</small>
+      </button>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  <label class="purse">
+    {{feoIcon "coin"}}
+    <input type="number" name="system.gold" value="{{system.gold}}" min="0" step="1" data-play
+           aria-label="{{localize "FEO.Unit.gold"}}">
+    <span>{{localize "FEO.Unit.goldUnit"}}</span>
+  </label>
+
+</aside>
