@@ -1,6 +1,7 @@
 import { turnEffects, turnMoment } from "../rules/skills.mjs";
 import { resetSkill, tickSkill } from "../rules/skill-usage.mjs";
 import { postCard, rollD100, rollFromResults } from "./chat.mjs";
+import { conditionsOf, setConditions } from "./conditions.mjs";
 import { standingOf, tokenInView } from "./positions.mjs";
 import { buildSkillTurnCard } from "./skill-turn-context.mjs";
 import { grantTimed, tickTimedFor } from "./timed.mjs";
@@ -59,7 +60,8 @@ export async function skillMomentFor(actor, moment, { tracker = [] } = {}) {
   const skills = [...(system.skills?.entries ?? []), ...(place?.auras ?? [])];
   const self = selfOf(actor, place);
   const name = actor.token?.name ?? actor.name;
-  const waiting = (system.defeat?.state || !(self.hp > 0)) ? [] : turnEffects(skills, self, moment);
+  const conditions = conditionsOf(actor);
+  const waiting = (system.defeat?.state || !(self.hp > 0)) ? [] : turnEffects(skills, self, moment, { conditions });
   if ( !waiting.length ) {
     if ( tracker.length ) {
       const nothing = { hpBefore: self.hp, hp: self.hp, healed: 0, entries: [] };
@@ -76,10 +78,14 @@ export async function skillMomentFor(actor, moment, { tracker = [] } = {}) {
     const next = results[used.length];
     used.push(next);
     return next;
-  }, { activation: system.skills.activation ?? 0, always: !!system.skills.rules?.includes("alwaysActivate") });
+  }, { activation: system.skills.activation ?? 0, always: !!system.skills.rules?.includes("alwaysActivate"), conditions });
   if ( !result.entries.length ) return null;
 
   if ( result.hp !== result.hpBefore ) await actor.update({ "system.hp.value": result.hp });
+
+  // Conditions the unit is cured of
+  const cured = [...new Set(result.entries.flatMap((entry) => entry.cured ?? []))];
+  if ( cured.length ) await setConditions(actor, Object.fromEntries(cured.map((id) => [id, null])));
 
   // HP a skill restores to the units around. Those this user may not change are left for the table
   for ( const entry of result.entries ) {

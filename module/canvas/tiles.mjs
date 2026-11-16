@@ -1,6 +1,6 @@
 /**
- * The squares of the battle map: where a unit can go, what it can strike or reach with a staff, and what a foe
- * threatens. Each tile is a square of its own with a pale edge and a sheen, set a little apart from its
+ * The squares of the battle map: where a unit can go, what it can strike or reach with a staff, where a skill
+ * can warp it, and what a foe threatens. Each tile is a square of its own with a pale edge and a sheen, set a little apart from its
  * neighbours, and a slow gleam runs across them all.
  *
  * Nothing here knows of Foundry: a field is given the ticker that drives it and the place of each tile, and
@@ -25,6 +25,7 @@ export const TILE_STYLES = {
   move: { top: "#4f95ff", base: "#1648d8", edge: "#bcd8ff", rim: "#082060", alpha: 0.74 },
   strike: { top: "#ff5f52", base: "#d0141f", edge: "#ffc9c2", rim: "#5c080e", alpha: 0.72 },
   staff: { top: "#4fdc84", base: "#0c9448", edge: "#c8ffdc", rim: "#064022", alpha: 0.7 },
+  warp: { top: "#b184ff", base: "#6a25e0", edge: "#e6d6ff", rim: "#2a0a66", alpha: 0.72 },
   threat: { top: "#e86aa8", base: "#a01f66", edge: "#ffcfe6", rim: "#4a0a2e", alpha: 0.56, hatched: true }
 };
 

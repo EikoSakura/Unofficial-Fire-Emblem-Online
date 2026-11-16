@@ -104,7 +104,8 @@ export async function startTurnFor(actor) {
 
   const { value: hp, max: hpMax } = actor.system.hp;
   // The unit's skills may bend what its conditions deal, how fast they run out and whether they do
-  const result = startTurn({ hp, hpMax, conditions, bends: actor.system.skills?.bends ?? null });
+  // A Staggered unit takes more from each of them
+  const result = startTurn({ hp, hpMax, conditions, bends: actor.system.skills?.bends ?? null, times: actor.system.stagger?.times ?? 1 });
   if ( result.hp !== hp ) await actor.update({ "system.hp.value": result.hp });
 
   const changes = {};

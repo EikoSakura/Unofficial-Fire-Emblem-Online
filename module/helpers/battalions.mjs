@@ -4,6 +4,7 @@ import { battalionData, buildGambitCard, buildTakeChoices, gambitChanges, gambit
 import { postCard, rollD100, rollFromResults } from "./chat.mjs";
 import { applyChanges, incapacitates, measureDistance } from "./exchange.mjs";
 import { takeAction } from "./phases.mjs";
+import { staggerStops } from "./stagger.mjs";
 
 /**
  * Battalions & Gambits in Foundry: the Battalion a unit commands, assigning one and standing it down again,
@@ -193,6 +194,9 @@ async function confirmGambit(plan) {
  * @returns {Promise<ChatMessage|null>}   The message that was posted, or null if no Gambit was used
  */
 export async function useGambit(actor, token, targetTokens = [], { confirm = confirmGambit } = {}) {
+  // A Staggered unit cannot act
+  if ( staggerStops(actor) ) return null;
+
   // One entry for each unit that is targeted, whatever tokens stand for it
   const targets = [];
   for ( const target of targetTokens ) {

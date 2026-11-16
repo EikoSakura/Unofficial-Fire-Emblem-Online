@@ -9,7 +9,7 @@
  */
 import { FEO } from "../config.mjs";
 import { surroundings } from "./positions.mjs";
-import { holds, readNumber, skillTotals } from "./skills.mjs";
+import { chanceOf, holds, readNumber, skillTotals } from "./skills.mjs";
 
 /**
  * @typedef {SkillEntry & {skill: string, from: string, giver: string, aura: true, sourceNihil: boolean,
@@ -69,6 +69,14 @@ function invert(value) {
  */
 function give(effect, giver, inverted) {
   const { aura, when, ...parts } = effect;
+
+  // A chance the giver rolls is worked out for the giver, and is then a plain chance for the receiver
+  if ( parts.proc?.giver ) {
+    const { giver: marked, stat, div, times, percent, ...moment } = parts.proc;
+    const view = giver();
+    const chance = chanceOf({ stat, div, times, percent }, view, null, { activation: view.activation ?? 0, always: !!view.always });
+    parts.proc = { ...moment, percent: chance, fixed: true };
+  }
   const resolve = (value) => {
     if ( Array.isArray(value) ) return value.map(resolve);
     if ( !value || (typeof value !== "object") ) return value;
@@ -111,7 +119,10 @@ export function standing(units, id, measure) {
       const totals = skillTotals(unit.skills ?? [], self);
       const stats = { ...self.stats };
       for ( const [key, amount] of Object.entries(totals.stats) ) stats[key] = Math.max((stats[key] ?? 0) + amount, 0);
-      views.set(unit.id, { ...self, stats });
+
+      // Its Skill Activation rate, for the chances of its auras that it rolls itself
+      const activation = (totals.combat.activation ?? 0) + (unit.activation ?? 0);
+      views.set(unit.id, { ...self, stats, activation, always: totals.rules.has("alwaysActivate") });
     }
     return views.get(unit.id);
   };

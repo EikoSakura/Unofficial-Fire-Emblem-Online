@@ -268,6 +268,54 @@
   background: color-mix(in srgb, var(--feo-accent) 10%, transparent);
 }
 
+/* ---------- Dialog: where a summoned unit appears ---------- */
+
+.feo-summon .pad {
+  display: grid;
+  grid-template: "a north b" 52px "west self east" 52px "c south d" 52px / 52px 52px 52px;
+  gap: 5px;
+  justify-content: center;
+}
+
+.feo-summon .pad .north { grid-area: north; }
+.feo-summon .pad .east { grid-area: east; }
+.feo-summon .pad .south { grid-area: south; }
+.feo-summon .pad .west { grid-area: west; }
+
+.feo-summon .pad .self {
+  grid-area: self;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.feo-summon .spot, .feo-summon .type {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  cursor: pointer;
+}
+
+.feo-summon .spot { font-size: 1.2em; }
+.feo-summon .spot input { position: absolute; opacity: 0; pointer-events: none; }
+.feo-summon .spot.taken { border-style: dashed; opacity: .35; cursor: not-allowed; }
+.feo-summon .spot:has(input:focus-visible) { outline: 2px solid var(--feo-accent); outline-offset: 1px; }
+
+.feo-summon .spot:has(input:checked), .feo-summon .type:has(input:checked) {
+  border-color: var(--feo-accent);
+  background: color-mix(in srgb, var(--feo-accent) 14%, transparent);
+  color: var(--feo-accent);
+}
+
+.feo-summon .types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.feo-summon .type { padding: 7px 8px; }
+
 .feo-promotion fieldset {
   display: grid;
   gap: 8px;

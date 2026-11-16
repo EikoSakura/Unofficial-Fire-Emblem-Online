@@ -51,8 +51,11 @@ export function buildSkillTurnCard(result, i18n, { name = "", moment = "turnStar
     }
     else {
       if ( entry.recover ) parts.push(i18n.format("FEO.SkillTurn.heals", { amount: entry.healed }));
+      if ( entry.cured?.length ) parts.push(i18n.format("FEO.SkillTurn.cures", {
+        conditions: entry.cured.map((id) => i18n.localize(`FEO.Condition.${id}`)).join(", ")
+      }));
       if ( entry.remind ) parts.push(i18n.localize("FEO.SkillTurn.remind"));
-      if ( !entry.recover && !entry.remind && !entry.granted?.length ) parts.push(i18n.localize("FEO.SkillTurn.activates"));
+      if ( !entry.recover && !entry.remind && !entry.granted?.length && !entry.cured?.length ) parts.push(i18n.localize("FEO.SkillTurn.activates"));
     }
 
     // Changes that last a while which the skill granted: one mention for the unit itself, and one for the

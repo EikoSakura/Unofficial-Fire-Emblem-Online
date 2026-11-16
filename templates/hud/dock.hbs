@@ -7,6 +7,7 @@
       <div class="dk-hp" data-tone="{{hp.tone}}">
         <div>{{localize "FEO.Stat.hp.abbr"}}<b>{{hp.value}} <span>/ {{hp.max}}</span></b></div>
         <div class="bar"><i style="width:{{hp.percent}}%"></i></div>
+        {{#if stagger}}<div class="bar stagger{{#if stagger.staggered}} staggered{{/if}}" data-tooltip="{{stagger.label}}"><i style="width:{{stagger.percent}}%"></i></div>{{/if}}
       </div>
       <div class="dk-chips">
         {{#each conditions as |condition|}}

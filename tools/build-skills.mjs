@@ -21,8 +21,9 @@
  * What the system applies by itself for a skill is not read from the text. It is written out by hand in
  * packs-src/skills/effects.json, by skill name, in the notation that module/rules/skills.mjs explains, and
  * laid over the skills here, together with how a skill that is chosen when to activate is used (its `usage`,
- * which module/rules/skill-usage.mjs explains). A name in that file that no skill has, or an effect or usage
- * the rules do not know, stops the build.
+ * which module/rules/skill-usage.mjs explains). Skills of different kinds that share a name are listed there as
+ * "kind.Name", which is read before the name alone. A name in that file that no skill has, or an effect or
+ * usage the rules do not know, stops the build.
  *
  * The animals listed under "Wildkin Animal Units" at the foot of the tab are not skills; they are added to the
  * description of the Wildkin skill, which points to them.
@@ -160,10 +161,12 @@ for ( const { row, section } of rows ) {
     description: ""
   };
 
-  // What the system applies by itself, from the hand-written list
-  const entry = automation[name];
+  // What the system applies by itself, from the hand-written list. Skills of different kinds that share a
+  // name are told apart there by their kind
+  const listed = [`${section.kind}.${name}`, name].find((key) => key in automation);
+  const entry = listed ? automation[listed] : null;
   if ( entry ) {
-    automated.add(name);
+    automated.add(listed);
     const wrong = [...checkEffects(entry.effects), ...checkUsage(entry.usage)];
     if ( wrong.length ) problems.push(...wrong.map((problem) => `${where}: effects.json, ${problem}`));
     else {

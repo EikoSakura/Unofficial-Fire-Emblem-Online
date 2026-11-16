@@ -13,8 +13,11 @@
  */
 
 import { FEO } from "../config.mjs";
-import { addQualities, classSkills, splitNames } from "./classes.mjs";
+import { addQualities, classSkills, splitNames, startingRanksOf } from "./classes.mjs";
 import { abilityScore } from "./combat-stats.mjs";
+import { growthChoice, growthPickCount, growthPicks } from "./earnings.mjs";
+import { givenSteps, raisedRank } from "./skill-ranks.mjs";
+import { choicesOf } from "./skills.mjs";
 
 /* -------------------------------------------- */
 /*  Steps                                       */
@@ -251,6 +254,80 @@ export function startingSkills(cls, known = null) {
 }
 
 /**
+ * Does a new unit of a class start with a Generic Skill? Every unit does but a Trainee, which starts with the
+ * skill of its class alone.
+ * @param {ClassLike|null} cls
+ * @param {object} [tiers]          FEO.classTiers
+ * @returns {boolean}
+ */
+export function startsGeneric(cls, tiers = FEO.classTiers) {
+  return !tiers[cls?.system.tier]?.noGeneric;
+}
+
+/* -------------------------------------------- */
+/*  Variants                                    */
+/* -------------------------------------------- */
+
+/**
+ * @typedef TakenSkill
+ * A skill the Creator added to a unit.
+ * @property {string} id                  The Item it became
+ * @property {"class"|"generic"} slot     Which starting skill it is
+ * @property {string} name
+ * @property {object[]} effects           Its structured effects
+ * @property {string} choice              What is chosen on it so far
+ * @property {boolean} [automate]         False for a skill the table runs by hand
+ */
+
+/**
+ * @typedef SkillVariant
+ * What a skill has its unit choose before the system can apply it.
+ * @property {"variant"|"growths"} kind   One of several variants, or a number of growth rates
+ * @property {string[]} options           What can be chosen
+ * @property {string[]} picked            What is chosen
+ * @property {number} count               How many are to be chosen
+ * @property {boolean} open               Is something still to be chosen?
+ */
+
+/**
+ * What a skill has its unit choose: the variant of a skill that comes in several, or the growth rates of one
+ * that raises some of the unit's choosing.
+ * @param {{effects?: object[], choice?: string, automate?: boolean}} skill
+ * @param {object} [options]
+ * @param {string[]} [options.growths]    The growth rates in use: the keys of FEO.growths
+ * @returns {SkillVariant|null}           Null for a skill with nothing to choose, or one that is run by hand
+ */
+export function skillVariant(skill, { growths = Object.keys(FEO.growths) } = {}) {
+  if ( skill.automate === false ) return null;
+  const variants = choicesOf(skill.effects);
+  if ( variants.length ) {
+    const picked = variants.filter((variant) => variant === skill.choice);
+    return { kind: "variant", options: variants, picked, count: 1, open: !picked.length };
+  }
+  const count = growthPickCount(skill.effects);
+  if ( !count ) return null;
+  const picked = growthPicks(skill.choice, growths).slice(0, count);
+  return { kind: "growths", options: growths, picked, count, open: picked.length < count };
+}
+
+/**
+ * Plan what is chosen on a skill: its variant, or one more or one fewer of its growth rates. The growth rate
+ * picked longest ago makes room for a new one.
+ * @param {{effects?: object[], choice?: string, automate?: boolean}} skill
+ * @param {string} value                  A variant, or a growth rate to take or give up
+ * @param {object} [options]              As for `skillVariant`
+ * @returns {string|null}                 The skill's choice, or null when nothing changes
+ */
+export function planVariant(skill, value, options = {}) {
+  const variant = skillVariant(skill, options);
+  if ( !variant?.options.includes(value) ) return null;
+  if ( variant.kind === "variant" ) return variant.picked.includes(value) ? null : value;
+  const next = variant.picked.includes(value) ? variant.picked.filter((key) => key !== value) : [...variant.picked, value];
+  while ( next.length > variant.count ) next.shift();
+  return growthChoice(next);
+}
+
+/**
  * The proficiencies a class has a new unit take without asking: all of them when it offers no choice. The one
  * that starts higher is left open unless there is only one.
  * @param {ClassLike} cls
@@ -309,13 +386,17 @@ export function planClass(unit, record, from, to, { config = FEO.creation, stats
   const kept = splitNames(unit.specialQualities).filter((quality) => !gone.has(quality.toLowerCase()));
   update["system.specialQualities"] = addQualities(kept.join(", "), to.system.specialQualities).to;
 
-  // Proficiencies: what the Creator gave for the old class is taken back, and the new class gives its own
+  // Proficiencies: what the Creator gave for the old class is taken back, and the new class gives its own.
+  // The ranks the unit's skills have added stay on top
+  const extra = givenSteps(unit.skillRanks);
   for ( const key of record.ranks.take ) {
-    if ( unit.proficiencies[key] ) update[`system.proficiencies.${key}.rank`] = "F";
+    if ( unit.proficiencies[key] ) update[`system.proficiencies.${key}.rank`] = raisedRank("F", extra[key]);
   }
   const given = givenRanks(to);
+  const start = startingRanksOf(to, ranks);
   for ( const key of given.take ) {
-    if ( unit.proficiencies[key] ) update[`system.proficiencies.${key}.rank`] = key === given.first ? ranks.first : ranks.others;
+    if ( !unit.proficiencies[key] ) continue;
+    update[`system.proficiencies.${key}.rank`] = raisedRank(key === given.first ? start.first : start.others, extra[key]);
   }
 
   const changes = {
@@ -425,10 +506,22 @@ export function growthShift(unit, key, config = FEO.creation) {
  * @typedef GrowthBudget
  * @property {{key: string, value: number, start: number, cap: number, shift: number, mind: boolean}[]} rows
  *   Each growth rate as it was chosen, before its Boon or Bane
+ * @property {number} freeTotal       Points there are to place anywhere
  * @property {number} freeLeft        Points left to place anywhere; below zero when too many are placed
  * @property {number} abilityLeft     Points left that may only go to Charm or Intelligence
  * @property {number} total           Every growth rate added up, as chosen
  */
+
+/**
+ * The growth points a new unit of a class places anywhere. A Trainee has fewer, and makes them up on promoting.
+ * @param {ClassLike|null} cls
+ * @param {object} [config]         FEO.creation
+ * @param {object} [tiers]          FEO.classTiers
+ * @returns {number}
+ */
+export function freeGrowth(cls, config = FEO.creation, tiers = FEO.classTiers) {
+  return tiers[cls?.system.tier]?.growthPoints ?? config.growth.free;
+}
 
 /**
  * The growth points a unit has placed and has left. Points put into Charm and Intelligence come out of the
@@ -440,10 +533,13 @@ export function growthShift(unit, key, config = FEO.creation) {
  * @param {object} [options.optional]     FEO.optionalGrowths, whose rates start at nothing
  * @param {object} [options.caps]         FEO.growthCaps
  * @param {number} [options.start]        FEO.baseGrowth
+ * @param {number} [options.free]         The points to place anywhere, where the unit's class gives other than
+ *                                        the usual number: see `freeGrowth`
  * @returns {GrowthBudget}
  */
 export function growthBudget(unit, {
-  config = FEO.creation, keys = Object.keys(FEO.growths), optional = FEO.optionalGrowths, caps = FEO.growthCaps, start = FEO.baseGrowth
+  config = FEO.creation, keys = Object.keys(FEO.growths), optional = FEO.optionalGrowths, caps = FEO.growthCaps, start = FEO.baseGrowth,
+  free = config.growth.free
 } = {}) {
   const rows = keys.map((key) => {
     const shift = growthShift(unit, key, config);
@@ -460,7 +556,8 @@ export function growthBudget(unit, {
   const onMind = placed(true);
   return {
     rows,
-    freeLeft: config.growth.free - placed(false) - Math.max(onMind - config.growth.abilities, 0),
+    freeTotal: free,
+    freeLeft: free - placed(false) - Math.max(onMind - config.growth.abilities, 0),
     abilityLeft: Math.max(config.growth.abilities - onMind, 0),
     total: rows.reduce((sum, row) => sum + row.value, 0)
   };
@@ -527,7 +624,8 @@ export function planBoon(unit, which, key, { config = FEO.creation, stats = FEO.
 /* -------------------------------------------- */
 
 /**
- * Plan the proficiencies a new unit takes from its class, and the one that starts a rank higher.
+ * Plan the proficiencies a new unit takes from its class, and the one that starts a rank higher. The ranks the
+ * unit's skills have added stay on top of what the class gives.
  * @param {UnitLike} unit
  * @param {CreationRecord} record
  * @param {ClassLike} cls
@@ -542,11 +640,13 @@ export function planRanks(unit, record, cls, take, first, ranks = FEO.startingRa
   if ( wanted.length !== take.length ) return null;
   if ( choose > 0 ? (wanted.length > choose) : (wanted.length !== options.length) ) return null;
   const higher = wanted.length === 1 ? wanted[0] : (wanted.includes(first) ? first : "");
+  const start = startingRanksOf(cls, ranks);
 
   const update = {};
+  const extra = givenSteps(unit.skillRanks);
   for ( const key of new Set([...record.ranks.take, ...wanted]) ) {
     if ( !unit.proficiencies[key] ) continue;
-    const rank = !wanted.includes(key) ? "F" : (key === higher ? ranks.first : ranks.others);
+    const rank = raisedRank(!wanted.includes(key) ? "F" : (key === higher ? start.first : start.others), extra[key]);
     if ( unit.proficiencies[key].rank !== rank ) update[`system.proficiencies.${key}.rank`] = rank;
   }
   return { update, record: { "ranks.take": wanted, "ranks.first": higher } };
@@ -629,17 +729,27 @@ export function planCheck(unit, key, points, options = {}) {
  * @param {UnitLike} options.unit
  * @param {CreationRecord} options.record
  * @param {ClassLike|null} options.cls          The class the unit has
+ * @param {TakenSkill[]} [options.taken]        The skills the Creator added to the unit, as they are now
  * @param {object} [options.optional]           FEO.optional
  * @param {object} [options.config]             FEO.creation
  * @returns {{steps: (CreationStep & StepState & {extended: boolean})[], done: number, total: number, ready: boolean,
  *   pending: string[], fresh: string[], help: string[], gold: number, bonusLeft: number, growth: GrowthBudget,
- *   points: PointBudget, skills: {names: string[], choice: boolean}}}
+ *   points: PointBudget, skills: {names: string[], choice: boolean}, generic: boolean,
+ *   variants: (SkillVariant & {id: string, slot: string, name: string})[]}}
+ *   `generic` says whether the unit starts with a Generic Skill, and `variants` what its starting skills have
+ *   it choose
  */
-export function creationState({ unit, record, cls, optional = FEO.optional, config = FEO.creation }) {
-  const growth = growthBudget(unit, { config });
+export function creationState({ unit, record, cls, taken = [], optional = FEO.optional, config = FEO.creation }) {
+  const growth = growthBudget(unit, { config, free: freeGrowth(cls, config) });
+  const start = startingRanksOf(cls);
   const points = pointBudget(unit, { config });
   const left = bonusLeft(record, config);
   const skills = startingSkills(cls);
+  const generic = startsGeneric(cls);
+  const variants = taken.flatMap((skill) => {
+    const variant = skillVariant(skill);
+    return variant ? [{ ...variant, id: skill.id, slot: skill.slot, name: skill.name }] : [];
+  });
   const options = cls?.system.proficiencies?.options ?? [];
   const need = cls ? (cls.system.proficiencies?.choose || options.length) : 0;
   const is = (state, note, data = {}) => ({ state, note, data });
@@ -656,10 +766,15 @@ export function creationState({ unit, record, cls, optional = FEO.optional, conf
       case "sources": return confirmed ? is("done", "sources") : is("todo", "unconfirmed");
       case "skills":
         if ( skills.choice && !record.skills.class.name ) return is("todo", "classSkill");
-        return record.skills.generic.name ? is("done", "skills") : is("todo", "genericSkill");
+        if ( generic && !record.skills.generic.name ) return is("todo", "genericSkill");
+
+        // A skill that comes in several variants does nothing until one of them is chosen
+        if ( variants.some((variant) => variant.open) ) return is("todo", "variant", { name: variants.find((variant) => variant.open).name });
+        return is("done", "skills");
       case "ranks":
         if ( record.ranks.take.length < need ) return is("todo", "takeMore", { count: need - record.ranks.take.length });
-        if ( need && !record.ranks.first ) return is("todo", "firstRank");
+        // Where every proficiency starts at the same rank, as a Trainee's do, none is chosen to start higher
+        if ( need && !record.ranks.first && (start.first !== start.others) ) return is("todo", "firstRank");
         return is("done", "ranks");
       case "gold": return confirmed ? is("done", "goldLeft", { gold: unit.gold }) : is("todo", "goldToSpend", { gold: unit.gold });
       case "bonus":
@@ -719,6 +834,8 @@ export function creationState({ unit, record, cls, optional = FEO.optional, conf
     bonusLeft: left,
     growth,
     points,
-    skills
+    skills,
+    generic,
+    variants
   };
 }

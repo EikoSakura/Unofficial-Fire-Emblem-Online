@@ -34,6 +34,9 @@ import { FEO } from "../config.mjs";
  * @property {boolean} [physical]           Is the attack resisted with DEF?
  * @property {string|null} [element]        The element of the attack, if it has one
  * @property {boolean} [noDodge]            Is the target unable to dodge for a reason other than a condition?
+ * @property {number} [fcm]                 What the attacker's Critical is multiplied by before the target's
+ *                                          Critical Avoid is taken off: its Follow-up Critical Multiplier, for
+ *                                          a follow-up attack where the world plays with it
  */
 
 /**
@@ -198,9 +201,11 @@ export function tickDamage(id, turns, hpMax, bend = null) {
  * @param {ConditionState} unit.conditions
  * @param {ConditionBends|null} [unit.bends]  How the unit's skills bend the rules of conditions: what each
  *                                            deals, whether it runs out, and how fast
+ * @param {number} [unit.times]               What the damage the unit takes is multiplied by, as for a unit
+ *                                            that is Staggered
  * @returns {TurnStart}
  */
-export function startTurn({ hp, hpMax, conditions, bends = null }) {
+export function startTurn({ hp, hpMax, conditions, bends = null, times = 1 }) {
   const next = {};
   const ticks = [];
   const reduced = [];
@@ -223,6 +228,7 @@ export function startTurn({ hp, hpMax, conditions, bends = null }) {
     const bend = bends?.suffers?.[id] ?? null;
     const tick = tickDamage(id, turns, hpMax, bend);
     if ( tick ) {
+      if ( times !== 1 ) tick.damage = Math.floor((tick.damage * times) + 1e-9);
       const bent = !!bend && ((tick.heals !== undefined) || ((bend.damage ?? 1) !== 1) || !!bend.tick);
       ticks.push(bent ? { id, ...tick, skills: [...(bend.damageBy ?? [])] } : { id, ...tick });
       total += tick.damage;
@@ -549,7 +555,7 @@ export function strikeNumbers(base, context = {}) {
 
   return {
     hit: Math.min(clamp(accuracy - (dodges ? base.dodge : 0), 0, 100), cap),
-    crit: clamp(critical - base.critAvoid, 0, 100),
+    crit: clamp((critical * (context.fcm ?? 1)) - base.critAvoid, 0, 100),
     damage: negated ? 0 : Math.max(base.damage + taken, 0) * multiplier,
     notes
   };

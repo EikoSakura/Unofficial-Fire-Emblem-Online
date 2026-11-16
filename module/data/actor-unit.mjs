@@ -13,8 +13,10 @@ import {
   powerEntries, powerExtras, skillRoom
 } from "../rules/optional.mjs";
 import { abilityBonus, abilityPointsPerLevel, supportBonus, supportTotals } from "../rules/progression.mjs";
+import { staggerInUse, staggerOf, staggerTimes } from "../rules/stagger.mjs";
 import { formBonuses, gaugeProfile, shiftBends, shiftMode, shiftPercent, shiftedBonuses, transformsLeft } from "../rules/shifting.mjs";
 import { countsAsSkill, effectsOf, skillTotals } from "../rules/skills.mjs";
+import { staffPassiveEntry } from "../rules/staves.mjs";
 import { kinBonus } from "../rules/supports.mjs";
 import { TIMED_ENDS, timedEntries } from "../rules/timed.mjs";
 
@@ -105,6 +107,17 @@ function captiveName(name) {
 }
 
 /**
+ * What an equipped staff goes by among the unit's skills and numbers, for what it does while it is equipped:
+ * "Heal, equipped".
+ * @param {string} name     The staff's name
+ * @returns {string}
+ */
+function equippedStaffName(name) {
+  const i18n = globalThis.game?.i18n;
+  return i18n?.format ? i18n.format("FEO.Optional.staffPassives.entry", { staff: name }) : name;
+}
+
+/**
  * The data model for a Unit: any combatant on the map, player-controlled or otherwise.
  */
 export default class UnitData extends foundry.abstract.TypeDataModel {
@@ -144,6 +157,14 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       // Does the unit suffer from Break? It then makes no counter-attack in its next fight, and is rid of it
       // once that fight is over or its own turn starts (see the Breaking rules)
       break: new BooleanField(),
+
+      // Stagger: what is left of the unit's Stagger bar, its full size, which is 0 until the bar is made, and
+      // for a Staggered unit the ends of its own turn left before it recovers (see the Stagger rules)
+      stagger: new SchemaField({
+        value: integer(0, { min: 0 }),
+        max: integer(0, { min: 0 }),
+        turns: integer(0, { min: 0, max: FEO.optional.stagger.turns.own })
+      }),
 
       // Capturing: whether the unit's next attack is an attempt to capture; the unit it holds captive, or has
       // subdued and may pick up for `turns` more ends of its own turn; and for a unit that was captured, who
@@ -225,6 +246,14 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
         wexp: new NumberField({ required: true, nullable: false, min: 0, initial: 0 })
       })),
 
+      // The ranks skills have added to proficiencies, by the Item each skill is, so that a rank is given once
+      // and can be taken back (see the skill rank rules)
+      skillRanks: new ArrayField(new SchemaField({
+        item: text(),
+        key: text(),
+        steps: integer(0, { min: 0 })
+      })),
+
       checks: keyed(Object.keys(FEO.abilityChecks), (key) => new SchemaField({
         points: integer(0, { min: 0 }),
         stat: new StringField({
@@ -267,6 +296,12 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       lives: new SchemaField({ value: optional({ min: 0 }), max: optional({ min: 0 }) }),
       levelLimit: optional({ min: 1 }),
       movementStars: integer(0, { min: 0 }),
+
+      // Follow-up Critical Multiplier: what the unit's Critical is multiplied by on its follow-up attacks
+      fcm: integer(FEO.optional.followUpCritical.base, {
+        min: FEO.optional.followUpCritical.base,
+        max: FEO.optional.followUpCritical.max
+      }),
       holyBlood: new SchemaField({
         lineages: keyed(Object.keys(FEO.optional.holyBlood.lineages), () => new StringField({
           required: true,
@@ -521,6 +556,17 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       entries.push({ ...carryEntry(captiveName(this.captive.name)), active: false, spends: false, usage: null, state: null });
     }
 
+    // Passive Staff Effects: what the staff a unit has equipped does for it, for as long as it is, is read as
+    // one more skill of the same kind, named after the staff
+    if ( weapon?.system.category === "staff" ) {
+      const held = staffPassiveEntry({
+        name: weapon.flags?.[FEO.id]?.sheetName ?? weapon.name,
+        effect: weapon.system.effect,
+        broken: weapon.system.broken
+      }, equippedStaffName(weapon.name));
+      if ( held ) entries.push({ ...held, active: false, spends: false, usage: null, state: null });
+    }
+
     // Where the unit stands: what it has around it, and what the skills of those units give it. Their auras
     // are read as skills of its own, each named after its skill and the unit it comes from
     const place = (this.parent ? UnitData.standing?.(this.parent) : null) ?? null;
@@ -626,6 +672,15 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       injuries: this.injuries,
       defeat
     }) : [];
+
+    // Stagger: the bar as it stands, which follows the unit's HP until it is made; whether the unit is
+    // Staggered; and what the damage it takes is then multiplied by
+    const stagger = this.stagger;
+    stagger.used = staggerInUse();
+    stagger.sized = (this._source.stagger?.max ?? 0) > 0;
+    Object.assign(stagger, staggerOf(this._source.stagger, this.hp.value));
+    stagger.staggered = stagger.used && (stagger.turns > 0);
+    stagger.times = staggerTimes(stagger);
 
     // Combat stats with the equipped weapon
     this.modifiers = sources.filter((source) => source.combat).map((source) => ({

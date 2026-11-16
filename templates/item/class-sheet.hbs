@@ -100,7 +100,15 @@
         <span>{{localize "FEO.Class.choose"}}</span>
         <input type="number" name="system.proficiencies.choose" value="{{system.proficiencies.choose}}" min="0" step="1">
       </label>
-      <label class="field span-two" data-tooltip="{{localize "FEO.Class.asWrittenHint"}}">
+      {{#if showBase}}
+      <label class="field" data-tooltip="{{localize "FEO.Class.firstRankHint"}}">
+        <span>{{localize "FEO.Class.firstRank"}}</span>
+        <select name="system.proficiencies.firstRank">
+          {{selectOptions rankChoices selected=system.proficiencies.firstRank localize=true blank=(localize "FEO.Class.firstRankUsual")}}
+        </select>
+      </label>
+      {{/if}}
+      <label class="field {{#if showBase}}wide{{else}}span-two{{/if}}" data-tooltip="{{localize "FEO.Class.asWrittenHint"}}">
         <span>{{localize "FEO.Class.asWritten"}}</span>
         <input type="text" name="system.proficiencies.note" value="{{system.proficiencies.note}}">
       </label>

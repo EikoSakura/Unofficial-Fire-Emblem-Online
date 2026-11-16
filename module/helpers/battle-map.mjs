@@ -2,6 +2,7 @@ import { FEO } from "../config.mjs";
 import { parseRange } from "../rules/combat.mjs";
 import { reachFrom, relation, strikeFrom, strikeTiles, tileKey, tilesApart, wayBetween } from "../rules/reach.mjs";
 import { heightBlocks, moveCost } from "../rules/terrain.mjs";
+import { warpTiles } from "../rules/warp.mjs";
 import { armyOf, tokenTile } from "./exchange.mjs";
 import { originOf } from "./phases.mjs";
 import { moverOf, tileGround } from "./terrain.mjs";
@@ -195,6 +196,30 @@ export function threatOf(token) {
   const tiles = new Set(view.reach.stops);
   if ( view.range && !view.range.staff ) for ( const key of view.strikes ) tiles.add(key);
   return tiles;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The tiles a skill can warp a unit to from where it stands: within the skill's reach whatever lies between,
+ * on ground the unit could stand on, with nobody there.
+ * @param {TokenReach} view                               The unit's reach
+ * @param {import("../rules/warp.mjs").Warp} warp         How the skill warps
+ * @returns {Set<string>}                                 The tiles, by name
+ */
+export function warpTilesOf(view, warp) {
+  const { token, actor } = view.unit;
+  const scene = token.parent;
+  const [i0, j0, i1, j1] = scene.grid.getOffsetRange(scene.dimensions.sceneRect);
+  const mover = moverOf(actor);
+  const others = view.units.filter((other) => other.token !== token);
+  const taken = new Set(others.map((other) => tileKey(other.tile)));
+  return warpTiles(warp, view.standing, view.movement, {
+    bounds: { i0, j0, i1, j1 },
+    cost: (tile) => moveCost(view.ground(tile).terrain, mover),
+    taken: (tile) => taken.has(tileKey(tile)),
+    foes: others.filter((other) => standsTo(view.unit, other) === "foe").map((other) => other.tile)
+  });
 }
 
 /* -------------------------------------------- */

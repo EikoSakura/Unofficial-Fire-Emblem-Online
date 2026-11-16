@@ -120,6 +120,24 @@ export function attackSpeed(speed, con, weight) {
 /** The weapon profile used when a unit has nothing equipped. */
 export const UNARMED = Object.freeze({ might: 0, hit: 0, crit: 0, weight: 0, damageStat: "str" });
 
+/**
+ * Formulas only a skill can put on a unit, beside the calculation modes a unit chooses on its sheet: the stat
+ * its Damage, Accuracy or Critical is worked out from is the lowest of a few, or its Dodge is nothing at all.
+ */
+export const SKILL_CALC = Object.freeze({
+  damageBy: ["lowest"],
+  accuracyBy: ["lowest"],
+  criticalBy: ["lowest"],
+  dodgeBy: ["none"]
+});
+
+/** The stats the lowest of which a skill has a combat stat worked out from. */
+const LOWEST_OF = Object.freeze({
+  damageBy: ["str", "mag", "dex", "spd"],
+  accuracyBy: ["dex", "spd", "str"],
+  criticalBy: ["dex", "spd"]
+});
+
 /** The keys a combat modifier may adjust, mapped to the manual boost of the same name. */
 const BOOST_KEYS = ["hit", "damage", "critical", "attackSpeed", "dodge", "critAvoid"];
 
@@ -158,9 +176,15 @@ export function computeCombat(unit, weapon) {
   ];
   const as = attackSpeed(s("spd"), s("con"), w.weight) + sum(adjust.attackSpeed);
 
+  // The lowest of a few stats, where a skill has a combat stat worked out from that
+  const lowest = (mode) => LOWEST_OF[mode].reduce((least, stat) => (s(stat) < s(least) ? stat : least));
+
   // Accuracy
   let accuracyTerms;
-  switch ( calc.accuracy ) {
+  switch ( (calc.accuracyBy === "lowest") ? "lowest" : calc.accuracy ) {
+    case "lowest":
+      accuracyTerms = [{ ...key("FEO.Term.lowestDouble"), value: s(lowest("accuracyBy")) * 2 }];
+      break;
     case "bruteForce":
       accuracyTerms = [{ ...abbr("str"), value: s("str") }, { ...abbr("dex"), value: s("dex") }];
       break;
@@ -173,11 +197,15 @@ export function computeCombat(unit, weapon) {
   accuracyTerms.push({ ...abbr("luk"), value: s("luk") }, { ...key("FEO.Term.weaponHit"), value: w.hit });
 
   // Damage: a weapon that scales with SPD uses Attack Speed rather than the raw stat
-  const damageTerm = w.damageStat === "spd"
-    ? { ...key("FEO.Combat.attackSpeed"), value: as }
-    : { ...abbr(w.damageStat), value: s(w.damageStat) };
+  const damageTerm = (calc.damageBy === "lowest") ? { ...key("FEO.Term.lowest"), value: s(lowest("damageBy")) }
+    : w.damageStat === "spd"
+      ? { ...key("FEO.Combat.attackSpeed"), value: as }
+      : { ...abbr(w.damageStat), value: s(w.damageStat) };
 
   // Critical
+  const critTerm = (calc.criticalBy === "lowest")
+    ? { ...key("FEO.Term.lowestHalf"), value: s(lowest("criticalBy")) / 2 }
+    : null;
   const critStat = calc.critical === "fencersGrace" ? "spd" : "dex";
 
   // Dodge: Parry substitutes DEX for SPD when working out Attack Speed
@@ -193,13 +221,15 @@ export function computeCombat(unit, weapon) {
     accuracy: stat([...accuracyTerms, ...adjust.hit]),
     damage: stat([{ ...key("FEO.Weapon.might"), value: w.might }, damageTerm, ...adjust.damage]),
     critical: stat([
-      { ...key(`FEO.Term.${critStat}Half`), value: s(critStat) / 2 },
+      critTerm ?? { ...key(`FEO.Term.${critStat}Half`), value: s(critStat) / 2 },
       { ...key("FEO.Term.lukHalf"), value: s("luk") / 2 },
       { ...key("FEO.Term.weaponCrit"), value: w.crit },
       ...adjust.critical
     ]),
     attackSpeed: stat([...speedTerms("spd"), ...adjust.attackSpeed]),
-    dodge: stat([
+
+    // A unit a skill leaves no Dodge has none, whatever would add to it
+    dodge: (calc.dodgeBy === "none") ? { value: 0, terms: [] } : stat([
       { ...key(parry ? "FEO.Term.parrySpeedDouble" : "FEO.Term.speedDouble"), value: dodgeSpeed * 2 },
       { ...abbr("luk"), value: s("luk") },
       ...adjust.dodge

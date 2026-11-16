@@ -66,6 +66,17 @@ function withTotals(unit, totals, fight, foeTotals = null) {
   const bare = unit.bare;
   const stats = { ...bare.stats };
   for ( const [key, amount] of Object.entries(totals.stats) ) stats[key] = Math.max((stats[key] ?? 0) + amount, 0);
+
+  // What the foe's skills take off the stats this unit fights with, less what its own skills take off
+  // incoming penalties. A skill whose lasting change the unit already carries is not counted twice
+  const relief = totals.bends?.debuffs;
+  for ( const { skill, stats: lowered } of foeTotals?.foeStats ?? [] ) {
+    if ( (unit.timed ?? []).some((change) => (change.name === skill) && change.from) ) continue;
+    for ( const [key, amount] of Object.entries(lowered) ) {
+      const eased = ((amount < 0) && relief) ? (relief.negate ? 0 : Math.min(amount + (relief.stats ?? 0), 0)) : amount;
+      stats[key] = Math.max((stats[key] ?? 0) + eased, 0);
+    }
+  }
   const modifiers = [
     ...(bare.modifiers ?? []),
     ...totals.sources.map((source) => ({ label: source.name, ...source.combat }))

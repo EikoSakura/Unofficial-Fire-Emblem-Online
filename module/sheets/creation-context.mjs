@@ -1,8 +1,10 @@
 import { findSkill } from "../apps/compendium-context.mjs";
 import { FEO } from "../config.mjs";
+import { startingRanksOf } from "../rules/classes.mjs";
 import { isArmed } from "../rules/creation-fit.mjs";
 import { abilityTotals, boonWorth, classOpen, creationState, pointCost, savedStat } from "../rules/creation.mjs";
 import { affinityEffectMode } from "../rules/optional.mjs";
+import { givenSteps, raisedRank, readGiven } from "../rules/skill-ranks.mjs";
 
 /**
  * What the Character Creator shows: its steps and where each stands, the step in view laid out for its
@@ -10,7 +12,7 @@ import { affinityEffectMode } from "../rules/optional.mjs";
  * Nothing here touches Foundry. A unit is read from its saved data, and the compendiums from the library the
  * Compendium keeps of them.
  *
- * @import {CreationRecord} from "../rules/creation.mjs"
+ * @import {CreationRecord, TakenSkill} from "../rules/creation.mjs"
  */
 
 const abbr = (key) => `FEO.Stat.${key}.abbr`;
@@ -28,13 +30,14 @@ const signed = (value) => (value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(
  * @param {object} options.unit               The unit's saved data
  * @param {CreationRecord} options.record
  * @param {object|null} options.cls           The class the unit has
+ * @param {TakenSkill[]} [options.skills]     The skills the Creator added to the unit, as they are now
  * @param {boolean} options.isGM
  * @param {object} options.i18n
  * @returns {{started: boolean, done: number, total: number, percent: number, finished: boolean, fresh: number,
  *   help: number, hint: string, banner: object|null, first: string}}
  */
-export function creatorSummary({ unit, record, cls, isGM, i18n }) {
-  const state = creationState({ unit, record, cls });
+export function creatorSummary({ unit, record, cls, skills = [], isGM, i18n }) {
+  const state = creationState({ unit, record, cls, taken: skills });
   const started = !!record.status;
   const title = (id) => i18n.localize(`FEO.Creator.step.${id}.title`);
   const first = state.pending[0] ?? "review";
@@ -89,6 +92,7 @@ export function creatorSummary({ unit, record, cls, isGM, i18n }) {
  * @param {object} options.unit               The unit's saved data
  * @param {CreationRecord} options.record
  * @param {object|null} options.cls           The class the unit has: an Item, or anything shaped like one
+ * @param {TakenSkill[]} [options.skills]     The skills the Creator added to the unit, as they are now
  * @param {object} options.view               What this window is looking at: `step` and `draft`
  * @param {object|null} options.library       The Compendium's library, for what the unit's skills do
  * @param {{id: string, name: string, color: string, step: string}[]} options.watchers    Who else is looking
@@ -96,8 +100,8 @@ export function creatorSummary({ unit, record, cls, isGM, i18n }) {
  * @param {object} options.i18n
  * @returns {object}
  */
-export function buildCreator({ name, unit, record, cls, view, library, watchers = [], user, i18n }) {
-  const state = creationState({ unit, record, cls });
+export function buildCreator({ name, unit, record, cls, skills = [], view, library, watchers = [], user, i18n }) {
+  const state = creationState({ unit, record, cls, taken: skills });
   const steps = state.steps;
   const at = Math.max(steps.findIndex((step) => step.id === view.step), 0);
   const current = steps[at];
@@ -106,8 +110,12 @@ export function buildCreator({ name, unit, record, cls, view, library, watchers 
   const title = (id) => loc(`FEO.Creator.step.${id}.title`);
   const rankLabel = (key) => loc(FEO.ranks[key] ?? key);
   const profLabel = (key) => loc(FEO.proficiencies[key] ?? key);
+  const start = startingRanksOf(cls);
+
+  // What the class gives, with the ranks the unit's skills add on top
+  const extra = givenSteps(unit.skillRanks);
   const taken = record.ranks.take.map((key) => {
-    return `${profLabel(key)} ${rankLabel(key === record.ranks.first ? FEO.startingRanks.first : FEO.startingRanks.others)}`;
+    return `${profLabel(key)} ${rankLabel(raisedRank(key === record.ranks.first ? start.first : start.others, extra[key]))}`;
   });
   const gradeLabel = (grade) => loc(`FEO.Optional.grade.${grade}`);
   const bloodName = record.holyBlood.lineage
@@ -118,7 +126,7 @@ export function buildCreator({ name, unit, record, cls, view, library, watchers 
   const noteData = (step) => {
     switch ( step.note ) {
       case "sources": return { cha: loc(abbr(unit.abilities.cha.source)), int: loc(abbr(unit.abilities.int.source)) };
-      case "skills": return { skills: [record.skills.class.name, record.skills.generic.name].filter(Boolean).join(" · ") };
+      case "skills": return { skills: [record.skills.class.name, record.skills.generic.name].filter(Boolean).join(" · ") || "–" };
       case "ranks": return { ranks: taken.join(" · ") || "–" };
       case "goldLeft": case "goldToSpend": return { gold: number(unit.gold) };
       case "boonBane": return { boon: loc(abbr(unit.boon)), bane: loc(abbr(unit.bane)) };
@@ -149,7 +157,7 @@ export function buildCreator({ name, unit, record, cls, view, library, watchers 
   // The step in view
   const moduleKey = current.module ?? (current.extended ? current.extendedBy : null);
   const setting = Object.entries(FEO.optionalSettings).find(([, key]) => key === moduleKey)?.[0];
-  const context = { unit, record, cls, state, totals, view, library, user, i18n, loc, name, taken, bloodName, crestName };
+  const context = { unit, record, cls, skills, state, totals, view, library, user, i18n, loc, name, taken, bloodName, crestName };
   const panel = current.locked ? { locked: true } : (PANELS[current.id]?.(context) ?? {});
 
   const asked = record.help[current.id] ?? "";
@@ -167,7 +175,7 @@ export function buildCreator({ name, unit, record, cls, view, library, watchers 
       id: current.id,
       eyebrow: current.id === "review" ? loc("FEO.Creator.lastStep") : i18n.format("FEO.Creator.stepOf", { number: at + 1, total: state.total }),
       title: title(current.id),
-      lead: loc(`FEO.Creator.step.${current.id}.lead`),
+      lead: panel.lead ?? loc(`FEO.Creator.step.${current.id}.lead`),
       module: setting ? i18n.format(current.module ? "FEO.Creator.module" : "FEO.Creator.extended", { name: loc(`FEO.Setting.${setting}.name`) }) : "",
       review: current.id === "review"
     },
@@ -249,43 +257,74 @@ const PANELS = {
     return { abilities };
   },
 
-  skills({ record, cls, state, library, i18n }) {
+  skills({ record, cls, state, library, i18n, loc }) {
     const effect = (skill) => (library ? findSkill(library, skill)?.effect : "") ?? "";
     const offered = state.skills;
+
+    // What a skill taken has its unit choose is asked right under it
+    const variants = (slot) => state.variants.filter((variant) => variant.slot === slot).map((variant) => {
+      const growths = variant.kind === "growths";
+      const data = { name: variant.name, count: variant.count, picked: variant.picked.length };
+      return {
+        id: variant.id,
+        open: variant.open,
+        title: i18n.format(`FEO.Creator.skills.${growths ? "growths" : variant.open ? "variantOpen" : "variant"}`, data),
+        options: variant.options.map((value) => ({
+          value,
+          label: growths ? loc(FEO.growths[value]) : value,
+          pressed: variant.picked.includes(value)
+        }))
+      };
+    });
     const classSkills = {
       title: i18n.format(offered.choice ? "FEO.Creator.skills.chooseClass" : "FEO.Creator.skills.fromClass", { name: cls.name }),
       choice: offered.choice,
       none: !offered.names.length,
+      variants: variants("class"),
       rows: offered.names.map((skill) => ({ name: skill, effect: effect(skill), pressed: !offered.choice || (record.skills.class.name === skill) }))
     };
 
     // The Generic Skill is taken from the Compendium's roll of skills; the step shows the one taken
     const chosen = record.skills.generic.name;
     const skill = library ? findSkill(library, chosen) : null;
-    return {
-      classSkills,
-      generic: {
-        picked: chosen ? {
-          name: chosen,
-          effect: skill?.effect ?? "",
-          capacity: skill?.capacity ? i18n.format("FEO.Creator.skills.capacity", { cost: skill.capacity }) : ""
-        } : null,
-        missing: !library
-      }
-    };
+    const picked = chosen ? {
+      name: chosen,
+      effect: skill?.effect ?? "",
+      capacity: skill?.capacity ? i18n.format("FEO.Creator.skills.capacity", { cost: skill.capacity }) : ""
+    } : null;
+
+    // A Trainee starts without one. One taken before the unit became a Trainee is shown, to be given up
+    if ( !state.generic ) {
+      return { classSkills, lead: i18n.localize("FEO.Creator.step.skills.leadNoGeneric"), generic: null, surplus: picked };
+    }
+    return { classSkills, generic: { picked, missing: !library, variants: variants("generic") } };
   },
 
-  ranks({ unit, record, cls, taken, i18n, loc }) {
+  ranks({ unit, record, cls, skills, taken, i18n, loc }) {
     const { options = [], choose = 0, note = "" } = cls.system.proficiencies ?? {};
     const label = (key) => loc(FEO.proficiencies[key] ?? key);
+
+    // The ranks the starting skills have added, so that a rank above what the class gives explains itself
+    const names = new Map(skills.map((skill) => [skill.id, skill.name]));
+    const raised = readGiven(unit.skillRanks).filter((entry) => names.has(entry.item)).map((entry) => {
+      return i18n.format("FEO.Creator.ranks.raised", { skill: names.get(entry.item), proficiency: label(entry.key), steps: entry.steps });
+    });
+
+    // A Trainee's proficiencies all start at the same rank, so none is chosen to start higher
+    const start = startingRanksOf(cls);
+    const level = start.first === start.others;
     return {
+      lead: level ? i18n.format("FEO.Creator.step.ranks.leadLevel", { rank: loc(FEO.ranks[start.others] ?? "") }) : undefined,
       note: note ? i18n.format("FEO.Creator.ranks.gives", { name: cls.name, note }) : "",
       choose: choose > 0 ? {
         title: i18n.format("FEO.Creator.ranks.take", { count: choose }),
         options: options.map((key) => ({ key, label: label(key), pressed: record.ranks.take.includes(key) }))
       } : null,
-      first: record.ranks.take.length > 1 ? record.ranks.take.map((key) => ({ key, label: label(key), pressed: record.ranks.first === key })) : null,
+      first: !level && (record.ranks.take.length > 1)
+        ? record.ranks.take.map((key) => ({ key, label: label(key), pressed: record.ranks.first === key })) : null,
+      firstTitle: i18n.format("FEO.Creator.ranks.first", { rank: loc(FEO.ranks[start.first] ?? "") }),
       result: record.ranks.take.map((key) => ({ label: label(key), rank: loc(FEO.ranks[unit.proficiencies[key]?.rank] ?? "") })),
+      raised,
       none: !options.length,
       taken
     };
@@ -353,7 +392,7 @@ const PANELS = {
     });
     return {
       free: budget.freeLeft,
-      freeTotal: FEO.creation.growth.free,
+      freeTotal: budget.freeTotal,
       freeDone: budget.freeLeft === 0,
       abilities: budget.abilityLeft,
       abilitiesTotal: FEO.creation.growth.abilities,

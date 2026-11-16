@@ -53,7 +53,9 @@ import { FEO } from "../config.mjs";
  * @property {{name: string, kind: string}[]} skills    Skills learned
  * @property {{names: string[], kind: string}[]} choices   Skills the class offers a choice between, of which
  *                                                      one is still to be picked
- * @property {boolean} genericSkill                     A Generic Skill is taken in place of the class's skill
+ * @property {boolean} genericSkill                     A Generic Skill is taken: in place of the class's skill, or
+ *                                                      of the skills in `forgets`
+ * @property {string[]} forgets                         Skills given up, by name
  */
 
 /* -------------------------------------------- */
@@ -190,7 +192,8 @@ function emptyChange(kind) {
     growths: [],
     skills: [],
     choices: [],
-    genericSkill: false
+    genericSkill: false,
+    forgets: []
   };
 }
 
@@ -257,7 +260,34 @@ export function resolveCaps({ classCaps = {}, manualCaps, boon = "", bane = "", 
 /* -------------------------------------------- */
 
 /**
- * The ranks a new unit starts with in its class's proficiencies: D in one and E in the others.
+ * The rank a line of proficiencies says one of them starts at: "All Weapons, with 1 at C rank" says C.
+ * A line that says nothing of it leaves the usual rank in force.
+ * @param {string} note             The line as the Class Sheet words it
+ * @param {string[]} [order]        The ranks there are
+ * @returns {string}                The rank, or "" when the line names none
+ */
+export function writtenFirstRank(note, order = Object.keys(FEO.ranks)) {
+  const found = /\bwith\s+(?:1|one)\s+(?:as|at)\s+([A-Z]+)\s+rank\b/i.exec(String(note ?? ""));
+  const rank = found?.[1].toUpperCase() ?? "";
+  return order.includes(rank) ? rank : "";
+}
+
+/**
+ * The ranks a new unit of a class starts at: the usual ones, unless the class says the higher one is another, or
+ * its tier does, as a Trainee's does: all its proficiencies start at E.
+ * @param {ClassLike|null} cls
+ * @param {{first: string, others: string}} [ranks]   FEO.startingRanks
+ * @param {object} [tiers]                            FEO.classTiers
+ * @returns {{first: string, others: string}}
+ */
+export function startingRanksOf(cls, ranks = FEO.startingRanks, tiers = FEO.classTiers) {
+  const first = cls?.system.proficiencies?.firstRank || tiers[cls?.system.tier]?.firstRank || ranks.first;
+  return { first, others: ranks.others };
+}
+
+/**
+ * The ranks a new unit starts with in its class's proficiencies: D in one and E in the others, or whatever
+ * the class gives in place of D.
  * A class that offers a choice ("Axe or Lance or Sword") grants only as many as it lets the unit choose.
  * @param {ClassLike} cls
  * @param {{first: string, others: string}} [ranks]   FEO.startingRanks
@@ -266,7 +296,8 @@ export function resolveCaps({ classCaps = {}, manualCaps, boon = "", bane = "", 
 export function startingProficiencies(cls, ranks = FEO.startingRanks) {
   const { options = [], choose = 0 } = cls.system.proficiencies ?? {};
   const granted = choose > 0 ? options.slice(0, choose) : options;
-  return Object.fromEntries(granted.map((key, index) => [key, index === 0 ? ranks.first : ranks.others]));
+  const { first, others } = startingRanksOf(cls, ranks);
+  return Object.fromEntries(granted.map((key, index) => [key, index === 0 ? first : others]));
 }
 
 /* -------------------------------------------- */
@@ -479,6 +510,15 @@ export function planPromotion(unit, from, to, options = {}) {
   else {
     const kind = { starting: "class", promotion: "promotion", mastery: "mastery" }[tier.skill] ?? "class";
     learnSkills(change, system.skills?.[tier.skill], kind, { known, pick });
+  }
+
+  // A unit that started without a Generic Skill, as a Trainee does, takes one now. It takes the place of the
+  // skill its class started it with
+  if ( tiers[from?.system.tier]?.noGeneric ) {
+    change.genericSkill = true;
+    const kept = new Set([...change.skills.map((skill) => skill.name), ...change.choices.flatMap((choice) => choice.names)]
+      .map((name) => name.toLowerCase()));
+    change.forgets = classSkills(from.system.skills?.starting, known).names.filter((name) => !kept.has(name.toLowerCase()));
   }
   return change;
 }

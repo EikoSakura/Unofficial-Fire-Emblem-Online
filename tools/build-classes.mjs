@@ -51,7 +51,8 @@
  *   }
  *
  * `proficiencies.options` lists the proficiencies the class gives, `choose` how many of them a unit takes (0 for
- * all) and `note` the line as the sheet words it. A class of the first tier may give `gains` in place of `base`:
+ * all) and `note` the line as the sheet words it. A class whose one higher proficiency starts at other than D Rank
+ * ("All Weapons, with 1 at C rank") adds `"firstRank": "C"`. A class of the first tier may give `gains` in place of `base`:
  * it is one a Trainee promotes into.
  *
  * A class's image comes from assets/icons/classes when a file there is named after it (see the README in
@@ -209,6 +210,9 @@ for ( const { entry } of classes ) {
   for ( const key of entry.proficiencies?.options ?? [] ) {
     if ( !(key in FEO.proficiencies) ) fail(`${where}: unknown proficiency "${key}"`);
   }
+  const firstRank = entry.proficiencies?.firstRank;
+  if ( firstRank && !(firstRank in FEO.ranks) ) fail(`${where}: unknown rank "${firstRank}" for "firstRank"`);
+  if ( firstRank ) report.count("Values read with care", "a proficiency that starts at other than the usual rank", `${where}: ${firstRank} Rank`);
   for ( const key of Object.keys(entry.skills ?? {}) ) {
     if ( !SKILLS.includes(key) ) fail(`${where}: unknown skill slot "${key}"`);
   }
@@ -438,6 +442,7 @@ const documents = classes.map(({ entry, source, id }, index) => {
       proficiencies: {
         options: entry.proficiencies?.options ?? [],
         choose: entry.proficiencies?.choose ?? 0,
+        firstRank: entry.proficiencies?.firstRank ?? "",
         note: entry.proficiencies?.note ?? ""
       },
       skills: Object.fromEntries(SKILLS.map((slot) => [slot, resolveSkills(entry, slot)])),

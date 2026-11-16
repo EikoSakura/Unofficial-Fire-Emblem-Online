@@ -449,6 +449,59 @@ FEO.skillSlots = 4;
 FEO.skillUse = { cooldownExtra: 1 };
 
 /**
+ * Summoning, as the Summoner and Phantom of the Class Sheet give it (see `module/rules/summon.mjs`).
+ *
+ * A unit with `skill` puts a unit of `class` on a free tile next to it. It may have `limit` of them on the map
+ * at once; `more.skill` adds one, and one more for each of `more.levels` its own level has reached.
+ *
+ * What is summoned is a unit of its own, which keeps to its summoner's level and hands it the experience of
+ * its fights. It is made with no growth rates; `growth` is what its player then has to assign, and where none
+ * of it may go. It fights with one of `categories`, and each time it is summoned it is handed one weapon of
+ * that type, drawn with even odds from the `draws` of the last of `bands` its level has reached. `weapons` names
+ * each draw by weapon type; a draw without a weapon of the Phantom's type is left out.
+ */
+FEO.summon = {
+  skill: "Summon",
+  class: "Phantom",
+  limit: 1,
+  more: { skill: "Multi-Phantom", levels: [26, 31] },
+  growth: { points: 200, barred: ["hp", "def", "res"] },
+  categories: ["sword", "lance", "axe"],
+  weapons: {
+    bronze: { sword: "Bronze Sword", lance: "Bronze Lance", axe: "Bronze Axe" },
+    glass: { sword: "Glass Sword", lance: "Glass Lance", axe: "Glass Axe" },
+    devil: { sword: "Devil Sword", lance: "Devil Lance", axe: "Devil Axe" },
+    slim: { sword: "Slim Sword", lance: "Slim Lance", axe: "Slim Axe" },
+    iron: { sword: "Iron Sword", lance: "Iron Lance", axe: "Iron Axe" },
+    ironKukri: { sword: "Iron Kukri" },
+    ironStrong: { sword: "Iron Blade", lance: "Iron Greatlance", axe: "Iron Poleax" },
+    steel: { sword: "Steel Sword", lance: "Steel Lance", axe: "Steel Axe" },
+    steelKukri: { sword: "Steel Kukri" },
+    steelStrong: { sword: "Steel Blade", lance: "Steel Greatlance", axe: "Steel Poleax" },
+    silver: { sword: "Silver Sword", lance: "Silver Lance", axe: "Silver Axe" },
+    silverKukri: { sword: "Silver Kukri" },
+    silverStrong: { sword: "Silver Blade", lance: "Silver Greatlance", axe: "Silver Poleax" },
+    reach1: { sword: "Wind Edge", lance: "Javelin", axe: "Hand Axe" },
+    reach2: { sword: "Storm Sword", lance: "Short Spear", axe: "Short Axe" },
+    reach3: { sword: "Tempest Blade", lance: "Spear", axe: "Tomahawk" },
+    killer: { sword: "Killing Edge", lance: "Killer Lance", axe: "Killer Axe" },
+    quick: { sword: "Quick Sword", lance: "Quick Lance", axe: "Quick Axe" },
+    reaver: { sword: "Lancereaver", lance: "Axereaver", axe: "Swordreaver" },
+    brave: { sword: "Brave Sword", lance: "Brave Lance", axe: "Brave Axe" },
+    slayer: { sword: "Lanceslayer", lance: "Axeslayer", axe: "Swordslayer" },
+    meister: { sword: "Meisterschwert", lance: "Meisterlanze", axe: "Meisteraxt" }
+  },
+  bands: [
+    { from: 1, draws: ["bronze", "glass", "devil", "slim", "iron"] },
+    { from: 6, draws: ["devil", "glass", "iron", "ironKukri", "ironStrong", "reach1", "steel"] },
+    { from: 11, draws: ["devil", "glass", "ironKukri", "ironStrong", "reach1", "reach2", "steel", "steelKukri", "steelStrong", "killer", "quick"] },
+    { from: 16, draws: ["devil", "glass", "steelKukri", "steelStrong", "reach2", "silver", "killer", "quick"] },
+    { from: 21, draws: ["devil", "glass", "silver", "silverKukri", "silverStrong", "reach3", "killer", "reaver", "brave"] },
+    { from: 41, draws: ["devil", "glass", "silver", "silverKukri", "silverStrong", "reach3", "killer", "brave", "slayer", "meister"] }
+  ]
+};
+
+/**
  * Who stands with whom, for skills that ask about allies and enemies near a unit. Sides with the same camp are
  * allies of each other, sides with different camps are enemies, and a side without a camp is neither to
  * anybody, its own units included.
@@ -781,9 +834,15 @@ FEO.classStats = ["hp", "str", "mag", "def", "res", "dex", "spd", "luk", "mov", 
  * The rest describes promoting into the tier: `startLevel` is the level the unit becomes (`resetLevel` sets it
  * even when the unit is above it), `newRank` is the rank of newly gained proficiencies, `skill` names which of
  * the class's skills is learned, and `generic` allows a Generic Skill to be taken in its place.
+ *
+ * A tier may also say how a new unit of it starts apart from the rest. `noGeneric` marks a tier whose units start
+ * without the Generic Skill every other unit starts with: they take one on promoting out of the tier, in place
+ * of the skill their class started them with. `growthPoints` is the growth points they place freely, in place of
+ * `FEO.creation.growth.free`, and `firstRank` the rank of the one proficiency that would start higher, in place
+ * of `FEO.startingRanks.first`.
  */
 FEO.classTiers = {
-  trainee: { label: "FEO.Tier.trainee", order: 0, promoteAt: 10 },
+  trainee: { label: "FEO.Tier.trainee", order: 0, promoteAt: 10, noGeneric: true, growthPoints: 205, firstRank: "E" },
   base: { label: "FEO.Tier.base", order: 1, promoteAt: 20, startLevel: 1, resetLevel: true, newRank: "D", skill: "starting" },
   second: { label: "FEO.Tier.second", order: 2, promoteAt: 40, startLevel: 21, newRank: "D", skill: "promotion", generic: true },
   third: { label: "FEO.Tier.third", order: 3, startLevel: 41, newRank: "C", skill: "mastery" },
@@ -1162,6 +1221,12 @@ FEO.optionalSettings = {
   battalions: "battalions",
   breaking: "breaking",
   capturing: "capturing",
+  stagger: "stagger",
+  staffPassives: "staffPassives",
+  healCriticals: "healCriticals",
+  doubleCast: "doubleCast",
+  staffMissing: "staffMissing",
+  followUpCritical: "followUpCritical",
   leadership: "leadership",
   weaponKills: "weaponKills",
   levelCap: "levelCap"
@@ -1174,7 +1239,7 @@ FEO.optionalSettings = {
 FEO.settingsMenu = {
   play: ["incapacitation", "supportMethod"],
   characters: ["optionalAffinities", "affinityEffects", "additionalLives", "additionalGrowths", "holyBlood", "crests", "heartSeals", "glory", "manualGains", "weaponLevel", "skillCapacity", "alternateActivation", "levelCap"],
-  combat: ["combatArts", "battalions", "breaking", "additionalConditions", "capturing", "movementStars", "leadership", "weaponKills"]
+  combat: ["combatArts", "battalions", "breaking", "additionalConditions", "capturing", "stagger", "staffPassives", "healCriticals", "doubleCast", "staffMissing", "followUpCritical", "movementStars", "leadership", "weaponKills"]
 };
 
 /** The growth rate the Weapon Level module adds to the growth rates above when the world uses it. */
@@ -1313,6 +1378,36 @@ FEO.optionalGrowths = {
  * one that changes form while it is transformed or has transformations left. A target under a condition in
  * `outright`, or with nothing to fight back with but the weapon every Laguz has in humanoid form, is captured
  * without a fight, rider or not.
+ *
+ * `stagger` (Stagger): every unit has a Stagger bar beside its HP (see `module/rules/stagger.mjs`), as large as
+ * `share` percent of the HP it has when the bar is made. The HP a unit loses comes off the bar, except in a
+ * fight the unit began. A unit whose bar is empty is Staggered: what it takes in damage is multiplied by
+ * `taken`, and it cannot act until its own turn has ended as often as `turns` says: `away` when it was
+ * Staggered outside of its turn, `own` when it was during it. The bar regains `regain` percent of its full
+ * size as each of the unit's turns starts, and is full again once the unit recovers.
+ *
+ * The four Additional Staff Effects, each a rule of its own (see `module/rules/staves.mjs`):
+ *
+ * `staffPassives` (Passive Staff Effects): a staff does something for the unit that has it equipped, read as
+ * one more skill of that unit in the notation of skill effects (see `module/rules/skills.mjs`). `staves` holds
+ * what the staves the rule names do, by the name the Reference Sheet gives them. Of the others, a staff that
+ * restores HP gives its unit `heal` as each of its turns starts, one that inflicts a condition cures its unit
+ * of that condition then, and one that removes all conditions cures its unit of them all. The rest do nothing.
+ *
+ * `healCriticals` (Heal Criticals): a staff that heals may score a critical, at the user's `stat` divided by
+ * `divisor` in percent, which heals for `times` the amount.
+ *
+ * `doubleCast` (Double-Cast): a staff that heals may be cast a second time at once, at the sum of the user's
+ * `stats` divided by `divisor` in percent, unless its target is at full HP after the first.
+ *
+ * `staffMissing` (Staff Missing): a staff that is not used against an enemy may miss. It succeeds at the
+ * staff's Hit plus `times` the user's `stat`, in percent. `offensive` names the staves of the Reference Sheet
+ * that are used against enemies, which keep the hit rate of their own.
+ *
+ * `followUpCritical` (Follow-up Critical Multiplier): one of the combat variants, which each change a single
+ * rule of combat (see `module/rules/variants.mjs`). Every unit has an FCM, from `base` to `max`. On a follow-up
+ * attack its Critical is multiplied by its FCM before the foe's Critical Avoid is taken off. An FCM of `base`
+ * changes nothing. It changes the chance of a critical hit, never what a critical hit deals.
  *
  * `leadership` (Authority & Leadership): each Leadership Star gives `perStar` of the reading in use to its
  * bearer and to the units that have its bearer as their Authority. `range` is how close the Authority must be
@@ -1716,6 +1811,59 @@ FEO.optional = {
     barred: ["Ballistician", "Terror"],
     riders: ["Mounted", "Flying"],
     outright: ["sleep", "stun", "petrification", "freeze", "beckon", "seduce", "stop", "control"]
+  },
+  stagger: {
+    enabled: false,
+    share: 60,
+    regain: 20,
+    taken: 2,
+    turns: { away: 1, own: 2 }
+  },
+  staffPassives: {
+    enabled: false,
+    heal: [{ proc: { on: "turnStart", sure: true }, recover: { of: "mag", div: 3, plus: 5 } }],
+    staves: {
+      Speed: [{ stats: { spd: 2 } }],
+      Strength: [{ stats: { str: 2 } }],
+      Ensorcel: [{ stats: { mag: 2 } }],
+      Barrier: [{ stats: { res: 2 } }],
+      Defense: [{ stats: { def: 2 } }],
+      Enfeeble: [{ stats: { str: 1, mag: 1, def: 1, res: 1, dex: 1, spd: 1, luk: 1 } }],
+      Empower: [{ stats: { str: 1, mag: 1, def: 1, res: 1, dex: 1, spd: 1, luk: 1 } }],
+      Freeze: [{ combat: { dodge: 10 } }],
+      Obscure: [{ combat: { dodge: 10 } }],
+      Blind: [{ combat: { hit: 10 } }],
+      Candlelight: [{ combat: { attackSpeed: 1 } }],
+      Torch: [{ stats: { los: 1 } }],
+      Crest: [{ combat: { activation: 5 } }],
+      Haste: [{ stats: { spd: 4 } }],
+      Anew: [{ stats: { mov: 1 } }],
+      Expel: [{ when: { foeQuality: ["Terror"] }, taken: -3 }]
+    }
+  },
+  healCriticals: {
+    enabled: false,
+    stat: "luk",
+    divisor: 2,
+    times: 3
+  },
+  doubleCast: {
+    enabled: false,
+    stats: ["dex", "spd", "luk"],
+    divisor: 2
+  },
+  staffMissing: {
+    enabled: false,
+    stat: "dex",
+    times: 3,
+    offensive: ["Venom", "Freeze", "Pain", "Disarm", "Absorb", "Enfeeble", "Panic", "Assault", "Blind", "Disturb", "Bind",
+      "Inaction", "Charm", "Entrap", "Hex", "Silence", "Expel", "Thief", "Agony", "Miswarp", "Nightmare", "Berserk",
+      "Sleep", "Petrify"]
+  },
+  followUpCritical: {
+    enabled: false,
+    base: 1,
+    max: 5
   },
   leadership: {
     enabled: false,

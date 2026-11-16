@@ -15,9 +15,11 @@ import { takeHit } from "./defeat.mjs";
 import { unitsNear, unitsNearFoe } from "./positions.mjs";
 import { followsUp } from "./progression.mjs";
 import { prepareSkills, weaponStrikes } from "./skill-combat.mjs";
-import { PROC_TRIGGERS, hpHolds } from "./skills.mjs";
+import { PROC_TRIGGERS, hpHolds, readsDealt, resolveDealt } from "./skills.mjs";
+import { isStaggered, staggerHit, staggerInUse, staggerTimes } from "./stagger.mjs";
 import { heightBlocks, heightEdge } from "./terrain.mjs";
 import { buildChange } from "./timed.mjs";
+import { followUpTimes } from "./variants.mjs";
 
 /**
  * @typedef ExchangeWeapon
@@ -52,7 +54,13 @@ import { buildChange } from "./timed.mjs";
  * @property {boolean} [noCounter]                Is the unit prevented from counter-attacking?
  * @property {boolean} [break]                    Does the unit suffer from Break, which takes its counter-attack
  *                                                (see `breaking.mjs`)? Only read where the world plays with it
- * @property {boolean} [noDodge]                  Is the unit prevented from dodging? Only read for a unit
+ * @property {import("./stagger.mjs").StaggerBar} [stagger]
+ *                                                The unit's Stagger bar as it stands (see `stagger.mjs`). Only
+ *                                                read where the world plays with Stagger
+ * @property {number} [fcm]                       Its Follow-up Critical Multiplier, which its Critical is
+ *                                                multiplied by on a follow-up attack (see `variants.mjs`). Only
+ *                                                read where the world plays with it
+ * @property {boolean} [noDodge]                Is the unit prevented from dodging? Only read for a unit
  *                                                given without `conditions`, which say so themselves
  * @property {number} [hpMax]                     Maximum HP, which healing during the exchange stops at
  * @property {import("./conditions.mjs").ConditionState} [conditions]
@@ -84,8 +92,8 @@ import { buildChange } from "./timed.mjs";
  * @property {Combatant} unit
  * @property {string|null} blocked      Why this side makes no attack, or null if it attacks: one of down,
  *                                      targetDown, unarmed, broken, outOfRange, elevation, midrange, condition,
- *                                      silenced, noCombat, skill, artRange, break
- * @property {boolean} breaks           Does a hit of this side that deals damage Break its foe? Only ever the
+ *                                      silenced, noCombat, skill, artRange, break, staggered
+ * @property {boolean} breaks          Does a hit of this side that deals damage Break its foe? Only ever the
  *                                      side that begins the fight, with weapon triangle advantage
  * @property {number} strikes           How many times each of this side's attacks strikes
  * @property {number} openStrikes       How many times its first attack strikes, which a Combat Art may raise
@@ -117,7 +125,12 @@ import { buildChange } from "./timed.mjs";
  *                                      Dodge and takes off the damage
  * @property {number} hit               Chance to hit with the first attack, 0 to 100
  * @property {number} crit              Chance of a critical hit with the first attack, 0 to 100
- * @property {number} damage            Damage dealt by a first hit that is not critical
+ * @property {number} [fcm]             What this side's Critical is multiplied by on its follow-up attack, before
+ *                                      the foe's Critical Avoid is taken off. Only set for a side that follows
+ *                                      up with a Follow-up Critical Multiplier above 1
+ * @property {number} [critFollow]      Chance of a critical hit with that follow-up attack, 0 to 100, set
+ *                                      along with `fcm`
+ * @property {number} damage          Damage dealt by a first hit that is not critical
  * @property {number} damageLater       Damage dealt by a later hit, once the first has ended the target's
  *                                      conditions that end on being hit
  * @property {object} base              The numbers both units bring to every strike, before conditions
@@ -150,6 +163,8 @@ import { buildChange } from "./timed.mjs";
  * @property {("initiator"|"defender")[]} order   Who attacks, in order
  * @property {number[]} [scale]                   What the damage of each attack in `order` is multiplied by,
  *                                                when any of them is not a full attack
+ * @property {boolean[]} [followUps]              Which of the attacks in `order` are follow-up attacks whose
+ *                                                Critical is multiplied, when any of them is
  * @property {ExchangeSide} initiator
  * @property {ExchangeSide} defender
  */
@@ -162,6 +177,9 @@ import { buildChange } from "./timed.mjs";
  * @property {boolean} hit
  * @property {number|null} critRoll           Null when no critical roll was made
  * @property {number} critChance
+ * @property {number} [fcm]                   What the attacker's Critical was multiplied by before the target's
+ *                                            Critical Avoid was taken off, for a follow-up attack of a unit with
+ *                                            a Follow-up Critical Multiplier above 1
  * @property {boolean} crit
  * @property {number} damage                  Damage dealt, before capping at the target's remaining HP
  * @property {number} hpBefore                The target's HP before the attack
@@ -188,6 +206,8 @@ import { buildChange } from "./timed.mjs";
  *                                            then took none, and `damage` above is 0
  * @property {boolean} [evaded]               Did the target dodge the attack because its hit would have been
  *                                            fatal, whatever was rolled?
+ * @property {boolean} [staggered]            Did what the attack took from a unit empty its Stagger bar, so that
+ *                                            the unit is Staggered from here on?
  * @property {boolean} [added]                Was the attack added by a skill that activated?
  * @property {string} [skill]                 The skill that added it
  */
@@ -216,7 +236,12 @@ import { buildChange } from "./timed.mjs";
  * @property {number} healed                HP regained during the exchange
  * @property {boolean} held                 Did a condition gained in the exchange stop its remaining attacks?
  * @property {boolean} break                Did the unit come to suffer from Break in the exchange?
- * @property {{id?: string, name: string}[]} spent    The declared skills the fight spent, and for a skill that
+ * @property {import("./stagger.mjs").StaggerBar|null} stagger
+ *                                          The unit's Stagger bar after the exchange, or null for a unit whose
+ *                                          bar the exchange leaves alone: the one that began it, and any unit
+ *                                          where the world does not play with Stagger
+ * @property {boolean} staggered            Did the unit come to be Staggered in the exchange?
+ * @property {{id?: string, name: string}[]} spent   The declared skills the fight spent, and for a skill that
  *                                          takes effect by itself one entry for each time it did
  */
 
@@ -648,6 +673,10 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
     return null;
   };
   const blocked = { initiator: unable(initiator), defender: null };
+
+  // A Staggered unit cannot act: it begins no fight and answers none, and takes more from every hit
+  const staggered = { initiator: isStaggered(initiator.stagger), defender: isStaggered(defender.stagger) };
+  if ( !blocked.initiator && staggered.initiator ) blocked.initiator = "staggered";
   if ( !blocked.initiator && (defender.hp <= 0) && !defender.incapacitated ) blocked.initiator = "targetDown";
   if ( !blocked.initiator && !reaches(initiator.weapon, tiles, initiator.stats, units.initiator.fx?.ranges) ) blocked.initiator = "outOfRange";
   // Melee attacks cannot be made against targets at different elevations
@@ -667,6 +696,7 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
     }
     // A unit that suffers from Break makes no counter-attack
     if ( !blocked.defender && defender.break && breakInUse() ) blocked.defender = "break";
+    if ( !blocked.defender && staggered.defender ) blocked.defender = "staggered";
     // Skills may change how far the defender's weapon reaches, make the attack a Midrange one, or let the
     // defender answer a Midrange attack with a weapon that only reaches 1 tile
     const answer = {
@@ -770,7 +800,7 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
       autoHit: !!foe.incapacitated || !!fx?.rules.has("sureHit"),
       autoCrit: !!fx?.rules.has("sureCrit"),
       noCrit: !!fx?.rules.has("noCrit") || !!foeFx?.rules.has("foeNoCrit"),
-      damageScale: (fx?.damageMultiplier ?? 1) * (foeFx?.takenMultiplier ?? 1)
+      damageScale: (fx?.damageMultiplier ?? 1) * (foeFx?.takenMultiplier ?? 1) * staggerTimes(foe.stagger)
     };
     // An Art that strikes more than once does not add to what the weapon or a skill already gives, and
     // unless it persists only its unit's first attack strikes that often
@@ -796,6 +826,13 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
     const first = numbersFor(opening, { ...strike, attacker: mine, target: theirs });
     const later = numbersFor(base, { ...strike, attacker: mine, target: endOnHit(theirs, strike).state });
 
+    // Follow-up Critical Multiplier: a side that follows up has its Critical multiplied for that attack, before
+    // the foe's Critical Avoid is taken off. Everything the attack counts as its unit's Critical is multiplied
+    const fcm = (!blocked[key] && doubles) ? followUpTimes(unit.fcm) : 1;
+    const follow = (fcm > 1)
+      ? numbersFor(base, { ...strike, attacker: mine, target: endOnHit(theirs, strike).state, fcm })
+      : null;
+
     // A foe that dodges every hit that would be fatal to it: the Hit of such an attack is held to a cap, and
     // it misses whatever is rolled
     const evaded = !blocked[key] && !!foeFx?.rules.has("dodgeFatal") && (foe.hp > 0) && (first.damage >= foe.hp);
@@ -806,6 +843,7 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
       hit: evaded ? Math.min(first.hit, FEO.fatalDodge.hitCap) : first.hit,
       evaded,
       crit: first.crit,
+      ...(follow ? { fcm, critFollow: follow.crit } : {}),
       damage: first.damage,
       damageLater: later.damage,
       base,
@@ -846,13 +884,16 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
 
   // The initiator attacks, the defender answers, then whoever is fast enough attacks again. A defender whose
   // skill lets it go first does. Each attack strikes as many times as the weapon or a skill makes it, and
-  // attacks that skills add come after all the others, at the share of their damage the skill gives
+  // attacks that skills add come after all the others, at the share of their damage the skill gives. Of them
+  // all only the attack a side makes for being fast enough is a follow-up, with every strike of it
   const order = [];
   const scale = [];
-  const attack = (key, share = 1, strikes = sides[key].strikes) => {
+  const followUps = [];
+  const attack = (key, share = 1, strikes = sides[key].strikes, follow = false) => {
     for ( let n = 0; n < strikes; n++ ) {
       order.push(key);
       scale.push(share);
+      followUps.push(follow);
     }
   };
   if ( !blocked.initiator ) {
@@ -860,7 +901,7 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
     const opening = first ? ["defender", "initiator"] : ["initiator", "defender"];
     for ( const key of opening ) if ( !blocked[key] ) attack(key, 1, sides[key].openStrikes);
     for ( const key of ["initiator", "defender"] ) {
-      if ( !blocked[key] && sides[key].doubles ) attack(key);
+      if ( !blocked[key] && sides[key].doubles ) attack(key, 1, sides[key].strikes, (sides[key].fcm ?? 1) > 1);
     }
     for ( const key of ["initiator", "defender"] ) {
       if ( blocked[key] ) continue;
@@ -878,6 +919,7 @@ export function planExchange(initiator, defender, { distance = 1, ground = null 
     ...sides
   };
   if ( scale.some((share) => share !== 1) ) plan.scale = scale;
+  if ( followUps.some(Boolean) ) plan.followUps = followUps;
   return plan;
 }
 
@@ -919,15 +961,17 @@ export function rollBudget(plan) {
     const mayBurst = Object.keys(target.unit.conditions ?? {}).some(bursts)
       || inflicts.some((entry) => bursts(entry.id))
       || [...(mine.attack ?? []), ...landing].some((proc) => parts(proc).some((part) => {
-        return part.inflicts.some((entry) => bursts(entry.id) || bursts(entry.upgrade?.id));
+        return part.inflicts.some((entry) => bursts(entry.id) || bursts(entry.upgrade?.id) || (entry.anyOf ?? []).some(bursts));
       }))
       || (mine.struck ?? []).some((proc) => proc.inflictsAttacker.some(bursts));
 
     let landed = 2 + rolled(landing) + upgrades(landing) + rolled(target.chances?.struck) + rolled(mine.kill) + (mayBurst ? 1 : 0)
       + (plan[key].backfire ? 1 : 0);
     for ( const entry of inflicts ) landed += (entry.chance < 100 ? 1 : 0) + (entry.dice ? 1 : 0);
+    // A die for the turns a condition lasts, and one for each pick among several conditions or changes
     for ( const proc of [...(mine.attack ?? []), ...landing] ) {
-      for ( const part of parts(proc) ) landed += part.inflicts.filter((entry) => entry.dice).length;
+      for ( const part of parts(proc) ) landed += part.inflicts.filter((entry) => entry.dice).length + part.inflicts.filter((entry) => entry.anyOf).length;
+      landed += (proc.grants ?? []).filter((grant) => grant.pick).length;
     }
 
     // Conditions that may be applied to the target, and those its skills may give the attacker in return
@@ -973,7 +1017,8 @@ export function rollBudget(plan) {
  * Conditions are followed strike by strike: one that ends when its unit is hit stops applying from the next
  * strike, one inflicted by a hit applies from the next strike, and a unit that gains a condition which stops
  * it from counter-attacking makes no further attacks. The stats each unit fights with stay as they were when
- * the exchange began.
+ * the exchange began. Where the world plays with Stagger, a unit whose Stagger bar is emptied makes no further
+ * attacks either, and takes more from the very next hit on.
  * @param {ExchangePlan} plan
  * @param {() => number} d100   Returns a whole number from 1 to 100
  * @returns {ExchangeResult}
@@ -992,6 +1037,7 @@ export function resolveExchange(plan, d100) {
       healed: 0,
       held: false,
       break: false,
+      staggered: false,
       next: { hit: 0, damage: 0, critical: 0 },
       landed: false,
       struck: false,
@@ -1029,6 +1075,22 @@ export function resolveExchange(plan, d100) {
     return { skill: proc.skill, on: proc.on, by, roll: rolled, chance: proc.chance, success: rolled <= proc.chance };
   };
 
+  // Stagger: the bar of the unit that did not begin the fight, which the HP it loses comes off, whatever took
+  // it. The unit that began the fight takes no Stagger damage in it. A unit whose bar is emptied is Staggered
+  // at once: it makes no further attack, and everything it takes from here on is multiplied
+  const bars = (staggerInUse() && plan.defender.unit.stagger) ? { defender: { ...plan.defender.unit.stagger } } : {};
+  const weak = (key) => staggerTimes(bars[key]);
+  const jolt = (key, lost) => {
+    if ( !bars[key] ) return false;
+    const after = staggerHit(bars[key], lost, { standing: state[key].hp > 0 });
+    bars[key] = { value: after.value, max: after.max, turns: after.turns };
+    if ( !after.staggered ) return false;
+    state[key].staggered = true;
+    state[key].takenNow *= FEO.optional.stagger.taken;
+    shifted = true;
+    return true;
+  };
+
   // Does a skill take effect now that its moment has come? One that is sure does without a roll, and one that
   // only has its moment once in a fight has had it after the first time
   const spent = new Set();
@@ -1064,10 +1126,27 @@ export function resolveExchange(plan, d100) {
   // Changes that last a while which a skill grants as it takes effect: to its unit, to the foe if it still
   // stands, or to the units around. The initiator is in its own turn, which counts for how long they last.
   // Where the units around cannot be seen the skill is announced instead
+  // `part` gives only what is for the skill's own side ("own") or for its foe's ("foe"); `dealt` is the damage
+  // of the hit that grants it, for a change that is read from it
   const granted = [];
-  const give = (proc, by) => {
+  const foeSide = (grant) => (grant.to === "foe") || (grant.around === "foe");
+  const give = (proc, by, { part = null, dealt = null } = {}) => {
     const giver = plan[by].unit;
-    for ( const grant of proc.grants ?? [] ) {
+    for ( let grant of proc.grants ?? [] ) {
+      if ( part && ((part === "foe") !== foeSide(grant)) ) continue;
+
+      // One of several changes, picked by a die
+      if ( grant.pick?.length ) {
+        const { pick, ...rest } = grant;
+        const count = pick.length;
+        grant = { ...rest, ...pick[Math.min(Math.floor(((d100() - 1) * count) / 100), count - 1)] };
+      }
+
+      // A change read from the damage of the hit: one that hit made nothing of is not granted
+      if ( readsDealt(grant.effects) ) {
+        if ( !(dealt > 0) ) continue;
+        grant = { ...grant, effects: resolveDealt(grant.effects, dealt) };
+      }
       const about = { skill: proc.source ?? proc.skill, giver: giver.uuid ?? "", giverInTurn: by === "initiator" };
       if ( grant.reach ) {
         const found = (grant.around === "foe")
@@ -1095,6 +1174,7 @@ export function resolveExchange(plan, d100) {
         for ( const effect of grant.effects ?? [] ) {
           if ( effect.takenPercent ) state[to].takenNow *= Math.max(1 + (effect.takenPercent / 100), 0);
           if ( effect.rules?.includes("noSkillDamage") ) state[to].unharmed = true;
+          if ( effect.calc?.dodgeBy === "none" ) state[to].dodgeless = true;
         }
         shifted = true;
       }
@@ -1110,8 +1190,8 @@ export function resolveExchange(plan, d100) {
       });
     }
   };
-  const remind = (proc, by) => {
-    give(proc, by);
+  const remind = (proc, by, about = {}) => {
+    give(proc, by, about);
     if ( !proc.remind || ((proc.remind === "foe") && (state[other(by)].hp <= 0)) ) return;
     if ( !reminders.some((entry) => (entry.skill === proc.skill) && (entry.by === by)) ) reminders.push({ skill: proc.skill, by });
   };
@@ -1165,8 +1245,10 @@ export function resolveExchange(plan, d100) {
     const target = state[to];
     if ( !(proc.retaliate > 0) || (target.hp <= 0) || unharmed(to) ) return;
     const before = target.hp;
-    target.hp = proc.nonlethal ? Math.max(before - proc.retaliate, 1) : lose(plan[to].unit, before, proc.retaliate);
-    into.push({ skill: proc.skill, by, to, amount: proc.nonlethal ? before - target.hp : proc.retaliate });
+    const amount = proc.retaliate * weak(to);
+    target.hp = proc.nonlethal ? Math.max(before - amount, 1) : lose(plan[to].unit, before, amount);
+    into.push({ skill: proc.skill, by, to, amount: proc.nonlethal ? before - target.hp : amount });
+    jolt(to, before - target.hp);
   };
 
   // What a skill sets aside for its unit's next attack; `margin` is by how much the attack it dodged missed
@@ -1188,13 +1270,21 @@ export function resolveExchange(plan, d100) {
         for ( const [stat, amount] of Object.entries(proc.foeCombat) ) boost[other(key)][stat] = (boost[other(key)][stat] ?? 0) + eased(other(key), amount);
         boost[key].damage += proc.damage;
         if ( proc.freeUses ) state[key].freeUses = true;
+
+        // HP the skill restores to its unit before the first attack
+        const restored = Math.max(Math.min(proc.recover, (plan[key].unit.hpMax ?? Infinity) - state[key].hp), 0);
+        state[key].hp += restored;
+        state[key].healed += restored;
       }
     }
   }
 
   // Every attack that is planned. A skill that activates can turn one into several, which join the queue.
-  // `added` names the skill that added an attack, and `groups` the runs of attacks that share one weapon use
-  const queue = plan.order.map((key, index) => ({ key, share: plan.scale?.[index] ?? 1, part: null, added: null, groups: [] }));
+  // `added` names the skill that added an attack, and `groups` the runs of attacks that share one weapon use.
+  // `follow` marks a follow-up attack whose Critical is multiplied, and the attacks a skill turns it into
+  const queue = plan.order.map((key, index) => {
+    return { key, share: plan.scale?.[index] ?? 1, part: null, added: null, groups: [], follow: !!plan.followUps?.[index] };
+  });
   for ( let index = 0; index < queue.length; index++ ) {
     const entry = queue[index];
     const key = entry.key;
@@ -1204,21 +1294,24 @@ export function resolveExchange(plan, d100) {
     if ( (mine.hp <= 0) || ((foe.hp <= 0) && !plan[other(key)].unit.incapacitated) ) break;
 
     // A weapon that broke makes no further attack, unless the attack belongs to a run its last use paid for.
-    // Neither does a unit that a condition holds, or that has come to suffer from Break
+    // Neither does a unit that a condition holds, or that has come to suffer from Break or to be Staggered
     const paid = entry.groups.some((group) => group.spent);
-    if ( (mine.broke && !paid) || mine.held || mine.break ) continue;
+    if ( (mine.broke && !paid) || mine.held || mine.break || mine.staggered ) continue;
     const weapon = side.unit.weapon;
     const procs = [];
 
     // This side's chances to activate on an attack. An attack a skill added rolls none of its own
+    // What such a skill grants its own side comes at once; what it grants its foe waits for the attack to land
     const parts = entry.part ? [entry.part] : [];
+    const fired = [];
     if ( !entry.added && side.base ) {
       // The attacks a skill adds keep the share of the attack they came from, as it was planned
       const planned = entry.share;
       let next = index + 1;
       for ( const proc of side.chances?.attack ?? [] ) {
         if ( !fire(proc, key, procs) ) continue;
-        give(proc, key);
+        give(proc, key, { part: "own" });
+        fired.push(proc);
         if ( !proc.sequence ) {
           parts.push(proc);
           continue;
@@ -1229,7 +1322,7 @@ export function resolveExchange(plan, d100) {
         if ( first.share !== null ) entry.share *= first.share;
         if ( group ) entry.groups.push(group);
         queue.splice(next, 0, ...rest.map((part) => {
-          return { key, share: (part.share ?? 1) * planned, part, added: proc.skill, groups: group ? [group] : [] };
+          return { key, share: (part.share ?? 1) * planned, part, added: proc.skill, groups: group ? [group] : [], follow: entry.follow };
         }));
         next += rest.length;
       }
@@ -1249,8 +1342,12 @@ export function resolveExchange(plan, d100) {
     const opens = !mine.swung;
     const opener = opens ? side.opener : null;
     mine.swung = true;
+
+    // Follow-up Critical Multiplier: what this side's Critical is multiplied by for a follow-up attack, before
+    // the foe's Critical Avoid is taken off. It changes the chance of a critical hit, not what one deals
+    const fcm = entry.follow ? (side.fcm ?? 1) : 1;
     const changed = parts.length || Object.values(boost[key]).some(Boolean) || boost[other(key)].dodge
-      || Object.values(pending).some(Boolean) || !!side.opener;
+      || Object.values(pending).some(Boolean) || !!side.opener || (fcm !== 1);
     if ( side.base && (shifted || changed) ) {
       const base = { ...side.base };
       for ( const [name, amount] of Object.entries(opener ?? {}) ) base[name] += amount;
@@ -1258,10 +1355,14 @@ export function resolveExchange(plan, d100) {
       base.critical += boost[key].critical + (pending.critical ?? 0);
       base.damage += boost[key].damage + (pending.damage ?? 0);
       base.dodge += boost[other(key)].dodge;
+
+      // A target that a skill has left no Dodge in this fight
+      if ( foe.dodgeless ) base.dodge = 0;
       let scale = (side.strike.damageScale ?? 1) * foe.takenNow;
       let ignored = 0;
       for ( const part of parts ) {
-        base.damage += part.damage + Math.floor(((side.power ?? 0) * part.damagePercent) / 100);
+        base.damage += part.damage + Math.floor(((side.power ?? 0) * part.damagePercent) / 100)
+          + Math.floor(((Math.max(foe.hp, 0) * (part.foeHpPercent ?? 0)) / 100) + 1e-9);
         base.accuracy += part.hit;
         base.critical += part.critical;
         scale *= part.damageMultiplier;
@@ -1274,7 +1375,7 @@ export function resolveExchange(plan, d100) {
       // What is left of the target's defence is rounded down, as it is for a skill that always ignores a share
       const resisted = side.resisted ?? 0;
       base.damage += resisted - Math.floor(((resisted * (100 - ignored)) / 100) + 1e-9);
-      numbers = numbersFor(base, { ...side.strike, damageScale: scale, attacker: mine.conditions, target: foe.conditions });
+      numbers = numbersFor(base, { ...side.strike, damageScale: scale, attacker: mine.conditions, target: foe.conditions, fcm });
       if ( (sure === true) || ((sure === "ifAny") && (numbers.hit >= 1)) ) numbers.hit = 100;
     }
 
@@ -1418,7 +1519,14 @@ export function resolveExchange(plan, d100) {
     // Damage past 0 HP is kept for a unit that can be Incapacitated; otherwise HP stops at 0
     foe.hp = lose(plan[other(key)].unit, foe.hp, damage);
     const kill = lands && (hpBefore > 0) && (foe.hp <= 0);
-    if ( backfire?.success && (backfire.damage > 0) ) mine.hp = lose(side.unit, mine.hp, backfire.damage);
+    if ( backfire?.success && (backfire.damage > 0) ) {
+      const had = mine.hp;
+      mine.hp = lose(side.unit, mine.hp, backfire.damage);
+      jolt(key, had - mine.hp);
+    }
+
+    // Stagger: what the hit took comes off the bar of a unit that did not begin the fight
+    const jolted = jolt(other(key), hpBefore - foe.hp);
 
     // A share of the damage of the hit, set aside for the next attack of the unit that took it
     const taken = Math.max(Math.min(hpBefore, damage), 0);
@@ -1432,8 +1540,10 @@ export function resolveExchange(plan, d100) {
       }
     }
 
-    // What landing the hit leaves for the table is said once it is known whether the foe still stands
-    for ( const proc of landing ) remind(proc, key);
+    // What landing the hit leaves for the table is said once it is known whether the foe still stands, and
+    // what a skill that activated for this attack grants its foe is granted now that the attack has landed
+    for ( const proc of landing ) remind(proc, key, { dealt: taken });
+    if ( lands ) for ( const proc of fired ) remind(proc, key, { part: "foe", dealt: taken });
 
     // What defeating the foe sets off
     if ( kill ) {
@@ -1452,6 +1562,12 @@ export function resolveExchange(plan, d100) {
       for ( const part of [...parts, ...landing] ) {
         for ( const infliction of part.inflicts ) {
           let id = infliction.id;
+
+          // One of several conditions, picked by a die
+          if ( infliction.anyOf?.length ) {
+            const count = infliction.anyOf.length;
+            id = infliction.anyOf[Math.min(Math.floor(((d100() - 1) * count) / 100), count - 1)];
+          }
           if ( infliction.upgrade ) {
             const rolled = d100();
             const success = rolled <= infliction.upgrade.chance;
@@ -1491,8 +1607,11 @@ export function resolveExchange(plan, d100) {
       // can defeat the unit, and is nobody's kill
       if ( rest.burst?.harm ) {
         if ( (foe.hp > 0) && !unharmed(other(key)) ) {
+          const had = foe.hp;
+          rest.burst.harm *= weak(other(key));
           foe.hp = lose(plan[other(key)].unit, foe.hp, rest.burst.harm);
           harms.push({ skill: rest.burst.skill, by: key, to: other(key), amount: rest.burst.harm });
+          jolt(other(key), had - foe.hp);
         }
         else delete rest.burst.harm;
       }
@@ -1512,6 +1631,7 @@ export function resolveExchange(plan, d100) {
         const before = mine.hp;
         mine.hp = nonlethal ? Math.max(before - amount, 1) : lose(side.unit, before, amount);
         reflected += nonlethal ? before - mine.hp : amount;
+        jolt(key, before - mine.hp);
       }
 
       // What inflicting a condition sets off for both units, for each one the hit gave the target
@@ -1573,8 +1693,10 @@ export function resolveExchange(plan, d100) {
       conditions: effects
     };
     if ( procs.length ) attack.procs = procs;
+    if ( fcm !== 1 ) attack.fcm = fcm;
     if ( evaded ) attack.evaded = true;
     if ( backfire ) attack.backfire = backfire;
+    if ( jolted ) attack.staggered = true;
     if ( reflected > 0 ) attack.reflected = reflected;
     if ( harms.length ) attack.harm = harms;
     if ( entry.added ) {
@@ -1616,6 +1738,8 @@ export function resolveExchange(plan, d100) {
       healed: mine.healed,
       held: mine.held,
       break: mine.break,
+      stagger: bars[key] ?? null,
+      staggered: mine.staggered,
       spent: [...(attacks.length ? (plan[key].declared ?? []) : []), ...mine.counted]
     };
   };

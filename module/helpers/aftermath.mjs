@@ -80,9 +80,12 @@ export function recordOf(actor) {
  * @param {ExchangeResult} result
  * @param {object} [options]
  * @param {{initiator?: boolean, defender?: boolean}} [options.earns]   Which sides earn experience
+ * @param {{initiator?: {name: string, exp: number}|null, defender?: {name: string, exp: number}|null}} [options.heirs]
+ *          For a side whose experience goes to another unit, as a summoned unit's goes to its summoner: that
+ *          unit's name and the experience it has
  * @returns {{initiator: Aftermath, defender: Aftermath}}
  */
-export function exchangeAftermath(plan, result, { earns = {} } = {}) {
+export function exchangeAftermath(plan, result, { earns = {}, heirs = {} } = {}) {
   const record = (side) => plan[side].unit.record ?? {};
   const fought = result.attacks.length > 0;
   const awards = exchangeExp(plan, result, { initiator: record("initiator").level, defender: record("defender").level });
@@ -98,8 +101,11 @@ export function exchangeAftermath(plan, result, { earns = {} } = {}) {
       // Skills of the unit, and of the units around it, can multiply what it earns
       const earner = earnerOf(unit);
       const scaled = scaleExp(awards[side].amount, expSources(earner.skills, earner.self));
-      const { exp, ready } = gainExp(info.exp, scaled.amount);
+      // What a summoned unit earns is added to what its summoner has
+      const heir = heirs[side] ?? null;
+      const { exp, ready } = gainExp(heir ? heir.exp : info.exp, scaled.amount);
       aftermath.exp = { ...awards[side], amount: scaled.amount, total: exp, ready };
+      if ( heir ) aftermath.exp.to = heir.name;
       if ( scaled.sources.length && (scaled.base > 0) ) Object.assign(aftermath.exp, { base: scaled.base, times: scaled.times, sources: scaled.sources });
     }
 
@@ -158,7 +164,8 @@ export function aftermathChanges(changes, aftermath) {
   for ( const side of SIDES ) {
     const after = aftermath[side];
     const change = changes[side];
-    if ( after.exp?.amount > 0 ) change.exp = after.exp.amount;
+    // Experience that goes to another unit is saved on that unit, by whoever saves the changes
+    if ( (after.exp?.amount > 0) && !after.exp.to ) change.exp = after.exp.amount;
     if ( after.wounds > 0 ) change.wounds = after.wounds;
     if ( after.shift?.mode === "gauge" ) {
       change.shift = { value: after.shift.value, active: after.shift.active, fought: after.shift.fought };
@@ -211,8 +218,11 @@ export function aftermathLines(plan, aftermath, i18n) {
 
     if ( after.exp ) {
       const { amount, reason, total, ready } = after.exp;
+
+      // A summoned unit's experience is its summoner's, and is told of as that
+      const earner = after.exp.to ?? name;
       if ( amount > 0 ) notable.push({
-        label: i18n.format(ready ? "FEO.Exp.gainsReady" : "FEO.Exp.gains", { name, amount }),
+        label: i18n.format(ready ? "FEO.Exp.gainsReady" : "FEO.Exp.gains", { name: earner, amount }),
         cls: "gold"
       });
 
@@ -220,7 +230,7 @@ export function aftermathLines(plan, aftermath, i18n) {
       const times = expTimes(after.exp, i18n);
       const why = i18n.localize(`FEO.Exp.reason.${reason}`);
       if ( (amount > 0) || (reason !== "none") ) details.push({
-        label: `${name} · ${i18n.localize("FEO.Unit.exp")}`,
+        label: `${earner} · ${i18n.localize("FEO.Unit.exp")}`,
         value: i18n.format("FEO.Exp.detail", {
           amount,
           reason: times ? `${why}, ${times}` : why,

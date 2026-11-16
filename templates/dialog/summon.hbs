@@ -1,0 +1,22 @@
+<p class="hint">{{localize "FEO.Summon.dialog.where"}}</p>
+<div class="pad">
+  {{#each tiles as |tile|}}
+  <label class="spot {{tile.side}}{{#if tile.taken}} taken{{/if}}" data-tooltip="{{tile.label}}" aria-label="{{tile.label}}">
+    <input type="radio" name="tile" value="{{tile.side}}" {{checked tile.checked}} {{disabled tile.taken}}>
+    <i class="fa-solid {{tile.icon}}" inert></i>
+  </label>
+  {{/each}}
+  <img class="self" src="{{img}}" alt="">
+</div>
+{{#if categories}}
+<p class="hint">{{localize "FEO.Summon.dialog.weapon"}}</p>
+<div class="types">
+  {{#each categories as |entry|}}
+  <label class="type">
+    <input type="radio" name="category" value="{{entry.key}}" {{checked entry.checked}}>
+    <b>{{entry.label}}</b>
+  </label>
+  {{/each}}
+</div>
+<p class="hint">{{localize "FEO.Summon.dialog.kept"}}</p>
+{{/if}}

@@ -1,26 +1,31 @@
+import { FEO } from "../config.mjs";
 import { relationOf } from "../rules/positions.mjs";
-import { castStaff, staffBends } from "../rules/staves.mjs";
+import { castStaff, forEachEnemy, forSeveral, staffBends, staffChances, staffDice } from "../rules/staves.mjs";
+import { rollD100, rollFromResults } from "./chat.mjs";
 import { armyOf, measureDistance } from "./exchange.mjs";
-import { standingOf } from "./positions.mjs";
+import { standingOf, tokenInView } from "./positions.mjs";
 import { reachText, staffRows } from "./staff-context.mjs";
 import { grantTimed } from "./timed.mjs";
 
 /**
  * Staves in Foundry: a staff that heals one unit restores its HP when it is used, and the skills of the two
- * units have their say. Everything else a staff does stays on its card for the table.
+ * units have their say. An Offensive Staff rolls to hit the enemy it is used on. Everything else a staff does
+ * stays on its card for the table. Where the world plays with the Additional Staff Effects, the dice they need
+ * are rolled here.
  *
  * @import {StaffCast, StaffUnit} from "../rules/staves.mjs"
  */
 
 /**
- * Describe a unit as it is now for the staff rules: its numbers, the skills it has equipped and the lasting
- * changes it carries, and what it has around it.
+ * Describe a unit as it is now for the staff rules: its numbers, the skills it has equipped, the lasting
+ * changes it carries and the auras it receives from the units around it, and what it has around it.
  * @param {Actor} actor
  * @param {TokenDocument|null} [token]    Its token, if it has one on a map
  * @returns {StaffUnit}
  */
 export function staffUnitOf(actor, token = null) {
   const system = actor.system;
+  const place = standingOf(token);
   return {
     name: token?.name || actor.name,
     uuid: actor.uuid ?? "",
@@ -30,8 +35,12 @@ export function staffUnitOf(actor, token = null) {
     stats: system.statValues,
     conditions: system.conditions ?? {},
     qualities: system.specialQualities ?? "",
-    skills: [...(system.skills?.entries ?? []), ...(system.skills?.timed ?? [])],
-    near: standingOf(token)?.near ?? null
+    skills: [...(system.skills?.entries ?? []), ...(system.skills?.timed ?? []), ...(place?.auras ?? [])],
+    near: place?.near ?? null,
+
+    // For the skills that roll to take effect as a staff is used
+    activation: system.skills?.activation ?? 0,
+    always: !!system.skills?.rules?.includes("alwaysActivate")
   };
 }
 
@@ -45,7 +54,7 @@ export function staffUnitOf(actor, token = null) {
  * @returns {number}
  */
 export function healsMore(actor, amount) {
-  const unit = staffUnitOf(actor);
+  const unit = staffUnitOf(actor, actor.token ?? tokenInView(actor));
   const { more } = staffBends(unit.skills, unit);
   return more ? Math.floor(((amount * (100 + more)) / 100) + 1e-9) : amount;
 }
@@ -59,19 +68,60 @@ export function healsMore(actor, amount) {
  * @param {TokenDocument|null} token      Its token, if it has one on the scene
  * @param {Item} item                     The staff
  * @param {Token|null} [ally]             The one other unit the user has targeted, if any
- * @returns {Promise<{cast: StaffCast, rows: object[], range: string|null, freeUse: boolean}>}
+ * @param {Token[]} [others]              Every other unit the user has targeted, for a staff for several units
+ * @returns {Promise<{cast: StaffCast, rows: object[], range: string|null, freeUse: boolean, rolls: Roll[]}>}
  *          What happened, the rows for the staff's card, the staff's Range as skills make it when they
- *          change it, and whether the staff is spared its use
+ *          change it, whether the staff is spared its use, and the dice that were used
  */
-export async function castStaffFor(actor, token, item, ally = null) {
+export async function castStaffFor(actor, token, item, ally = null, others = []) {
   const target = ally?.actor ?? null;
   const targetToken = ally?.document ?? null;
   const names = { caster: token?.name || actor.name, target: targetToken?.name || target?.name || "" };
+  const caster = staffUnitOf(actor, token);
+
+  // Additional Staff Effects: a staff that may miss counts what is added to its user's Hit whatever it
+  // attacks with, and a staff for several units rolls for each. Every die that may be needed is rolled at
+  // once, and the message shows the ones that were used
+  if ( FEO.optional.staffMissing.enabled ) {
+    const terms = actor.system.combatWith(item.system).accuracy.terms;
+    caster.hitBonus = terms.reduce((sum, term) => sum + (term.modifier ? term.value : 0), 0);
+  }
+  const several = forSeveral(item.system.effect) ? others.filter((other) => other?.actor) : [];
+
+  // An Offensive Staff rolls to hit the enemy it is used on, and one for each enemy in range rolls for every
+  // enemy on the map that it reaches: Offensive Staff Hit against the Offensive Staff Avoid of each
+  const relation = target ? relationOf(armyOf(actor, token), armyOf(target, targetToken)) : null;
+  const avoidOf = (unit) => unit?.system.combat?.staffAvoid?.value ?? 0;
+  caster.staffHit = actor.system.combatWith(item.system).staffHit.value;
+  const enemies = (token?.parent && forEachEnemy(item.system.effect)) ? token.parent.tokens.filter((other) => {
+    if ( (other === token) || (other.actor?.type !== "unit") || other.actor.system.defeat?.out ) return false;
+    if ( other.hidden && !game.user.isGM ) return false;
+    return relationOf(armyOf(actor, token), armyOf(other.actor, other)) === "enemy";
+  }).map((other) => ({ name: other.name || other.actor.name, staffAvoid: avoidOf(other.actor), distance: measureDistance(token, other) })) : [];
+  const needed = staffDice(several.length, FEO.optional) + staffChances(caster.skills)
+    + ((relation === "enemy") ? 1 : 0) + enemies.length;
+  const { results } = needed ? await rollD100(needed) : { results: [] };
+  const used = [];
   const cast = castStaff({
-    staff: { name: item.name, effect: item.system.effect, range: item.system.range },
-    caster: staffUnitOf(actor, token),
-    target: target ? { ...staffUnitOf(target, targetToken), ally: relationOf(armyOf(actor, token), armyOf(target, targetToken)) === "ally" } : null,
-    distance: (token && targetToken) ? measureDistance(token, targetToken) : null
+    staff: {
+      name: item.name,
+      sheetName: item.flags?.[FEO.id]?.sheetName ?? item.name,
+      effect: item.system.effect,
+      range: item.system.range,
+      hit: item.system.hit
+    },
+    caster,
+    target: target ? {
+      ...staffUnitOf(target, targetToken), ally: relation === "ally", enemy: relation === "enemy", staffAvoid: avoidOf(target)
+    } : null,
+    targets: several.map((other) => ({ name: other.document?.name || other.actor.name })),
+    enemies,
+    distance: (token && targetToken) ? measureDistance(token, targetToken) : null,
+    d100: needed ? () => {
+      const next = results[used.length];
+      used.push(next);
+      return next;
+    } : null
   });
   const able = (unit) => !!unit?.isOwner && !unit.system.defeat?.state;
 
@@ -95,9 +145,19 @@ export async function castStaffFor(actor, token, item, ally = null) {
     const harm = moment.harm;
     if ( harm?.units.length === 1 ) {
       const enemy = targetToken?.parent?.tokens.get(harm.units[0].id)?.actor;
-      if ( able(enemy) ) await enemy.update({ "system.hp.value": Math.max(enemy.system.hp.value - harm.amount, 0) });
+      // A Staggered unit takes more of it
+      if ( able(enemy) ) {
+        harm.amount *= enemy.system.stagger?.times ?? 1;
+        await enemy.update({ "system.hp.value": Math.max(enemy.system.hp.value - harm.amount, 0) });
+      }
       else harm.unsaved = true;
     }
   }
-  return { cast, rows: staffRows(cast, game.i18n, names), range: reachText(cast), freeUse: !!cast.freeUse };
+  return {
+    cast,
+    rows: staffRows(cast, game.i18n, names),
+    range: reachText(cast),
+    freeUse: !!cast.freeUse,
+    rolls: used.length ? [rollFromResults(used)] : []
+  };
 }

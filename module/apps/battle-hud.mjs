@@ -1,7 +1,7 @@
 import { battleCanvas, movedByClick, registerBattleCanvas } from "../canvas/battle-canvas.mjs";
 import { mapTile, mapTools, registerMapLayer } from "../canvas/map-layer.mjs";
 import { FEO } from "../config.mjs";
-import { attackFrom, reachOf, standsTo, threatOf, waypointsTo } from "../helpers/battle-map.mjs";
+import { attackFrom, reachOf, standsTo, threatOf, warpTilesOf, waypointsTo } from "../helpers/battle-map.mjs";
 import { armyOf, planAttack, tokenTile } from "../helpers/exchange.mjs";
 import { fightTarget } from "../helpers/fight.mjs";
 import { paintShown, showPaint } from "../helpers/paint.mjs";
@@ -10,9 +10,13 @@ import {
   phaseOf, requestEndPhase, sidesOf, turnState, unitsOf
 } from "../helpers/phases.mjs";
 import { moverOf, registerGround, tileGround } from "../helpers/terrain.mjs";
+import { staffWarpAllows, staffWarpOf, staffWarpTilesOf, warpToken } from "../helpers/warp.mjs";
 import { parseRange } from "../rules/combat.mjs";
 import { tileKey, tilesApart, wayBetween } from "../rules/reach.mjs";
+import { canUse } from "../rules/skill-usage.mjs";
+import { staffSide } from "../rules/staves.mjs";
 import { moveCost } from "../rules/terrain.mjs";
+import { staffWarpChosen, warpOf } from "../rules/warp.mjs";
 import UnitSheet from "../sheets/unit-sheet.mjs";
 import {
   buildDock, buildHover, buildHudForecast, buildPalette, buildPhase, buildSplash, buildTerrain
@@ -66,6 +70,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       sheet: BattleHud.#onSheet,
       undo: BattleHud.#onUndo,
       pickStaff: BattleHud.#onPickStaff,
+      pickWarp: BattleHud.#onPickWarp,
       confirm: BattleHud.#onConfirm,
       cancel: BattleHud.#onCancel,
       ...Object.fromEntries([...SHEET_ACTIONS, ...CAPTURE_ACTIONS].map((name) => [name, BattleHud.#onSheetAction]))
@@ -111,11 +116,22 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /** The list that is open above the dock: equip, staff, skill or item. @type {string|null} */
   #flyout = null;
 
-  /** What the next click on a token means: `target` for an attack, `staff` for the staff picked. @type {string|null} */
+  /**
+   * What the next click on the map means: `target` for an attack on a token, `staff` for the staff picked, `warp`
+   * for a tile to warp to.
+   * @type {string|null}
+   */
   #mode = null;
 
   /** The staff picked from the list, waiting for a unit to use it on. @type {string|null} */
   #staff = null;
+
+  /**
+   * What warps a unit, waiting for a tile to warp it to: a skill of the selected unit, which warps that unit, or
+   * one of its staves, which warps the ally it was used on or, with no target, the unit itself.
+   * @type {{skill: string}|{staff: string, target: Token|null}|null}
+   */
+  #warp = null;
 
   /**
    * The attack being forecast: its target, the tile to make it from and the plan of the exchange.
@@ -141,7 +157,11 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     const hud = () => BattleHud.#instance;
     const refresh = foundry.utils.debounce(() => hud()?.refresh(), 30);
     mapTools.listener = refresh;
-    game.feo.hud = { app: BattleHud, refresh, beginBattle, endBattle, endPhase: requestEndPhase };
+    game.feo.hud = {
+      app: BattleHud, refresh, beginBattle, endBattle, endPhase: requestEndPhase,
+      pickWarp: (token, item) => BattleHud.#pickWarp(token, item),
+      pickStaffWarp: (token, item, ally) => BattleHud.#pickStaffWarp(token, item, ally)
+    };
 
     battleCanvas.listener = {
       wantsToken: (token, event) => !!hud()?.#wantsToken(token, event),
@@ -196,11 +216,12 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     Hooks.on("canvasTearDown", clearSplash);
 
     // In a battle a token remembers where its unit's turn began, however it is moved, so that the move can
-    // be taken back and counts against its movement
+    // be taken back and counts against its movement. A unit that a skill warps has not moved
     Hooks.on("preUpdateToken", (token, changes, options, userId) => {
       try {
         if ( (userId !== game.user.id) || !(("x" in changes) || ("y" in changes)) || originOf(token) ) return;
-        if ( options?.[FEO.id]?.undo || (turnState(token.actor, token) !== "ready") ) return;
+        const mine = options?.[FEO.id];
+        if ( mine?.undo || mine?.warp || (turnState(token.actor, token) !== "ready") ) return;
         // The place the token was last saved at: the one it is drawn at may lag behind
         const { x, y } = token._source ?? token;
         foundry.utils.setProperty(changes, `flags.${FEO.id}.origin`, { x, y });
@@ -270,6 +291,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     this.#flyout = null;
     this.#mode = null;
     this.#staff = null;
+    this.#warp = null;
     this.#forecast = null;
   }
 
@@ -312,6 +334,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     if ( !this.#acting ) {
       this.#mode = null;
       this.#staff = null;
+      this.#warp = null;
       this.#forecast = null;
     }
 
@@ -328,8 +351,11 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
    */
   #paint() {
     const view = this.#view;
-    const paint = { move: [], strike: [], staff: [], threat: new Set(), path: [] };
-    if ( view && this.#acting ) {
+    const paint = { move: [], strike: [], staff: [], warp: [], threat: new Set(), path: [] };
+
+    // While a tile to warp to is being chosen, nothing but those tiles is shown
+    if ( view && this.#acting && (this.#mode === "warp") ) paint.warp.push(...this.#warpTiles());
+    else if ( view && this.#acting ) {
       const strikes = view.range?.staff ? paint.staff : paint.strike;
       for ( const key of view.reach.stops ) if ( !(view.moved && view.strikes.has(key)) ) paint.move.push(key);
       for ( const key of view.strikes ) if ( view.moved || !view.reach.stops.has(key) ) strikes.push(key);
@@ -593,19 +619,48 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
-   * Is a unit within reach of the staff that was picked, from where the selected unit stands?
+   * May a staff be used on a unit, from where the selected unit stands? A staff is for a friend within its
+   * reach, and an Offensive Staff for a foe. One that moves a unit is for the units its Effect names: an ally
+   * or an enemy, next to its user or within its range.
    * @param {Token} token
+   * @param {Item|null} [staff]     The staff that was picked, unless another is given
    * @returns {boolean}
    */
-  #staffReaches(token) {
+  #staffTakes(token, staff = this.#token?.actor.items.get(this.#staff)) {
     const view = this.#view;
-    const staff = this.#token?.actor.items.get(this.#staff);
     const there = tokenTile(token.document);
     if ( !view || !staff || !there ) return false;
+    if ( staffWarpOf(staff) ) return staffWarpAllows(this.#token.document, staff, token.document);
+
+    // An Offensive Staff is for a foe, one for an enemy or an ally for either, and any other for a friend
+    const side = staffSide({ name: staff.flags?.[FEO.id]?.sheetName ?? staff.name, effect: staff.system.effect });
+    const relation = standsTo(view.unit, { army: armyOf(token.actor, token.document) });
+    const sides = { offensive: ["foe"], either: ["friend", "foe"] }[side] ?? ["friend"];
+    if ( !sides.includes(relation) || token.actor.system.defeat?.out ) return false;
     const range = parseRange(staff.system.range, this.#token.actor.system.statValues);
     if ( !range ) return true;
     const distance = tilesApart(view.standing, there);
     return (distance >= Math.max(range.min, 1)) && (distance <= Math.max(range.max, 1));
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The tiles that what was picked can warp its unit to: the selected unit with a skill, and with a staff the
+   * unit it was used on or the selected unit itself.
+   * @returns {Set<string>}
+   */
+  #warpTiles() {
+    const picked = this.#warp;
+    const token = this.#token;
+    if ( !picked || !token || !this.#view ) return new Set();
+    if ( picked.staff ) {
+      const moved = picked.target ?? token;
+      const staff = token.actor.items.get(picked.staff);
+      return (staff && !moved.destroyed) ? staffWarpTilesOf(token.document, staff, moved.document) : new Set();
+    }
+    const warp = warpOf(token.actor.items.get(picked.skill)?.system);
+    return warp ? warpTilesOf(this.#view, warp) : new Set();
   }
 
   /* -------------------------------------------- */
@@ -620,10 +675,10 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   #wantsToken(token, event) {
     const view = this.#view;
     if ( !view || !this.#acting || this.#busy || (token.actor?.type !== "unit") ) return false;
+    if ( this.#mode === "warp" ) return false;
     if ( this.#mode === "staff" ) {
       if ( token === this.#token ) return true;
-      const other = { army: armyOf(token.actor, token.document) };
-      return (standsTo(view.unit, other) === "friend") && this.#staffReaches(token);
+      return this.#staffTakes(token);
     }
     if ( (token === this.#token) || event?.shiftKey ) return false;
 
@@ -656,7 +711,8 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
 
   /**
    * An empty tile was clicked: the selected unit walks there from where it stands, if the tile is one it can
-   * stop on this turn.
+   * stop on this turn. While a tile to warp to is being chosen, it is warped there instead, and a click on any
+   * other tile calls the warp off.
    * @param {{i: number, j: number}} tile
    * @param {Event} [event]
    * @returns {boolean}   Whether the click was used up
@@ -664,6 +720,14 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   #onTileClick(tile, event) {
     const view = this.#view;
     if ( !view || !this.#acting || this.#busy || event?.shiftKey ) return false;
+    if ( this.#mode === "warp" ) {
+      if ( this.#warpTiles().has(tileKey(tile)) ) this.#working(() => this.#warpTo(tile));
+      else {
+        this.#clear();
+        this.refresh();
+      }
+      return true;
+    }
     if ( this.#forecast ) {
       this.#forecast = null;
       this.refresh();
@@ -799,6 +863,157 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
+   * Begin warping the selected unit with one of its skills: the tiles it can land on are painted, and the next
+   * click on one of them warps it there. Whatever stands in the way is said instead.
+   * @param {string} id     The skill
+   */
+  #beginWarp(id) {
+    const token = this.#token;
+    const view = this.#view;
+    const item = token?.actor.items.get(id);
+    const warp = warpOf(item?.system);
+    this.#clear();
+    if ( warp && view ) {
+      const able = canUse(item.system.usage, item.system.state);
+      const blocked = !this.#acting ? "FEO.Hud.warp.notNow"
+        : !able.ok ? `FEO.Usage.blocked.${able.reason}`
+        : (warp.unmoved && view.moved) ? "FEO.Hud.warp.moved"
+        : !warpTilesOf(view, warp).size ? "FEO.Hud.warp.nowhere"
+        : null;
+      if ( blocked ) {
+        ui.notifications.warn(game.i18n.format(blocked, { skill: item.name, name: token.document.name || token.actor.name }));
+      } else {
+        this.#mode = "warp";
+        this.#warp = { skill: id };
+      }
+    }
+    this.refresh();
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Begin warping a unit with one of the selected unit's staves: the tiles the staff can set it down on are
+   * painted, and the next click on one of them uses the staff. Whatever stands in the way is said instead.
+   * @param {string} id               The staff
+   * @param {Token|null} [target]     The unit it is used on; none for a staff that warps its user
+   */
+  #beginStaffWarp(id, target = null) {
+    const token = this.#token;
+    const item = token?.actor.items.get(id);
+    const warp = staffWarpOf(item);
+    this.#clear();
+    if ( warp && this.#view ) {
+      const moved = (warp.moves === "self") ? token : target;
+      const blocked = !this.#acting ? "FEO.Hud.warp.notNow"
+        : !moved ? "FEO.Hud.warp.outOfReach"
+        : !staffWarpTilesOf(token.document, item, moved.document).size ? "FEO.Hud.warp.nowhere"
+        : null;
+      if ( blocked ) {
+        ui.notifications.warn(game.i18n.format(blocked, { skill: item.name, name: token.document.name || token.actor.name }));
+      } else {
+        this.#mode = "warp";
+        this.#warp = { staff: id, target: (warp.moves === "self") ? null : target };
+      }
+    }
+    this.refresh();
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A tile to warp to was chosen. With a skill the selected unit is set down there at once, whatever lies
+   * between, and the skill is used as the unit sheet uses it. A staff is used as the sheet uses it, which sets
+   * its unit down there unless the staff fails.
+   * @param {{i: number, j: number}} tile
+   * @returns {Promise<void>}
+   */
+  async #warpTo(tile) {
+    const document = this.#token?.document;
+    const picked = this.#warp;
+    this.#clear();
+    if ( !document || !picked ) return;
+    if ( picked.staff ) {
+      await this.#castStaff(picked.staff, picked.target, { warpI: String(tile.i), warpJ: String(tile.j) });
+      return;
+    }
+    const item = document.actor.items.get(picked.skill);
+    if ( !item || !canUse(item.system.usage, item.system.state).ok ) return;
+    if ( !(await warpToken(document, tile)) ) {
+      ui.notifications.warn("FEO.Hud.warp.failed", { localize: true });
+      return;
+    }
+    await this.#sheetAction("useSkill", picked.skill, { warped: "true" });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Have a unit choose the tile one of its skills warps it to, as when the skill is used from its sheet: its
+   * token is selected, and the tiles are offered on the map.
+   * @param {TokenDocument|null} token    The unit's token
+   * @param {Item} item                   The skill
+   * @returns {boolean}                   False if the map cannot offer the tiles, as for a unit that is not on it
+   */
+  static #pickWarp(token, item) {
+    try {
+      const app = BattleHud.#instance;
+      const placed = token?.object;
+      if ( !app || !placed || !canvas?.ready || !canvas.scene?.grid?.isSquare || !warpOf(item?.system) ) return false;
+      if ( !placed.controlled || (canvas.tokens.controlled.length > 1) ) placed.control({ releaseOthers: true });
+      app.#sync();
+      if ( (app.#token !== placed) || !app.#view ) return false;
+      app.#beginWarp(item.id);
+      return true;
+    } catch(err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Have a unit choose the tile one of its staves warps a unit to, as when the staff is used from its sheet:
+   * its token is selected, and the tiles are offered on the map. A staff that moves another unit is used on the
+   * one unit that is targeted; with none targeted, that unit is chosen on the map first. A staff that leaves no
+   * tile to choose is used at once.
+   * @param {TokenDocument|null} token    The token of the unit that uses the staff
+   * @param {Item} item                   The staff
+   * @param {Token|null} [ally]           The unit the user has targeted
+   * @returns {boolean}                   False if the map cannot offer the tiles, as for a unit that is not on it
+   */
+  static #pickStaffWarp(token, item, ally = null) {
+    try {
+      const app = BattleHud.#instance;
+      const placed = token?.object;
+      const warp = staffWarpOf(item);
+      if ( !app || !placed || !canvas?.ready || !canvas.scene?.grid?.isSquare || !warp ) return false;
+      if ( !placed.controlled || (canvas.tokens.controlled.length > 1) ) placed.control({ releaseOthers: true });
+      app.#sync();
+      if ( (app.#token !== placed) || !app.#view ) return false;
+      const warn = (key, name) => ui.notifications.warn(game.i18n.format(key, { skill: item.name, name }));
+      app.#clear();
+      if ( warp.moves === "self" ) app.#beginStaffWarp(item.id);
+      else if ( !app.#acting ) warn("FEO.Hud.warp.notNow", token.name || token.actor.name);
+      else if ( !ally ) {
+        app.#mode = "staff";
+        app.#staff = item.id;
+      }
+      else if ( !app.#staffTakes(ally, item) ) warn("FEO.Hud.warp.outOfReach", ally.document.name || ally.actor.name);
+      else if ( staffWarpChosen(warp) ) app.#beginStaffWarp(item.id, ally);
+      else app.#working(() => app.#castStaff(item.id, ally, { warpNow: "true" }));
+      app.refresh();
+      return true;
+    } catch(err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * Have the unit sheet's own handler do something for the selected unit, so that the dock and the sheet do
    * exactly the same.
    * @param {string} name             A key of the sheet's actions
@@ -820,25 +1035,44 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
-   * Use the picked staff on a unit, or on nobody if the unit itself was clicked.
+   * Use the picked staff on a unit, or on nobody if the unit itself was clicked. A staff that moves the unit to
+   * a tile of its user's choosing has that tile chosen next, and is used then.
    * @param {Token} token
    * @returns {Promise<void>}
    */
   async #useStaffOn(token) {
     const staff = this.#staff;
-    await this.#working(async () => {
-      const other = token !== this.#token;
+    const other = token !== this.#token;
+    const warp = other ? staffWarpOf(this.#token?.actor.items.get(staff)) : null;
+    if ( warp && staffWarpChosen(warp) ) {
+      this.#beginStaffWarp(staff, token);
+      return;
+    }
 
-      // The sheet uses a staff on the one unit that is targeted
-      for ( const targeted of Array.from(game.user.targets) ) targeted.setTarget(false, { releaseOthers: false });
-      if ( other ) token.setTarget(true, { releaseOthers: true });
-      try {
-        await this.#sheetAction("useStaff", staff);
-      } finally {
-        if ( other && !token.destroyed ) token.setTarget(false, { releaseOthers: false });
-        this.#clear();
-      }
-    });
+    // A staff that moves its unit to a tile nobody chooses is used at once, and told that the map is done
+    await this.#working(() => this.#castStaff(staff, other ? token : null, warp ? { warpNow: "true" } : {}));
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Have the unit sheet use one of the selected unit's staves, on a unit or on nobody.
+   * @param {string} staff            The staff
+   * @param {Token|null} [target]     The unit it is used on
+   * @param {object} [data]           What else the sheet is told: the tile a staff that warps sets its unit down on
+   * @returns {Promise<void>}
+   */
+  async #castStaff(staff, target = null, data = {}) {
+
+    // The sheet uses a staff on the one unit that is targeted
+    for ( const targeted of Array.from(game.user.targets) ) targeted.setTarget(false, { releaseOthers: false });
+    if ( target && !target.destroyed ) target.setTarget(true, { releaseOthers: true });
+    try {
+      await this.#sheetAction("useStaff", staff, data);
+    } finally {
+      if ( target && !target.destroyed ) target.setTarget(false, { releaseOthers: false });
+      this.#clear();
+    }
   }
 
   /* -------------------------------------------- */
@@ -944,17 +1178,33 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
-   * A staff was picked from the list: the next click on a unit within its reach uses it there.
+   * A staff was picked from the list: the next click on a unit within its reach uses it there. A staff that
+   * warps its user needs no unit, and has the tile chosen at once.
    * @this {BattleHud}
    */
   static #onPickStaff(event, target) {
     const id = target.closest("[data-item-id]")?.dataset.itemId;
+    if ( id && (staffWarpOf(this.#token?.actor.items.get(id))?.moves === "self") ) {
+      this.#beginStaffWarp(id);
+      return;
+    }
     this.#clear();
     if ( id && this.#acting ) {
       this.#mode = "staff";
       this.#staff = id;
     }
     this.refresh();
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A skill that warps the unit was picked from the list: the next click on a tile it reaches warps it there.
+   * @this {BattleHud}
+   */
+  static #onPickWarp(event, target) {
+    const id = target.closest("[data-item-id]")?.dataset.itemId;
+    if ( id ) this.#beginWarp(id);
   }
 
   /* -------------------------------------------- */

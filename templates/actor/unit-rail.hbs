@@ -39,6 +39,19 @@
       </span>
     </div>
     <div class="bar hp {{vitals.hpState}}"><i style="width: {{vitals.hpPct}}%"></i></div>
+    {{#if stagger}}
+    <div class="vital-head stagger-head" data-tooltip="{{localize "FEO.Optional.stagger.barHint"}}{{#unless stagger.sized}} {{localize "FEO.Optional.stagger.unsized"}}{{/unless}}">
+      <span class="label">{{localize "FEO.Optional.stagger.title"}}</span>
+      <span class="value small">
+        {{#if stagger.sized}}
+        <input type="number" name="system.stagger.value" value="{{stagger.value}}" min="0" max="{{stagger.max}}" step="1" data-play
+               aria-label="{{localize "FEO.Optional.stagger.title"}}">
+        {{else}}{{stagger.value}} {{/if}}
+        <span class="of">/ {{stagger.max}}</span>
+      </span>
+    </div>
+    <div class="bar stagger{{#if stagger.staggered}} staggered{{/if}}"><i style="width: {{stagger.pct}}%"></i></div>
+    {{/if}}
     {{#if vitals.health}}
     <div class="vital-foot">
       <span class="wounds" data-tooltip="{{localize "FEO.Rail.woundsHint"}}">
@@ -261,6 +274,13 @@
       <button type="button" class="chip condition break" data-action="toggleBreak"{{#unless editable}} disabled{{/unless}} data-tooltip="{{localize "FEO.Optional.breaking.hint"}} {{localize "FEO.Optional.breaking.clear"}}">{{feoIcon "x"}}{{localize "FEO.Optional.breaking.break"}}</button>
       {{else}}{{#if editable}}
       <button type="button" class="chip ghost edit-only" data-action="toggleBreak" data-tooltip="{{localize "FEO.Optional.breaking.set"}}">+ {{localize "FEO.Optional.breaking.break"}}</button>
+      {{/if}}{{/if}}
+      {{/if}}
+      {{#if stagger}}
+      {{#if stagger.staggered}}
+      <button type="button" class="chip condition staggered" data-action="toggleStagger"{{#unless editable}} disabled{{/unless}} data-tooltip="{{localize "FEO.Optional.stagger.hint"}} {{localize "FEO.Optional.stagger.clear"}}">{{feoIcon "x"}}{{localize "FEO.Optional.stagger.staggered"}}</button>
+      {{else}}{{#if editable}}
+      <button type="button" class="chip ghost edit-only" data-action="toggleStagger" data-tooltip="{{localize "FEO.Optional.stagger.set"}}">+ {{localize "FEO.Optional.stagger.staggered"}}</button>
       {{/if}}{{/if}}
       {{/if}}
       {{#if editable}}

@@ -66,6 +66,7 @@ export function buildClassContext(item) {
       label,
       checked: system.proficiencies.options.includes(key)
     })),
+    rankChoices: Object.fromEntries(Object.entries(FEO.ranks).slice(1)),
     skillFields: Object.entries(SKILL_LABELS).map(([key, label]) => ({ key, label, value: system.skills[key] })),
     promotesTo: system.promotesTo.map((target, index) => ({ index, name: target.name, uuid: target.uuid })),
     notes: system.notes.map((note, index) => ({ index, label: note.label, value: note.value }))
@@ -310,6 +311,8 @@ export function buildPromotionDialog(unit, from, targets, { known = null } = {})
     level: unit.level,
     classes,
     anyGeneric: classes.some((cls) => cls.generic),
+    // A class that started the unit without a Generic Skill: it takes one now, in place of its starting skill
+    genericFor: FEO.classTiers[from?.system.tier]?.noGeneric ? (classSkills(from.system.skills?.starting, known).names.join(", ") || "–") : "",
     growths,
     expected: check.expected,
     gain: rule.gain,
@@ -459,6 +462,8 @@ export function buildChangeCard(change, i18n, { title, subtitle, blank = [], not
   if ( change.genericSkill ) {
     skills.push({ label: i18n.localize("FEO.SkillKind.generic"), value: i18n.localize("FEO.Class.card.genericChoice") });
   }
+  const forgets = change.forgets ?? [];
+  for ( const name of forgets ) skills.push({ label: i18n.localize("FEO.Class.card.givenUp"), value: name, cls: "bad" });
   group("FEO.Section.skills", skills);
 
   const foot = [...notes];
@@ -466,7 +471,9 @@ export function buildChangeCard(change, i18n, { title, subtitle, blank = [], not
   for ( const choice of change.choices ?? [] ) {
     foot.push(i18n.format("FEO.Class.card.choiceLeft", { names: choice.names.join(", ") }));
   }
-  if ( change.genericSkill ) foot.push(i18n.localize("FEO.Class.card.genericNote"));
+  if ( change.genericSkill ) {
+    foot.push(forgets.length ? i18n.format("FEO.Class.card.genericFor", { names: forgets.join(", ") }) : i18n.localize("FEO.Class.card.genericNote"));
+  }
 
   const headline = title ?? i18n.format({
     assign: "FEO.Class.card.became",

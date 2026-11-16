@@ -3,6 +3,7 @@ import { gridDistance, parseRange, planExchange, resolveExchange, rollBudget } f
 import { conditionConfig } from "../rules/conditions.mjs";
 import { touchesCorner } from "../rules/positions.mjs";
 import { weaponIs } from "../rules/skills.mjs";
+import { isStaggered, staggerInUse } from "../rules/stagger.mjs";
 import { aftermathChanges, exchangeAftermath } from "./aftermath.mjs";
 import { withReadiedArt } from "./arts.mjs";
 import { captureOutright, settleCapture, withReadiedCapture } from "./capturing.mjs";
@@ -11,6 +12,8 @@ import { setConditions } from "./conditions.mjs";
 import { mostEarned } from "./earnings.mjs";
 import { buildExchangeCard, buildForecast, combatantOf, exchangeChanges } from "./exchange-context.mjs";
 import { standingOf } from "./positions.mjs";
+import { summonerOf } from "./summon.mjs";
+import { STAGGER_SETTLED } from "./stagger.mjs";
 import { groundUnder } from "./terrain.mjs";
 import { grantTimed, setTimed } from "./timed.mjs";
 import { breakItem } from "./weapons.mjs";
@@ -261,6 +264,17 @@ async function applyChange(actor, change) {
   // Breaking: whether the unit suffers from Break once the fight is over
   if ( (typeof change.break === "boolean") && (change.break !== !!system.break) ) update["system.break"] = change.break;
 
+  // Stagger: what a fight left of the unit's Stagger bar. A fight follows the bars of its two units by itself,
+  // so that the HP this change takes is not taken off the bar a second time
+  const settled = staggerInUse() && ("stagger" in change);
+  const bar = change.stagger;
+  if ( settled && bar ) {
+    const count = (value, most) => Number.isInteger(value) && (value >= 0) && (value <= most);
+    if ( count(bar.max, 999) && count(bar.value, bar.max) && count(bar.turns, FEO.optional.stagger.turns.own) ) {
+      update["system.stagger"] = { value: bar.turns ? 0 : bar.value, max: bar.max, turns: bar.turns };
+    }
+  }
+
   // Capturing: an attempt that is no longer readied; a unit that is captured, which is out of the fight and
   // keeps the HP it had; one that is free again, with that HP, or released, which leaves the battle; and the
   // captive a unit holds or has subdued, or holds no longer. `shown` is what the map then has to show of it
@@ -292,7 +306,9 @@ async function applyChange(actor, change) {
 
   // A unit that goes down is told of on the card of the fight; where there is none to tell of it, as after a
   // Gambit, the system posts its own
-  if ( Object.keys(update).length ) await actor.update(update, { [FEO.id]: { quietDefeat: change.announce !== true } });
+  if ( Object.keys(update).length ) {
+    await actor.update(update, { [FEO.id]: { quietDefeat: change.announce !== true, [STAGGER_SETTLED]: settled } });
+  }
   if ( shown ) await settleCapture(actor, shown);
 
   // What became of the Battalion the unit commands: the HP it has left, its level and EXP, and the uses its
@@ -390,8 +406,8 @@ export async function applyChanges(changes) {
  * Answer another user's request to save the changes from an exchange. Runs for a Game Master.
  * Only current HP, weapon uses, proficiencies, conditions, experience and gold earned, Wounds taken, the Shift
  * Gauge, the state of declared skills, a Combat Art being readied, the changes that last a while, Authority,
- * what a fight or a Gambit does to the Battalion a unit commands, whether a unit suffers from Break, and who
- * is captured, held or free again can be changed this way.
+ * what a fight or a Gambit does to the Battalion a unit commands, whether a unit suffers from Break, who is
+ * captured, held or free again, and what a fight left of a Stagger bar can be changed this way.
  * @param {{changes: (ExchangeChange & {uuid: string})[]}} data
  * @returns {Promise<boolean>}
  */
@@ -442,6 +458,9 @@ export function planAttack(actor, token, targetToken, { from = null } = {}) {
     return { warning: "FEO.Shift.cannotInitiate" };
   }
   if ( actor.system.defeat?.state ) return { warning: "FEO.Defeat.cannotAttack" };
+
+  // A Staggered unit cannot act
+  if ( isStaggered(actor.system.stagger) ) return { warning: "FEO.Optional.stagger.cannotAct" };
 
   const names = { initiator: token?.name || actor.name, defender: targetToken.document.name || target.name };
 
@@ -537,11 +556,21 @@ export async function attackTarget(actor, token, targetToken, { confirm = null }
     return next;
   });
 
-  // What follows from the fight: experience, Wounds, a unit going down, a Shift Gauge moving
+  // What follows from the fight: experience, Wounds, a unit going down, a Shift Gauge moving. What a summoned
+  // unit would earn goes to its summoner, if that one earns experience
+  const summoners = { initiator: summonerOf(actor), defender: summonerOf(target) };
+  const heir = (unit) => (unit ? { name: unit.token?.name ?? unit.name, exp: unit.system.exp } : null);
   const aftermath = exchangeAftermath(plan, result, {
-    earns: { initiator: earns(actor, token), defender: earns(target, targetToken.document) }
+    earns: {
+      initiator: summoners.initiator ? earns(summoners.initiator) : earns(actor, token),
+      defender: summoners.defender ? earns(summoners.defender) : earns(target, targetToken.document)
+    },
+    heirs: { initiator: heir(summoners.initiator), defender: heir(summoners.defender) }
   });
   const changes = aftermathChanges(exchangeChanges(plan, result), aftermath);
+  const inherited = Object.entries(summoners)
+    .filter(([side, unit]) => unit && (aftermath[side].exp?.amount > 0))
+    .map(([side, unit]) => ({ uuid: unit.uuid, exp: aftermath[side].exp.amount }));
 
   // A unit that is captured does not go down as one brought to 0 HP otherwise does
   if ( changes.defender.captured ) aftermath.defender.defeat = null;
@@ -554,7 +583,8 @@ export async function attackTarget(actor, token, targetToken, { confirm = null }
   const unsaved = await applyChanges([
     { uuid: actor.uuid, ...changes.initiator },
     { uuid: target.uuid, ...changes.defender },
-    ...others.map(({ uuid, grants }) => ({ uuid, grants }))
+    ...others.map(({ uuid, grants }) => ({ uuid, grants })),
+    ...inherited
   ]);
   const unapplied = [];
   if ( unsaved.includes(actor.uuid) ) unapplied.push(names.initiator);

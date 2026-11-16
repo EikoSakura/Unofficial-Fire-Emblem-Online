@@ -57,6 +57,23 @@
       </div>
       {{/if}}
 
+      {{#if optional.stagger}}
+      <div class="opt-block" data-module="stagger">
+        <h4>{{localize "FEO.Optional.stagger.title"}}</h4>
+        <div class="pairs">
+          <label class="field" data-tooltip="{{localize "FEO.Optional.stagger.maxHint"}}">
+            <span>{{localize "FEO.Optional.stagger.max"}}</span>
+            <input type="number" name="system.stagger.max" value="{{optional.stagger.max}}" min="0" step="1" data-play>
+          </label>
+          <div class="field readout">
+            <span>{{localize "FEO.Optional.stagger.now"}}</span>
+            <b>{{optional.stagger.value}} / {{optional.stagger.size}}</b>
+          </div>
+        </div>
+        {{#unless optional.stagger.sized}}<p class="opt-line">{{localize "FEO.Optional.stagger.unsized"}}</p>{{/unless}}
+      </div>
+      {{/if}}
+
       {{#if optional.stars}}
       <div class="opt-block" data-module="stars">
         <h4>{{localize "FEO.Optional.stars.title"}}</h4>
@@ -76,6 +93,23 @@
             <b>{{optional.stars.chance}}%</b>
           </div>
         </div>
+      </div>
+      {{/if}}
+
+      {{#if optional.fcm}}
+      <div class="opt-block" data-module="fcm">
+        <h4>{{localize "FEO.Optional.fcm.title"}}</h4>
+        <div class="pairs">
+          <label class="field" data-tooltip="{{localize "FEO.Optional.fcm.hint" min=optional.fcm.min max=optional.fcm.max}}">
+            <span>{{localize "FEO.Optional.fcm.label"}}</span>
+            <input type="number" name="system.fcm" value="{{optional.fcm.value}}" min="{{optional.fcm.min}}" max="{{optional.fcm.max}}" step="1">
+          </label>
+          <div class="field readout" data-tooltip="{{localize "FEO.Optional.fcm.criticalHint" critical=optional.fcm.critical times=optional.fcm.times}}">
+            <span>{{localize "FEO.Optional.fcm.critical"}}</span>
+            <b>{{optional.fcm.followUp}}</b>
+          </div>
+        </div>
+        {{#unless optional.fcm.raised}}<p class="opt-line">{{localize "FEO.Optional.fcm.none"}}</p>{{/unless}}
       </div>
       {{/if}}
 

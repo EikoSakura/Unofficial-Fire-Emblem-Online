@@ -19,7 +19,7 @@
     <dl>
       <div><dt>{{localize "FEO.Combat.hit"}}</dt><dd>{{side.hit}}%</dd></div>
       <div><dt>{{localize "FEO.Combat.damage"}}</dt><dd>{{side.damage}}{{#if side.damageLater includeZero=true}} <span class="times">+ {{side.damageLater}}</span>{{else}}{{#if side.repeats}} <span class="times">× {{side.attacks}}</span>{{/if}}{{/if}}</dd></div>
-      <div><dt>{{localize "FEO.Combat.critAbbr"}}</dt><dd>{{side.crit}}%</dd></div>
+      <div><dt>{{localize "FEO.Combat.critAbbr"}}</dt><dd>{{side.crit}}%{{#if side.critFollow includeZero=true}} <span class="times">→ {{side.critFollow}}%</span>{{/if}}</dd></div>
     </dl>
     {{else}}
     <p class="blocked">{{side.blocked}}</p>

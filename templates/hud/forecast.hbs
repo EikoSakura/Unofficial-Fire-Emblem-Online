@@ -25,10 +25,11 @@
         {{#if @index}}<span class="fc-mid">{{row.label}}</span>{{/if}}
         {{#if cell.active}}
         <div class="fc-cell {{#if cell.lead}}lead{{/if}} {{#if @index}}r{{/if}}" tabindex="0">
-          <div class="n">{{cell.value}}{{#if cell.times}}<small> × {{cell.times}}</small>{{/if}}</div>
+          <div class="n">{{cell.value}}{{#if cell.times}}<small> × {{cell.times}}</small>{{/if}}{{#if cell.then includeZero=true}}<small> → {{cell.then}}</small>{{/if}}</div>
           <div class="why">
             {{#each cell.lines as |line|}}<div class="{{line.cls}}"><span>{{line.label}}</span><b>{{line.value}}</b></div>{{/each}}
             <div class="sum"><span>{{localize "FEO.Hud.sum.result"}}</span><span>{{cell.result}}</span></div>
+            {{#if cell.after}}<div class="pos"><span>{{cell.after.label}}</span><b>{{cell.after.value}}</b></div>{{/if}}
           </div>
         </div>
         {{else}}

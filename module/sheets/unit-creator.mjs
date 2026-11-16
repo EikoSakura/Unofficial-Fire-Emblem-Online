@@ -58,7 +58,8 @@ export async function prepareCreator(sheet) {
   const unit = actor._source.system;
   const record = creation.recordOf(actor);
   const cls = actor.system.classItem;
-  const summary = creatorSummary({ unit, record, cls, isGM: game.user.isGM, i18n: game.i18n });
+  const skills = creation.takenSkills(actor);
+  const summary = creatorSummary({ unit, record, cls, skills, isGM: game.user.isGM, i18n: game.i18n });
   const open = view.open && sheet.isEditable;
   const base = { uid: sheet.id, open, summary, banner: (open || !sheet.isEditable) ? null : summary.banner };
   if ( !open ) return base;
@@ -82,7 +83,7 @@ export async function prepareCreator(sheet) {
   return {
     ...base,
     ...buildCreator({
-      name: actor.name, unit, record, cls, view, library, watchers,
+      name: actor.name, unit, record, cls, skills, view, library, watchers,
       user: { id: game.user.id, isGM: game.user.isGM },
       i18n: game.i18n
     })
@@ -215,7 +216,8 @@ export async function openCreator(sheet, step = "") {
   const actor = sheet.actor;
   const view = creatorView(sheet);
   const summary = creatorSummary({
-    unit: actor._source.system, record: creation.recordOf(actor), cls: actor.system.classItem, isGM: game.user.isGM, i18n: game.i18n
+    unit: actor._source.system, record: creation.recordOf(actor), cls: actor.system.classItem, skills: creation.takenSkills(actor),
+    isGM: game.user.isGM, i18n: game.i18n
   });
   view.open = true;
   view.step = step || summary.first;
@@ -346,6 +348,7 @@ export const CREATOR_ACTIONS = {
         case "boon": case "bane": return creation.chooseBoon(actor, field, value);
         case "affinity": return creation.setField(actor, "system.affinity", value, "affinity");
         case "classSkill": return creation.chooseSkill(actor, "class", value);
+        case "genericSkill": return creation.chooseSkill(actor, "generic", value);
         case "first": return creation.chooseRanks(actor, creation.recordOf(actor).ranks.take, value);
         case "lineage": return creation.chooseGrant(actor, "holyBlood", { lineage: value });
         case "bloodGrade": return creation.chooseGrant(actor, "holyBlood", { grade: value });
@@ -353,6 +356,11 @@ export const CREATOR_ACTIONS = {
         case "crestGrade": return creation.chooseGrant(actor, "crest", { grade: value });
       }
     });
+  },
+
+  /** Choose the variant of a starting skill, or take or give up a growth rate it raises. */
+  creatorVariant(event, target) {
+    return run(this, () => creation.chooseVariant(this.actor, target.dataset.id, target.dataset.value));
   },
 
   /** Take or give up one of the proficiencies a class offers. The oldest makes room for a new one. */

@@ -15,10 +15,12 @@ import { growthPickCount, growthPicks } from "../rules/earnings.mjs";
 import { earnsSkillExp } from "../rules/experience.mjs";
 import { affinityEffectMode } from "../rules/optional.mjs";
 import { choicesOf, countsAsSkill, formsOf } from "../rules/skills.mjs";
+import { staggerInUse } from "../rules/stagger.mjs";
 import { sellValue } from "../rules/progression.mjs";
 import { pointsForNext } from "../rules/supports.mjs";
 import { canWield, countedRank, repairCost, wieldLevel } from "../rules/weapons.mjs";
 import { prepareUsage } from "../helpers/skill-usage-context.mjs";
+import { staffTags } from "../helpers/staff-context.mjs";
 import { timedRows } from "../helpers/timed-context.mjs";
 import { buildClassPath } from "./class-context.mjs";
 import { prepareOptional, weaponKills } from "./optional-context.mjs";
@@ -85,11 +87,17 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
       ...prepareReminders(system.conditions ?? {}, equipped),
 
       // Breaking: a unit that suffers from Break is reminded of it as of a condition, though it is none
-      ...((breakInUse() && system.break) ? [{ id: "break", name: "FEO.Optional.breaking.break", hint: "FEO.Optional.breaking.hint" }] : [])
+      ...((breakInUse() && system.break) ? [{ id: "break", name: "FEO.Optional.breaking.break", hint: "FEO.Optional.breaking.hint" }] : []),
+
+      // Stagger: so is a unit that is Staggered
+      ...(system.stagger?.staggered ? [{ id: "staggered", name: "FEO.Optional.stagger.staggered", hint: "FEO.Optional.stagger.hint" }] : [])
     ],
 
     // Whether it suffers from Break, where the world plays with it, for the chip that says so
     breaking: breakInUse() ? { on: !!system.break } : null,
+
+    // Stagger: its Stagger bar and whether it is Staggered, where the world plays with it
+    stagger: prepareStagger(system),
 
     // Capturing: the attempt it has readied, the captive it holds or has subdued, and who holds it
     capture: captureView(system),
@@ -176,6 +184,26 @@ function prepareVitals(system) {
     graveWounds: system.graveWounds,
     woundThreshold: system.hp.woundThreshold ?? 0,
     treatable: FEO.defeat.enabled && ((system.wounds > 0) || (system.injuries > 0))
+  };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A unit's Stagger bar, for the rail, where the world plays with Stagger. A bar that was not made yet follows
+ * the unit's HP, and is shown without a field to type in.
+ * @param {object} system
+ * @returns {{value: number, max: number, pct: number, staggered: boolean, sized: boolean}|null}
+ */
+function prepareStagger(system) {
+  if ( !staggerInUse() || !system.stagger ) return null;
+  const { value, max, staggered, sized } = system.stagger;
+  return {
+    value,
+    max,
+    pct: max > 0 ? Math.min(Math.max(value / max, 0), 1) * 100 : 0,
+    staggered: !!staggered,
+    sized: !!sized
   };
 }
 
@@ -283,7 +311,8 @@ function prepareWeapon(item, system) {
   const { value, max } = weapon.uses;
   const ratio = max > 0 ? Math.min(value / max, 1) : 1;
   const original = item.flags?.[FEO.id]?.original ?? null;
-  const wield = FEO.weapons.rankCheck
+  // A weapon handed to a summoned unit is one it wields whatever its rank
+  const wield = (FEO.weapons.rankCheck && !item.flags?.[FEO.id]?.summoned)
     ? canWield(system.proficiencies, weapon, { above: system.skills?.wield ?? 0, level: wieldLevel(system) }) : { ok: true };
   return {
     ...weaponKills(weapon),
@@ -530,6 +559,20 @@ function prepareForecast(system, equipped, skills) {
   const staff = equipped?.category === "staff";
   const doubles = doublesAtOrBelow(combat.attackSpeed.value + (system.haste ?? 0), FEO.doubleThreshold);
 
+  // Additional Staff Effects: what they make of the staff in hand, where the world plays with any of them
+  const held = staff ? system.equippedWeapon : null;
+  const shown = (chance) => ((chance === null) ? null : { value: chance });
+  const extras = held ? staffTags({
+    name: held.name,
+    sheetName: held.flags?.[FEO.id]?.sheetName ?? held.name,
+    effect: held.system.effect,
+    hit: held.system.hit,
+    broken: held.system.broken
+  }, {
+    stats: system.statValues,
+    hitBonus: combat.accuracy.terms.reduce((sum, term) => sum + (term.modifier ? term.value : 0), 0)
+  }) : null;
+
   return {
     weapon: equipped,
     cells,
@@ -541,6 +584,7 @@ function prepareForecast(system, equipped, skills) {
     procs: skills.filter((skill) => skill.equipped && (skill.chance !== null)),
     staffHit: staff ? combat.staffHit.value : null,
     hasStaffHit: staff,
+    staffExtras: extras ? { hit: shown(extras.hit), critical: shown(extras.critical), double: shown(extras.double), passive: extras.passive } : null,
     staffAvoid: combat.staffAvoid.value,
     endurance: system.endurance,
     haste: system.haste,

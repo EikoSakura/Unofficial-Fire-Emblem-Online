@@ -6,7 +6,9 @@ import { captureOutcome } from "../rules/capturing.mjs";
 import { readConditions } from "../rules/conditions.mjs";
 import { spendSkill } from "../rules/skill-usage.mjs";
 import { hpHolds } from "../rules/skills.mjs";
+import { isStaggered, staggerHit, staggerInUse, staggerOf } from "../rules/stagger.mjs";
 import { grantChange, timedName } from "../rules/timed.mjs";
+import { fcmInUse } from "../rules/variants.mjs";
 import { aftermathLines, recordOf } from "./aftermath.mjs";
 import { battalionLines, commandOf } from "./battalion-context.mjs";
 import { conditionKeys } from "./condition-context.mjs";
@@ -63,6 +65,11 @@ import { describeChange } from "./timed-context.mjs";
  * @property {boolean} [freed]                                          A captive that is free again, put back
  *                                                                      `at` a place on the map if one is given
  * @property {boolean} [released]                                       A captive that was let go, and leaves
+ * @property {import("../rules/stagger.mjs").StaggerBar|null} [stagger] Where the world plays with Stagger: the
+ *                                                                      unit's Stagger bar after the fight where
+ *                                                                      the fight changed it, else null. Either
+ *                                                                      way the fight has settled what the HP
+ *                                                                      the unit lost in it does to its bar
  */
 
 const SIDES = ["initiator", "defender"];
@@ -216,6 +223,12 @@ export function combatantOf(actor, name, { incapacitates = false, place = null }
 
     // Breaking: whether it suffers from Break, where the world plays with it
     ...(breakInUse() ? { break: !!system.break } : {}),
+
+    // Stagger: its Stagger bar as it stands, where the world plays with it
+    ...(staggerInUse() ? { stagger: staggerOf(system._source?.stagger ?? system.stagger, system.hp.value) } : {}),
+
+    // Follow-up Critical Multiplier: its FCM, where the world plays with it
+    ...(fcmInUse() ? { fcm: system.fcm } : {}),
     noCounter: afflicted("noCounter"),
     noDodge: afflicted("noDodge")
   };
@@ -255,8 +268,24 @@ export function buildForecast(plan, i18n, { measured = null } = {}) {
     });
     if ( active && side.doubles ) tags.push({ label: i18n.localize("FEO.Exchange.followUp"), cls: "good" });
 
+    // Follow-up Critical Multiplier: what this side's Critical is multiplied by on its follow-up attack, and
+    // the chance of a critical hit that makes
+    if ( active && side.fcm ) tags.push({
+      label: i18n.format("FEO.Optional.fcm.forecast", { times: side.fcm, chance: side.critFollow }),
+      cls: "good"
+    });
+
     // Breaking: a hit of this side that deals damage takes the foe's counter-attack
     if ( active && side.breaks ) tags.push({ label: i18n.localize("FEO.Optional.breaking.forecast"), cls: "good" });
+
+    // Stagger: a Staggered unit takes more from every hit; else the bar of the unit that is attacked, which
+    // what it loses in this fight comes off
+    const bar = staggerInUse() ? (unit.stagger ?? null) : null;
+    if ( bar && isStaggered(bar) ) tags.push({ label: i18n.localize("FEO.Optional.stagger.forecast.staggered"), cls: "bad" });
+    else if ( bar && (key === "defender") && !foe.blocked ) tags.push({
+      label: i18n.format("FEO.Optional.stagger.forecast.bar", { value: bar.value, max: bar.max }),
+      cls: "cond"
+    });
 
     // Capturing: the attempt this side makes, a target that is captured without a fight, or why this target
     // cannot be captured
@@ -345,14 +374,19 @@ export function buildForecast(plan, i18n, { measured = null } = {}) {
     const saver = (side.chances?.struck ?? []).find((proc) => proc.sure && proc.survive && (proc.survive !== true));
     const spared = !!saver?.grants?.some((grant) => grant.now && (grant.effects ?? []).some((effect) => effect.takenPercent <= -100));
     let saved = false;
+
+    // Stagger: once what the unit that is attacked has lost empties its bar, every later hit is multiplied
+    let emptying = (bar && (key === "defender") && !isStaggered(bar)) ? bar : null;
     const taken = foe.blocked ? 0 : shares.reduce((sum, share, index) => {
-      const blow = Math.floor((softened(index === 0 ? foe.damage : foeLater) * share) + 1e-9);
+      const times = (emptying?.turns > 0) ? FEO.optional.stagger.taken : 1;
+      const blow = Math.floor((softened(index === 0 ? foe.damage : foeLater) * share * times) + 1e-9);
       const left = unit.hp - sum;
       if ( (dodges && (blow >= left)) || (saved && spared) ) return sum;
       if ( saver && !saved && (left > 0) && (blow >= left) && hpHolds(saver.survive.hp, left, unit.hpMax ?? unit.hp) ) {
         saved = true;
         return unit.hp - 1;
       }
+      if ( emptying ) emptying = staggerHit(emptying, Math.min(blow, Math.max(left, 0)), { standing: blow < left });
       return sum + blow;
     }, 0);
 
@@ -371,6 +405,9 @@ export function buildForecast(plan, i18n, { measured = null } = {}) {
       blocked: side.blocked ? i18n.localize(`FEO.Exchange.blocked.${side.blocked}`) : null,
       hit: side.hit,
       crit: side.crit,
+
+      // The chance of a critical hit with the follow-up attack, where it is another than the first attack's
+      critFollow: (active && side.fcm && (side.critFollow !== side.crit)) ? side.critFollow : null,
       damage: side.damage,
       damageLater: (side.attacks > 1) && (later !== side.damage) ? later : null,
       attacks: side.attacks,
@@ -461,6 +498,15 @@ export function exchangeChanges(plan, result) {
     if ( breakInUse() && result.attacks.length ) {
       const now = breakAfter({ gained: outcome.break, hp: outcome.hp });
       if ( now !== !!plan[key].unit.break ) changes.break = now;
+    }
+
+    // Stagger: what the fight left of the unit's bar, where it took anything off it. The bar of the unit that
+    // began the fight is left alone, and so is one the fight did not touch
+    if ( staggerInUse() ) {
+      const before = plan[key].unit.stagger ?? null;
+      const bar = outcome.stagger ?? null;
+      const touched = !!bar && !!before && ((bar.value !== before.value) || (bar.turns !== before.turns));
+      changes.stagger = touched ? { value: bar.value, max: bar.max, turns: bar.turns } : null;
     }
     return changes;
   };
@@ -773,6 +819,14 @@ export function buildExchangeCard(plan, result, i18n, { armies = {}, unapplied =
     });
   }
 
+  // Stagger: a unit whose bar was emptied, and still stands
+  for ( const key of SIDES ) {
+    if ( result[key].staggered && (result[key].hp > 0) ) notable.push({
+      label: i18n.format("FEO.Optional.stagger.card.staggered", { name: name(key) }),
+      cls: "bad"
+    });
+  }
+
   // Capturing: a target that was captured, or subdued for its captor to pick up
   if ( taken ) notable.push({
     label: i18n.format(`FEO.Optional.capturing.card.${taken.held ? "taken" : "subdued"}`, { captor: taken.captor.name, captive: taken.captive.name }),
@@ -874,8 +928,11 @@ export function buildExchangeCard(plan, result, i18n, { armies = {}, unapplied =
     const procs = (attack.procs ?? []).filter((proc) => !proc.sure);
     const rolls = procs.filter((proc) => proc.on === "attack").map(chanceRoll);
     rolls.push(i18n.format("FEO.Exchange.hitRoll", { roll: attack.hitRoll, chance: attack.hitChance }));
+    // A follow-up attack whose Critical was multiplied says by how much
     if ( attack.critRoll !== null ) {
-      rolls.push(i18n.format("FEO.Exchange.critRoll", { roll: attack.critRoll, chance: attack.critChance }));
+      rolls.push(i18n.format(attack.fcm ? "FEO.Optional.fcm.card.roll" : "FEO.Exchange.critRoll", {
+        roll: attack.critRoll, chance: attack.critChance, times: attack.fcm
+      }));
     }
     if ( attack.backfire ) {
       rolls.push(i18n.format("FEO.Exchange.backfireRoll", { roll: attack.backfire.roll, chance: attack.backfire.chance }));
@@ -935,6 +992,15 @@ export function buildExchangeCard(plan, result, i18n, { armies = {}, unapplied =
           : i18n.format("FEO.Exchange.wexp", { wexp: gained, now: tidy(gain.after.wexp), next })
       });
     }
+  }
+
+  // Stagger: what the fight took off a bar
+  for ( const key of SIDES ) {
+    const bar = spending[key].stagger;
+    if ( bar ) details.push({
+      label: `${name(key)} · ${i18n.localize("FEO.Optional.stagger.title")}`,
+      value: i18n.format("FEO.Optional.stagger.card.bar", { from: plan[key].unit.stagger.value, to: bar.value, max: bar.max })
+    });
   }
 
   details.push(...squads.details);

@@ -1,5 +1,5 @@
 {
-  "source": "The structured effects of the skills the system applies by itself, written out by hand from the Effect text of the Skills tab of the Reference Sheet. The notation is explained at the top of module/rules/skills.mjs. A skill that is not listed is shown with its Effect text only. 'left' says what part of a listed skill is still for the table.",
+  "source": "The structured effects of the skills the system applies by itself, written out by hand from the Effect text of the Skills tab of the Reference Sheet. The notation is explained at the top of module/rules/skills.mjs. A skill that is not listed is shown with its Effect text only. Where skills of different kinds share a name, each is listed as 'kind.Name' (as 'enemy.Teleport'), which is read before the name alone. 'left' says what part of a listed skill is still for the table.",
   "skills": {
     "Brute Force": {
       "effects": [
@@ -6620,13 +6620,41 @@
       "effects": [],
       "left": "The system keeps count of its use; its effect is for the table."
     },
-    "Teleport": {
+    "class.Teleport": {
       "usage": {
         "kind": "action",
         "cooldown": 3
       },
-      "effects": [],
-      "left": "The system keeps count of its use; its effect is for the table."
+      "effects": [
+        {
+          "warp": {
+            "within": "mov",
+            "unmoved": true
+          }
+        }
+      ]
+    },
+    "enemy.Teleport": {
+      "usage": {
+        "kind": "action",
+        "cooldown": 4
+      },
+      "effects": [
+        {
+          "warp": {
+            "clear": 3
+          }
+        }
+      ]
+    },
+    "Agile Teleport": {
+      "effects": [
+        {
+          "rules": [
+            "actAfterWarp"
+          ]
+        }
+      ]
     },
     "Breath Weapon": {
       "usage": {
@@ -9290,9 +9318,61 @@
             ]
           },
           "takenPercent": -100
+        },
+        {
+          "choice": "Fire",
+          "rank": {
+            "fire": 1
+          }
+        },
+        {
+          "choice": "Thunder",
+          "rank": {
+            "thunder": 1
+          }
+        },
+        {
+          "choice": "Wind",
+          "rank": {
+            "wind": 1
+          }
+        },
+        {
+          "choice": "Water",
+          "rank": {
+            "water": 1
+          }
+        },
+        {
+          "choice": "Earth",
+          "rank": {
+            "earth": 1
+          }
+        },
+        {
+          "choice": "Light",
+          "rank": {
+            "light": 1
+          }
+        },
+        {
+          "choice": "Dark",
+          "rank": {
+            "dark": 1
+          }
         }
       ],
-      "left": "The +1 Rank in the chosen magic type is given once, by hand, on the unit's proficiencies. Damage of that type that does not come from a weapon in a fight is for the table."
+      "left": "Damage of the chosen type that does not come from a weapon in a fight is for the table."
+    },
+    "Practiced": {
+      "effects": [
+        {
+          "rank": {
+            "start": 1
+          }
+        }
+      ],
+      "left": "The rank rises in the proficiency the Character Creator has the unit start with. On a unit made without the Creator it is raised by hand."
     },
     "Preparedness": {
       "effects": [
@@ -10938,6 +11018,13 @@
       ],
       "left": "The system only says when this takes effect; reviving the enemy as an allied revenant with halved stats, 1 HP, no skills and basic Claws is for the table."
     },
+    "Summon": {
+      "usage": {
+        "kind": "action"
+      },
+      "effects": [],
+      "left": "Its Use button puts the unit's Phantom on a free tile next to it, at full HP and with a weapon drawn for its level, and makes the Phantom the first time. One Phantom may be out at a time, more with Multi-Phantom. The Phantom keeps to its summoner's level and its fights earn its summoner the EXP. For the table: assigning its 200 growth points, its +2 CON and +1 MOV at would-be promotion level, the skill Phantom Skill gives it, and that its weapons are not traded or sold."
+    },
     "Imitate": {
       "usage": {
         "kind": "action",
@@ -10980,6 +11067,439 @@
       },
       "effects": [],
       "left": "The system keeps count of its use; its effect is for the table."
+    },
+    "Disarm": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "stat": "dex"
+          },
+          "when": {
+            "foeWeaponNot": [
+              "nonBeorc",
+              "unarmed"
+            ]
+          },
+          "remind": "foe"
+        }
+      ],
+      "left": "The system only says when this takes effect, once the attack has landed; unequipping the foe's weapon and items is for the table."
+    },
+    "Executioner's Mindset": {
+      "effects": [
+        {
+          "proc": {
+            "on": "hit",
+            "sure": true
+          },
+          "when": {
+            "role": "initiating",
+            "range": {
+              "max": 1
+            },
+            "foeCounters": false
+          },
+          "inflicts": [
+            "bleed"
+          ]
+        },
+        {
+          "proc": {
+            "on": "start",
+            "sure": true
+          },
+          "when": {
+            "role": "initiating",
+            "range": {
+              "max": 1
+            },
+            "foeCounters": false
+          },
+          "grant": {
+            "to": "self",
+            "effects": [
+              {
+                "stats": {
+                  "str": 2,
+                  "dex": 2
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "next": true
+          }
+        }
+      ],
+      "left": "The +2 STR and DEX count from after that fight."
+    },
+    "Ruin": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "stat": "dex"
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "combat": {
+                  "critAvoid": {
+                    "of": "dealt",
+                    "cap": 20,
+                    "times": -1
+                  }
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "next": true
+          }
+        }
+      ],
+      "left": "The lowered Critical Avoid counts from after that fight; a later attack in the same fight is for the table."
+    },
+    "Jolly Cooperation": {
+      "effects": [
+        {
+          "when": {
+            "near": {
+              "who": "ally",
+              "within": 2
+            }
+          },
+          "proc": {
+            "on": "attack",
+            "stat": "dex",
+            "div": 1.5
+          },
+          "heal": 30
+        },
+        {
+          "aura": {
+            "who": "ally",
+            "within": 2
+          },
+          "proc": {
+            "on": "attack",
+            "stat": "dex",
+            "div": 1.5
+          },
+          "heal": 30
+        }
+      ],
+      "left": "Applies to units with tokens on the scene. A unit that has Sunlight as well rolls for both, and heals for one of them."
+    },
+    "Black Magic": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "stat": "dex",
+            "div": 1.5
+          },
+          "inflicts": [
+            {
+              "anyOf": [
+                "poison",
+                "rattled",
+                "stun",
+                "silence",
+                "sleep",
+                "berserk"
+              ]
+            }
+          ]
+        }
+      ],
+      "left": "The D6 is read from a d100, a sixth of it for each condition."
+    },
+    "Chill to the Bone": {
+      "effects": [
+        {
+          "when": {
+            "role": "initiating"
+          },
+          "foeStats": {
+            "spd": {
+              "of": "mag",
+              "per": 4,
+              "times": -1
+            }
+          }
+        },
+        {
+          "proc": {
+            "on": "start",
+            "sure": true
+          },
+          "when": {
+            "role": "initiating"
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "spd": {
+                    "of": "mag",
+                    "per": 4,
+                    "times": -1,
+                    "giver": true
+                  }
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "clock": "giver"
+          }
+        }
+      ]
+    },
+    "Cudgel": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "stat": "dex"
+          },
+          "damageOfFoeHp": 20,
+          "grant": {
+            "to": "foe",
+            "pick": [
+              {
+                "name": "Cudgel (STR)",
+                "effects": [
+                  {
+                    "stats": {
+                      "str": -4
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "Cudgel (DEF)",
+                "effects": [
+                  {
+                    "stats": {
+                      "def": -4
+                    }
+                  }
+                ]
+              },
+              {
+                "name": "Cudgel (SPD)",
+                "effects": [
+                  {
+                    "stats": {
+                      "spd": -4
+                    }
+                  }
+                ]
+              }
+            ],
+            "ends": "turnEnd",
+            "turns": 2
+          }
+        }
+      ],
+      "left": "A fifth of the HP the foe has is added to the damage of that attack. The debuff is given when the attack lands, and counts from after that fight."
+    },
+    "Metal Medicine": {
+      "effects": [
+        {
+          "proc": {
+            "on": "staff",
+            "stat": "dex",
+            "div": 2,
+            "ally": true,
+            "heals": true
+          },
+          "healPlus": {
+            "of": "def",
+            "times": 0.6
+          },
+          "grant": {
+            "to": "target",
+            "effects": [
+              {
+                "stats": {
+                  "def": 6
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "turns": 2
+          }
+        }
+      ],
+      "left": "Applies to staves that heal one target, used on a targeted ally with the Use button."
+    },
+    "Flense": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "stat": "dex"
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "def": {
+                    "of": "dealt",
+                    "times": -1
+                  }
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "next": true
+          }
+        }
+      ],
+      "left": "The lowered DEF counts from after that fight; a later attack in the same fight is for the table."
+    },
+    "Inferno": {
+      "effects": [
+        {
+          "proc": {
+            "on": "after",
+            "stat": "mag",
+            "div": 2
+          },
+          "when": {
+            "role": "initiating",
+            "weapon": [
+              "fire"
+            ]
+          },
+          "inflicts": [
+            "burn"
+          ],
+          "remind": true
+        }
+      ],
+      "left": "Rolled after the fight, for a target that still stands, which is then Burned. Burn for the enemies adjacent to the target, and the damage of half this unit's MAG that they and the target take at the start of their next turn, are for the table."
+    },
+    "Fearsome": {
+      "effects": [
+        {
+          "aura": {
+            "who": "enemy",
+            "within": 1
+          },
+          "proc": {
+            "on": "turnStart",
+            "stat": "str",
+            "div": 2,
+            "giver": true
+          },
+          "remind": true
+        }
+      ],
+      "left": "Rolled as the turn of each enemy adjacent to this unit starts, and named on its turn card; Stunning it is for the table. A unit that is neither its ally nor its enemy is not named."
+    },
+    "Flash Freeze": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "stat": "mag"
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "stats": {
+                  "mov": {
+                    "of": "mov",
+                    "times": -1
+                  }
+                },
+                "calc": {
+                  "dodgeBy": "none"
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "next": true,
+            "now": true
+          }
+        }
+      ]
+    },
+    "Dragon Ward": {
+      "effects": [
+        {
+          "aura": {
+            "who": "ally",
+            "within": 2
+          },
+          "proc": {
+            "on": "struck",
+            "stat": "dex",
+            "giver": true
+          },
+          "negate": 50
+        }
+      ],
+      "left": "Rolled when a hit lands on an ally in a fight the system rolls, for units with tokens on the scene; damage dealt any other way is for the table."
+    },
+    "Anathema": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "stat": "dex"
+          },
+          "grant": {
+            "to": "foe",
+            "effects": [
+              {
+                "calc": {
+                  "damageBy": "lowest",
+                  "accuracyBy": "lowest",
+                  "criticalBy": "lowest"
+                }
+              }
+            ],
+            "ends": "turnEnd",
+            "turns": 2
+          }
+        }
+      ],
+      "left": "Counts from after that fight. Damage adds the lowest of the four stats to the weapon's Might in place of the stat the weapon adds; what resists the weapon stays as it is."
+    },
+    "Breath of Life": {
+      "effects": [
+        {
+          "proc": {
+            "on": "start",
+            "sure": true
+          },
+          "when": {
+            "role": "initiating"
+          },
+          "recover": 10
+        }
+      ]
+    },
+    "Prevail": {
+      "effects": [
+        {
+          "aura": {
+            "who": "ally",
+            "within": 3
+          },
+          "staffHeal": {
+            "more": 100
+          }
+        }
+      ],
+      "left": "Doubles what allies within 3 spaces heal other allies for with staves that heal one target and with items, for units with tokens on the scene. Other healing, and doubling the buffs they give, are for the table."
     }
   }
 }

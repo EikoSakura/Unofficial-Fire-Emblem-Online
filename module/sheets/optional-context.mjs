@@ -2,6 +2,7 @@ import { FEO } from "../config.mjs";
 import {
   atLevelLimit, crestOf, killBonus, leadershipBonus, levelLimit, livesState, powerMode, starChance
 } from "../rules/optional.mjs";
+import { followUpCritical, followUpTimes } from "../rules/variants.mjs";
 
 /**
  * Display data for the Optional Modules on a Unit sheet and in chat. Like the rest of the sheet's display data
@@ -45,11 +46,18 @@ export function prepareOptional(actor, { army = null, leaders = [] } = {}) {
   const optional = {
     lives: config.lives.enabled ? prepareLives(system, army) : null,
     stars: config.movementStars.enabled ? prepareStars(system) : null,
+    fcm: config.followUpCritical.enabled ? prepareFcm(system) : null,
     blood: config.holyBlood.enabled ? prepareBlood(system) : null,
     crest: config.crests.enabled ? prepareCrest(system) : null,
     leadership: config.leadership.enabled ? prepareLeadership(system, leaders) : null,
     levelCap: config.levelCap.enabled ? prepareLevelCap(system) : null,
     glory: config.glory.enabled ? prepareGlory(system) : null,
+    stagger: (config.stagger.enabled && system.stagger) ? {
+      max: system._source?.stagger?.max ?? 0,
+      value: system.stagger.value,
+      size: system.stagger.max,
+      sized: !!system.stagger.sized
+    } : null,
     capacity: config.skillCapacity.enabled ? {
       own: system.skillCapacity ?? null,
       usual: config.skillCapacity.points[system.skillRoom?.tier ?? "base"],
@@ -139,6 +147,29 @@ function prepareStars(system) {
     bonus: total - value,
     chance: starChance(total),
     pips: Array.from({ length: max }, (_, index) => index < total)
+  };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The Follow-up Critical Multiplier: the unit's FCM, and its Critical with the weapon in hand as a follow-up
+ * attack counts it, before the foe's Critical Avoid is taken off.
+ * @param {object} system
+ * @returns {object}
+ */
+function prepareFcm(system) {
+  const { base, max } = FEO.optional.followUpCritical;
+  const times = followUpTimes(system.fcm);
+  const critical = system.combat?.critical?.value ?? 0;
+  return {
+    value: system.fcm ?? base,
+    min: base,
+    max,
+    times,
+    raised: times > base,
+    critical,
+    followUp: followUpCritical(critical, system.fcm)
   };
 }
 

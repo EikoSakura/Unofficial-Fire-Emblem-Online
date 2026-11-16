@@ -60,6 +60,12 @@
       {{#if forecast.outsideTriangle}}<span class="tag">{{localize "FEO.Combat.outsideTriangle"}}</span>{{/if}}
       {{#if forecast.weapon.effect}}<span class="tag effect" data-tooltip="{{forecast.weapon.effect}}">{{localize "FEO.Weapon.effect"}} <b>{{forecast.weapon.effect}}</b></span>{{/if}}
       {{#if forecast.hasStaffHit}}<span class="tag">{{localize "FEO.Combat.staffHit"}} <b>{{forecast.staffHit}}</b></span>{{/if}}
+      {{#with forecast.staffExtras as |extras|}}
+      {{#if extras.hit}}<span class="tag" data-tooltip="{{localize "FEO.Staff.hitHint"}}">{{localize "FEO.Staff.hit"}} <b>{{extras.hit.value}}</b></span>{{/if}}
+      {{#if extras.critical}}<span class="tag" data-tooltip="{{localize "FEO.Staff.criticalHint"}}">{{localize "FEO.Staff.critical"}} <b>{{extras.critical.value}}%</b></span>{{/if}}
+      {{#if extras.double}}<span class="tag" data-tooltip="{{localize "FEO.Staff.doubleHint"}}">{{localize "FEO.Staff.double"}} <b>{{extras.double.value}}%</b></span>{{/if}}
+      {{#if extras.passive}}<span class="tag good" data-tooltip="{{localize "FEO.Optional.staffPassives.hint"}}">{{localize "FEO.Optional.staffPassives.tag"}} <b>{{#each extras.passive as |part|}}{{#unless @first}}, {{/unless}}{{#if part.value}}{{part.value}} {{/if}}{{#if part.condition}}{{localize part.label condition=(localize part.condition)}}{{else}}{{localize part.label}}{{/if}}{{#if part.note}} ({{part.note}}){{/if}}{{/each}}</b></span>{{/if}}
+      {{/with}}
       <span class="tag" data-tooltip="{{localize "FEO.Combat.staffAvoidHint"}}">{{localize "FEO.Combat.staffAvoid"}} <b>{{forecast.staffAvoid}}</b></span>
       {{#if affinity.effect}}<span class="tag" data-tooltip="{{localize affinity.effect.text}} {{localize affinity.effect.mode}}">{{feoIcon affinity.icon}}{{localize "FEO.Optional.affinityEffect.name" affinity=(localize affinity.label)}}</span>{{/if}}
       {{#if forecast.endurance}}<span class="tag good" data-tooltip="{{localize "FEO.Combat.enduranceHint"}}">{{localize "FEO.Bond.end"}} <b>+{{forecast.endurance}}</b></span>{{/if}}

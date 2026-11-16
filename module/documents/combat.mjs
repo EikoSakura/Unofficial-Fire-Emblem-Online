@@ -1,6 +1,7 @@
 import { FEO } from "../config.mjs";
 import { beginPhase, phaseOf, sidesOf } from "../helpers/phases.mjs";
 import { endTurnOf, startBattle, startTurnOf } from "../helpers/turns.mjs";
+import { markStarts } from "../helpers/warp.mjs";
 
 /**
  * An encounter in which the turns of units count down their conditions, and with them everything else that
@@ -25,6 +26,9 @@ export default class FeoCombat extends foundry.documents.Combat {
   async startCombat() {
     try {
       await startBattle(this);
+
+      // Every unit remembers where it stands, for what sends a unit back to its starting space
+      await markStarts(this);
     } catch(err) {
       console.error(err);
     }

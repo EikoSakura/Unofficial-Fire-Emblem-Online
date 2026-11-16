@@ -4,6 +4,7 @@
     <div class="hc-head cloth" data-army="{{army}}"><b>{{name}}</b><span>{{className}} · {{localize "FEO.Hud.level"}} {{level}}</span></div>
     <div class="hc-body">
       <div class="hc-hp" data-tone="{{hp.tone}}"><span>{{localize "FEO.Stat.hp.abbr"}}</span><div class="bar"><i style="width:{{hp.percent}}%"></i></div><b>{{hp.value}} / {{hp.max}}</b></div>
+      {{#if stagger}}<div class="hc-hp hc-stagger"><span>{{localize "FEO.Optional.stagger.abbr"}}</span><div class="bar stagger{{#if stagger.staggered}} staggered{{/if}}"><i style="width:{{stagger.percent}}%"></i></div><b>{{stagger.value}} / {{stagger.max}}</b></div>{{/if}}
       <div class="hc-row">
         {{#if weapon}}<img src="{{weapon.img}}" alt=""><b>{{weapon.name}}</b> {{localize "FEO.Hud.range"}} {{weapon.range}}{{else}}{{feoIcon "x"}}{{localize "FEO.Combat.unarmed"}}{{/if}}
         {{#if stateLabel}}<span class="end">{{stateLabel}}</span>{{/if}}

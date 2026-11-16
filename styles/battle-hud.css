@@ -85,6 +85,9 @@
 .feo-hud .chip.none { border-style: dashed; font-weight: 500; color: var(--feo-cloth-muted); background: none; }
 .feo-hud .bar { position: relative; height: 9px; border-radius: 999px; background: rgba(0, 0, 0, .38); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .5); }
 .feo-hud .bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: linear-gradient(180deg, color-mix(in srgb, var(--feo-hp) 80%, #fff), var(--feo-hp)); }
+.feo-hud .bar.stagger { height: 5px; }
+.feo-hud .bar.stagger > i { background: linear-gradient(180deg, #cdc4f5, #8f7fd9); }
+.feo-hud .bar.stagger.staggered { box-shadow: inset 0 0 0 1px #ee6b6b; }
 .feo-hud .bar > u { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, #fff 0 3px, rgba(255, 255, 255, .35) 3px 6px); }
 
 /* ---------- Phase banner ---------- */

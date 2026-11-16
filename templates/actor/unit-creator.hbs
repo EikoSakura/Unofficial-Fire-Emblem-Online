@@ -10,6 +10,19 @@
   </span>
   {{/inline}}
 
+  {{#*inline "crVariants"}}
+  {{#each variants as |variant|}}
+  <div class="cr-variant{{#if variant.open}} open{{/if}}">
+    <small>{{variant.title}}</small>
+    <div class="cr-pills">
+      {{#each variant.options as |option|}}
+      <button type="button" class="cr-pick" data-action="creatorVariant" data-id="{{variant.id}}" data-value="{{option.value}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
+      {{/each}}
+    </div>
+  </div>
+  {{/each}}
+  {{/inline}}
+
   {{#*inline "crApproval"}}
   <div class="cr-signoff{{#if approval.approved}} approved{{/if}}" data-fl="creation.{{which}}">
     <span class="txt">{{approval.text}}</span>
@@ -142,7 +155,21 @@
                 {{#unless ../panel.classSkills.choice}}disabled{{/unless}}><b>{{row.name}}</b><small>{{row.effect}}</small></button>
         {{/each}}
       </div>
+      {{> crVariants variants=panel.classSkills.variants}}
       {{/if}}
+      {{#if panel.surplus}}
+      <div class="cr-sub">{{localize "FEO.Creator.skills.surplus"}}</div>
+      <div class="cr-picked" data-fl="creation.skills.generic">
+        <small>{{localize "FEO.Creator.skills.picked"}}</small>
+        <b>{{panel.surplus.name}}</b>
+        <span>{{panel.surplus.effect}}</span>
+      </div>
+      <div class="cr-signoff tree">
+        <span class="txt">{{localize "FEO.Creator.skills.surplusHint"}}</span>
+        <button type="button" class="btn primary" data-action="creatorPick" data-field="genericSkill" data-value="">{{localize "FEO.Creator.skills.giveUp"}}</button>
+      </div>
+      {{/if}}
+      {{#if panel.generic}}
       <div class="cr-sub">{{localize "FEO.Creator.skills.generic"}}</div>
       {{#if panel.generic.picked}}
       <div class="cr-picked" data-fl="creation.skills.generic">
@@ -151,6 +178,7 @@
         {{#if panel.generic.picked.capacity}}<i class="cr-mark">{{panel.generic.picked.capacity}}</i>{{/if}}
         <span>{{panel.generic.picked.effect}}</span>
       </div>
+      {{> crVariants variants=panel.generic.variants}}
       {{else}}
       <div class="cr-signoff" data-fl="creation.skills.generic"><span class="txt"><b>{{localize "FEO.Creator.skills.none"}}</b> {{localize "FEO.Creator.skills.noneHint"}}</span></div>
       {{/if}}
@@ -159,6 +187,7 @@
         <span class="txt">{{localize "FEO.Creator.skills.rollHint"}}</span>
         <button type="button" class="btn primary" data-action="creatorSkillRoll">{{feoIcon "spark"}}{{#if panel.generic.picked}}{{localize "FEO.Creator.skills.change"}}{{else}}{{localize "FEO.Creator.skills.choose"}}{{/if}}</button>
       </div>
+      {{/if}}
       {{/if}}
 
       {{!-- ---------- Proficiencies ---------- --}}
@@ -177,7 +206,7 @@
       {{/if}}
       {{#if panel.first}}
       <div class="card">
-        <h3>{{localize "FEO.Creator.ranks.first"}}</h3>
+        <h3>{{panel.firstTitle}}</h3>
         <div class="cr-pills" data-fl="creation.ranks.first">
           {{#each panel.first as |option|}}
           <button type="button" class="cr-pick" data-action="creatorPick" data-field="first" data-value="{{option.key}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
@@ -190,6 +219,7 @@
         <div class="cr-budget">
           {{#each panel.result as |entry|}}<span class="tag"><b>{{entry.label}}</b> {{entry.rank}}</span>{{else}}<span class="tag">{{localize "FEO.Creator.ranks.nothing"}}</span>{{/each}}
         </div>
+        {{#each panel.raised as |line|}}<p class="cr-hint">{{line}}</p>{{/each}}
         <p class="cr-hint">{{localize "FEO.Creator.ranks.other"}}</p>
       </div>
       {{/if}}

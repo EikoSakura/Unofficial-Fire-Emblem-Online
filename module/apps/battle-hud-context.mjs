@@ -8,7 +8,9 @@ import { canGambit } from "../rules/battalions.mjs";
 import { breakInUse } from "../rules/breaking.mjs";
 import { brushHolds } from "../rules/paint.mjs";
 import { formsOf } from "../rules/skills.mjs";
+import { staggerInUse } from "../rules/stagger.mjs";
 import { terrainType } from "../rules/terrain.mjs";
+import { warpOf } from "../rules/warp.mjs";
 
 /**
  * What the Battle HUD shows, worked out from what its application read of the world. Nothing here touches the
@@ -202,11 +204,23 @@ function unitSummary({ actor, name, img, army, range, ground }, i18n) {
       percent: share(system.hp.value, system.hp.max),
       tone: tone(system.hp.value, system.hp.max)
     },
+
+    // Stagger: the unit's Stagger bar, shown under its HP where the world plays with it
+    stagger: (staggerInUse() && system.stagger) ? {
+      value: system.stagger.value,
+      max: system.stagger.max,
+      percent: share(system.stagger.value, system.stagger.max),
+      staggered: !!system.stagger.staggered,
+      label: i18n.format("FEO.Optional.stagger.barLine", { value: system.stagger.value, max: system.stagger.max })
+    } : null,
     conditions: [
       ...conditionChips(system.conditions, i18n),
 
       // Breaking: a unit that suffers from Break shows it among its conditions, though it is none
-      ...((breakInUse() && system.break) ? [{ id: "break", label: i18n.localize("FEO.Optional.breaking.break"), turns: "", img: "" }] : [])
+      ...((breakInUse() && system.break) ? [{ id: "break", label: i18n.localize("FEO.Optional.breaking.break"), turns: "", img: "" }] : []),
+
+      // Stagger: so does a unit that is Staggered
+      ...(system.stagger?.staggered ? [{ id: "staggered", label: i18n.localize("FEO.Optional.stagger.staggered"), turns: "", img: "" }] : [])
     ],
     weapon: weapon ? {
       id: weapon.id,
@@ -241,7 +255,7 @@ function unitSummary({ actor, name, img, army, range, ground }, i18n) {
  * @param {boolean} unit.owner                May the user act for it?
  * @param {boolean} unit.targets              Is a foe within its reach this turn?
  * @param {string|null} unit.flyout           The list that is open: equip, staff, skill or item
- * @param {string|null} unit.mode             What the next click on the map means: target or staff
+ * @param {string|null} unit.mode             What the next click on the map means: target, staff or warp
  * @param {Localizer} i18n
  * @returns {object}
  */
@@ -252,6 +266,10 @@ export function buildDock(unit, i18n) {
   const combat = system.combat ?? {};
   const armed = !!summary.weapon && !summary.weapon.staff && !summary.weapon.broken;
   const acting = owner && ((state === "ready") || (state === "free"));
+
+  // A Staggered unit cannot act, though it may still move, change what it holds and Wait
+  const staggered = !!system.stagger?.staggered;
+  const able = acting && !staggered;
   const weapons = actor.items.filter((item) => item.type === "weapon");
   const staves = weapons.filter((item) => item.system.category === "staff");
   const gear = actor.items.filter((item) => item.type === "gear");
@@ -280,11 +298,13 @@ export function buildDock(unit, i18n) {
     : state === "down" ? { icon: "moon", text: i18n.format("FEO.Hud.status.down", { turns: system.defeat?.turns ?? 0 }), locked: true }
     : state === "acted" ? { icon: "check", text: i18n.localize("FEO.Hud.status.acted"), locked: true }
     : state === "waiting" ? { icon: "lock", text: i18n.format("FEO.Hud.status.waiting", { phase }), locked: true }
+    : staggered ? { icon: "lock", text: i18n.localize("FEO.Optional.stagger.status") }
     : unit.mode === "target" ? { icon: "target", text: i18n.localize("FEO.Hud.status.target") }
     : unit.mode === "staff" ? { icon: "staff", text: i18n.localize("FEO.Hud.status.staff") }
+    : unit.mode === "warp" ? { icon: "spark", text: i18n.localize("FEO.Hud.status.warp") }
     : moved ? { icon: "boot", text: i18n.format("FEO.Hud.status.moved", { spent, movement }) }
     : { icon: "right", text: i18n.localize(state === "free" ? "FEO.Hud.status.free" : "FEO.Hud.status.ready") };
-  const why = acting ? "" : status.text;
+  const why = able ? "" : status.text;
   const action = (id, icon, label, enabled, extra = {}) => ({
     id, icon, label: i18n.localize(label), disabled: !enabled, tooltip: enabled ? "" : (extra.why ?? why),
     primary: !!extra.primary && enabled, open: unit.flyout === id, on: !!extra.on
@@ -332,8 +352,11 @@ export function buildDock(unit, i18n) {
     rows: [
       ...skills.map((item) => {
         const asAction = item.system.usage.kind === "action";
+
+        // A skill that warps the unit has its tile chosen on the map first
+        const use = warpOf(item.system) ? "pickWarp" : "useSkill";
         return {
-          action: asAction ? "useSkill" : "switchSkill", id: item.id, img: item.img, name: item.name,
+          action: asAction ? use : "switchSkill", id: item.id, img: item.img, name: item.name,
           sub: item.system.effect ?? "", on: !asAction && !!item.system.state?.active,
           end: i18n.localize(asAction ? "FEO.Hud.flyout.asAction" : item.system.state?.active ? "FEO.Hud.flyout.declared" : "FEO.Hud.flyout.declare"),
           disabled: !acting
@@ -407,12 +430,12 @@ export function buildDock(unit, i18n) {
     canUndo: acting && moved,
     status,
     actions: [
-      action("attack", "crossed", "FEO.Combat.attack", acting && armed, {
-        primary: unit.targets, on: unit.mode === "target", why: acting ? i18n.localize("FEO.Exchange.blocked.unarmed") : why
+      action("attack", "crossed", "FEO.Combat.attack", able && armed, {
+        primary: unit.targets, on: unit.mode === "target", why: able ? i18n.localize("FEO.Exchange.blocked.unarmed") : why
       }),
-      action("staff", "staff", "FEO.WeaponType.staff", acting && !!staves.length, { why: acting ? i18n.localize("FEO.Hud.noStaff") : why }),
-      action("skill", "spark", "FEO.Hud.skill", acting && !!(skills.length || forms.length || arts.length || squad || capture), { why: acting ? i18n.localize("FEO.Hud.noSkill") : why }),
-      action("item", "flask", "FEO.Hud.item", acting && !!gear.length, { why: acting ? i18n.localize("FEO.Hud.noItem") : why }),
+      action("staff", "staff", "FEO.WeaponType.staff", able && !!staves.length, { why: able ? i18n.localize("FEO.Hud.noStaff") : why }),
+      action("skill", "spark", "FEO.Hud.skill", able && !!(skills.length || forms.length || arts.length || squad || capture), { why: able ? i18n.localize("FEO.Hud.noSkill") : why }),
+      action("item", "flask", "FEO.Hud.item", able && !!gear.length, { why: able ? i18n.localize("FEO.Hud.noItem") : why }),
       action("wait", "hourglass", "FEO.Wait.label", acting),
       action("sheet", "scroll", "FEO.Hud.sheet", true)
     ],
@@ -553,6 +576,13 @@ export function buildHudForecast(plan, { armies, images = {}, measured = null },
       times: shown.repeats ? shown.attacks : null,
       hit: shown.hit,
       crit: shown.crit,
+
+      // Follow-up Critical Multiplier: the chance of a critical hit with the follow-up attack where it is
+      // another, and behind the number what it comes from
+      critFollow: shown.critFollow,
+      critFollowLine: (shown.active && side.fcm)
+        ? { label: i18n.format("FEO.Optional.fcm.sum", { times: side.fcm }), value: `${side.critFollow}` }
+        : null,
       sums
     };
   });
@@ -566,7 +596,8 @@ export function buildHudForecast(plan, { armies, images = {}, measured = null },
       ...[["damage", "FEO.Hud.dmg"], ["hit", "FEO.Combat.hit"], ["crit", "FEO.Combat.critAbbr"]].map(([stat, label]) => {
         const cell = (side) => ({
           active: side.active, value: side[stat], times: stat === "damage" ? side.times : null,
-          lead: stat === "damage", lines: side.sums?.[stat] ?? [], result: side[stat], blocked: side.blocked
+          lead: stat === "damage", lines: side.sums?.[stat] ?? [], result: side[stat], blocked: side.blocked,
+          then: stat === "crit" ? side.critFollow : null, after: stat === "crit" ? side.critFollowLine : null
         });
         return { label: i18n.localize(label), cells: [cell(attacker), cell(defender)] };
       })

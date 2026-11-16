@@ -50,7 +50,10 @@
  *                                       // unit performs, where the world plays with Combat Arts
  *     dealtPercent: 5,                  // a share added to the damage of the unit's hits
  *     hpMax: 5,                         // added to maximum HP
- *     calc: { accuracy: "bruteForce" }, // another formula for a combat stat
+ *     calc: { accuracy: "bruteForce" }, // another formula for a combat stat; `damageBy`, `accuracyBy` and
+ *                                       // `criticalBy: "lowest"` work it out from the lowest of a few stats, and
+ *                                       // `dodgeBy: "none"` leaves no Dodge (see `SKILL_CALC`)
+ *     foeStats: { spd: -2 },            // added to the stats the foe fights with, in this fight only
  *     rules: ["closeCounter"],          // combat rules the skill bends (see RULES)
  *     effective: ["Beast"],             // Special Qualities the unit's attacks are effective against
  *     effectiveMultiplier: 4,           // what an effective weapon's Might is multiplied by
@@ -113,6 +116,7 @@
  *     // on an attack, for that attack:
  *     damage: { of: "def", times: 0.4 },             // added to its damage; a list is added up
  *     damagePercent: 30,                // a share of the damage before the foe's defence, added to it
+ *     damageOfFoeHp: 20,                // a share of the HP the foe has as the attack is made, added to it
  *     damageMultiplier: 2,              // what its damage is multiplied by
  *     statTimes: { str: 2 },            // the stat counted this many times, when the weapon adds that stat
  *     ignore: { percent: 100, stat: "def" },         // the share of the foe's DEF (or RES) it ignores
@@ -121,7 +125,16 @@
  *     sureHit: true,                    // it cannot miss; "ifAny" when it needs some chance to hit
  *     inflicts: ["burn", { id: "bleed", upgrade: { id: "heavyBleed", stat: "dex", div: 2 } }],
  *                                       // `{ id: "smoke", dice: 3 }` rolls a die of that many faces for the turns,
- *                                       // `{ id: "silence", turns: 1 }` sets them
+ *                                       // `{ id: "silence", turns: 1 }` sets them, and
+ *                                       // `{ anyOf: ["poison", "stun"] }` inflicts one of them, picked by a die
+ *     grant: { to: "foe", ... },        // what it grants its foe, or the units around its foe, waits for the
+ *                                       // attack to land; what it grants its own side comes at once. On an
+ *                                       // attack and on a hit, a number of such a change can be read from the
+ *                                       // damage dealt: { of: "dealt", cap: 20, times: -1 } is that damage, held
+ *                                       // at 20, taken off; a change it would make nothing of is not granted.
+ *                                       // `pick: [{ name, effects }, ...]` in place of `effects` grants one of
+ *                                       // several changes, picked by a die
+ *     remind: "foe",                    // the system says so once the attack has landed
  *     sequence: [{}, { share: 0.5 }],   // the attack becomes this many attacks in a row, each with its own
  *                                       // parts from the list above and its share of the damage. The attacks
  *                                       // it adds roll no chances of their own
@@ -141,8 +154,13 @@
  *
  *     // at the start, for the whole fight:
  *     combat: { damage: 5, critical: 20 },           // added to the unit's Hit, damage, Critical and Dodge
- *     foeCombat: { hit: -20, dodge: -20 }            // added to the foe's Hit and Dodge
+ *     foeCombat: { hit: -20, dodge: -20 },           // added to the foe's Hit and Dodge
+ *     recover: 10                                    // HP the unit regains before the first attack
  *   }
+ *
+ * The chance of an effect given by an aura is the receiver's own, unless its `proc` says `giver: true`: it is
+ * then worked out for the unit that has the skill, with its Skill Activation rate, and nothing of the receiver
+ * changes it.
  *
  * Where the world plays with Alternate Skill Activation, a chance read from a stat is read as that module has
  * it (see `activationOf`): from the whole stat, or from the unit's level in place of its Dexterity. The second
@@ -181,6 +199,7 @@
  *   {
  *     proc: { on: "turnStart", sure: true },
  *     recover: { of: "hpMax", times: 0.1 },          // HP the unit regains
+ *     cure: ["poison"],                              // conditions the unit is cured of; "all" for every one
  *     remind: true                                   // the system only says so; "check" when the effect hangs on
  *   }                                                // something it cannot see, and then `recover` is shown, not applied
  *
@@ -210,6 +229,12 @@
  * multiplies the experience it earns, `staffExp: "unpromoted"` names the column of the staff table it earns by,
  * `growths: { hp: 10 }` is added to the growth rates a level up rolls, `gold: 50` at `on: "kill"` is gold for
  * defeating the foe, and `on: "levelUp"` is the moment its unit levels up.
+ *
+ * Some skills give a weapon rank for good (see `skill-ranks.mjs`). The rank is saved on the unit as the skill
+ * is taken, and taken back as it goes:
+ *
+ *   rank: { fire: 1 }                   // ranks added, by proficiency
+ *   rank: { start: 1 }                  // in the proficiency the unit started with
  *
  * Some skills bend the rules of conditions (see `conditions.mjs`). These parts are always there, never at a
  * moment or as an aura:
@@ -255,11 +280,13 @@
  *   rules: ["selfStaff", "staffFreeUses"]     // a staff that heals heals its user when used on nobody; its
  *                                             // staves lose no use
  *
- * and the moment a staff is used, always `sure`, can grant what lasts, be announced, or harm:
+ * and the moment a staff is used, `sure` or with a chance that is rolled before the staff heals, can grant
+ * what lasts, be announced, heal more, or harm:
  *
  *   {
  *     proc: { on: "staff", sure: true, ally: true },   // `ally`: only when used on an ally; `heals`: only
  *                                                      // when it restored HP to one
+ *     healPlus: { of: "def", times: 0.6 },             // HP a staff that heals one unit restores on top
  *     grant: { to: "target", effects: [{ stats: { str: 2 } }], ends: "turnStart", clock: "giver" },
  *     harmNear: { within: 2, percent: 50 },            // that share of the HP restored, as damage to the enemy
  *     remind: true                                     // nearest to the unit healed, within so many tiles
@@ -301,13 +328,23 @@
  * `when: { shifted: true }` asks whether the unit is transformed: Shifted, or with a stone that still transforms
  * it for a fight. On a critical hit, `gaugeOfDamage: 100` gives the Shift Gauge that share of the damage the hit
  * would have dealt had it not been critical.
+ *
+ * A skill used as an action can put its unit somewhere else on the map (see `warp.mjs`). Its `warp` part stands
+ * alone in an effect and is always there:
+ *
+ *   warp: { within: "mov", unmoved: true }     // onto a free tile at most its MOV away, whatever lies between,
+ *                                              // and only before it has moved; `clear: 3` for a tile with no
+ *                                              // enemy within 3 tiles, anywhere on the map without `within`
+ *   rules: ["actAfterWarp"]                    // warping does not end the unit's turn
  */
 import { FEO } from "../config.mjs";
+import { SKILL_CALC } from "./combat-stats.mjs";
 import { conditionModifiers } from "./conditions.mjs";
 import { alliesOpposite, countHolds, countNear, sharesSpace, unitsNear, unitsNearFoe } from "./positions.mjs";
 import { SHIFT_PARTS } from "./shifting.mjs";
 import { usesLeft } from "./skill-usage.mjs";
 import { buildChange } from "./timed.mjs";
+import { ACT_AFTER_WARP, checkWarp } from "./warp.mjs";
 
 /**
  * @typedef SkillEntry
@@ -375,7 +412,10 @@ export const RULES = [
 
   // Staying alive: the unit's foe makes no critical hit, and the unit dodges every attack whose hit would be
   // fatal to it
-  "foeNoCrit", "dodgeFatal"
+  "foeNoCrit", "dodgeFatal",
+
+  // Warping: the unit keeps its turn when a skill has warped it
+  ACT_AFTER_WARP
 ];
 
 /** When a proc is rolled. */
@@ -392,6 +432,9 @@ const STAFF_KEYS = ["staffHeal", "staffHealed", "staffRange"];
 
 /** The rules that only staves read, which give a skill nothing to tell in a fight. */
 const STAFF_RULES = ["selfStaff", "staffFreeUses"];
+
+/** The rules that are read outside of fights altogether, and so give a skill nothing to tell in one. */
+const QUIET_RULES = [...STAFF_RULES, ACT_AFTER_WARP];
 
 /** The parts of an effect that bend the rules of conditions. */
 const BEND_KEYS = ["inflictChance", "inflictTurns", "nullify", "suffers", "recovery", "debuffs", "burstHarm"];
@@ -781,6 +824,38 @@ export function resolveGiven(value, giver) {
 }
 
 /* -------------------------------------------- */
+
+/**
+ * Does a lasting change have a number that is read from the damage of the hit that grants it?
+ * @param {*} value       A `grant`, a part of one, or a list of them
+ * @returns {boolean}
+ */
+export function readsDealt(value) {
+  if ( Array.isArray(value) ) return value.some(readsDealt);
+  if ( !value || (typeof value !== "object") ) return false;
+  return (value.of === "dealt") || Object.values(value).some(readsDealt);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Work out the numbers that are read from the damage a hit dealt: `{ of: "dealt", cap, div, times }` is that
+ * damage, held at `cap`, divided, multiplied and rounded towards zero.
+ * @param {*} value           The effects of a lasting change, a part of them, or a list
+ * @param {number} dealt      The damage the hit dealt
+ * @returns {*}               The same with those numbers worked out
+ */
+export function resolveDealt(value, dealt) {
+  if ( Array.isArray(value) ) return value.map((entry) => resolveDealt(entry, dealt));
+  if ( !value || (typeof value !== "object") ) return value;
+  if ( value.of === "dealt" ) {
+    const amount = (Math.min(Math.max(dealt, 0), value.cap ?? Infinity) / (value.div ?? 1)) * (value.times ?? 1);
+    return Math.trunc(amount + (Math.sign(amount) * 1e-9));
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, resolveDealt(entry, dealt)]));
+}
+
+/* -------------------------------------------- */
 /*  Gathering Effects                           */
 /* -------------------------------------------- */
 
@@ -805,6 +880,8 @@ export function resolveGiven(value, giver) {
  * @property {number} artCost                     Added to each cost of the Combat Arts it performs
  * @property {number} hpMax
  * @property {Record<string, string>} calc
+ * @property {{skill: string, stats: Record<string, number>}[]} foeStats
+ *                                                What each skill adds to the stats the foe fights with
  * @property {Set<string>} rules
  * @property {string[]} effective
  * @property {number|null} effectiveMultiplier
@@ -965,7 +1042,7 @@ export function emptyTotals() {
     sources: [], stats: {}, combat: {}, might: 0, taken: 0, takenMultiplier: 1, foeActivation: 0, hpMax: 0, calc: {}, rules: new Set(),
     haste: 0, mirrorCrit: 0, critMultiplier: null, slots: 0, capacity: 0, artCost: 0,
     effective: [], effectiveMultiplier: null, damageMultiplier: 1, ignoreDefence: 0, strikes: 1, extraAttacks: [],
-    procs: [], declared: [], applied: [], auras: [], lasting: [], checks: [],
+    procs: [], declared: [], applied: [], auras: [], lasting: [], checks: [], foeStats: [],
     ranges: [], damageStat: null, foeWear: { hit: 0, noDamage: 0 }, wield: 0, bends: emptyBends()
   };
 }
@@ -1141,11 +1218,17 @@ export function skillTotals(skills, self, { fight = null, foeNihil = false, phas
       // What a skill changes about how its unit changes form is read ahead of its numbers (see `shifting.mjs`),
       // and gives the skill nothing to tell here
       if ( (effect.shift !== undefined) && Object.keys(effect).every((key) => ["shift", "when", "choice"].includes(key)) ) continue;
+
+      // Where a skill warps its unit to is read when the skill is used (see `warp.mjs`)
+      if ( (effect.warp !== undefined) && Object.keys(effect).every((key) => key === "warp") ) continue;
+
+      // What only speaks to staves is read when a staff is used (see `staves.mjs`)
+      if ( STAFF_KEYS.some((key) => effect[key] !== undefined) && Object.keys(effect).every((key) => [...STAFF_KEYS, "when", "choice"].includes(key)) ) continue;
       applied = true;
       notable ||= placed || (Object.keys(effect.when ?? {}).length > 0)
         || NOTABLE.some((key) => {
           if ( (effect[key] === undefined) || (effect[key] === null) ) return false;
-          return (key !== "rules") || !effect.rules.every((rule) => STAFF_RULES.includes(rule));
+          return (key !== "rules") || !effect.rules.every((rule) => QUIET_RULES.includes(rule));
         });
       const scale = effect.scale ? readNumber(effect.scale, self, fight) : 1;
       const number = (value) => readNumber(value, self, fight) * scale;
@@ -1183,6 +1266,10 @@ export function skillTotals(skills, self, { fight = null, foeNihil = false, phas
       if ( effect.foeActivation ) totals.foeActivation += number(effect.foeActivation);
       if ( effect.hpMax ) totals.hpMax += number(effect.hpMax);
       Object.assign(totals.calc, effect.calc ?? {});
+      if ( effect.foeStats && fight ) {
+        const lowered = Object.fromEntries(Object.entries(effect.foeStats).map(([key, value]) => [key, number(value)]));
+        totals.foeStats.push({ skill: skill.name, stats: lowered });
+      }
       for ( const rule of effect.rules ?? [] ) totals.rules.add(rule);
       for ( const quality of effect.effective ?? [] ) {
         if ( !totals.effective.includes(quality) ) totals.effective.push(quality);
@@ -1386,7 +1473,7 @@ export function resolveProc({ skill, effect, source = null, giver = "", uses = n
   // A chance that is rolled for and inflicts a condition gains what the unit's skills add to that condition's
   // chances: the most any of the conditions it inflicts gains
   const inflicted = [effect, ...(effect.sequence ?? [])].flatMap((part) => part.inflicts ?? [])
-    .map((entry) => ((typeof entry === "string") ? entry : entry?.id)).concat(effect.inflictsAttacker ?? []);
+    .flatMap((entry) => ((typeof entry === "string") ? entry : (entry?.anyOf ?? entry?.id))).concat(effect.inflictsAttacker ?? []);
   const raised = (proc.sure || !inflictChance) ? 0 : inflicted.reduce((most, id) => Math.max(most, inflictChance[id] ?? 0), 0);
   const chance = chanceOf(proc, self, fight, { activation, always, raised });
 
@@ -1400,6 +1487,7 @@ export function resolveProc({ skill, effect, source = null, giver = "", uses = n
     return {
       damage,
       damagePercent: given.damagePercent ?? 0,
+      foeHpPercent: given.damageOfFoeHp ?? 0,
       damageMultiplier: given.damageMultiplier ?? 1,
       ignore: given.ignore ?? null,
       hit: number(given.hit),
@@ -1408,6 +1496,9 @@ export function resolveProc({ skill, effect, source = null, giver = "", uses = n
       sureHit: given.sureHit ?? false,
       inflicts: (given.inflicts ?? []).map((entry) => {
         if ( typeof entry === "string" ) return { id: entry };
+
+        // One of several, picked by a die when the attack lands
+        if ( entry.anyOf ) return { id: entry.anyOf[0], anyOf: [...entry.anyOf] };
         const upgrade = entry.upgrade ? { id: entry.upgrade.id, chance: chanceOf(entry.upgrade, self, fight, { always, asWritten: true }) } : undefined;
         const dice = entry.dice ? { dice: entry.dice } : (entry.turns ? { turns: entry.turns } : {});
         return upgrade ? { id: entry.id, upgrade, ...dice } : { id: entry.id, ...dice };
@@ -1445,7 +1536,11 @@ export function resolveProc({ skill, effect, source = null, giver = "", uses = n
     remind: effect.remind ?? false,
 
     // Changes that last a while, with the numbers that are read from this unit worked out
-    grants: [].concat(effect.grant ?? []).map((grant) => ({ ...grant, effects: resolveGiven(grant.effects ?? [], self) })),
+    grants: [].concat(effect.grant ?? []).map((grant) => {
+      const given = { ...grant, effects: resolveGiven(grant.effects ?? [], self) };
+      if ( grant.pick ) given.pick = grant.pick.map((option) => ({ ...option, effects: resolveGiven(option.effects ?? [], self) }));
+      return given;
+    }),
     source: source ?? skill,
     giver,
     damaged: !!effect.damaged,
@@ -1476,10 +1571,13 @@ export function resolveProc({ skill, effect, source = null, giver = "", uses = n
  * @param {SkillEntry[]} skills
  * @param {SkillSelf & {waiting?: boolean}} self
  * @param {"turnStart"|"turnEnd"|"wait"} moment
+ * @param {object} [options]
+ * @param {Record<string, number>|null} [options.conditions]    The conditions the unit suffers from, where
+ *                                                              that is known
  * @returns {{skill: string, effect: object, unseen?: boolean}[]}   `unseen` for an effect that hangs on where
  *          units stand, of a unit that is not on the map: it is shown, for the table to check
  */
-export function turnEffects(skills, self, moment) {
+export function turnEffects(skills, self, moment, { conditions = null } = {}) {
   self = withSkillNames(self, skills);
   const found = [];
   for ( const skill of skills ?? [] ) {
@@ -1490,6 +1588,10 @@ export function turnEffects(skills, self, moment) {
       if ( (effect.proc?.on !== moment) || effect.aura ) continue;
       const unseen = needsPlace(effect) && !seesPlace(effect, self, null);
       if ( !holds(unseen ? withoutPlace(effect.when) : effect.when, self, null) ) continue;
+
+      // What only cures conditions has nothing to do for a unit that suffers from none of them
+      const curesOnly = (effect.cure !== undefined) && Object.keys(effect).every((key) => ["proc", "when", "cure"].includes(key));
+      if ( curesOnly && conditions && !curedOf(effect.cure, conditions).length ) continue;
 
       // With nobody in reach there is nothing to do
       if ( effect.reach && !unseen && !reached(self, effect.reach).length ) continue;
@@ -1518,16 +1620,30 @@ function reached(self, reach) {
 /* -------------------------------------------- */
 
 /**
+ * The conditions a unit suffers from that an effect cures it of.
+ * @param {"all"|string[]} cure                   Every condition, or the ones named
+ * @param {Record<string, number>} conditions     The conditions the unit suffers from
+ * @returns {string[]}
+ */
+function curedOf(cure, conditions) {
+  const suffered = Object.keys(conditions ?? {});
+  return (cure === "all") ? suffered : suffered.filter((id) => [].concat(cure ?? []).includes(id));
+}
+
+/* -------------------------------------------- */
+
+/**
  * @typedef TurnMoment
  * @property {number} hpBefore
  * @property {number} hp                      HP once the skills have healed the unit
  * @property {number} healed
  * @property {{skill: string, sure: boolean, roll: number|null, chance: number, success: boolean, recover: number,
- *   healed: number, remind: boolean|string,
+ *   healed: number, remind: boolean|string, cured?: string[],
  *   reached?: {id: string, name: string, hpBefore: number, hp: number, healed: number}[],
  *   granted?: {unit: string|null, name: string, change: import("./timed.mjs").TimedChange}[]}[]} entries
  *           Each skill that had its moment: its roll if it made one, the HP it would restore and the HP it
- *           did, and whether its effect is left for the table. `reached` lists the units around that it
+ *           did, and whether its effect is left for the table. `cured` lists the conditions it cures the unit
+ *           of; `reached` lists the units around that it
  *           reached instead of its own, with the HP each regains; `granted` the changes that last a while
  *           which it grants, each for the unit itself (`unit: null`) or for one of the units around
  */
@@ -1544,9 +1660,11 @@ function reached(self, reach) {
  * @param {object} [options]
  * @param {number} [options.activation]             The unit's Skill Activation rate
  * @param {boolean} [options.always]                Do the unit's skills always activate?
+ * @param {Record<string, number>|null} [options.conditions]    The conditions the unit suffers from, where
+ *                                                  that is known: an effect cures it of none otherwise
  * @returns {TurnMoment}
  */
-export function turnMoment(skills, self, moment, d100, { activation = 0, always = false } = {}) {
+export function turnMoment(skills, self, moment, d100, { activation = 0, always = false, conditions = null } = {}) {
   const hpBefore = self.hp ?? 0;
   let hp = hpBefore;
   const entries = [];
@@ -1554,7 +1672,7 @@ export function turnMoment(skills, self, moment, d100, { activation = 0, always 
     if ( Array.isArray(value) ) return value.reduce((sum, part) => sum + readNumber(part, unit, null), 0);
     return readNumber(value ?? 0, unit, null);
   };
-  for ( const { skill, effect, unseen, source, giver } of (hpBefore > 0) ? turnEffects(skills, self, moment) : [] ) {
+  for ( const { skill, effect, unseen, source, giver } of (hpBefore > 0) ? turnEffects(skills, self, moment, { conditions }) : [] ) {
     const sure = !!effect.proc.sure;
     const chance = chanceOf(effect.proc, self, null, { activation, always });
     const roll = sure ? null : d100();
@@ -1576,6 +1694,9 @@ export function turnMoment(skills, self, moment, d100, { activation = 0, always 
         entry.healed = Math.max(Math.min(entry.recover, (self.hpMax ?? Infinity) - hp), 0);
         hp += entry.healed;
       }
+
+      // Conditions the unit is cured of
+      if ( (effect.cure !== undefined) && (remind !== "check") ) entry.cured = curedOf(effect.cure, conditions);
 
       // Changes that last a while: for the unit itself, which is in its turn as it starts, or for the units
       // around. Those for units that cannot be seen are left to the table
@@ -1619,13 +1740,16 @@ export function checkEffects(effects) {
   const known = ["choice", "when", "stats", "statPercent", "combat", "might", "taken", "takenPercent", "hpMax", "calc",
     "rules", "effective", "effectiveMultiplier", "damageMultiplier", "ignoreDefence", "strikes", "extraAttack", "scale",
     "foeActivation", "endurance", "haste", "mirrorCrit", "critMultiplier", "slots", "capacity", "artCost", "dealtPercent", "aura", "expMultiplier", "staffExp", "growths",
-    "weaponRange", "damageStat", "foeWear", "wield", "shift", "form", ...BEND_KEYS, ...STAFF_KEYS];
-  const procParts = ["damage", "damagePercent", "statTimes", "ignore", "hit", "critical", "heal", "sureHit", "inflicts",
+    "weaponRange", "damageStat", "foeWear", "wield", "rank", "shift", "form", "warp", "foeStats", ...BEND_KEYS, ...STAFF_KEYS];
+  const procParts = ["damage", "damagePercent", "damageOfFoeHp", "healPlus", "statTimes", "ignore", "hit", "critical", "heal", "sureHit", "inflicts",
     "sequence", "oneUse", "negate", "reduce", "reflect", "retaliate", "resist", "inflictsAttacker", "survive", "foeCombat",
     "next", "nextOfDamage", "near", "nonlethal", "recover", "attack", "remind", "damaged", "ifHit", "ifStruck", "end", "reach", "grant",
-    "gold", "goldPerGain", "reroll", "freeUses", "returns", "harmNear", "shield", "gaugeOfDamage"];
+    "gold", "goldPerGain", "reroll", "freeUses", "returns", "harmNear", "shield", "gaugeOfDamage", "cure"];
   const staffing = (effect) => STAFF_MOMENTS.includes(effect?.proc?.on);
-  const grantParts = ["to", "reach", "around", "name", "effects", "ends", "turns", "next", "clock", "max", "stacks", "fades", "gained", "now"];
+  const grantParts = ["to", "reach", "around", "name", "effects", "pick", "ends", "turns", "next", "clock", "max", "stacks", "fades", "gained", "now"];
+
+  // The moments of an attack whose damage a lasting change can be read from, or that can pick one by a die
+  const striking = (effect) => ["attack", "hit", "crit"].includes(effect?.proc?.on);
   const isCondition = (id) => (id in FEO.conditions) || (id in FEO.optionalConditions);
   const afflicting = (effect) => CONDITION_MOMENTS.includes(effect?.proc?.on);
   const levelling = (effect) => LEVEL_MOMENTS.includes(effect?.proc?.on);
@@ -1683,6 +1807,21 @@ export function checkEffects(effects) {
       else if ( (grant?.turns !== undefined) && (grant.turns !== "condition") && !(Number.isInteger(grant.turns) && (grant.turns >= 1)) ) {
         problems.push(`${at}: a lasting change lasts a whole number of turns, not "${grant.turns}"`);
       }
+      // One of several changes, picked by a die as an attack is made or lands: each is checked as a change
+      // of its own
+      if ( grant?.pick !== undefined ) {
+        if ( !striking(effect) ) problems.push(`${at}: a lasting change is picked by a die on an "attack", a "hit" or a "crit"`);
+        if ( grant.effects !== undefined ) problems.push(`${at}: a lasting change has "effects" or a "pick" of them, not both`);
+        if ( !Array.isArray(grant.pick) || (grant.pick.length < 2) ) problems.push(`${at}: a "pick" lists the changes to pick from`);
+        else grant.pick.forEach((option) => {
+          for ( const key of Object.keys(option ?? {}) ) if ( !["name", "effects"].includes(key) ) problems.push(`${at}: a change to pick cannot say "${key}"`);
+          if ( !Array.isArray(option?.effects) || !option.effects.length ) problems.push(`${at}: a change to pick needs effects`);
+          else if ( option.effects.some((part) => part.proc || part.aura || part.grant) ) problems.push(`${at}: the effects of a lasting change cannot wait for a moment, be an aura or grant another`);
+          else for ( const problem of checkEffects(option.effects) ) problems.push(`${at}: in a change to pick, ${problem}`);
+        });
+        continue;
+      }
+      if ( readsDealt(grant) && !striking(effect) ) problems.push(`${at}: a lasting change is read from the damage "dealt" on an "attack", a "hit" or a "crit"`);
       const inner = Array.isArray(grant?.effects) ? grant.effects : null;
 
       // At a level up a lasting change can be a boost in every stat the level up raised, for the unit itself
@@ -1713,7 +1852,10 @@ export function checkEffects(effects) {
       if ( effect?.[key] === undefined ) continue;
       const parts = { staffHeal: ["more", "plus", "self", "both"], staffHealed: ["healer", "both"], staffRange: ["times", "max"] }[key];
       const table = effect[key];
-      if ( proc || effect.aura ) problems.push(`${at}: "${key}" is always there, not at a moment or as an aura`);
+
+      // Only the share a unit heals allies more for can come from the unit beside it
+      const shared = effect.aura && (key === "staffHeal") && Object.keys(table ?? {}).every((part) => part === "more");
+      if ( proc || (effect.aura && !shared) ) problems.push(`${at}: "${key}" is always there, not at a moment; as an aura it only gives "more" healing`);
       if ( !table || (typeof table !== "object") || !Object.keys(table).length ) problems.push(`${at}: ${key} must say what changes`);
       else for ( const [part, value] of Object.entries(table) ) {
         if ( !parts.includes(part) ) problems.push(`${at}: ${key} cannot say "${part}"`);
@@ -1767,6 +1909,14 @@ export function checkEffects(effects) {
         }
       }
     }
+    // Conditions a unit is cured of at a moment of its turn
+    if ( effect?.cure !== undefined ) {
+      if ( !TURN_MOMENTS.includes(proc?.on) ) problems.push(`${at}: conditions are cured at a moment of the unit's turn`);
+      if ( effect.cure !== "all" ) {
+        if ( !Array.isArray(effect.cure) || !effect.cure.length ) problems.push(`${at}: cure is "all" or lists conditions`);
+        else for ( const id of effect.cure ) if ( !isCondition(id) ) problems.push(`${at}: unknown condition "${id}"`);
+      }
+    }
     if ( (effect?.recovery !== undefined) && !(Number.isInteger(effect.recovery) && (effect.recovery >= 1)) ) {
       problems.push(`${at}: conditions run out by a whole number of turns, not "${effect.recovery}"`);
     }
@@ -1799,6 +1949,17 @@ export function checkEffects(effects) {
       }
     }
     if ( (effect?.damageStat !== undefined) && !(effect.damageStat in FEO.damageStats) ) problems.push(`${at}: unknown damage stat "${effect.damageStat}"`);
+
+    // Weapon ranks given for good: saved on the unit once, so never at a moment, as an aura or on a condition
+    if ( effect?.rank !== undefined ) {
+      const table = effect.rank;
+      if ( proc || effect.aura || effect.when ) problems.push(`${at}: a rank is given for good, not at a moment, as an aura or on a condition`);
+      if ( !table || (typeof table !== "object") || !Object.keys(table).length ) problems.push(`${at}: rank must name proficiencies`);
+      else for ( const [key, value] of Object.entries(table) ) {
+        if ( (key !== "start") && !(key in FEO.proficiencies) ) problems.push(`${at}: unknown proficiency "${key}"`);
+        else if ( !Number.isInteger(value) || (value < 1) ) problems.push(`${at}: a rank rises by whole ranks, not "${value}"`);
+      }
+    }
     if ( effect?.foeWear !== undefined ) {
       for ( const [key, value] of Object.entries(effect.foeWear ?? {}) ) {
         if ( !["hit", "noDamage"].includes(key) ) problems.push(`${at}: a foe's weapon cannot wear by "${key}"`);
@@ -1841,6 +2002,11 @@ export function checkEffects(effects) {
           problems.push(`${at}: the "${key}" of shift is a number, not "${value}"`);
         }
       }
+    }
+    // Warping: where the unit may land, in an effect of its own
+    if ( effect?.warp !== undefined ) {
+      if ( Object.keys(effect).length > 1 ) problems.push(`${at}: "warp" stands alone in its effect`);
+      for ( const problem of checkWarp(effect.warp) ) problems.push(`${at}: ${problem}`);
     }
     if ( (own.shifted !== undefined) && (typeof own.shifted !== "boolean") ) problems.push(`${at}: "shifted" is true or false`);
     if ( "gaugeOfDamage" in (effect ?? {}) ) {
@@ -1887,10 +2053,9 @@ export function checkEffects(effects) {
         problems.push(`${at}: unknown trigger "${proc.on}"`);
       }
 
-      // A staff being used is not rolled for, and only knows a few things to do
+      // A staff being used only knows a few things to do
       if ( staffing(effect) ) {
-        const parts = ["proc", "when", "choice", "grant", "remind", "harmNear"];
-        if ( !proc.sure ) problems.push(`${at}: a staff being used is not rolled for, its moment is "sure"`);
+        const parts = ["proc", "when", "choice", "grant", "remind", "harmNear", "healPlus"];
         for ( const key of Object.keys(effect) ) if ( !parts.includes(key) ) problems.push(`${at}: a staff being used cannot do "${key}"`);
         for ( const grant of [].concat(effect.grant ?? []) ) {
           if ( grant?.reach || !["self", "target"].includes(grant?.to) ) problems.push(`${at}: as a staff is used a lasting change is for "self" or the "target"`);
@@ -1905,9 +2070,17 @@ export function checkEffects(effects) {
       }
       else {
         for ( const key of ["ally", "heals"] ) if ( proc[key] !== undefined ) problems.push(`${at}: only a staff being used asks "${key}"`);
-        if ( "harmNear" in effect ) problems.push(`${at}: only a staff being used can do "harmNear"`);
+        for ( const key of ["harmNear", "healPlus"] ) if ( key in effect ) problems.push(`${at}: only a staff being used can do "${key}"`);
       }
       if ( (proc.percent == null) && !proc.stat && !proc.sure ) problems.push(`${at}: a chance needs a stat or a percent`);
+
+      // A chance worked out for the unit that gives an aura, and what only an attack can add to its damage
+      if ( (proc.giver !== undefined) && !((proc.giver === true) && effect.aura && !proc.sure) ) problems.push(`${at}: the "giver" rolls the chance of an aura, and only one that is rolled`);
+      if ( "damageOfFoeHp" in effect ) {
+        if ( proc.on !== "attack" ) problems.push(`${at}: a share of the foe's HP is added to the damage of an "attack"`);
+        if ( !Number.isFinite(effect.damageOfFoeHp) || (effect.damageOfFoeHp <= 0) ) problems.push(`${at}: damageOfFoeHp is a share in percent, not "${effect.damageOfFoeHp}"`);
+      }
+      if ( ("recover" in effect) && (proc.on === "attack") ) problems.push(`${at}: an "attack" restores HP by a share of its damage, "heal"`);
 
       // A level up is not rolled for, and only knows what a level up can do; gold is for a level up or a kill
       if ( levelling(effect) ) {
@@ -1943,8 +2116,11 @@ export function checkEffects(effects) {
         for ( const key of Object.keys(part?.statTimes ?? {}) ) if ( !(key in FEO.stats) ) problems.push(`${at}: unknown stat "${key}"`);
       }
       for ( const entry of [...(effect.inflicts ?? []), ...(effect.inflictsAttacker ?? []), ...(effect.sequence ?? []).flatMap((part) => part.inflicts ?? [])] ) {
-        const id = typeof entry === "string" ? entry : entry?.id;
-        if ( !(id in FEO.conditions) && !(id in FEO.optionalConditions) ) problems.push(`${at}: unknown condition "${id}"`);
+        const ids = (typeof entry === "string") ? [entry] : (entry?.anyOf !== undefined) ? [].concat(entry.anyOf) : [entry?.id];
+        for ( const id of ids ) if ( !(id in FEO.conditions) && !(id in FEO.optionalConditions) ) problems.push(`${at}: unknown condition "${id}"`);
+        if ( entry?.anyOf === undefined ) continue;
+        if ( !["attack", "hit", "crit"].includes(proc.on) ) problems.push(`${at}: one of several conditions is picked by a die on an "attack", a "hit" or a "crit"`);
+        if ( !Array.isArray(entry.anyOf) || (entry.anyOf.length < 2) || (Object.keys(entry).length > 1) ) problems.push(`${at}: "anyOf" lists the conditions to pick from, and nothing else`);
       }
       for ( const key of [...Object.keys(effect.combat ?? {}), ...Object.keys(effect.foeCombat ?? {})] ) {
         if ( !procCombat.includes(key) ) problems.push(`${at}: a chance at the start of a fight cannot change "${key}"`);
@@ -1961,7 +2137,14 @@ export function checkEffects(effects) {
     for ( const key of Object.keys(effect?.combat ?? {}) ) if ( !COMBAT_KEYS.includes(key) ) problems.push(`${at}: unknown combat stat "${key}"`);
     for ( const rule of effect?.rules ?? [] ) if ( !RULES.includes(rule) ) problems.push(`${at}: unknown rule "${rule}"`);
     for ( const [key, mode] of Object.entries(effect?.calc ?? {}) ) {
-      if ( !FEO.calcModes[key]?.[mode] ) problems.push(`${at}: unknown formula "${key}: ${mode}"`);
+      if ( !FEO.calcModes[key]?.[mode] && !SKILL_CALC[key]?.includes(mode) ) problems.push(`${at}: unknown formula "${key}: ${mode}"`);
+    }
+
+    // What a skill takes off the stats its foe fights with: always there, for the skill's own unit
+    if ( effect?.foeStats !== undefined ) {
+      if ( proc || effect.aura ) problems.push(`${at}: "foeStats" is always there, not at a moment or as an aura`);
+      if ( !effect.foeStats || (typeof effect.foeStats !== "object") || !Object.keys(effect.foeStats).length ) problems.push(`${at}: foeStats must name stats`);
+      else for ( const key of Object.keys(effect.foeStats) ) if ( !(key in FEO.stats) ) problems.push(`${at}: unknown stat "${key}"`);
     }
   });
   return problems;

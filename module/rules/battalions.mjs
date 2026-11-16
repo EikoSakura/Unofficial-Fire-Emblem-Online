@@ -265,6 +265,8 @@ export function canGambit(battalion, unit = {}) {
  * @property {{skill: string, percent: number, only?: string|string[]}[]} [wards]
  *                                                What may nullify a condition that would be applied to it
  * @property {boolean} [down]                     Is it out of the fight?
+ * @property {number} [taken]                     What the damage it takes is multiplied by, as for a unit that
+ *                                                is Staggered
  * @property {object|null} [battalion]            The Battalion assigned to it: its `id`, `name`, `quality`,
  *                                                `level`, `exp`, `hp` and `gambit`
  */
@@ -339,7 +341,7 @@ export function planGambit(user, targets = [], { distance = null } = {}) {
       charm,
       authority,
       hit: clamp((gambit.hit ?? 0) + charm + authority, 0, 100),
-      damage: Math.max(power - stat(target, read.magic ? "res" : "def"), 0),
+      damage: Math.floor((Math.max(power - stat(target, read.magic ? "res" : "def"), 0) * (target.taken ?? 1)) + 1e-9),
       inflicts: [config.gambit.inflicts, ...read.inflicts].filter((id, at, list) => conditionConfig(id) && (list.indexOf(id) === at))
     };
   });

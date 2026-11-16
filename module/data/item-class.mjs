@@ -1,4 +1,5 @@
 import { FEO } from "../config.mjs";
+import { writtenFirstRank } from "../rules/classes.mjs";
 
 const { ArrayField, HTMLField, NumberField, SchemaField, StringField } = foundry.data.fields;
 
@@ -70,9 +71,11 @@ export default class ClassData extends foundry.abstract.TypeDataModel {
       caps: keyed(FEO.classStats, () => optional({ min: 0 })),
 
       // Proficiencies granted. `choose` is how many of the options a unit takes; 0 means all of them.
+      // `firstRank` is the rank one of them starts at for a new unit, left blank for the usual one.
       proficiencies: new SchemaField({
         options: new ArrayField(new StringField({ required: true, choices: Object.keys(FEO.proficiencies) })),
         choose: integer(0, { min: 0 }),
+        firstRank: new StringField({ required: true, blank: true, choices: Object.keys(FEO.ranks), initial: "" }),
         note: text()
       }),
 
@@ -98,6 +101,19 @@ export default class ClassData extends foundry.abstract.TypeDataModel {
 
       description: new HTMLField()
     };
+  }
+
+  /* -------------------------------------------- */
+
+  /** @override */
+  static migrateData(source) {
+    // A class saved before `firstRank` was kept says it only in the line as written
+    const proficiencies = source.proficiencies;
+    if ( proficiencies && (proficiencies.firstRank === undefined) ) {
+      const rank = writtenFirstRank(proficiencies.note);
+      if ( rank ) proficiencies.firstRank = rank;
+    }
+    return super.migrateData(source);
   }
 
   /* -------------------------------------------- */

@@ -36,7 +36,19 @@ jobs:
       - name: Package the system
         run: zip -r fire-emblem-online.zip system.json fire-emblem-online.mjs assets lang module packs styles templates
 
+      # The notes are whatever CHANGELOG.md has under the heading for this version, for example "## 0.2.0".
+      - name: Write the release notes
+        run: |
+          version=$(jq -r .version system.json)
+          touch notes.md
+          if [ -f CHANGELOG.md ]; then
+            awk -v version="$version" '/^## / { on = ($2 == version); next } on { print }' CHANGELOG.md > notes.md
+          fi
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "Version $version." > notes.md
+          fi
+
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" fire-emblem-online.zip system.json --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" fire-emblem-online.zip system.json --title "$GITHUB_REF_NAME" --notes-file notes.md

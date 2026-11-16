@@ -9,6 +9,7 @@ import {
 } from "../sheets/class-context.mjs";
 import { postCard } from "./chat.mjs";
 import { promotionLifeUpdate } from "./optional.mjs";
+import { openGenericRoll } from "./skill-roll.mjs";
 
 /**
  * Taking a class and promoting, as they happen in Foundry: finding classes, asking the player, saving the
@@ -310,13 +311,53 @@ export async function promoteUnit(actor, { levelUp = false } = {}) {
     }));
   }
   await actor.update(update);
+
+  // Skills given up go first, so that those learned find their room
+  const gone = new Set(change.forgets.map((name) => name.toLowerCase()));
+  const lost = actor.items.filter((item) => (item.type === "skill") && gone.has(item.name.toLowerCase())).map((item) => item.id);
+  if ( lost.length ) await actor.deleteEmbeddedDocuments("Item", lost);
   const { blank } = await grantSkills(actor, change.skills);
   await postCard(actor, buildChangeCard(change, game.i18n, {
     subtitle: game.i18n.format("FEO.Promotion.fromTo", { from: from.name, to: to.name }),
     blank,
     notes
   }), { template: "class-change" });
+
+  // A Generic Skill of the player's choice is taken from the roll of skills
+  if ( change.genericSkill ) {
+    try {
+      await openPromotionSkill(actor);
+    } catch(err) {
+      console.error(err);
+    }
+  }
   return change;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Open the Compendium at the roll of skills, for the Generic Skill a unit takes on promoting. Until the window
+ * is put to another use, taking another skill there gives up the one taken first.
+ * @param {Actor} actor
+ * @returns {Promise<Compendium>}
+ */
+export function openPromotionSkill(actor) {
+  let had = { name: "", items: [] };
+  return openGenericRoll(actor, {
+    had: () => had,
+    text: { take: "FEO.Promotion.roll.take", notGeneric: "FEO.Promotion.roll.notGeneric" },
+    choose: async (skill) => {
+      const present = had.items.filter((id) => actor.items.has(id));
+      if ( present.length ) await actor.deleteEmbeddedDocuments("Item", present);
+      const { added } = await grantSkills(actor, [{ name: skill.name, kind: "generic" }]);
+      const names = new Set(added.map((name) => name.toLowerCase()));
+      had = {
+        name: skill.name,
+        items: actor.items.filter((item) => (item.type === "skill") && names.has(item.name.toLowerCase())).map((item) => item.id)
+      };
+    }
+  });
 }
 
 /* -------------------------------------------- */

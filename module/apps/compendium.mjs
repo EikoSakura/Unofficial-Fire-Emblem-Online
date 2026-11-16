@@ -52,7 +52,8 @@ export default class Compendium extends HandlebarsApplicationMixin(ApplicationV2
       skill: Compendium.#onSkill,
       selectSkill: Compendium.#onSelectSkill,
       kind: Compendium.#onKind,
-      tab: Compendium.#onTab,
+      // Not "tab": Foundry keeps that action for its own tab groups, and never hands it on
+      side: Compendium.#onTab,
       type: Compendium.#onType,
       weapons: Compendium.#onWeapons,
       pan: Compendium.#onPan,

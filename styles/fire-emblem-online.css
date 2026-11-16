@@ -481,6 +481,11 @@
 .feo .bar.hp.mid { --feo-hp: #e8a640; }
 .feo .bar.hp.low { --feo-hp: #ee6b6b; }
 .feo .bar.hp > i { background: linear-gradient(180deg, color-mix(in srgb, var(--feo-hp) 80%, #fff), var(--feo-hp)); }
+.feo .bar.stagger { height: 6px; }
+.feo .bar.stagger > i { background: linear-gradient(90deg, #8f7fd9, #cdc4f5); }
+.feo .bar.stagger.staggered { box-shadow: inset 0 0 0 1px #ee6b6b; }
+.feo .vital-head.stagger-head { margin-top: 6px; }
+.feo .chip.condition.staggered { border-color: #ee6b6b; }
 .feo .bar.exp { height: 6px; }
 .feo .bar.exp > i { background: linear-gradient(90deg, #c9a14a, #f3d98f); }
 

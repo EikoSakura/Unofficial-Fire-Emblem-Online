@@ -83,6 +83,7 @@ export function gambitUnitOf(actor, name, { keepsDamage = false } = {}) {
     conditions: system.conditions ?? {},
     wards: system.skills?.bends?.nullify ?? [],
     down: !!system.defeat?.state,
+    taken: system.stagger?.times ?? 1,
     battalion: command?.battalion ?? null
   };
 }

@@ -311,6 +311,8 @@
       "effectsBad": "The effects were not saved: {problem}",
       "automated": "Applied by the system",
       "needsChoice": "Choose a variant on the skill for it to apply",
+      "rankRaised": "{unit}: {skill} raises {proficiency} from {from} to {to} Rank.",
+      "rankLowered": "{unit}: without {skill}, {proficiency} goes back from {from} to {to} Rank.",
       "formHint": "Take on or put off this Special Quality. It is written to the unit's Special Qualities, and the skill's boosts follow.",
       "check": "By hand",
       "checkHint": "This skill hangs on something the system cannot see, such as terrain or movement. It is named in a fight and applied by hand.",
@@ -374,7 +376,10 @@
       "speedDouble": "Attack Speed × 2",
       "parrySpeedDouble": "Parry speed × 2",
       "magTimesFive": "MAG × 5",
-      "resTimesFive": "RES × 5"
+      "resTimesFive": "RES × 5",
+      "lowest": "Lowest stat",
+      "lowestDouble": "Lowest stat × 2",
+      "lowestHalf": "Lowest stat ÷ 2"
     },
     "Calc": {
       "normal": "Normal",
@@ -641,7 +646,8 @@
         "skill": "A skill rules it out",
         "elevation": "Melee cannot reach a different elevation",
         "artRange": "The readied Combat Art cannot be performed from this distance",
-        "break": "Suffers from Break"
+        "break": "Suffers from Break",
+        "staggered": "Is Staggered"
       },
       "details": "Details",
       "triangle": "Weapon triangle",
@@ -799,6 +805,9 @@
       "proficienciesGained": "Proficiencies Gained",
       "choose": "Unit Chooses",
       "chooseHint": "How many of the ticked proficiencies a unit takes. 0 means all of them.",
+      "firstRank": "Higher Rank",
+      "firstRankHint": "The rank one proficiency of a new unit's choice starts at, for a class that gives other than the usual D.",
+      "firstRankUsual": "Usual",
       "asWritten": "As Written",
       "asWrittenHint": "The line as the Class Sheet words it. It is shown to the player when the class is taken.",
       "skillsHint": "names, separated by commas",
@@ -847,7 +856,9 @@
         "general": "Class",
         "growths": "Growth Rates",
         "genericChoice": "Player's choice",
-        "genericNote": "A Generic Skill takes the place of the class's skill. Add it to the unit by hand.",
+        "genericNote": "A Generic Skill takes the place of the class's skill. Take it from the Skill Roll, or add it to the unit by hand.",
+        "genericFor": "A Generic Skill takes the place of {names}. Take it from the Skill Roll, or add it to the unit by hand.",
+        "givenUp": "Given up",
         "blankSkills": "Added with a name only, for you to fill in: {names}.",
         "choiceLeft": "One skill is still to be chosen and added by hand: {names}.",
         "became": "Became {name}",
@@ -1056,6 +1067,11 @@
       "atRank": "at rank {rank}",
       "chooseCount": "choose {count}",
       "ranksHint": "Every proficiency the unit already has rises by one rank.",
+      "genericFor": "The unit also gives up {skill} for a Generic Skill of its choice. The Skill Roll opens after promoting to take it.",
+      "roll": {
+        "take": "Take this as the Generic Skill {unit} gains on promoting.",
+        "notGeneric": "Only a Generic Skill can be taken on promoting."
+      },
       "skill": "Skill",
       "skillClass": "Learn the class's Promotion Skill",
       "skillGeneric": "Take a Generic Skill of your choice instead",
@@ -1097,6 +1113,7 @@
       "roll": "{roll} / {chance}",
       "nothing": "no effect",
       "heals": "+{amount} HP",
+      "cures": "cures {conditions}",
       "gained": "+{amount} HP",
       "activates": "takes effect",
       "remind": "takes effect, to apply by hand",
@@ -1155,6 +1172,7 @@
       "ended": "ends",
       "turns": "{turns} turns",
       "untilNextTurn": "until the unit's next turn starts",
+      "actsAgain": "the unit may act again",
       "kindLabel": "Used",
       "kindNone": "Not chosen when to activate",
       "cooldownRow": "Cooldown",
@@ -1243,6 +1261,30 @@
       "capturing": {
         "name": "Capturing",
         "hint": "A unit may ready an attempt to capture before it attacks, on the Battle tab of its sheet or among its skills on the map. It needs more Weight than its target and fights with every stat but LUK halved. A target brought to 0 HP from next to it is captured and carried, which halves its captor's SPD and DEX; from further away it is subdued for its captor to pick up on its next turn. A target that cannot fight back is captured without a fight. A captive is out of the fight until it is released or its captor is defeated."
+      },
+      "stagger": {
+        "name": "Stagger",
+        "hint": "Every unit has a Stagger bar beside its HP, as large as 60% of the HP it has when a battle begins. The HP a unit loses comes off the bar too, except in a fight the unit began itself. A unit whose bar is empty is Staggered: it takes double damage from everything and cannot act until the end of its next turn, and then recovers with a full bar. Healing does not restore the bar, which regains 20% of its size as each of the unit's turns starts."
+      },
+      "staffPassives": {
+        "name": "Passive Staff Effects",
+        "hint": "A staff does something for the unit that has it equipped. A healing staff heals its unit for 5 + MAG/3 as each of its turns starts; a staff that inflicts a condition cures its unit of that condition then, and one that removes all conditions cures them all. Speed, Strength, Ensorcel, Barrier, Defense, Enfeeble, Empower, Freeze, Obscure, Blind, Crest, Haste, Anew and Expel raise a number of their unit instead, shown on its sheet under the staff's name."
+      },
+      "healCriticals": {
+        "name": "Heal Criticals",
+        "hint": "A staff that heals one unit may score a critical that heals for 3× the amount. The chance is LUK ÷ 2 %, rolled with each cast, and no skill changes it."
+      },
+      "doubleCast": {
+        "name": "Double-Cast",
+        "hint": "A staff that heals one unit may be cast a second time at once, like a follow-up attack. The chance is (DEX + SPD + LUK) ÷ 2 %. It is not rolled if the target is at full HP after the first cast. The second cast costs no further use."
+      },
+      "staffMissing": {
+        "name": "Staff Missing",
+        "hint": "A staff that is not used against an enemy can miss: it succeeds at its Hit + DEX × 3 %. A miss still spends a use. A staff for several allies, such as Fortify, rolls for each unit targeted. Staves used against enemies keep their own hit rate."
+      },
+      "followUpCritical": {
+        "name": "Follow-up Critical Multiplier",
+        "hint": "Every unit has an FCM from 1 to 5, set on the Optional tab of its sheet. On a follow-up attack its Critical is multiplied by its FCM before the foe's Critical Avoid is taken off: a Critical of 5 becomes 10 with an FCM of 2. An FCM of 1 gives no bonus. A weapon that strikes twice gains nothing for its second strike, only for the strikes of its follow-up attack. Whether player units have more than 1 is up to the Game Master."
       },
       "additionalLives": {
         "name": "Additional Lives",
@@ -1418,6 +1460,40 @@
       "success": "Treated",
       "failure": "No improvement",
       "noHealer": "No other unit of yours can treat this one. Select the healer's token, or ask its owner."
+    },
+    "Summon": {
+      "name": "{name}'s Phantom",
+      "side": {
+        "north": "North",
+        "east": "East",
+        "south": "South",
+        "west": "West"
+      },
+      "dialog": {
+        "title": "{name} summons",
+        "where": "Where does the Phantom appear?",
+        "taken": "Not free",
+        "weapon": "What does it fight with?",
+        "kept": "It keeps this weapon type for good.",
+        "confirm": "Summon"
+      },
+      "row": {
+        "unit": "Summoned",
+        "unitValue": "{name}, Lv {level}",
+        "weapon": "Weapon",
+        "behind": "Level ups waiting"
+      },
+      "created": "{name} is new. Assign its {points} growth points on its sheet before it levels up; none may go into {barred}.",
+      "warn": {
+        "noToken": "Summoning needs the unit's token on a map with a square grid.",
+        "limitOne": "Its Phantom is already on the map.",
+        "limit": "All {limit} of its Phantoms are already on the map.",
+        "noRoom": "There is no free tile next to the unit.",
+        "noGM": "Summoning needs a Game Master to be connected.",
+        "noWeapon": "The weapon drawn for the Phantom was not found in the weapons compendium.",
+        "noClass": "The Phantom class was not found in the world or the class compendium.",
+        "failed": "The Phantom could not be summoned."
+      }
     },
     "Repair": {
       "title": "Repair",
@@ -1649,6 +1725,42 @@
           "wakes": "Back on its feet",
           "carryNote": "{captor} carries {captive}: its SPD and DEX are halved until it lets go."
         }
+      },
+      "stagger": {
+        "title": "Stagger",
+        "abbr": "STG",
+        "staggered": "Staggered",
+        "hint": "Takes double damage from everything and cannot act, until the end of its next turn.",
+        "clear": "Click to have it recover.",
+        "set": "Mark the unit as Staggered.",
+        "barHint": "What the unit loses in HP comes off this bar too, except in a fight it began. At 0 the unit is Staggered. Regains 20% as each of its turns starts.",
+        "unsized": "The bar follows the unit's HP until a battle begins or it is first needed: it is then 60% of the HP the unit has.",
+        "barLine": "Stagger {value} / {max}",
+        "max": "Full bar",
+        "maxHint": "The full size of the Stagger bar. 0 has it made anew: 60% of the HP the unit has when a battle begins or the bar is first needed.",
+        "now": "Bar",
+        "cannotAct": "This unit is Staggered and cannot act until the end of its next turn.",
+        "status": "Staggered: cannot act",
+        "forecast": {
+          "bar": "Stagger {value} / {max}",
+          "staggered": "Staggered: takes double damage"
+        },
+        "card": {
+          "staggered": "{name} is Staggered: double damage from everything, and no action until the end of its next turn",
+          "bar": "{from} → {to} / {max}",
+          "staggeredTitle": "{name} is Staggered",
+          "recoveredTitle": "{name} recovers",
+          "recovered": "No longer Staggered. Its Stagger bar is full again."
+        }
+      },
+      "staffPassives": {
+        "entry": "{staff}, equipped",
+        "tag": "Equipped",
+        "hint": "What this staff does for its unit while it is equipped. Healing and curing come as each of the unit's turns starts.",
+        "heal": "HP a turn",
+        "cure": "cures {condition}",
+        "cureAll": "cures all conditions",
+        "cureByHand": "cures what it inflicts, to apply by hand"
       },
       "battalions": {
         "title": "Battalions & Gambits",
@@ -2069,6 +2181,19 @@
         "done": "No further action",
         "againNote": "The unit takes another action, and may roll again after it."
       },
+      "fcm": {
+        "title": "Follow-up Critical Multiplier",
+        "label": "FCM",
+        "hint": "From {min} to {max}. On a follow-up attack the unit's Critical is multiplied by this before the foe's Critical Avoid is taken off. Whether a player unit has more than {min} is up to the Game Master.",
+        "critical": "Follow-up Critical",
+        "criticalHint": "Critical {critical} × {times} with the weapon in hand, before the foe's Critical Avoid.",
+        "none": "An FCM of 1 gives no bonus.",
+        "forecast": "Follow-up Critical ×{times}: {chance}% on the follow-up",
+        "sum": "On the follow-up (Critical ×{times})",
+        "card": {
+          "roll": "Crit {roll} / {chance} (FCM ×{times})"
+        }
+      },
       "blood": {
         "title": "Holy Blood",
         "rankMinor": "+{steps} {rank} rank",
@@ -2253,11 +2378,13 @@
         },
         "skills": {
           "title": "Starting Skills",
-          "lead": "Your class's starting Skill goes in your first slot; if it offers several, pick one. Every unit also starts with one Generic Skill."
+          "lead": "Your class's starting Skill goes in your first slot; if it offers several, pick one. Every unit also starts with one Generic Skill.",
+          "leadNoGeneric": "Your class's starting Skill goes in your first slot. A Trainee starts without a Generic Skill, and takes one when it promotes."
         },
         "ranks": {
           "title": "Proficiencies",
-          "lead": "D Rank in one weapon of your choice and E Rank in any others your class gives. All start at 0 wEXP."
+          "lead": "D Rank in one weapon of your choice and E Rank in any others your class gives. All start at 0 wEXP.",
+          "leadLevel": "A Trainee starts at {rank} Rank in every weapon its class gives. All start at 0 wEXP."
         },
         "gold": {
           "title": "Starting Gold",
@@ -2312,6 +2439,7 @@
         "unconfirmed": "Not confirmed",
         "classSkill": "Choose a class Skill",
         "genericSkill": "Choose a Generic Skill",
+        "variant": "Choose what {name} is",
         "skills": "{skills}",
         "takeMore": "Take {count} more",
         "unused": "Not used: stats are raised by hand",
@@ -2373,7 +2501,13 @@
         "rollHint": "The Skill Roll lists every Generic Skill with what it does. Open a Skill there to read its sheet and take it.",
         "choose": "Open the Skill Roll",
         "change": "Change Generic Skill",
-        "capacity": "Capacity {cost}"
+        "surplus": "Generic Skill · not for a Trainee",
+        "surplusHint": "This was taken before the unit became a Trainee, which starts without a Generic Skill.",
+        "giveUp": "Give it up",
+        "capacity": "Capacity {cost}",
+        "variantOpen": "{name} · choose its variant",
+        "variant": "{name} · variant",
+        "growths": "{name} · choose {count} growth rates · {picked} of {count}"
       },
       "roll": {
         "banner": "A Generic Skill for {unit}",
@@ -2386,13 +2520,15 @@
         "chosen": "This is {unit}'s Generic Skill.",
         "owned": "{unit} already has this Skill.",
         "notGeneric": "Only a Generic Skill can be the one {unit} starts with.",
+        "noGeneric": "{unit} is a Trainee, and starts without a Generic Skill.",
         "unmet": "{unit} does not meet its prerequisite yet: {what}. Take it only if your GM allows."
       },
       "ranks": {
         "gives": "{name} gives: {note}",
         "take": "Take {count} of these",
-        "first": "Which starts at D Rank?",
+        "first": "Which starts at {rank} Rank?",
         "result": "You start with",
+        "raised": "+{steps} Rank in {proficiency} from {skill}.",
         "nothing": "Nothing taken yet",
         "none": "This class gives no proficiency the sheet tracks.",
         "other": "Other arrangements a class allows, such as giving one up for C Rank, are set by hand on the Skills tab."
@@ -2522,7 +2658,32 @@
       "harmNamed": "{amount} damage to the closest enemy of {name} ({names}), to apply by hand",
       "harmByHand": "{amount} damage to the closest enemy within {within} spaces of {name}, to apply by hand",
       "spared": "the staff loses no use",
-      "healing": "HP healed with staves"
+      "warped": "moved to the space chosen",
+      "warpedRandom": "warped to a random space in range",
+      "warpedStart": "warped back to its starting space",
+      "warpUnsaved": "to be moved by hand",
+      "warpAtStart": "already on its starting space",
+      "warpNoStart": "its starting space was not recorded; to be moved by hand",
+      "warpStartTaken": "its starting space is taken; to be moved by hand",
+      "warpNowhere": "no free space in range to warp to",
+      "halved": "HP halved, {from} → {to}",
+      "halvedUnsaved": "HP halved, {from} → {to}, to apply by hand",
+      "healing": "HP healed with staves",
+      "hit": "Staff Hit",
+      "hitHint": "Staff Missing: the chance that this staff succeeds when it is not used against an enemy. Hit + DEX × 3.",
+      "reaches": "reaches {name}",
+      "misses": "misses {name}",
+      "succeeds": "succeeds",
+      "fails": "fails",
+      "rollEach": "{rate}% for each unit it is used on, to roll by hand",
+      "critical": "Heal Critical",
+      "criticalHint": "The chance that this staff heals for 3× the amount. LUK ÷ 2.",
+      "criticalYes": "critical, heals for {amount}",
+      "criticalNo": "no critical",
+      "double": "Double-Cast",
+      "doubleHint": "The chance that this staff is cast a second time at once, unless its target is at full HP. (DEX + SPD + LUK) ÷ 2.",
+      "doubleYes": "casts a second time",
+      "doubleNo": "no second cast"
     },
     "Base": {
       "title": "The Base",
@@ -3078,6 +3239,13 @@
       "clickForecast": "Click to open the forecast.",
       "moveFailed": "The unit could not get into place, so the attack was called off.",
       "failed": "That could not be done. The console has the details.",
+      "warp": {
+        "notNow": "{name} cannot act now.",
+        "moved": "{skill} is used before moving. Take the move back first.",
+        "nowhere": "{skill} has no free tile to warp to.",
+        "outOfReach": "{name} is not where {skill} can warp from.",
+        "failed": "The unit could not be set down there, so the skill was not used."
+      },
       "status": {
         "notYours": "Not yours to command",
         "down": "Incapacitated · turns left: {turns}",
@@ -3085,6 +3253,7 @@
         "waiting": "Acts on the {phase}",
         "target": "Choose a foe on red",
         "staff": "Choose a unit in reach, or this one",
+        "warp": "Choose a tile on violet to warp to",
         "moved": "Moved {spent} of {movement}. Choose an Action.",
         "free": "No battle is running",
         "ready": "Ready: move, then one Action"

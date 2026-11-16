@@ -10,6 +10,7 @@
 
 import { readWorkbook, columnName } from "./xlsx.mjs";
 import { CLASS_SHEET, isBlank, oneLine, wholeNumber } from "./pack.mjs";
+import { writtenFirstRank } from "../../module/rules/classes.mjs";
 
 const BLOCK_STARTS = [0, 7, 14];
 const STAT_ROWS = [["hp", "res", "mov"], ["str", "dex", "con"], ["mag", "spd", "los"], ["def", "luk", "wt"]];
@@ -54,14 +55,17 @@ function proficiencyWords(text) {
 /**
  * Read a "Proficiencies:" or "Proficiencies Gained:" line.
  * @param {string} text
- * @returns {{options: string[], choose: number, note: string, unknown: string[], partly: boolean}}
- *   `unknown` lists the words that name no proficiency the system tracks, and `partly` is true when the line
+ * @returns {{options: string[], choose: number, firstRank: string, note: string, unknown: string[], partly: boolean}}
+ *   `firstRank` is the rank the line says one of them starts at, blank when it says none; `unknown` lists the words that name no proficiency the system tracks, and `partly` is true when the line
  *   says more than "all of these" or "this many of these" can hold.
  */
 export function readProficiencies(text) {
   const note = oneLine(text);
-  const result = { options: [], choose: 0, note: isBlank(note) ? "" : note, unknown: [], partly: false };
+  const result = { options: [], choose: 0, firstRank: "", note: isBlank(note) ? "" : note, unknown: [], partly: false };
   if ( isBlank(note) ) return result;
+
+  // "with 1 at C rank": the one proficiency that starts higher starts there
+  result.firstRank = writtenFirstRank(note);
 
   // Alternatives such as "or 2x as E Rank" stay in the note
   let main = note.replace(/,?\s*\bor\s+(?:\d+x?|x\d+|both)\s+(?:as|at)\s+[A-Z]\s+rank\b\.?/gi, "")
@@ -167,7 +171,7 @@ function shown(text) {
  * @property {Record<string, number>} [gains]
  * @property {number} wt
  * @property {Record<string, number>} transformed
- * @property {{options: string[], choose: number, note: string}} proficiencies
+ * @property {{options: string[], choose: number, firstRank: string, note: string}} proficiencies
  * @property {Record<string, string>} skills
  * @property {string} specialQualities
  * @property {string[]} promotesTo
@@ -306,7 +310,7 @@ function readBlock(sheet, tab, row, start, race, path, odd, problems) {
     remarks: [],
     wt: 0,
     transformed: {},
-    proficiencies: { options: [], choose: 0, note: "" },
+    proficiencies: { options: [], choose: 0, firstRank: "", note: "" },
     skills: {},
     specialQualities: "",
     promotesTo: [],
@@ -401,7 +405,7 @@ function readLine(entry, label, value, where, odd, problems) {
 
   if ( /^Proficiencies( Gained)?$/.test(label) ) {
     const read = readProficiencies(value);
-    entry.proficiencies = { options: read.options, choose: read.choose, note: read.note };
+    entry.proficiencies = { options: read.options, choose: read.choose, firstRank: read.firstRank, note: read.note };
     if ( read.unknown.length ) odd("proficiencies the system keeps no rank for, kept in the note only", `${where}: ${read.unknown.join(", ")}`);
     if ( read.partly ) odd("proficiency lines only partly read: the certain ones are listed, the choice is in the note", `${where}: ${read.note}`);
     if ( (label === "Proficiencies") !== (entry.kind === "base") ) {

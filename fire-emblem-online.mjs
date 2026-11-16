@@ -21,8 +21,12 @@ import * as optionalRules from "./module/rules/optional.mjs";
 import { registerRulesSearch } from "./module/helpers/rules-search.mjs";
 import { iconHtml } from "./module/helpers/icons.mjs";
 import * as shiftHelpers from "./module/helpers/shifting.mjs";
+import * as skillRankHelpers from "./module/helpers/skill-ranks.mjs";
+import * as summonHelpers from "./module/helpers/summon.mjs";
+import * as staggerHelpers from "./module/helpers/stagger.mjs";
 import * as supportHelpers from "./module/helpers/supports.mjs";
 import * as turnHelpers from "./module/helpers/turns.mjs";
+import { WARP_QUERY, onCombatantCreated, warpQuery } from "./module/helpers/warp.mjs";
 import * as weaponHelpers from "./module/helpers/weapons.mjs";
 import * as breaking from "./module/rules/breaking.mjs";
 import * as capturing from "./module/rules/capturing.mjs";
@@ -35,6 +39,7 @@ import * as defeat from "./module/rules/defeat.mjs";
 import * as experience from "./module/rules/experience.mjs";
 import * as progression from "./module/rules/progression.mjs";
 import * as shifting from "./module/rules/shifting.mjs";
+import * as stagger from "./module/rules/stagger.mjs";
 import * as supports from "./module/rules/supports.mjs";
 import * as weapons from "./module/rules/weapons.mjs";
 import FeoItemSheet from "./module/sheets/item-sheet.mjs";
@@ -61,8 +66,9 @@ Hooks.once("init", () => {
     positions: positionHelpers,
     creation: creationHelpers
   };
-  Object.assign(game.feo.rules, optionalRules, creation, breaking, capturing);
+  Object.assign(game.feo.rules, optionalRules, creation, breaking, capturing, stagger);
   game.feo.capturing = captureHelpers;
+  game.feo.stagger = staggerHelpers;
 
   // The rules a world may choose to play with are world settings, set from one menu of the system settings
   // rather than listed among them one by one
@@ -145,6 +151,13 @@ Hooks.once("init", () => {
   optionalHelpers.registerHooks();
   reclassHelpers.registerHooks();
 
+  // A skill that gives a weapon rank raises it as the skill is taken, and takes it back as the skill goes
+  skillRankHelpers.registerHooks();
+
+  // Stagger: whatever lowers a unit's HP lowers its Stagger bar, which tokens show beside their HP while the
+  // world plays with it
+  staggerHelpers.registerHooks();
+
   // The search box of the rules journal looks through the text of every page
   registerRulesSearch();
 
@@ -182,6 +195,17 @@ Hooks.once("init", () => {
   // Lets a player's attack save its results to units only a Game Master may change
   CONFIG.queries[APPLY_QUERY] = applyExchangeQuery;
 
+  // Lets a player's staff warp a unit whose token only a Game Master may move, and has a unit that joins a
+  // battle under way remember where it took the field
+  CONFIG.queries[WARP_QUERY] = warpQuery;
+  Hooks.on("createCombatant", onCombatantCreated);
+
+  // Lets a player's Summon make its Phantom and place its token, which only a Game Master may do; a Phantom
+  // keeps to the level of its summoner
+  CONFIG.queries[summonHelpers.SUMMON_QUERY] = summonHelpers.placeSummon;
+  summonHelpers.registerHooks();
+  game.feo.summon = summonHelpers;
+
   // Data models
   CONFIG.Actor.dataModels.unit = models.UnitData;
   CONFIG.Item.dataModels.weapon = models.WeaponData;
@@ -194,7 +218,7 @@ Hooks.once("init", () => {
   // Token resource bars and trackable values
   CONFIG.Actor.trackableAttributes = {
     unit: {
-      bar: ["hp"],
+      bar: FEO.optional.stagger.enabled ? ["hp", "stagger"] : ["hp"],
       value: ["level", "exp", "gold"]
     }
   };

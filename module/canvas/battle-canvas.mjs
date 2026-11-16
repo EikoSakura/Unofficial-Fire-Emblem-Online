@@ -71,6 +71,7 @@ export const battleCanvas = {
    * @param {Iterable<string>} [paint.move]       Tiles by name, "row,column"
    * @param {Iterable<string>} [paint.strike]
    * @param {Iterable<string>} [paint.staff]
+   * @param {Iterable<string>} [paint.warp]       Tiles a skill can warp the unit to
    * @param {Iterable<string>} [paint.threat]
    * @param {{i: number, j: number}[]} [paint.path]     The tiles of a move, from where it starts to where it ends
    */

@@ -21,6 +21,20 @@ export function originalOf(item) {
 
 /* -------------------------------------------- */
 
+/** The flag, on a weapon, that marks it as handed to a summoned unit, which wields it whatever its rank. */
+export const SUMMONED_FLAG = "summoned";
+
+/**
+ * Was a weapon handed to a unit as it was summoned? Its bearer may always wield it.
+ * @param {Item|null} item
+ * @returns {boolean}
+ */
+export function alwaysWields(item) {
+  return !!item?.flags?.[FEO.id]?.[SUMMONED_FLAG];
+}
+
+/* -------------------------------------------- */
+
 /**
  * May a unit equip a weapon?
  * @param {Actor} actor
@@ -28,7 +42,7 @@ export function originalOf(item) {
  * @returns {{ok: boolean, has: string|null, needs: string}}
  */
 export function wieldCheck(actor, item) {
-  if ( !FEO.weapons.rankCheck ) return { ok: true, has: null, needs: item.system.rank };
+  if ( !FEO.weapons.rankCheck || alwaysWields(item) ) return { ok: true, has: null, needs: item.system.rank };
   return canWield(actor.system.proficiencies, item.system, { above: actor.system.skills?.wield ?? 0, level: wieldLevel(actor.system) });
 }
 

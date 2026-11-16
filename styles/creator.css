@@ -368,6 +368,12 @@
 .feo .cr-picked b { font-family: var(--feo-font-display); font-size: 18px; font-weight: 400; color: var(--feo-ink); }
 .feo .cr-picked > span { flex-basis: 100%; color: var(--feo-muted); font-size: 13px; }
 
+/* What a skill taken has its unit choose: its variant, or the growth rates it raises */
+.feo .cr-variant { display: grid; gap: 7px; padding: 9px 12px; border: 1px solid var(--feo-line-soft); border-radius: 8px; }
+.feo .cr-variant small { color: var(--feo-faint); font-size: 10.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.feo .cr-variant.open { border-color: var(--feo-warn); }
+.feo .cr-variant.open small { color: var(--feo-warn); }
+
 .feo .cr-mark {
   display: inline-block;
   padding: 0 6px;

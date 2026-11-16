@@ -1,12 +1,13 @@
 import Compendium from "../apps/compendium.mjs";
-import { findSkill } from "../apps/compendium-context.mjs";
 import { FEO } from "../config.mjs";
-import { isArmed, isBroken, readPrerequisite, wieldOf } from "../rules/creation-fit.mjs";
+import { isArmed, isBroken, wieldOf } from "../rules/creation-fit.mjs";
 import {
-  classOpen, growthShift, planBonus, planBoon, planCheck, planClass, planGrowth, planRanks, planSource, planWeight, readCreation,
-  startingSkills
+  classOpen, freeGrowth, growthShift, planBonus, planBoon, planCheck, planClass, planGrowth, planRanks, planSource, planWeight, readCreation,
+  planVariant, startingSkills, startsGeneric
 } from "../rules/creation.mjs";
 import { embedClass, grantSkills } from "./classes.mjs";
+import { openGenericRoll } from "./skill-roll.mjs";
+import { settled } from "./skill-ranks.mjs";
 
 /**
  * The Character Creator as it happens in Foundry: saving each choice to the unit, adding and removing the Items
@@ -16,7 +17,7 @@ import { embedClass, grantSkills } from "./classes.mjs";
  * Every choice is saved the moment it is made, so a unit's sheet is always what the Creator has made of it so
  * far, and anyone with the sheet open sees it change.
  *
- * @import {CreationRecord} from "../rules/creation.mjs"
+ * @import {CreationRecord, TakenSkill} from "../rules/creation.mjs"
  */
 
 /** The socket the system speaks on. */
@@ -110,8 +111,7 @@ export async function chooseClass(actor, cls) {
   const record = recordOf(actor);
   const current = actor.system.classItem;
   if ( current && (cls.parent === actor) && (cls.id === current.id) ) return false;
-  const plan = planClass(actor._source.system, record, current, cls);
-  if ( !plan ) {
+  if ( !planClass(actor._source.system, record, current, cls) ) {
     ui.notifications.warn("FEO.Creator.warn.classLocked", { localize: true });
     return false;
   }
@@ -121,11 +121,21 @@ export async function chooseClass(actor, cls) {
   await removeItems(actor, record.skills.class.items);
   const starting = startingSkills(owned);
   const items = starting.choice ? [] : await grant(actor, starting.names, "class");
+
+  // The ranks are planned once the skills that came and went have given and taken back their own
+  await settled(actor);
+  const plan = planClass(actor._source.system, record, current, cls);
   plan.update["system.classId"] = owned.id;
   Object.assign(plan.record, {
     "class.uuid": cls.uuid ?? "",
     "skills.class": { name: starting.choice ? "" : starting.names.join(", "), items }
   });
+
+  // A class that starts without a Generic Skill gives up the one already taken
+  if ( !startsGeneric(owned) && record.skills.generic.name ) {
+    await removeItems(actor, record.skills.generic.items);
+    plan.record["skills.generic"] = { name: "", items: [] };
+  }
   return commit(actor, plan, "class");
 }
 
@@ -184,7 +194,8 @@ export async function adjust(actor, kind, key, direction, step) {
   else if ( kind === "wt" ) plan = planWeight(unit, record, record.wt + direction);
   else if ( kind === "check" ) plan = planCheck(unit, key, (unit.checks[key]?.points ?? 0) + direction);
   else if ( kind === "growth" ) {
-    plan = planGrowth(unit, key, (unit.growths[key] ?? 0) - growthShift(unit, key) + (direction * FEO.creation.growth.step));
+    const value = (unit.growths[key] ?? 0) - growthShift(unit, key) + (direction * FEO.creation.growth.step);
+    plan = planGrowth(unit, key, value, { free: freeGrowth(actor.system.classItem) });
   }
   return commit(actor, plan, step);
 }
@@ -224,7 +235,8 @@ export function chooseBoon(actor, which, key) {
  * @param {string} first
  * @returns {Promise<boolean>}
  */
-export function chooseRanks(actor, take, first) {
+export async function chooseRanks(actor, take, first) {
+  await settled(actor);
   const plan = planRanks(actor._source.system, recordOf(actor), actor.system.classItem, take, first);
   return commit(actor, plan, "ranks");
 }
@@ -250,19 +262,55 @@ export function setField(actor, path, value, step) {
 /* -------------------------------------------- */
 
 /**
- * Take a starting skill: the one chosen among those a class offers, or the Generic Skill every unit starts
- * with. The skill it takes the place of is removed.
+ * Take a starting skill: the one chosen among those a class offers, or the Generic Skill every unit but a
+ * Trainee starts with. The skill it takes the place of is removed.
  * @param {Actor} actor
  * @param {"class"|"generic"} slot
- * @param {string} name
+ * @param {string} name       Blank to give the skill up
  * @returns {Promise<boolean>}
  */
 export async function chooseSkill(actor, slot, name) {
   const had = recordOf(actor).skills[slot];
   if ( !had || (had.name === name) ) return false;
+  if ( (slot === "generic") && name && !startsGeneric(actor.system.classItem) ) return false;
   await removeItems(actor, had.items);
   const items = name ? await grant(actor, [name], slot) : [];
   return commit(actor, { record: { [`skills.${slot}`]: { name, items } } }, "skills");
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The starting skills the Creator added to a unit, as they are now, for what each still has its unit choose.
+ * @param {Actor} actor
+ * @returns {TakenSkill[]}
+ */
+export function takenSkills(actor) {
+  const record = recordOf(actor);
+  return ["class", "generic"].flatMap((slot) => record.skills[slot].items.flatMap((id) => {
+    const item = actor.items.get(id);
+    if ( item?.type !== "skill" ) return [];
+    const { effects, choice, automate } = item.system;
+    return [{ id, slot, name: item.name, effects, choice, automate }];
+  }));
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Choose the variant of a starting skill that comes in several, or take or give up one of the growth rates a
+ * starting skill raises.
+ * @param {Actor} actor
+ * @param {string} id         The Item the skill was added as
+ * @param {string} value      The variant, or the growth rate
+ * @returns {Promise<boolean>}
+ */
+export async function chooseVariant(actor, id, value) {
+  const skill = takenSkills(actor).find((taken) => taken.id === id);
+  const choice = skill ? planVariant(skill, value) : null;
+  if ( choice === null ) return false;
+  await actor.items.get(id).update({ "system.choice": choice });
+  return commit(actor, {}, "skills");
 }
 
 /* -------------------------------------------- */
@@ -315,47 +363,10 @@ export async function refund(actor, id) {
  * @returns {Promise<Compendium>}
  */
 export function openSkillRoll(actor) {
-  const i18n = game.i18n;
-  const describe = (skill, library) => {
-    const unit = actor.name;
-    const had = recordOf(actor).skills.generic;
-    if ( skill.kind !== "generic" ) return { can: false, barred: true, text: i18n.format("FEO.Creator.roll.notGeneric", { unit }) };
-    if ( had.name === skill.name ) return { can: false, chosen: true, text: i18n.format("FEO.Creator.roll.chosen", { unit }) };
-
-    // What the unit has apart from the Generic Skill this one would take the place of
-    const owned = actor.items.filter((item) => (item.type === "skill") && !had.items.includes(item.id)).map((item) => item.name);
-    if ( owned.some((name) => name.toLowerCase() === skill.name.toLowerCase()) ) {
-      return { can: false, barred: true, text: i18n.format("FEO.Creator.roll.owned", { unit }) };
-    }
-    const need = readPrerequisite(skill.prerequisite, {
-      unit: actor._source.system,
-      cls: actor.system.classItem,
-      isSkill: (name) => !!findSkill(library, name),
-      owned
-    });
-    const unmet = need.state === "unmet";
-    return {
-      can: true,
-      barred: unmet,
-      text: unmet ? i18n.format("FEO.Creator.roll.unmet", { unit, what: need.text.replace(/\.$/, "") })
-        : had.name ? i18n.format("FEO.Creator.roll.change", { from: had.name }) : i18n.format("FEO.Creator.roll.take", { unit }),
-      label: i18n.format(had.name ? "FEO.Creator.roll.changeTo" : "FEO.Creator.roll.choose", { name: skill.name })
-    };
-  };
-  const choose = (skill) => chooseSkill(actor, "generic", skill.name);
-  const banner = () => {
-    const had = recordOf(actor).skills.generic.name;
-    return {
-      text: i18n.format("FEO.Creator.roll.banner", { unit: actor.name }),
-      tags: had ? [{ label: i18n.localize("FEO.Creator.roll.has"), value: had }] : [],
-      note: i18n.localize("FEO.Creator.roll.note")
-    };
-  };
-  return Compendium.open({
-    view: "skills",
-    kind: "generic",
-    skill: recordOf(actor).skills.generic.name,
-    chooser: { takes: "skill", actor: actor.uuid, describe, choose, banner }
+  return openGenericRoll(actor, {
+    had: () => recordOf(actor).skills.generic,
+    choose: (skill) => chooseSkill(actor, "generic", skill.name),
+    refuse: () => (startsGeneric(actor.system.classItem) ? "" : game.i18n.format("FEO.Creator.roll.noGeneric", { unit: actor.name }))
   });
 }
 
