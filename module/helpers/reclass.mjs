@@ -51,6 +51,29 @@ export function sealClassesOf(actor) {
 /* -------------------------------------------- */
 
 /**
+ * A unit's Heart Seal Classes as its sheet shows them, each with the picture of its class where one is known:
+ * its own for the class the unit holds, and otherwise the one the compendium lists for the class it links.
+ * @param {Actor} actor
+ * @returns {(SealClass & {img: string})[]}
+ */
+export function sealCardsOf(actor) {
+  const starting = startingClassOf(actor);
+  return sealClassesOf(actor).map((entry) => {
+    let img = entry.starting ? starting?.img : null;
+    if ( !img && entry.uuid ) {
+      try {
+        img = foundry.utils.fromUuidSync(entry.uuid, { strict: false })?.img;
+      } catch(err) {
+        img = null;
+      }
+    }
+    return { ...entry, img: img ?? "" };
+  });
+}
+
+/* -------------------------------------------- */
+
+/**
  * Put a class on a unit's list, or take one off.
  * @param {Actor} actor
  * @param {{name: string, uuid?: string}} cls

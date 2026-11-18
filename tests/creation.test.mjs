@@ -4,7 +4,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { FEO } from "../module/config.mjs";
-import { freeGrowth, growthBudget, planCheck, planGrowth, pointBudget } from "../module/rules/creation.mjs";
+import {
+  freeGrowth, growthBudget, helpSteps, planCheck, planGrowth, pointBudget, readCreation
+} from "../module/rules/creation.mjs";
 
 /** A class of a tier, as far as the growth points read it. */
 const cls = (tier) => ({ name: tier, system: { tier } });
@@ -79,4 +81,18 @@ test("ability points may be taken off a unit that has more placed than it has", 
   // One past the most a check may hold comes down too
   assert.ok(made.checks.athletics.points > budget.limit);
   assert.deepEqual(planCheck(made, "athletics", 33)?.update, { "system.checks.athletics.points": 33 });
+});
+
+test("help is waited for on the steps where it was asked and not yet answered", () => {
+  const none = {};
+  assert.deepEqual(helpSteps(readCreation(undefined), none), []);
+
+  // Told in the Creator's order, whatever the order they were asked in; an answered step is blank again
+  const record = readCreation({ help: { gold: "user1", class: "user2", skills: "" } });
+  assert.deepEqual(helpSteps(record, none), ["class", "gold"]);
+
+  // A step of an Optional Module waits only while the world plays with it
+  const blood = readCreation({ help: { holyBlood: "user1" } });
+  assert.deepEqual(helpSteps(blood, none), []);
+  assert.deepEqual(helpSteps(blood, { holyBlood: { enabled: true } }), ["holyBlood"]);
 });

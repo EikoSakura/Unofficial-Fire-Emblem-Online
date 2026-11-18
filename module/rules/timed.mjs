@@ -243,6 +243,16 @@ export function timedEntries(changes) {
   }));
 }
 
+/**
+ * The names of the changes a unit carries that are its own and have begun: what a skill of the same unit asks
+ * for with `when: { carries: "Name" }` (see `skills.mjs`).
+ * @param {TimedChange[]} [changes]
+ * @returns {string[]}
+ */
+export function carriedNames(changes) {
+  return (changes ?? []).filter((change) => !(change.from ?? "") && ((change.stacks ?? 1) > 0) && !isIdle(change)).map((change) => change.name);
+}
+
 /* -------------------------------------------- */
 /*  Tallies                                     */
 /* -------------------------------------------- */

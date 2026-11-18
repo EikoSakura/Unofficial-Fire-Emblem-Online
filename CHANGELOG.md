@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.4.0
+## 0.5.0
+
+- Skills on units made under an older version are brought up to date by themselves. When a Game Master opens the world after an update, every skill takes its Effect, its numbers, what the system does with it and its icon from the skills compendium, and keeps what is the unit's own: whether it is equipped, what was picked on it, and where its cooldown and uses stand. The Game Master is told in chat which skills changed, which now ask for a pick, and which weapon ranks to check by hand. Skills from a compendium of your own are left alone.
+- Level Up splash: a level up is shown over the whole screen with the new level, the stats and what each gained, and a line from the unit. The lines for a great, a fair and a poor level are written on the Story tab of the sheet. Each player can switch the splash off for themselves.
+- Chat cards are shorter: a card shows its headline and its results, and the magnifying glass on the card, or a right-click on the message, opens everything behind them, down to the dice as they fell.
+- Optional Content: Katanas are in the game as a kind of Sword with a place of their own in the Weapon Triangle, along with the classes Ashigaru, Rei, Hitokiri, Oni Savage, Yokai, Shugoki, Merchant, Profiteer and Tycoon and their twelve skills, among them Income, Haggle, Hard to Kill and Wealth Of Power.
+- Deployment zone: the Game Master marks the tiles the players set up on with the terrain brush. It is shown to everyone, and units stay inside it until the battle begins.
+- Skill Capacity uses the raised values for all units: 30 Capacity Points, 60 from the second tier and 120 from the third.
+- Heart Seal Classes are chosen from a menu on the sheet that lists every class a unit can start in, with a field to search them.
+- A unit that waits for help in the Character Creator carries a raised hand beside its name in the Actors list.
+- A new setting limits the Gold a skill such as Income gives in one map.
 
 - The whole Skills list has been gone through, and nearly every skill is now applied by the system: in the forecast, in the fight, on the map and as turns pass. A skill that hangs on something the system cannot see says so on its sheet and is named in a fight to be applied by hand.
 - New commands on the battle HUD: Shove and the skills that push, pull and swap units, Rescue and Drop, Refresh with its songs and dances, Steal, and Trade.

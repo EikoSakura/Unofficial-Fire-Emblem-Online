@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Builds the skill compendium (packs/skills) from the "Skills" tab of the Reference Sheet.
+ * Builds the skill compendium (packs/skills) from the "Skills" tab of the Reference Sheet, with the skills of
+ * the Optional Content Sheet that packs-src/optional-content.json lists, each in the folder of its kind.
  *
  * Usage:
  *   node tools/build-skills.mjs [--foundry <path>] [--json <file>] [--check] [--status [file]] [--out <folder>]
@@ -63,7 +64,7 @@ import {
   slugify, stableId, stats, validate, wholeNumber, writeJson, writePack
 } from "./lib/pack.mjs";
 import { IconLibrary, IconPicker } from "./lib/icons.mjs";
-import { SKILLS_TAB, SKILL_COLUMNS, readSkillName, readSkillsTab } from "./lib/skills-sheet.mjs";
+import { SKILLS_TAB, SKILL_COLUMNS, SKILL_SOURCES, readSkillName, readSkillsTab } from "./lib/skills-sheet.mjs";
 import { TAB as WEAPONS_TAB, readWeaponsTab, weaponName } from "./lib/weapons-sheet.mjs";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -195,23 +196,24 @@ for ( const { row, text } of preamble ) {
 }
 
 const skills = [];
-for ( const { row, section } of rows ) {
-  const cell = (key) => sheet.cell(row, SKILL_COLUMNS[key]);
+for ( const { row, section, from, source } of rows ) {
+  const cell = (key) => from.cell(row, SKILL_COLUMNS[key]);
   const read = readSkillName(cell("name"));
   const { name } = read;
-  const where = `row ${row} ${name}`;
+  const where = `${(source === SKILL_SOURCES.reference) ? "" : `${source}, `}row ${row} ${name}`;
   if ( !name ) {
     problems.push(`Row ${row}: has no name`);
     continue;
   }
   if ( read.conflict ) problems.push(`${where}: its markers "${read.markers}" contradict each other`);
   if ( read.markers ) report.count("Name markers", `"${read.markers}"`);
-  if ( sheet.filled(row).some(({ column }) => !Object.values(SKILL_COLUMNS).includes(column)) ) {
+  if ( from.filled(row).some(({ column }) => !Object.values(SKILL_COLUMNS).includes(column)) ) {
     problems.push(`${where}: has cells outside the Name, Effect, Prerequisite and Capacity Cost columns`);
   }
+  if ( source !== SKILL_SOURCES.reference ) report.count("Optional Content", `skills of the ${source} that are in the game`, name);
 
   // A note pinned to the Effect is part of it: the lists an Effect says are "listed in notes"
-  const pinned = sheet.note(row, SKILL_COLUMNS.effect);
+  const pinned = from.note(row, SKILL_COLUMNS.effect);
   if ( pinned ) report.count("Values read with care", "a note pinned to an Effect, added to it", name);
   const written = /^n\/?a$/i.test(cell("effect")) ? "" : cell("effect");
   const effect = [written, pinned].filter(Boolean).join("\n\n");
@@ -320,7 +322,7 @@ for ( const { row, section } of rows ) {
   }
 
   section.count++;
-  skills.push({ row, name, section, system, markers: read.markers });
+  skills.push({ row, name, section, system, markers: read.markers, source });
 }
 
 /* -------------------------------------------- */
@@ -478,7 +480,7 @@ const documents = skills.map((skill, index) => {
     fallback: "icons/svg/aura.svg",
     materials: false
   });
-  const flags = { row: skill.row, source: `Reference Sheet, ${SKILLS_TAB} tab, row ${skill.row}` };
+  const flags = { row: skill.row, source: `${skill.source}, ${SKILLS_TAB} tab, row ${skill.row}` };
   if ( skill.markers ) flags.markers = skill.markers;
   return {
     _id: stableId(PACK, key),

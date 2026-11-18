@@ -17,6 +17,7 @@ import { affinityCooldown, affinityEffectMode, affinityRankOf, hasCooldown } fro
 import { countsAsSkill, formsOf } from "../rules/skills.mjs";
 import { staggerInUse } from "../rules/stagger.mjs";
 import { sellValue } from "../rules/progression.mjs";
+import { resold } from "../rules/stealing.mjs";
 import { pointsForNext } from "../rules/supports.mjs";
 import { canWield, countedRank, repairCost, wieldLevel } from "../rules/weapons.mjs";
 import { picksOf } from "../helpers/picks.mjs";
@@ -128,7 +129,7 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
     forecast: prepareForecast(system, equipped, skills),
     stats: prepareStats(system),
     weapons,
-    gear: ofType("gear").map(prepareGear),
+    gear: ofType("gear").map((item) => prepareGear(item, system)),
     ranks: prepareRanks(system),
 
     skills,
@@ -368,7 +369,7 @@ function prepareWeapon(item, system) {
     originalName: original?.name ?? null,
     repair: original ? weapon.cost : repairCost(weapon.cost, value, max),
     canRepair: !!original || ((max > 0) && (value < max)),
-    sell: original ? 0 : sellValue(weapon.cost, value, max),
+    sell: original ? 0 : resold(sellValue(weapon.cost, value, max), system.knacks?.resale ?? 0),
     id: item.id,
     name: item.name,
     img: item.img,
@@ -396,9 +397,10 @@ function prepareWeapon(item, system) {
 /**
  * A carried item row.
  * @param {object} item
+ * @param {object} [system]     The unit's data, for what its skills add to what it sells for
  * @returns {object}
  */
-function prepareGear(item) {
+function prepareGear(item, system = null) {
   const { value, max } = item.system.uses;
 
   // A Shield is equipped like a weapon, wears out like one, and is repaired like one
@@ -412,7 +414,7 @@ function prepareGear(item) {
     uses: value,
     max,
     dots: (max > 0) && (max <= 6) ? Array.from({ length: max }, (_, index) => index < value) : null,
-    sell: original ? 0 : sellValue(item.system.cost, value, max),
+    sell: original ? 0 : resold(sellValue(item.system.cost, value, max), system?.knacks?.resale ?? 0),
     spent: item.system.spent,
     shield,
     equipped: shield && !!item.system.equipped,
@@ -747,6 +749,15 @@ function prepareGrowth(system) {
   const growthPct = (key) => Math.min((system.growths[key] ?? 0) / 100, 1) * 100;
   const mark = (key) => (system.boon === key ? "boon" : system.bane === key ? "bane" : "");
 
+  // What the table leaves to a hover over the total: the change wounds, skills and conditions make, and the cap.
+  // The total is tinted by that change, so the row itself carries one number instead of three.
+  const behind = (change, cap) => {
+    const tips = [];
+    if ( change ) tips.push({ label: "FEO.Growth.auto", value: change > 0 ? `+${change}` : `−${-change}` });
+    if ( (cap ?? null) !== null ) tips.push({ label: "FEO.Growth.capAt", value: cap });
+    return { tone: change > 0 ? "up" : change < 0 ? "down" : "", tips };
+  };
+
   const rows = [{
     key: "hp",
     abbr: "FEO.Stat.hp.abbr",
@@ -763,13 +774,18 @@ function prepareGrowth(system) {
     growth: system.growths.hp,
     growthPct: growthPct("hp"),
     growthSkills: system.growthSkills?.hp || null,
-    note: system.hp.lost ? -system.hp.lost : null
+    ...behind(-(system.hp.lost || 0), system.hp.cap)
   }];
 
+  // A rule is drawn where one kind of row gives way to the next: stats that grow, stats that do not, abilities
+  let grew = true;
   for ( const [key, config] of Object.entries(FEO.stats) ) {
     const stat = system.stats[key];
     const hasGrowth = key in FEO.growths;
+    const group = grew && !hasGrowth;
+    grew = hasGrowth;
     rows.push({
+      group,
       key,
       abbr: config.abbr,
       label: config.label,
@@ -788,13 +804,15 @@ function prepareGrowth(system) {
       growth: hasGrowth ? system.growths[key] : null,
       growthPct: hasGrowth ? growthPct(key) : null,
       growthSkills: system.growthSkills?.[key] || null,
-      note: stat.modifier || null
+      ...behind(stat.modifier || 0, stat.cap)
     });
   }
 
+  let first = true;
   for ( const [key, config] of Object.entries(FEO.abilities) ) {
     const ability = system.abilities[key];
     rows.push({
+      group: first,
       key,
       abbr: config.abbr,
       label: config.label,
@@ -809,13 +827,16 @@ function prepareGrowth(system) {
       mark: "",
       growth: system.growths[key],
       growthPct: growthPct(key),
-      growthSkills: system.growthSkills?.[key] || null
+      growthSkills: system.growthSkills?.[key] || null,
+      ...behind(0, null)
     });
+    first = false;
   }
 
   if ( system.weaponLevel?.used ) {
     const levelled = system.weaponLevel;
     rows.push({
+      group: true,
       key: "wlv",
       abbr: "FEO.Stat.wlv.abbr",
       label: "FEO.Stat.wlv.label",
@@ -827,7 +848,8 @@ function prepareGrowth(system) {
       mark: "",
       growth: system.growths.wlv,
       growthPct: growthPct("wlv"),
-      growthSkills: system.growthSkills?.wlv || null
+      growthSkills: system.growthSkills?.wlv || null,
+      ...behind(0, levelled.cap)
     });
   }
   return rows;

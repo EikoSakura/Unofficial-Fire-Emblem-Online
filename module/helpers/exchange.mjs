@@ -8,6 +8,7 @@ import { PROVOKED, armedWith, provokers } from "../rules/actions.mjs";
 import { NEUTRAL, TURNED, UNTARGETABLE, weaponIs } from "../rules/skills.mjs";
 import { isHumanWeapon } from "../rules/shifting.mjs";
 import { isStaggered, staggerInUse } from "../rules/stagger.mjs";
+import { shelteredFrom } from "../rules/stances.mjs";
 import { AFFINITY_ID } from "../rules/optional.mjs";
 import { extraGo } from "./acting.mjs";
 import { cooldownsFor, saveAffinity } from "./affinity.mjs";
@@ -91,9 +92,14 @@ export function cannotTarget(actor, token, target, targetToken = null) {
  * @param {TokenDocument|null} token
  * @param {Actor|null} target             The unit it would target
  * @param {TokenDocument|null} [targetToken]
+ * @param {object} [options]
+ * @param {boolean} [options.attack]      Is it an attack the unit would make? An enemy that shelters the
+ *                                        allies around it only keeps them from being attacked
+ * @param {{i: number, j: number}|null} [options.from]    The tile it would attack from, where that is not
+ *                                        the one it stands on
  * @returns {{key: string, data: object}|null}    A sentence of the language file and what goes into it
  */
-export function targetBar(actor, token, target, targetToken = null) {
+export function targetBar(actor, token, target, targetToken = null, { attack = false, from = null } = {}) {
   if ( !actor || !target ) return null;
   const rules = (unit) => unit.system?.skills?.rules ?? [];
   const enemies = () => relationOf(armyOf(actor, token), armyOf(target, targetToken)) === "enemy";
@@ -116,7 +122,52 @@ export function targetBar(actor, token, target, targetToken = null) {
       }
     }
   }
+
+  // A unit that an ally near it shelters is attacked by no enemy that stands near that ally
+  if ( attack ) {
+    const tile = from ?? (token ? tokenTile(token) : null);
+    const guard = tile ? shelterOver(actor, token, target, targetToken)?.(tile) : null;
+    if ( guard ) {
+      return { key: "FEO.Act.sheltered", data: { name: token?.name || actor.name, target: targetToken?.name || target.name, by: guard.name, skill: guard.skill } };
+    }
+  }
   return null;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The units that shelter another from the attacks of a unit, as a skill of theirs has it (see `shelteredFrom`
+ * in `rules/stances.mjs`): the allies of the target that still stand on its map and keep the enemies near
+ * them from attacking it.
+ * @param {Actor|null} actor              The unit that would attack
+ * @param {TokenDocument|null} token
+ * @param {Actor|null} target             The unit it would attack
+ * @param {TokenDocument|null} targetToken
+ * @returns {((from: {i: number, j: number}) => {name: string, skill: string}|null)|null}
+ *          Asked with a tile to attack from, the unit that bars the attack from there and its skill; null
+ *          where nobody shelters the target at all
+ */
+export function shelterOver(actor, token, target, targetToken) {
+  const scene = targetToken?.parent ?? null;
+  const there = targetToken ? tokenTile(targetToken) : null;
+  if ( !actor || !target || !scene || !there ) return null;
+  const mine = armyOf(actor, token);
+  const theirs = armyOf(target, targetToken);
+  if ( relationOf(mine, theirs) !== "enemy" ) return null;
+  const guards = [];
+  for ( const other of scene.tokens ) {
+    const unit = other.actor;
+    const shelters = unit?.system?.shelters ?? [];
+    if ( !shelters.length || (other === targetToken) || (other === token) || (unit === target) ) continue;
+    if ( unit.system.defeat?.out || !(unit.system.hp?.value > 0) ) continue;
+    const side = armyOf(unit, other);
+    if ( (relationOf(side, theirs) !== "ally") || (relationOf(side, mine) !== "enemy") ) continue;
+    const tile = tokenTile(other);
+    if ( tile ) guards.push({ tile, name: other.name || unit.name, shelters });
+  }
+  if ( !guards.length ) return null;
+  return (from) => shelteredFrom(guards, there, from);
 }
 
 /* -------------------------------------------- */
@@ -672,7 +723,7 @@ export function planAttack(actor, token, targetToken, { from = null, walk = null
 
   // Nor does an enemy attack a unit that none of them can make their target for now, nor a unit that was
   // forced to target another any enemy but that one
-  const bar = targetBar(actor, token, target, targetToken.document);
+  const bar = targetBar(actor, token, target, targetToken.document, { attack: true, from });
   if ( bar ) return { warning: bar.key, warningData: bar.data };
 
   // A Staggered unit cannot act

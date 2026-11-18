@@ -1,0 +1,31 @@
+{
+  "source": "What of the Optional Content Sheet is in the game. The builds read these entries from that sheet (References/Fire Emblem Online Optional Content.xlsx) beside what the Reference Sheet and the Class Sheet give, and nothing else of it. 'weapons' lists weapons by name under the heading of the Weapons tab they stand under; 'skills' lists skills of the Skills tab by name, without the markers after it; 'classes' lists classes of the Classes tab by the cell their block starts at, with the name that block has. A name the sheet does not have stops the build.",
+  "weapons": {
+    "Katanas": ["Bronze Katana", "Akuma", "Iron Katana", "Kotetsu"]
+  },
+  "skills": [
+    "Fast Recovery",
+    "Belligerent",
+    "Mugen-Ryu",
+    "Short Tempered",
+    "Hitobashira",
+    "Hard to Kill",
+    "Senbonzakura",
+    "Demon's Embrace",
+    "Haggle",
+    "Income",
+    "Wealth Of Power",
+    "Make A Killing"
+  ],
+  "classes": [
+    { "cell": "A3", "name": "Ashigaru" },
+    { "cell": "O13", "name": "Rei" },
+    { "cell": "O24", "name": "Hitokiri" },
+    { "cell": "A569", "name": "Oni Savage" },
+    { "cell": "O579", "name": "Yokai" },
+    { "cell": "O590", "name": "Shugoki" },
+    { "cell": "A445", "name": "Merchant" },
+    { "cell": "H455", "name": "Profiteer" },
+    { "cell": "H466", "name": "Tycoon" }
+  ]
+}

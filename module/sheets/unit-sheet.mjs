@@ -13,6 +13,7 @@ import { originOf, takeAction, turnState } from "../helpers/phases.mjs";
 import { levelUpSkills, rerollFailed } from "../helpers/earnings.mjs";
 import { askPicks, picksOf } from "../helpers/picks.mjs";
 import { afflictUnit, awardGold, changeHpByHand, grantUnit, healUnit, pop, selectedOther } from "../helpers/events.mjs";
+import { buildLevelUpSplash, showLevelUp } from "../helpers/level-up.mjs";
 import { manualLevelUp } from "../helpers/manual-gains.mjs";
 import { addModeToggle, setModeToggle } from "../helpers/mode-toggle.mjs";
 import { buildSkillCard } from "../helpers/skill-card-context.mjs";
@@ -23,14 +24,16 @@ import {
   adjustLivesFor, buyPowerFor, promotionLifeUpdate, refundPowerFor, rollCrest, rollMovementStars, sheetOptions
 } from "../helpers/optional.mjs";
 import {
-  heartSealOf, openSealTree, reclassUnit, removeSealClassFrom, sealClassesOf
+  heartSealOf, reclassUnit, sealCardsOf
 } from "../helpers/reclass.mjs";
+import { toggleSealPicker } from "../helpers/seal-picker.mjs";
 import { adjustGauge, resetGauge, toggleShift } from "../helpers/shifting.mjs";
 import { awardEvent, grantPoints, linkBond, queueRangesFor, reportGains } from "../helpers/supports.mjs";
 import { endTurnOf, startTurnOf } from "../helpers/turns.mjs";
 import { useSkillMoment, waitFor } from "../helpers/skill-turns.mjs";
 import { packBar } from "../helpers/creatures.mjs";
 import { castStaffFor, healsMore, staffAreaOf, staffPlanOf, staffTakesOf, staffWhy } from "../helpers/staves.mjs";
+import { afterItemHeal, beforeItemHeal, useUpItem } from "../helpers/items.mjs";
 import { staffRefreshes } from "../helpers/refresh.mjs";
 import { usageRows } from "../helpers/skill-usage-context.mjs";
 import { cooldownsFor, switchAffinity } from "../helpers/affinity.mjs";
@@ -130,8 +133,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       levelUp: UnitSheet.#onLevelUp,
       promote: UnitSheet.#onPromote,
       reclass: UnitSheet.#onReclass,
-      addSealClass: UnitSheet.#onAddSealClass,
-      removeSealClass: UnitSheet.#onRemoveSealClass,
+      sealClasses: UnitSheet.#onSealClasses,
       addBond: UnitSheet.#onAddBond,
       deleteBond: UnitSheet.#onDeleteBond,
       removeTimed: UnitSheet.#onRemoveTimed,
@@ -325,8 +327,10 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
     // Heart Seals: the classes the unit can reclass into the lines of, and whether it can do so now. A player
     // spends the Heart Seal the unit carries; the Game Master needs none
+    // The closed line names the class in use: the one the unit's line starts in, or else the class it holds.
+    // The others are in the menu it opens
     const heartSeals = FEO.optional.heartSeals.enabled ? {
-      classes: sealClassesOf(actor),
+      active: sealCardsOf(actor).find((entry) => entry.starting) ?? (cls ? { name: cls.name, img: cls.img } : null),
       canReclass: !!cls && (game.user.isGM || !!heartSealOf(actor)),
       needsSeal: !!cls && !game.user.isGM && !heartSealOf(actor),
       item: FEO.optional.heartSeals.item
@@ -1225,6 +1229,12 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       const token = this.activeToken;
       if ( token?.parent?.grid?.isSquare && game.feo.hud?.pickTrap?.(token, item) ) return;
     }
+    // An item one of its skills uses up for something that lasts, as Wealth Of Power does with Gems: its owner
+    // is asked, the item is destroyed, and that is the unit's Action
+    const consumed = await useUpItem(actor, item, this.activeToken);
+    if ( consumed === "used" ) await takeAction(actor, this.activeToken, { action: { kind: "item" } });
+    if ( consumed ) return;
+
     const ally = this.targetedUnit;
     const patient = ally?.actor ?? actor;
     if ( ally && !patient.isOwner ) {
@@ -1235,14 +1245,22 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
     if ( item.system.restore > 0 ) {
       // A skill may have the unit heal its allies for more
-      const restore = ally ? healsMore(actor, item.system.restore) : item.system.restore;
+      const full = ally ? healsMore(actor, item.system.restore) : item.system.restore;
+
+      // What the skills of the unit it heals make of that: one may have it restore less for something else,
+      // which whoever Uses the item is asked about before it heals
+      const before = await beforeItemHeal(patient, full, { own: !ally || (patient === actor), item: item.name });
+
       // Healing an ally with it is healing by this unit, for the skills that ask
-      const healed = (await healUnit(patient, restore, { down: true, by: ally ? actor : null, byToken: this.activeToken, counted: true }))?.healed ?? 0;
+      const healed = (await healUnit(patient, before.restore, { down: true, by: ally ? actor : null, byToken: this.activeToken, counted: true }))?.healed ?? 0;
       rows.push({
         label: game.i18n.localize("FEO.Chat.restored"),
         value: game.i18n.format("FEO.Chat.hpAmount", { amount: healed }),
         cls: "good"
       });
+
+      // And what they leave on it for the HP it regained
+      rows.push(...await afterItemHeal(patient, before, healed));
     }
 
     const remaining = Math.max(item.system.uses.value - 1, 0);
@@ -1699,7 +1717,8 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
-   * Level up: grant ability points, then roll every growth rate.
+   * Level up: grant ability points, then roll every growth rate. What they came to is shown on the Level Up
+   * splash, and then told in chat.
    * A unit whose class promotes at this level promotes instead. A unit with only a class name is asked whether
    * to promote, which skips the growth rolls and leaves the new class to be applied by hand. With the Level
    * Cap, a unit at its level limit does neither.
@@ -1752,6 +1771,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     }];
     const rolls = [];
     let lasting = [];
+    let splash = null;
 
     if ( !promote ) {
       const capped = Object.entries(system.stats).filter(([, stat]) => stat.capped).map(([key]) => key);
@@ -1803,6 +1823,9 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       Object.assign(update, skills.update);
       rows.push(...skills.rows);
       lasting = skills.grants;
+
+      // The Level Up splash is put together from the unit as it stands, before what it gained is saved
+      splash = buildLevelUpSplash(actor, { from: system.level, to: level, results: gained, points, notes: skills.rows });
     }
     else {
       // A promotion that takes the place of a level up is one to the unit's skills. Its class is applied by
@@ -1824,6 +1847,9 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       });
     }
     await actor.update(update);
+
+    // The splash shows what the dice came to before the card tells of it in chat
+    if ( splash ) await showLevelUp(actor, splash);
     await postCard(actor, {
       title: game.i18n.format(promote ? "FEO.LevelUp.promotedTo" : "FEO.LevelUp.reached", { level }),
       rows,
@@ -1883,23 +1909,14 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
-   * Open the class tree, to put a class on the unit's list of Heart Seal Classes.
-   * @this {UnitSheet}
-   */
-  static async #onAddSealClass() {
-    await openSealTree(this.actor);
-  }
-
-  /* -------------------------------------------- */
-
-  /**
-   * Take a class off the unit's list of Heart Seal Classes.
+   * Open the menu of the unit's Heart Seal Classes, or close it again. In Edit mode the menu also puts classes
+   * on the list and takes them off.
    * @this {UnitSheet}
    * @param {PointerEvent} event
    * @param {HTMLElement} target
    */
-  static async #onRemoveSealClass(event, target) {
-    await removeSealClassFrom(this.actor, target.dataset.name);
+  static async #onSealClasses(event, target) {
+    await toggleSealPicker(this.actor, target, { edit: this.isEditable && (this.mode === UnitSheet.MODES.EDIT) });
   }
 
   /* -------------------------------------------- */

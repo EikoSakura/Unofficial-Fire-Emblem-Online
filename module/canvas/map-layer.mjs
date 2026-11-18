@@ -1,7 +1,8 @@
 import { FEO } from "../config.mjs";
 import { paintScene, paintShown, terrainTint, veilPaint } from "../helpers/paint.mjs";
-import { tileGround } from "../helpers/terrain.mjs";
+import { DEPLOY_ZONE, hasZone, tileGround } from "../helpers/terrain.mjs";
 import { objectOn } from "../helpers/map-objects.mjs";
+import { battle } from "../helpers/phases.mjs";
 import { boxTiles, brushHolds, lineTiles } from "../rules/paint.mjs";
 import { tileKey } from "../rules/reach.mjs";
 import { drawGround } from "./ground-art.mjs";
@@ -10,6 +11,9 @@ import { drawGround } from "./ground-art.mjs";
  * The Fire Emblem controls: a set of scene controls of the system's own, with a canvas layer behind it as
  * Foundry asks of every set. While the set is in use the ground of the map is on show, each kind of terrain
  * in its colour and each height marked; with the terrain brush, a Game Master paints it.
+ *
+ * The deployment zone, where one was marked with the brush, is drawn for everyone until a battle begins on the
+ * map, whether the controls are in use or not: it is where the players set their units up.
  *
  * The layer only draws and follows the pointer. What the brush holds is kept in `mapTools`, where the palette
  * of the Battle HUD sets it, and a stroke is laid down by `helpers/paint.mjs`. The Compendium and the Base add
@@ -32,11 +36,12 @@ export const MAP_TOOLS = { survey: "feoSurvey", paint: "feoPaint" };
 export const mapTools = {
 
   /**
-   * What the terrain brush holds: a kind of terrain, a height, the eraser; or in their place a door, a chest
-   * or a Village to set down on the tile that is clicked (`object`, see `rules/objects.mjs`).
+   * What the terrain brush holds: a kind of terrain, a height, the eraser; in their place a zone to mark
+   * (`zone`, a key of FEO.zones); or a door, a chest or a Village to set down on the tile that is clicked
+   * (`object`, see `rules/objects.mjs`).
    * @type {Brush & {object: "door"|"chest"|"village"|null}}
    */
-  brush: { terrain: "forest", elevation: null, erase: false, object: null },
+  brush: { terrain: "forest", elevation: null, zone: null, erase: false, object: null },
 
   /**
    * Called when the tools change: the set is opened or left, or another tool is taken up.
@@ -255,6 +260,9 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
   /** The strokes are laid down one after another, so that none works from paint that is about to change. */
   #laying = Promise.resolve();
 
+  /** Was the deployment zone on show when the ground was last drawn? */
+  #deployed = false;
+
   /* -------------------------------------------- */
   /*  Drawing                                     */
   /* -------------------------------------------- */
@@ -289,7 +297,33 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
   /* -------------------------------------------- */
 
   /**
-   * Draw the ground of the map again, or wipe it if the controls are not in use.
+   * Is the deployment zone of the map on show? To whoever has the controls in use, and to everyone until a
+   * battle begins there.
+   * @type {boolean}
+   */
+  get #deploying() {
+    return this.active || (hasZone(canvas.scene, DEPLOY_ZONE) && !battle());
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A battle began or ended, or may have: the deployment zone is drawn or wiped if that changes whether it is
+   * on show.
+   */
+  refreshZone() {
+    try {
+      if ( this.#ground && !this.#ground.destroyed && (this.#deploying !== this.#deployed) ) this.redraw();
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Draw the ground of the map again, or wipe it if the controls are not in use. The deployment zone is drawn
+   * with it, and on its own before a battle while they are not.
    */
   redraw() {
     try {
@@ -298,7 +332,11 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
       ground.clear();
       for ( const label of this.#heights.removeChildren() ) label.destroy();
       this.#drawStroke();
-      if ( !this.active || !canvas.grid?.isSquare ) return;
+      this.#deployed = false;
+      if ( !canvas.grid?.isSquare ) return;
+      const surveying = this.active;
+      const deploying = this.#deployed = this.#deploying;
+      if ( !surveying && !deploying ) return;
 
       const scene = canvas.scene;
       const size = canvas.grid.size;
@@ -308,13 +346,16 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
       const pictured = groundArt.shown;
       const style = CONFIG.canvasTextStyle.clone();
       style.fontSize = Math.round(size * 0.26);
+      const zoneTint = Number(foundry.utils.Color.from(FEO.zones[DEPLOY_ZONE].tint));
+      const inset = Math.max(2, size * 0.07);
       for ( let i = first.i; i <= last.i; i++ ) {
         for ( let j = first.j; j <= last.j; j++ ) {
-          const { painted: terrain, elevation } = tileGround(scene, { i, j });
+          const { painted: terrain, elevation, zone } = tileGround(scene, { i, j });
           const open = terrain === FEO.terrain.default;
-          if ( open && !elevation ) continue;
+          const deploy = deploying && (zone === DEPLOY_ZONE);
+          if ( !deploy && (!surveying || (open && !elevation)) ) continue;
           const { x, y } = canvas.grid.getTopLeftPoint({ i, j });
-          if ( !open && !pictured ) {
+          if ( surveying && !open && !pictured ) {
             ground.lineStyle(0);
             ground.beginFill(Number(foundry.utils.Color.from(terrainTint(terrain))), 0.42);
             ground.drawRect(x, y, size, size);
@@ -322,12 +363,20 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
           }
 
           // High ground is edged in brass and numbered
-          if ( elevation ) {
+          if ( surveying && elevation ) {
             ground.lineStyle({ width: Math.max(2, size * 0.04), color: 0xF3D98F, alpha: 0.85, alignment: 0 });
             ground.drawRect(x, y, size, size);
             const label = this.#heights.addChild(new foundry.canvas.containers.PreciseText(String(elevation), style));
             label.anchor.set(1, 0);
             label.position.set(x + size - (size * 0.08), y + (size * 0.04));
+          }
+
+          // A tile of the deployment zone is a blue plate set inside its edges, so that the ground shows round it
+          if ( deploy ) {
+            ground.lineStyle({ width: Math.max(2, size * 0.035), color: zoneTint, alpha: 0.95, alignment: 0 });
+            ground.beginFill(zoneTint, 0.3);
+            ground.drawRect(x + inset, y + inset, size - (inset * 2), size - (inset * 2));
+            ground.endFill();
           }
         }
       }
@@ -349,7 +398,8 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
     if ( !stroke ) return;
     const size = canvas.grid.size;
     const holds = brushHolds(mapTools.brush);
-    const color = holds.erase ? 0x1A1D26 : holds.terrain ? Number(foundry.utils.Color.from(terrainTint(holds.terrain))) : 0xF3D98F;
+    const tint = holds.zone ? FEO.zones[holds.zone]?.tint : holds.terrain ? terrainTint(holds.terrain) : null;
+    const color = holds.erase ? 0x1A1D26 : tint ? Number(foundry.utils.Color.from(tint)) : 0xF3D98F;
     preview.lineStyle({ width: Math.max(1, size * 0.03), color: 0xFFFFFF, alpha: 0.8, alignment: 0 });
     for ( const tile of stroke.tiles.values() ) {
       const { x, y } = canvas.grid.getTopLeftPoint(tile);
@@ -374,8 +424,8 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
     this.#laying = this.#laying.then(async () => {
       await paintScene(scene, tiles, brush);
 
-      // The eraser takes away what stands on the tiles as well
-      if ( brush.erase ) {
+      // The eraser takes away what stands on the tiles as well, unless it is only taking a zone off them
+      if ( brush.erase && !brush.zone ) {
         const { placeObject } = await import("../helpers/objects.mjs");
         for ( const tile of tiles ) if ( objectOn(scene, tile) ) await placeObject(scene, tile, null);
 
@@ -530,6 +580,10 @@ export function registerMapLayer() {
   Hooks.on("updateScene", (scene, changes) => {
     if ( (scene === canvas?.scene) && changes.flags?.[FEO.id] ) redraw();
   });
+
+  // The deployment zone shows until a battle begins on the map, and again once it is over
+  const zone = foundry.utils.debounce(() => globalThis.canvas?.[MAP_CONTROL]?.refreshZone(), 40);
+  for ( const hook of ["createCombat", "updateCombat", "deleteCombat"] ) Hooks.on(hook, zone);
 
   // The canvas destroys what is drawn on it as it is taken down, so the picture is let go of first
   Hooks.on("canvasTearDown", () => groundArt.clear());

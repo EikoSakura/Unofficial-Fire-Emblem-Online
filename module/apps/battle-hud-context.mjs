@@ -488,7 +488,7 @@ export function buildDock(unit, i18n) {
     sub: i18n.localize(`FEO.Optional.affinityEffect.text.${system.affinity}`), on: way.on,
     end: affinityUse.note ? i18n.format(affinityUse.note, { turns: affinityUse.turns, left: affinityUse.left, uses: affinityUse.uses })
       : i18n.localize(way.on ? "FEO.Hud.flyout.declared" : "FEO.Hud.flyout.declare"),
-    disabled: !acting || affinityUse.blocked
+    wait: affinityUse.blocked, disabled: !acting || affinityUse.blocked
   }] : [];
   const weapons = actor.items.filter((item) => item.type === "weapon");
   const staves = weapons.filter((item) => item.system.category === "staff");
@@ -683,13 +683,22 @@ export function buildDock(unit, i18n) {
 
         // So does a skill its unit imitates another with: picked again, the unit reverts
         const imitates = asAction && (system.imitating?.item === item.id);
+
+        // A skill that is on cooldown or out of uses says so in place of what a click would do, and takes none.
+        // One that may be used before its cooldown is over says both
+        const usage = (holds || imitates) ? null : prepareUsage(item.system);
+        const stands = usage?.note ? i18n.format(usage.note, { turns: usage.turns, left: usage.left, uses: usage.uses }) : "";
+        const wait = !!usage?.blocked;
+        const early = !wait && !!stands && (usage.label === "FEO.Usage.useEarly");
         return {
           action: asAction ? use : "switchSkill", id: item.id, img: item.img, name: item.name,
           sub: item.system.effect ?? "", on: holds || imitates || (!asAction && !!item.system.state?.active),
           end: holds ? i18n.format("FEO.Grip.release", { name: unit.grip.name })
             : imitates ? i18n.localize("FEO.Imitate.revert")
+            : wait ? stands
+            : early ? `${stands} · ${i18n.localize("FEO.Usage.useEarly")}`
             : i18n.localize(asAction ? "FEO.Hud.flyout.asAction" : item.system.state?.active ? "FEO.Hud.flyout.declared" : "FEO.Hud.flyout.declare"),
-          disabled: !acting
+          wait, disabled: !acting || wait
         };
       }),
 
@@ -1262,6 +1271,41 @@ export function buildHudForecast(plan, { armies, images = {}, marks = null, meas
 }
 
 /* -------------------------------------------- */
+
+/**
+ * Where the forecast stands: across the middle of the screen, halfway between the Phase banner and the dock.
+ * Where it would lie over a unit of the fight there, it is moved up or down no further than it takes to stand
+ * clear of them all, and where it cannot stand clear it stays in the middle.
+ * @param {object} screen
+ * @param {number} screen.width               The width of the screen, in pixels
+ * @param {number} screen.top                 Where the room for the panel begins, under the Phase banner
+ * @param {number} screen.bottom              Where it ends, above the dock
+ * @param {{width: number, height: number}} panel     The size of the panel, as near as it is known
+ * @param {{left: number, top: number, right: number, bottom: number}[]} boxes   The units of the fight
+ * @param {number} [gap]                      The room left between the panel and a unit
+ * @returns {{anchor: "middle"|"above"|"below", at: number}}  The line the panel is set by: the one its middle
+ *   lies on, the one its lower edge rests on, or the one its upper edge hangs from
+ */
+export function placeForecast(screen, panel, boxes = [], gap = 18) {
+  const left = (screen.width - panel.width) / 2;
+  const right = left + panel.width;
+  const middle = (screen.top + screen.bottom) / 2;
+  const near = boxes.filter((box) => (box.right > left - gap) && (box.left < right + gap));
+  const covers = (top) => near.some((box) => (box.bottom > top - gap) && (box.top < top + panel.height + gap));
+  const centred = middle - (panel.height / 2);
+  if ( !covers(centred) ) return { anchor: "middle", at: Math.round(middle) };
+
+  // Above or below a unit in its way, whichever is nearest the middle and has the room
+  const tries = near.flatMap((box) => [
+    { anchor: "above", at: box.top - gap, top: box.top - gap - panel.height },
+    { anchor: "below", at: box.bottom + gap, top: box.bottom + gap }
+  ]).filter((spot) => (spot.top >= screen.top) && (spot.top + panel.height <= screen.bottom) && !covers(spot.top));
+  tries.sort((a, b) => Math.abs(a.top - centred) - Math.abs(b.top - centred));
+  const best = tries[0];
+  return best ? { anchor: best.anchor, at: Math.round(best.at) } : { anchor: "middle", at: Math.round(middle) };
+}
+
+/* -------------------------------------------- */
 /*  Phases                                      */
 /* -------------------------------------------- */
 
@@ -1334,7 +1378,8 @@ const BRUSH_LEVELS = Array.from({ length: 10 }, (_, level) => level);
 
 /**
  * The palette of the terrain brush: every kind of terrain and every height to pick from, which of them the
- * brush holds, the eraser, and whether the painted ground is drawn on the map for everyone.
+ * brush holds, what it can set down or mark in their place, the eraser, and whether the painted ground is
+ * drawn on the map for everyone.
  * @param {object} palette
  * @param {import("../rules/paint.mjs").Brush} palette.brush
  * @param {boolean} [palette.shown]     Is the painted ground of the scene shown to the players?
@@ -1371,15 +1416,29 @@ export function buildPalette({ brush, shown = false }, i18n) {
   const objects = Object.entries(FEO.objects.kinds).map(([key, kind]) => ({
     key, icon: kind.icon, on: placing === key, label: i18n.localize(kind.label), tip: i18n.localize(`FEO.Objects.place.${key}`)
   }));
+
+  // The zones it can mark instead, which leave the ground under them as it is. With the eraser as well, it
+  // takes the zone off and nothing else
+  const zoning = (!placing && (holds.zone in FEO.zones)) ? holds.zone : null;
+  const zones = Object.entries(FEO.zones).map(([key, zone]) => ({
+    key, icon: zone.icon, tint: zone.tint, on: zoning === key, label: i18n.localize(zone.label), tip: i18n.localize(`FEO.Zone.${key}.hint`)
+  }));
+  const zoneLabel = zoning ? i18n.localize(FEO.zones[zoning].label) : "";
+  const held = placing ? i18n.localize(FEO.objects.kinds[placing].label)
+    : zoning ? (holds.erase ? `${i18n.localize("FEO.Paint.erase")} · ${zoneLabel}` : zoneLabel)
+      : ((holds.erase || holds.idle) ? "" : parts.join(" · "));
+  const aside = placing || zoning;
   return {
     summary: i18n.localize(holds.erase ? "FEO.Paint.erase" : "FEO.Paint.nothing"),
-    holds: placing ? i18n.localize(FEO.objects.kinds[placing].label) : ((holds.erase || holds.idle) ? "" : parts.join(" · ")),
+    holds: held,
     erase: holds.erase,
     placing: !!placing,
+    zoning: !!zoning,
     shown,
-    swatches: placing ? swatches.map((swatch) => ({ ...swatch, on: false })) : swatches,
-    levels: placing ? levels.map((level) => ({ ...level, on: false })) : levels,
+    swatches: aside ? swatches.map((swatch) => ({ ...swatch, on: false })) : swatches,
+    levels: aside ? levels.map((level) => ({ ...level, on: false })) : levels,
     objects,
-    hint: i18n.localize(placing ? "FEO.Objects.place.hint" : "FEO.Paint.hint")
+    zones,
+    hint: i18n.localize(placing ? "FEO.Objects.place.hint" : zoning ? "FEO.Paint.zoneHint" : "FEO.Paint.hint")
   };
 }

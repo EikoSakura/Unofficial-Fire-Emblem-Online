@@ -1,6 +1,6 @@
 <div class="hud-slot hud-forecast">
   {{#with forecast}}
-  <section class="hud-panel fc" data-side="{{side}}" aria-label="{{localize "FEO.Exchange.forecast"}}">
+  <section class="hud-panel fc" style="{{style}}" aria-label="{{localize "FEO.Exchange.forecast"}}">
     <div class="fc-names">
       {{#each names as |unit|}}
       <div class="fc-name cloth" data-army="{{unit.army}}">

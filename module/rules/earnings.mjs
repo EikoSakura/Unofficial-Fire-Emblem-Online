@@ -24,6 +24,14 @@
  *     grant: { to: "self", gained: 1, ends: "turnEnd" }      // a change that lasts a while (see `timed.mjs`):
  *   }                                                        // this much more in every stat the level up raised
  *
+ * And a skill gives its unit gold at a moment of its turn, as Income does:
+ *
+ *   { proc: { on: "turnStart", sure: true }, gold: 5 }                      // as each of its turns starts
+ *   { proc: { on: "turnEnd", sure: true }, gold: { of: "spacesMoved" } }    // for the spaces it moved that turn
+ *
+ * What a skill gives that way is counted for the map on a tally named after the skill, which its sheet
+ * shows, and the Game Master may hold it to so much a map (`FEO.earnings.turnGoldMost`, see `turnGold`).
+ *
  * A level up is every moment a unit gains a level's worth: the growth rates rolled by the Level Up button, the
  * promotion that takes the place of a level up, with the stats its new class gives (`classGains`), and the
  * stats a class gives on reaching a level.
@@ -34,7 +42,7 @@
  */
 import { FEO } from "../config.mjs";
 import { LEVEL_MOMENTS, holds, readNumber } from "./skills.mjs";
-import { buildChange } from "./timed.mjs";
+import { COUNT_MOST, buildChange } from "./timed.mjs";
 
 /**
  * @typedef ExpSource
@@ -49,6 +57,53 @@ import { buildChange } from "./timed.mjs";
  * @property {number} times             What the base was multiplied by, all in all
  * @property {ExpSource[]} sources      The skills that multiplied it
  */
+
+/* -------------------------------------------- */
+/*  Gold at a Moment of a Turn                  */
+/* -------------------------------------------- */
+
+/**
+ * The gold a skill gives its unit at a moment of its turn, once what it has already given in this map is
+ * counted: all of it, or what is left of what the Game Master allows a map.
+ * @param {number} amount           What the skill would give
+ * @param {number} [gained]         What it has given its unit in this map so far
+ * @param {number} [most]           The most it gives in a map; 0 for no limit
+ * @returns {number}
+ */
+export function turnGold(amount, gained = 0, most = FEO.earnings.turnGoldMost) {
+  const wanted = Math.max(Math.floor(amount ?? 0), 0);
+  if ( !(most > 0) ) return wanted;
+  return Math.min(wanted, Math.max(most - Math.max(gained ?? 0, 0), 0));
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The tally a unit keeps of the gold a skill has given it in this map: a change named after the skill that
+ * does nothing, grows by what was given and is gone as the map ends. A tally holds no more than
+ * `COUNT_MOST`; what a skill gives beyond that is given all the same.
+ * @param {string} skill
+ * @param {number} amount           What was given
+ * @returns {TimedChange|null}      Null where nothing was
+ */
+export function goldTally(skill, amount) {
+  const grows = Math.min(Math.max(Math.floor(amount ?? 0), 0), COUNT_MOST);
+  if ( !skill || !(grows > 0) ) return null;
+  return buildChange({ to: "self", effects: [], ends: "map", max: COUNT_MOST, grows }, { skill, own: true });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What a skill has given its unit in gold in this map, as its tally has it.
+ * @param {TimedChange[]} [timed]   The changes the unit carries
+ * @param {string} skill
+ * @returns {number}
+ */
+export function goldGained(timed, skill) {
+  const tally = (timed ?? []).find((change) => (change.name === skill) && !(change.from ?? "") && (change.max > 0) && !(change.effects ?? []).length);
+  return Math.max(tally?.stacks ?? 0, 0);
+}
 
 /* -------------------------------------------- */
 /*  Reading Skills                              */

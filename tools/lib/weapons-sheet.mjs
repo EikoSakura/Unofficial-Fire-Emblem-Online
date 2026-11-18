@@ -1,10 +1,11 @@
 /**
- * Reads the "Weapons" tab of the Reference Sheet. Shared by the weapons build, which makes a weapon of every
- * row, and the skills build, which looks up the weapons a skill lends its unit.
+ * Reads the "Weapons" tab of the Reference Sheet, and the weapons of the same tab of the Optional Content Sheet
+ * that are in the game (those listed in packs-src/optional-content.json). Shared by the weapons build, which
+ * makes a weapon of every row, and the skills build, which looks up the weapons a skill lends its unit.
  */
 
 import { readWorkbook } from "./xlsx.mjs";
-import { REFERENCE_SHEET, decimalNumber, isBlank, oneLine, wholeNumber } from "./pack.mjs";
+import { OPTIONAL_SHEET, REFERENCE_SHEET, decimalNumber, isBlank, oneLine, readOptionalList, wholeNumber } from "./pack.mjs";
 
 export const TAB = "Weapons";
 export const COLUMNS = ["Name", "Might", "Hit", "Critical", "Range", "Weight", "Uses", "Rank/Wlv", "Cost", "wEXP", "Effect"];
@@ -22,6 +23,14 @@ export const SECTIONS = {
   "Monster Weapons": "monster"
 };
 export const TOP_LEVEL = ["Monster Weapons"];
+
+/**
+ * The headings of the Optional Content Sheet's tab whose weapons the system has a category for. A heading of
+ * its "New Weapon Types" is a sub-category of a kind the Reference Sheet has: its folder stands right after
+ * that kind's.
+ */
+export const OPTIONAL_SECTIONS = { "Katanas": "katana" };
+export const SOURCES = { reference: "Reference Sheet", optional: "Optional Content Sheet" };
 export const BROKEN = [
   [/crossbow/i, "crossbow"], [/axe/i, "axe"], [/gauntlet/i, "brawl"], [/lance/i, "lance"], [/bow/i, "bow"],
   [/sword/i, "sword"], [/knife/i, "knife"], [/staff/i, "staff"], [/tome/i, "anima"]
@@ -35,6 +44,7 @@ export const BROKEN = [
  * @param {Function} options.parseRange         Reads a Range (see `module/rules/combat.mjs`)
  * @param {{count: Function}} [options.report]  Where what is read with care is counted; nothing is where none is given
  * @returns {{sheet: object, sections: object[], weapons: object[], problems: string[]}}
+ *   `sheet` is the tab of the Reference Sheet; each weapon says which sheet it is from as its `source`
  */
 export function readWeaponsTab({ FEO, parseRange, report = { count() {} } }) {
   const problems = [];
@@ -86,7 +96,68 @@ export function readWeaponsTab({ FEO, parseRange, report = { count() {} } }) {
       problems.push(`Row ${row}: "${first}" comes before any section heading`);
       continue;
     }
-    rows.push({ row, section });
+    rows.push({ row, section, from: sheet, source: SOURCES.reference });
+  }
+
+  /* -------------------------------------------- */
+  /*  The Optional Content Sheet                  */
+  /* -------------------------------------------- */
+
+  // Only the weapons the list names are read, each under the heading it names them under. The notes beneath
+  // that heading become the description of its folder, as they do on the Reference Sheet
+  const optional = readOptionalList();
+  problems.push(...optional.problems);
+  const wanted = Object.entries(optional.weapons).filter(([, names]) => names.length);
+  const extra = (wanted.length && !optional.problems.length) ? readWorkbook(OPTIONAL_SHEET).find((candidate) => candidate.name === TAB) : null;
+  if ( wanted.length && !optional.problems.length && !extra ) problems.push(`The ${SOURCES.optional} has no "${TAB}" tab.`);
+  if ( extra ) {
+    COLUMNS.forEach((title, column) => {
+      if ( oneLine(extra.cell(1, column)) !== title ) {
+        problems.push(`${SOURCES.optional}, row 1: column ${column + 1} should be "${title}" but is "${oneLine(extra.cell(1, column))}"`);
+      }
+    });
+  }
+  for ( const [heading, names] of extra ? wanted : [] ) {
+    const category = OPTIONAL_SECTIONS[heading];
+    if ( !category || !(category in FEO.weaponCategories) ) {
+      problems.push(`optional-content.json: the system has no weapon category for the heading "${heading}". Add it to OPTIONAL_SECTIONS.`);
+      continue;
+    }
+    const lone = (row) => {
+      const cells = extra.filled(row);
+      return (cells.length === 1) && (cells[0].column === 0);
+    };
+    let start = 0;
+    for ( let row = 2; (row <= extra.lastRow) && !start; row++ ) if ( lone(row) && (oneLine(extra.cell(row, 0)) === heading) ) start = row;
+    if ( !start ) {
+      problems.push(`optional-content.json: the ${TAB} tab of the ${SOURCES.optional} has no heading "${heading}"`);
+      continue;
+    }
+
+    // Its folder stands beside that of the kind it is a sub-category of
+    const kin = sections.findIndex((entry) => entry.category === FEO.weaponCategories[category].kin);
+    const place = { key: heading, name: heading, parent: (kin >= 0) ? sections[kin].parent : null, notes: [], category, count: 0 };
+    sections.splice((kin >= 0) ? kin + 1 : sections.length, 0, place);
+    report.count("Rows that are not weapons", `section headings of the ${SOURCES.optional}, made into folders`);
+    const found = new Set();
+    for ( let row = start + 1; row <= extra.lastRow; row++ ) {
+      if ( !extra.filled(row).length ) continue;
+      const first = oneLine(extra.cell(row, 0));
+      if ( lone(row) ) {
+        // The next heading ends it
+        if ( !((first.length > 40) || first.endsWith(".")) ) break;
+        place.notes.push(extra.cell(row, 0));
+        report.count("Rows that are not weapons", "notes, kept as the description of their folder", `${SOURCES.optional}, row ${row}`);
+        continue;
+      }
+      if ( !names.includes(first) ) continue;
+      found.add(first);
+      rows.push({ row, section: place, from: extra, source: SOURCES.optional });
+    }
+    for ( const name of names ) {
+      if ( !found.has(name) ) problems.push(`optional-content.json: "${heading}" of the ${SOURCES.optional} has no weapon named "${name}"`);
+    }
+    report.count("Optional Content", `weapons of "${heading}" that are in the game`, [...found].join(", "));
   }
 
   /* -------------------------------------------- */
@@ -125,10 +196,10 @@ export function readWeaponsTab({ FEO, parseRange, report = { count() {} } }) {
   const weapons = [];
   const names = new Map();
 
-  for ( const { row, section: place } of rows ) {
-    const cell = (column) => sheet.cell(row, column);
+  for ( const { row, section: place, from, source } of rows ) {
+    const cell = (column) => from.cell(row, column);
     const name = oneLine(cell(0));
-    const where = `row ${row} ${name}`;
+    const where = `${(source === SOURCES.reference) ? "" : `${source}, `}row ${row} ${name}`;
     let category = place.category;
     if ( category === null ) {
       category = BROKEN.find(([expression]) => expression.test(name))?.[1];
@@ -226,7 +297,7 @@ export function readWeaponsTab({ FEO, parseRange, report = { count() {} } }) {
 
     // Effect, word for word
     const effect = /^n\/?a$/i.test(cell(10)) ? "" : cell(10);
-    if ( sheet.filled(row).some(({ column }) => column > 10) ) problems.push(`${where}: has cells beyond the Effect column`);
+    if ( from.filled(row).some(({ column }) => column > 10) ) problems.push(`${where}: has cells beyond the Effect column`);
 
     // The stat that adds to Might
     const magical = Boolean(FEO.weaponCategories[category]?.magic) || isStaff;
@@ -255,7 +326,7 @@ export function readWeaponsTab({ FEO, parseRange, report = { count() {} } }) {
     names.set(`${category}.${name}`, sameName);
     place.count++;
     weapons.push({
-      row, name, category, section: place, rank, level,
+      row, name, category, section: place, rank, level, source,
       system: {
         category,
         might: combat.might,

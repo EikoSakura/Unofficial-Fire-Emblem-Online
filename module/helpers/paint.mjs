@@ -1,7 +1,7 @@
 import { FEO } from "../config.mjs";
 import { COATS, paintTiles } from "../rules/paint.mjs";
 import { keyTile } from "../rules/reach.mjs";
-import { TERRAIN_BEHAVIOR } from "./terrain.mjs";
+import { TERRAIN_BEHAVIOR, ZONE_FLAG } from "./terrain.mjs";
 
 /**
  * The terrain brush in Foundry: what a Game Master paints is kept as Regions of the scene, so that painted
@@ -11,6 +11,9 @@ import { TERRAIN_BEHAVIOR } from "./terrain.mjs";
  * painted, covers its tiles with a single shape made of grid spaces, and carries one Terrain behaviour that
  * names the kind of terrain or the height, never both. A Region that is marked but has been changed by hand
  * into something else is left alone.
+ *
+ * A zone that has been marked, such as the one the players set their units up in, is one Region as well: it
+ * names its zone in a flag and carries no behaviour, since it says nothing about the ground under it.
  *
  * @import {Brush, Paint} from "../rules/paint.mjs"
  * @import {Tile} from "../rules/reach.mjs"
@@ -42,23 +45,28 @@ export function terrainTint(terrain) {
 /* -------------------------------------------- */
 
 /**
- * What a painted Region carries: a kind of terrain or a height, and its tiles.
+ * What a painted Region carries: a kind of terrain, a height or a zone, and its tiles.
  * @param {RegionDocument} region
- * @returns {{coat: "terrain"|"elevation", value: string|number, tiles: Set<string>}|null}
+ * @returns {{coat: "terrain"|"elevation"|"zone", value: string|number, tiles: Set<string>}|null}
  *   Null for a Region the brush does not look after
  */
 function readRegion(region) {
   if ( !region.getFlag(FEO.id, PAINTED_FLAG) ) return null;
   const behavior = region.behaviors.find((other) => (other.type === TERRAIN_BEHAVIOR) && !other.disabled);
-  if ( !behavior ) return null;
-  const { terrain, elevation } = behavior.system;
+  const zone = region.getFlag(FEO.id, ZONE_FLAG);
+  const zoned = (typeof zone === "string") && (zone in FEO.zones);
+
+  // A zone that was given ground of its own by hand has become something else
+  if ( zoned === !!behavior ) return null;
+  const { terrain, elevation } = behavior?.system ?? {};
   const high = Number.isInteger(elevation);
-  if ( !!terrain === high ) return null;
+  if ( !zoned && (!!terrain === high) ) return null;
   const tiles = new Set();
   for ( const shape of region.shapes ) {
     if ( shape.type !== GRID_SHAPE ) continue;
     for ( const { i, j } of shape.offsets ?? [] ) tiles.add(`${i},${j}`);
   }
+  if ( zoned ) return { coat: "zone", value: zone, tiles };
   return high ? { coat: "elevation", value: elevation, tiles } : { coat: "terrain", value: terrain, tiles };
 }
 
@@ -67,11 +75,12 @@ function readRegion(region) {
 /**
  * The paint on a scene, and the Regions that hold it.
  * @param {Scene} scene
- * @returns {{paint: Paint, regions: {terrain: Map<string, RegionDocument[]>, elevation: Map<number, RegionDocument[]>}}}
+ * @returns {{paint: Paint, regions: {terrain: Map<string, RegionDocument[]>, elevation: Map<number, RegionDocument[]>,
+ *   zone: Map<string, RegionDocument[]>}}}
  */
 export function readPaint(scene) {
-  const paint = { terrain: new Map(), elevation: new Map() };
-  const regions = { terrain: new Map(), elevation: new Map() };
+  const paint = Object.fromEntries(COATS.map((coat) => [coat, new Map()]));
+  const regions = Object.fromEntries(COATS.map((coat) => [coat, new Map()]));
   for ( const region of scene?.regions ?? [] ) {
     const held = readRegion(region);
     if ( !held ) continue;
@@ -163,13 +172,22 @@ function gridShape(offsets) {
 /* -------------------------------------------- */
 
 /**
- * The Region that holds a kind of terrain or a height that has not been painted before.
- * @param {"terrain"|"elevation"} coat
+ * The Region that holds a kind of terrain, a height or a zone that has not been painted before.
+ * @param {"terrain"|"elevation"|"zone"} coat
  * @param {string|number} value
  * @param {Tile[]} offsets
  * @returns {object}    The data to create the Region with
  */
 function regionData(coat, value, offsets) {
+  if ( coat === "zone" ) {
+    const zone = FEO.zones[value];
+    return {
+      name: game.i18n.format("FEO.Paint.zoneRegion", { zone: game.i18n.localize(zone?.label ?? value) }),
+      color: zone?.tint ?? ELEVATION_TINT,
+      shapes: [gridShape(offsets)],
+      flags: { [FEO.id]: { [PAINTED_FLAG]: true, [ZONE_FLAG]: value } }
+    };
+  }
   const terrain = coat === "terrain";
   const label = terrain ? game.i18n.localize(FEO.terrain.types[value]?.label ?? value).split(",")[0] : null;
   return {
@@ -232,7 +250,8 @@ export async function paintScene(scene, tiles, brush) {
 
 /**
  * Lay the paint of a whole map on a scene at once, in place of whatever was painted there before: one Region
- * for each kind of terrain and each height. Regions made by hand are left as they are. Runs for a Game Master.
+ * for each kind of terrain, each height and each zone. Regions made by hand are left as they are. Runs for a
+ * Game Master.
  * @param {Scene} scene
  * @param {Paint} paint
  * @returns {Promise<boolean>}    Whether the paint was laid
@@ -243,7 +262,7 @@ export async function layPaint(scene, paint) {
   const stale = COATS.flatMap((coat) => Array.from(regions[coat].values()).flat().map((region) => region.id));
   const creates = [];
   for ( const coat of COATS ) {
-    for ( const [value, tiles] of paint[coat] ) {
+    for ( const [value, tiles] of paint[coat] ?? [] ) {
       if ( tiles.size ) creates.push(regionData(coat, value, offsetsOf(tiles)));
     }
   }

@@ -17,6 +17,7 @@
  *       quality: ["Armored"],           // the unit itself has any of these Special Qualities
  *       lacks: ["Mounted"],             // the unit itself has none of these Special Qualities
  *       skill: "Plunder",               // the unit has this skill equipped; `noSkill` when it has not
+ *       carries: "Wealth Of Power (Red Gem)",    // the unit carries a lasting change of its own by this name
  *       foeWeapon: ["magic"],           // the foe's weapon
  *       foeWeaponNot: ["blessed"],      // the foe's weapon is none of these
  *       foeQuality: ["Flying"],         // the foe has any of these Special Qualities
@@ -349,7 +350,8 @@
  *                   inflicts, heal, recover, foeCombat (for the rest of the fight), next, remind
  *   on: "miss"      each of the unit's attacks that misses: retaliate, remind
  *   on: "dodged"    each attack against the unit that misses: retaliate, next, near, attack, remind
- *   on: "kill"      the unit's attack defeats the foe: recover, remind
+ *   on: "kill"      the unit's attack defeats the foe: recover, heal (a share of the damage the killing blow
+ *                   dealt, as on an attack), remind
  *   on: "after"     once after the fight, for a unit that still stands: retaliate, inflicts, recover, remind,
  *                   canto (for the unit that started the fight)
  *
@@ -377,6 +379,7 @@
  *   {
  *     proc: { on: "turnStart", sure: true },
  *     recover: { of: "hpMax", times: 0.1 },          // HP the unit regains
+ *     gold: 5,                                       // gold the unit gains (see `earnings.mjs`)
  *     cure: ["poison"],                              // conditions the unit is cured of; "all" for every one
  *     inflicts: ["poison"],                          // conditions the unit is given; from an aura, by its giver
  *     remind: true                                  // the system only says so; "check" when the effect hangs on
@@ -506,6 +509,12 @@
  *
  * A skill that takes effect by itself a limited number of times (`usage.kind: "auto"`, see `skill-usage.mjs`)
  * counts a use each time one of its moments of a fight takes effect, and does nothing once its uses are spent.
+ *
+ * And the moment an item restores HP to its unit, `on: "itemHeal"`, is one more that is no moment of a fight
+ * or of a turn (see `items.mjs`): `sure`, or an answer whoever Uses the item `may` give before it heals. It
+ * grants a change read from `healed`, the HP the item restored, and may multiply those HP: `healTimes: 0.5`.
+ * A `consumes` part, which stands alone in its effect and is always there, has its unit use up an item of a
+ * name for a change that lasts, as Wealth Of Power does with Gems (see `items.mjs`).
  *
  * What a Special Quality builds into its unit is written the same way (Rampart, Rouse, Greed). Three parts
  * serve it:
@@ -639,6 +648,8 @@
  *                                              // "pass" and "allyHurt"
  *   rules: ["hidden"]                          // its enemies neither see nor target it, and it is not in their
  *                                              // way on the map
+ *   shelters: { who: "ally", within: 2, from: 2 }          // an enemy within 2 tiles of its unit cannot attack
+ *                                              // an ally within 2 tiles of it
  *
  * A skill used as an action lays a trap on a tile next to its unit with `act: { area, trap }`.
  *
@@ -1076,9 +1087,10 @@ import { HELD, ROOTED, UNFORCED, addShove, checkShove, checkStep, emptyShove } f
 import { addCarry, checkCarry, emptyCarry } from "./rescue.mjs";
 import { HIDDEN, checkReacts, reactOf } from "./reactions.mjs";
 import { WEATHERPROOF } from "./weather.mjs";
-import { checkGuards, checkStance, checkWards, guardOf, wardOf } from "./stances.mjs";
+import { checkGuards, checkShelters, checkStance, checkWards, guardOf, shelterOf, wardOf } from "./stances.mjs";
 import { NO_SONG, addRefresh, checkRefresh, checkRefreshes, emptyRefresh } from "./refresh.mjs";
-import { ORDERS, ROUND_MOMENT, STRIKES_ALWAYS, checkRounds } from "./rounds.mjs";
+import { FOE_FIRST, ORDERS, ROUND_MOMENT, STRIKES_ALWAYS, checkRounds } from "./rounds.mjs";
+import { ITEM_MOMENT, checkConsumes, checkItemMoment } from "./items.mjs";
 import { OUTSIDE, addTriangle, checkHandover, checkTriangle, outsideTriangle } from "./triangle.mjs";
 import { attackWith, castArm, checkLend } from "./lending.mjs";
 import { KNACK_KEYS, UNCAPTURED, UNSTOLEN, addKnacks, checkKnacks, checkLoot, emptyKnacks } from "./stealing.mjs";
@@ -1227,6 +1239,9 @@ export const RULES = [
   // What the unit's weapon strikes "when initiating combat" it strikes whoever began the fight
   STRIKES_ALWAYS,
 
+  // The unit's foe attacks first in a fight the unit starts (see `rounds.mjs`)
+  FOE_FIRST,
+
   // Nothing kills the unit outright or cuts its HP by a share, as Lethality and Bane do: an attack that would
   // deals its damage and no more
   NO_LETHALITY,
@@ -1315,7 +1330,7 @@ export const ACTION_MOMENTS = [ACTION_MOMENT];
 const BEND_KEYS = ["inflictChance", "inflictTurns", "nullify", "suffers", "recovery", "debuffs", "burstHarm"];
 
 /** The parts that say what a unit does for its side outside of its own turn (see `stances.mjs`). */
-const STANDING_KEYS = ["guards", "wards", "reacts"];
+const STANDING_KEYS = ["guards", "wards", "reacts", "shelters"];
 
 /** The moment a skill is used as an action, for what it then leaves on its unit. */
 export const USE_MOMENT = "use";
@@ -1387,9 +1402,10 @@ const LATE_MOMENTS = ["kill", "after"];
  * the weapon named Fists, `unarmed` for no weapon at all, `blessed` for a weapon whose name or Effect says it
  * is Blessed, `nonBeorc` for what Laguz, Manaketes and Taguel attack with (both set by `sacredWeapons` in the
  * configuration), `eye` for a monster's Eye weapons, told by their name (`namedWeapons`).
- * Any other word is a category by its key. The Reference Sheet names kinds of weapon the system has no
- * category for yet (`astral`, `scroll`, `magicite`, `arcanima`, `chaos`): they may be listed, and hold for
- * no weapon until there is one of that category.
+ * Any other word is a category by its key, and holds for its sub-categories too: what is for Swords is for
+ * Katanas (`kin` in `FEO.weaponCategories`), while what is for Katanas is for them alone. The Reference Sheet
+ * names kinds of weapon the system has no category for yet (`astral`, `scroll`, `magicite`, `arcanima`,
+ * `chaos`): they may be listed, and hold for no weapon until there is one of that category.
  * @param {object|null} weapon
  * @param {string[]} list
  * @returns {boolean}
@@ -1408,7 +1424,7 @@ export function weaponIs(weapon, list) {
       case "blessed": return !!weapon && new RegExp(FEO.sacredWeapons.blessed, "i").test(`${weapon.name ?? ""}\n${weapon.effect ?? ""}`);
       case "nonBeorc": return FEO.sacredWeapons.nonBeorc.includes(category);
       case "eye": return !!weapon && new RegExp(FEO.namedWeapons.eye, "i").test(String(weapon.name ?? ""));
-      default: return category === entry;
+      default: return (category === entry) || (!!config?.kin && (config.kin === entry));
     }
   });
 }
@@ -1489,9 +1505,23 @@ function anyQuality(qualities) {
  * @returns {SkillSelf}
  */
 function withSkillNames(self, skills, foeNihil = false) {
-  if ( Array.isArray(self?.skills) ) return self;
+  // The changes of its own that it carries, for a skill that asks for one by name
+  const carried = Array.isArray(self?.carried) ? self.carried : carriedBy(skills);
+  if ( Array.isArray(self?.skills) ) return Array.isArray(self.carried) ? self : { ...self, carried };
   const names = (skills ?? []).filter((skill) => !skill.aura && !skill.timed && !(foeNihil && skill.nihil)).map((skill) => skill.name);
-  return { ...self, skills: names };
+  return { ...self, skills: names, carried };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The names of the lasting changes of its own that a unit carries, read from its skills as they are handed
+ * to the rules: the entries its changes are read as (see `timedEntries` in `timed.mjs`).
+ * @param {SkillEntry[]} [skills]
+ * @returns {string[]}
+ */
+export function carriedBy(skills) {
+  return (skills ?? []).filter((skill) => skill.timed && !skill.foreign).map((skill) => skill.change ?? skill.name);
 }
 
 /* -------------------------------------------- */
@@ -1568,6 +1598,7 @@ export function holds(when, self, fight = null) {
   if ( when.lacks?.length && when.lacks.some((quality) => hasQuality(self.qualities, quality)) ) return false;
   if ( when.skill && !(self.skills ?? []).includes(when.skill) ) return false;
   if ( when.noSkill && (self.skills ?? []).includes(when.noSkill) ) return false;
+  if ( (when.carries !== undefined) && !(self.carried ?? []).includes(when.carries) ) return false;
   if ( (typeof when.waiting === "boolean") && (!!self.waiting !== when.waiting) ) return false;
   if ( (typeof when.shifted === "boolean") && (!!self.shifted !== when.shifted) ) return false;
   if ( when.noModule && FEO.optional?.[when.noModule]?.enabled ) return false;
@@ -3104,18 +3135,18 @@ export function skillKnacks(skills, self = {}) {
 
 /**
  * What a unit does for its side outside of its own turn, as its skills and the stances it is in have it (see
- * `stances.mjs` and `reactions.mjs`): every `guards`, `wards` and `reacts` part that is always there and whose
- * condition holds outside of any fight. What such a condition asks about where units stand or how the unit
+ * `stances.mjs` and `reactions.mjs`): every `guards`, `wards`, `reacts` and `shelters` part that is always
+ * there and whose condition holds outside of any fight. What such a condition asks about where units stand or how the unit
  * moved is not judged. A skill that counts its uses and has none left, or that is on cooldown, does nothing.
  * @param {SkillEntry[]} skills       The unit's equipped skills and the changes that last on it, with their
  *                                    effects as `effectsOf` reads them
  * @param {SkillSelf} [self]
  * @returns {{guard: import("./stances.mjs").Guarding[], wards: import("./stances.mjs").Warding[],
- *   reacts: import("./reactions.mjs").Reacting[]}}
+ *   reacts: import("./reactions.mjs").Reacting[], shelters: import("./stances.mjs").Sheltering[]}}
  */
 export function skillStanding(skills, self = {}) {
   self = withSkillNames(self, skills);
-  const standing = { guard: [], wards: [], reacts: [] };
+  const standing = { guard: [], wards: [], reacts: [], shelters: [] };
   for ( const skill of skills ?? [] ) {
     if ( skill.usage?.kind === "auto" ) {
       if ( (usesLeft(skill.usage, skill.state) === 0) || ((skill.state?.cooldown ?? 0) > 0) ) continue;
@@ -3133,6 +3164,8 @@ export function skillStanding(skills, self = {}) {
       if ( ward ) standing.wards.push(ward);
       const react = reactOf(effect.reacts, about);
       if ( react ) standing.reacts.push({ ...react, stance: !!skill.timed });
+      const shelter = shelterOf(effect.shelters, about);
+      if ( shelter ) standing.shelters.push(shelter);
     }
   }
   return standing;
@@ -3521,6 +3554,16 @@ export function resolveProc({ skill, effect, source = null, giver = "", giverId 
     // round fought again; and what it changes as the fight begins
     from: Number.isInteger(proc.from) ? Math.max(proc.from, 1) : 0,
     mounts: !!proc.mounts,
+
+    // Whether it waits for an attack to have landed on its unit in the fight, and the chain of attacks a hit
+    // begins: how many in a row, at what share of the Hit each comes to, and whether only for a unit that makes
+    // no follow-up attack
+    hurt: !!proc.hurt,
+    chain: (effect.chain && (typeof effect.chain === "object")) ? {
+      most: Math.max(Math.floor(Number(effect.chain.most) || 1), 1),
+      hit: Math.min(Math.max(Number(effect.chain.hit ?? 100), 0), 100) / 100,
+      lone: !!effect.chain.lone
+    } : null,
     every: Number.isInteger(proc.every) ? Math.max(proc.every, 0) : 0,
     perDamage: Number.isFinite(proc.perDamage) ? Math.max(proc.perDamage, 0) : 0,
     healthier: !!proc.healthier,
@@ -3825,11 +3868,12 @@ function curedOf(cure, conditions) {
  * @property {number} hp                      HP once the skills have healed the unit
  * @property {number} healed
  * @property {{skill: string, sure: boolean, roll: number|null, chance: number, success: boolean, recover: number,
- *   healed: number, remind: boolean|string, cured?: string[],
+ *   healed: number, remind: boolean|string, cured?: string[], gold?: number,
  *   reached?: {id: string, name: string, hpBefore: number, hp: number, healed: number}[],
  *   granted?: {unit: string|null, name: string, change: import("./timed.mjs").TimedChange}[]}[]} entries
  *           Each skill that had its moment: its roll if it made one, the HP it would restore and the HP it
- *           did, and whether its effect is left for the table. `cured` lists the conditions it cures the unit
+ *           did, and whether its effect is left for the table. `gold` is the gold it gives its unit, before
+ *           what a map allows of it is counted (see `earnings.mjs`). `cured` lists the conditions it cures the unit
  *           of; `reached` lists the units around that it
  *           reached instead of its own, with the HP each regains; `granted` the changes that last a while
  *           which it grants, each for the unit itself (`unit: null`) or for one of the units around
@@ -3920,6 +3964,12 @@ export function turnMoment(skills, self, moment, d100, { activation = 0, always 
             ...(written.push ? { push: { spaces: written.push.spaces ?? 1, blocked: written.push.blocked ?? 0 } } : {})
           };
         }
+      }
+
+      // Gold it gives its unit, as Income does: what hangs on something the system cannot see gives none.
+      // It is told even where it comes to nothing, as for a unit that did not move
+      if ( (effect.gold !== undefined) && (remind !== "check") && !effect.reach ) {
+        entry.gold = Math.max(Math.floor(amount(effect.gold, { ...self, hp })), 0);
       }
 
       // Conditions the unit is cured of
@@ -4082,13 +4132,13 @@ export function unaccounted({ effect = "", effects = [], boost = false, usage = 
  */
 export function checkEffects(effects) {
   const problems = [];
-  const known = ["choice", "when", "stats", "abilities", "statPercent", "combat", "might", "taken", "takenPercent", "hpMax", "calc",
+  const known = ["consumes", "choice", "when", "stats", "abilities", "statPercent", "combat", "might", "taken", "takenPercent", "hpMax", "calc",
     "rules", "effective", "effectiveMultiplier", "damageMultiplier", "ignoreDefence", "strikes", "extraAttack", "scale",
     "foeActivation", "endurance", "haste", "mirrorCrit", "critMultiplier", "slots", "capacity", "artCost", "dealtPercent", "aura", "expMultiplier", "bexp", "staffExp", "growths",
     "weaponRange", "damageStat", "foeWear", "wield", "rank", "shift", "form", "warp", "foeStats", "stars", "firstMight", "crossing", "passing", "canto", "curbsCanto",
     "shove", "act", "carry", "refresh", "block", "lostOnBlock", "weaponUse", "trade", "spend", "single", "noWeight", "against", "hitCap", "foeBonus",
     "cooldowns", "rearm", "speedLead", "triangle", "handover", "uneffective", "effectiveTaken", "combatTimes", "foeCombat", "echo", "statTimes", "until", "firstAttack", "critFloor", "assures", "lend", "creatures", "imitation", "bonuses", ...KNACK_KEYS, ...STANDING_KEYS, ...BEND_KEYS, ...STAFF_KEYS];
-  const procParts = ["sureCrit", "forfeit", "nextOfNegated", "keep", "pays", "unblock", "blockLess", "blockTimes", "wears", "noBlock", "cancels", "excess", "again", "order", "cuts", "stat",
+  const procParts = ["sureCrit", "forfeit", "nextOfNegated", "keep", "pays", "unblock", "blockLess", "blockTimes", "wears", "noBlock", "cancels", "excess", "again", "order", "cuts", "stat", "chain", "healTimes",
     "damage", "damagePercent", "damageOfFoeHp", "healPlus", "statTimes", "ignore", "hit", "critical", "heal", "sureHit", "inflicts",
     "sequence", "oneUse", "negate", "reduce", "reflect", "retaliate", "resist", "inflictsAttacker", "survive", "foeCombat",
     "next", "nextOfDamage", "near", "nonlethal", "recover", "attack", "remind", "damaged", "ifHit", "ifStruck", "end", "reach", "grant",
@@ -4109,7 +4159,7 @@ export function checkEffects(effects) {
   const using = (effect) => effect?.proc?.on === USE_MOMENT;
   const sequenceParts = ["damage", "damagePercent", "damageMultiplier", "statTimes", "ignore", "hit", "critical", "heal",
     "sureHit", "sureCrit", "inflicts", "share", "end", "noBlock", "asCrit", "effective", "against", "might", "stat"];
-  const conditions = ["shield", "hp", "weapon", "weaponNot", "weaponSlays", "quality", "lacks", "skill", "noSkill", "waiting", "shifted", "declared", "early", "near", "terrain", "standsOn", "noModule", "module", "tier",
+  const conditions = ["shield", "hp", "weapon", "weaponNot", "weaponSlays", "quality", "lacks", "skill", "noSkill", "carries", "waiting", "shifted", "declared", "early", "near", "terrain", "standsOn", "noModule", "module", "tier",
     "gender", "bestRank", "weaponReach", "lasting", "equal", "over", "dismounted", ...CLOCK_KEYS, ...MOVE_KEYS, ...FIGHT_KEYS];
   const ops = ["le", "lt", "ge", "gt", "full", "notFull"];
   const filterParts = ["who", "within", "from", "quality", "class", "min", "max", "carries", "marked", "sees", "seen"];
@@ -4701,7 +4751,7 @@ export function checkEffects(effects) {
 
     // What a unit does for its side outside of its own turn: always there, and judged outside of any fight.
     // What its unit has for a fight it fights that way is written as any effect is
-    for ( const [key, check] of [["guards", checkGuards], ["wards", checkWards], ["reacts", checkReacts]] ) {
+    for ( const [key, check] of [["guards", checkGuards], ["wards", checkWards], ["reacts", checkReacts], ["shelters", checkShelters]] ) {
       if ( effect?.[key] === undefined ) continue;
       if ( proc || effect.aura ) problems.push(`${at}: "${key}" is always there, not at a moment or as an aura`);
       if ( needsFight(effect.when) || asksPlace(effect.when) || needsMove(effect) ) {
@@ -4953,9 +5003,21 @@ export function checkEffects(effects) {
     }
     if ( proc ) {
       if ( !PROC_TRIGGERS.includes(proc.on) && !TURN_MOMENTS.includes(proc.on) && !LEVEL_MOMENTS.includes(proc.on) && !STAFF_MOMENTS.includes(proc.on)
-        && !ACTION_MOMENTS.includes(proc.on) && (proc.on !== USE_MOMENT) ) {
+        && !ACTION_MOMENTS.includes(proc.on) && (proc.on !== USE_MOMENT) && (proc.on !== ITEM_MOMENT) ) {
         problems.push(`${at}: unknown trigger "${proc.on}"`);
       }
+
+      // An item that restores HP to its unit only knows a few things to do (see `items.mjs`)
+      for ( const problem of checkItemMoment(effect) ) problems.push(`${at}: ${problem}`);
+    }
+
+    // An item its unit uses up for something that lasts (see `items.mjs`), and the change of its own a
+    // condition asks its unit to carry
+    for ( const problem of checkConsumes(effect, checkEffects) ) problems.push(`${at}: ${problem}`);
+    if ( (effect?.when?.carries !== undefined) && ((typeof effect.when.carries !== "string") || !effect.when.carries) ) {
+      problems.push(`${at}: "carries" names the lasting change its unit must carry`);
+    }
+    if ( proc ) {
 
       // A skill being used as an action leaves a change on its unit, or does something to the units around,
       // and nothing else
@@ -5177,7 +5239,8 @@ export function checkEffects(effects) {
       if ( ("returns" in effect) && ((proc.on !== "afflicted") || !Number.isInteger(effect.returns) || (effect.returns < 1)) ) {
         problems.push(`${at}: a condition is handed back when "afflicted", for a whole number of turns`);
       }
-      if ( ("gold" in effect) && !levelling(effect) && (proc.on !== "kill") ) problems.push(`${at}: gold is gained on a "kill" or at a "levelUp"`);
+      if ( ("gold" in effect) && !levelling(effect) && (proc.on !== "kill") && !TURN_MOMENTS.includes(proc.on) ) problems.push(`${at}: gold is gained on a "kill", at a "levelUp" or at a moment of a turn`);
+      if ( ("gold" in effect) && TURN_MOMENTS.includes(proc.on) && (effect.aura || effect.reach) ) problems.push(`${at}: gold at a moment of a turn is for the skill's own unit`);
       for ( const key of [...Object.keys(effect.next ?? {}), ...Object.keys(effect.nextOfDamage ?? {}), ...Object.keys(effect.near?.next ?? {})] ) {
         if ( !nextParts.includes(key) ) problems.push(`${at}: the next attack cannot gain "${key}"`);
       }

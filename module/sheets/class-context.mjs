@@ -399,7 +399,9 @@ export function buildReclassDialog(unit, from, lines, { known = null } = {}) {
 /* -------------------------------------------- */
 
 /**
- * Build the chat card that lists everything a change did to a unit.
+ * Build the chat card that lists everything a change did to a unit. A row that has something to show on the
+ * card itself says it in a word or two (`chip`): the card shows those, and the rows in full are kept for the
+ * window that opens when it is inspected (see `helpers/chat-context.mjs`).
  * @param {ClassChange} change
  * @param {Localizer} i18n
  * @param {object} [options]
@@ -417,7 +419,11 @@ export function buildChangeCard(change, i18n, { title, subtitle, blank = [], not
   };
 
   const general = [];
-  if ( change.level ) general.push({ label: i18n.localize("FEO.Unit.level"), value: arrow(change.level.from, change.level.to) });
+  if ( change.level ) general.push({
+    label: i18n.localize("FEO.Unit.level"),
+    value: arrow(change.level.from, change.level.to),
+    chip: { label: i18n.localize("FEO.Unit.level"), value: String(change.level.to) }
+  });
   if ( change.weight ) {
     general.push({ label: i18n.localize("FEO.Unit.classWt"), value: arrow(change.weight.from, change.weight.to) });
   }
@@ -428,7 +434,8 @@ export function buildChangeCard(change, i18n, { title, subtitle, blank = [], not
       value: swapped
         ? arrow(change.qualities.from || "–", change.qualities.to || "–")
         : i18n.format("FEO.Class.card.added", { names: change.qualities.added.join(", ") }),
-      cls: swapped ? "" : "good"
+      cls: swapped ? "" : "good",
+      chip: { label: swapped ? (change.qualities.to || "–") : change.qualities.added.join(", "), value: "" }
     });
   }
   group("FEO.Class.card.general", general);
@@ -437,7 +444,8 @@ export function buildChangeCard(change, i18n, { title, subtitle, blank = [], not
   const statRow = (key, from, to) => ({
     label: i18n.localize(statAbbr(key)),
     value: `${arrow(from, to)} (${signed(to - from)})`,
-    cls: to > from ? "good" : to < from ? "bad" : ""
+    cls: to > from ? "good" : to < from ? "bad" : "",
+    chip: (to === from) ? null : { label: i18n.localize(statAbbr(key)), value: signed(to - from) }
   });
   if ( change.hpMax ) stats.push(statRow("hp", change.hpMax.from, change.hpMax.to));
   for ( const stat of change.stats ) stats.push(statRow(stat.key, stat.from, stat.to));
@@ -448,7 +456,8 @@ export function buildChangeCard(change, i18n, { title, subtitle, blank = [], not
     value: ["raised", "lowered"].includes(proficiency.reason)
       ? arrow(i18n.localize(FEO.ranks[proficiency.from]), i18n.localize(FEO.ranks[proficiency.to]))
       : i18n.format("FEO.Class.card.newRank", { rank: i18n.localize(FEO.ranks[proficiency.to]) }),
-    cls: proficiency.reason === "raised" ? "" : (proficiency.reason === "lowered" ? "bad" : "good")
+    cls: proficiency.reason === "raised" ? "" : (proficiency.reason === "lowered" ? "bad" : "good"),
+    chip: { label: i18n.localize(FEO.proficiencies[proficiency.key]), value: i18n.localize(FEO.ranks[proficiency.to]) }
   })));
 
   group("FEO.Class.card.growths", change.growths.map((growth) => ({
@@ -460,13 +469,19 @@ export function buildChangeCard(change, i18n, { title, subtitle, blank = [], not
   const skills = change.skills.map((skill) => ({
     label: i18n.localize(FEO.skillKinds[skill.kind] ?? FEO.skillKinds.class),
     value: skill.name,
-    cls: "good"
+    cls: "good",
+    chip: { label: skill.name, value: "" }
   }));
   if ( change.genericSkill ) {
     skills.push({ label: i18n.localize("FEO.SkillKind.generic"), value: i18n.localize("FEO.Class.card.genericChoice") });
   }
   const forgets = change.forgets ?? [];
-  for ( const name of forgets ) skills.push({ label: i18n.localize("FEO.Class.card.givenUp"), value: name, cls: "bad" });
+  for ( const name of forgets ) skills.push({
+    label: i18n.localize("FEO.Class.card.givenUp"),
+    value: name,
+    cls: "bad",
+    chip: { label: name, value: "" }
+  });
   group("FEO.Section.skills", skills);
 
   const foot = [...notes];

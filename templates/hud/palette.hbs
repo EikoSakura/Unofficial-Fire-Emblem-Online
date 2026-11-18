@@ -1,6 +1,6 @@
 <div class="hud-slot hud-palette">
   {{#with palette}}
-  <section class="hud-panel palette {{#if erase}}erasing{{/if}} {{#if placing}}placing{{/if}}" aria-label="{{localize "FEO.Paint.label"}}">
+  <section class="hud-panel palette {{#if erase}}erasing{{/if}} {{#if placing}}placing{{/if}} {{#if zoning}}zoning{{/if}}" aria-label="{{localize "FEO.Paint.label"}}">
     <header class="pl-head"><span class="eyebrow">{{localize "FEO.Paint.label"}}</span><b>{{#if holds}}{{holds}}{{else}}{{summary}}{{/if}}</b></header>
     <div class="pl-swatches" role="group" aria-label="{{localize "FEO.Terrain.label"}}">
       {{#each swatches as |swatch|}}
@@ -20,6 +20,13 @@
       {{#each objects as |object|}}
       <button type="button" class="pl-object {{#if object.on}}on{{/if}}" data-action="brush" data-object="{{object.key}}"
               data-tooltip="{{object.tip}}" aria-pressed="{{object.on}}">{{feoIcon object.icon}}{{object.label}}</button>
+      {{/each}}
+    </div>
+    <div class="pl-zones" role="group" aria-label="{{localize "FEO.Paint.zones"}}">
+      <span class="eyebrow">{{localize "FEO.Paint.zones"}}</span>
+      {{#each zones as |zone|}}
+      <button type="button" class="pl-zone {{#if zone.on}}on{{/if}}" data-action="brush" data-zone="{{zone.key}}" style="--tint: {{zone.tint}}"
+              data-tooltip="{{zone.tip}}" aria-pressed="{{zone.on}}">{{feoIcon zone.icon}}{{zone.label}}</button>
       {{/each}}
     </div>
     <div class="pl-foot">

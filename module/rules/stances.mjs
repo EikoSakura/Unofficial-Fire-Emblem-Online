@@ -52,6 +52,16 @@
  * A skill that wards counts its uses and its cooldown as one that takes effect by itself does
  * (`usage.kind: "auto"`): each answer taken is a use.
  *
+ * And a unit shelters the allies around it with a `shelters` part, which is always there as well and says
+ * nothing of a fight: an enemy that stands near its unit attacks none of them from there, which the map sees
+ * to as it offers targets and tiles to attack from:
+ *
+ *   { when: { hp: { op: "lt", percent: 50 } }, shelters: { who: "ally", within: 2, from: 2 } }
+ *                                                // while its unit is below half its HP: an enemy within 2
+ *                                                // tiles of it cannot attack an ally within 2 tiles of it.
+ *                                                // The unit itself can be attacked, and so can those allies
+ *                                                // from further away than `from`
+ *
  * @import {Tile} from "./reach.mjs"
  */
 import { FEO } from "../config.mjs";
@@ -69,6 +79,9 @@ export const STANCE_PARTS = ["state", "until", "on", "mark"];
 /** What a `guards` part can say, and a `wards` part. */
 export const GUARD_PARTS = ["who", "within", "may", "swap", "effects", "through", "self", "only"];
 export const WARD_PARTS = ["who", "within", "takes", "negate", "returns", "heavy"];
+
+/** What a `shelters` part can say. */
+export const SHELTER_PARTS = ["who", "within", "from"];
 
 /** The point of a fight at which a unit outside it may take a hit meant for an ally, or turn it back. */
 export const BLOW = "blow";
@@ -445,6 +458,73 @@ export function wardOf(part, { skill = "", id = "" } = {}) {
     returns: Math.min(Math.max(Number(part.returns) || 0, 0), 1000),
     heavy: Math.min(Math.max(Number(part.heavy) || 0, 0), 100)
   };
+}
+
+/* -------------------------------------------- */
+/*  Sheltering the Allies Around                */
+/* -------------------------------------------- */
+
+/**
+ * @typedef Sheltering
+ * One way a unit has of keeping the enemies near it from attacking the allies around it.
+ * @property {string} skill           The skill, or the stance, it comes from
+ * @property {string} [id]            The skill Item, where there is one
+ * @property {number} within          How near to the unit an ally must stand to be sheltered
+ * @property {number} from            How near to the unit an enemy must stand to be kept from attacking it
+ */
+
+/**
+ * One `shelters` part as the rules keep it.
+ * @param {object} part
+ * @param {object} [about]
+ * @param {string} [about.skill]      The skill it comes from
+ * @param {string} [about.id]         That skill's Item
+ * @returns {Sheltering|null}         Null for a part that shelters nobody
+ */
+export function shelterOf(part, { skill = "", id = "" } = {}) {
+  if ( !part || (typeof part !== "object") ) return null;
+  const within = Math.max(Math.floor(Number(part.within) || 1), 1);
+  return { skill, id, within, from: Math.max(Math.floor(Number(part.from) || within), 1) };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Check a `shelters` part for what the rules do not know.
+ * @param {any} part
+ * @returns {string[]}
+ */
+export function checkShelters(part) {
+  const problems = [];
+  if ( !part || (typeof part !== "object") || Array.isArray(part) ) return ['"shelters" says which allies its unit shelters'];
+  for ( const key of Object.keys(part) ) if ( !SHELTER_PARTS.includes(key) ) problems.push(`shelters cannot say "${key}"`);
+  if ( part.who !== "ally" ) problems.push('shelters: a unit shelters an "ally"');
+  for ( const key of ["within", "from"] ) {
+    if ( (part[key] !== undefined) && !(Number.isInteger(part[key]) && (part[key] >= 1)) ) problems.push(`shelters: "${key}" is a number of tiles`);
+  }
+  return problems;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The unit that keeps another from being attacked from a tile, if one does: a unit of the target's side whose
+ * skill shelters the allies around it, with the target near enough to it and the tile near enough as well.
+ * @param {{tile: Tile, name?: string, shelters: Sheltering[]}[]} guards    The units of the target's side that
+ *                                      shelter their allies and still stand, the target itself left out
+ * @param {Tile} target                 The tile of the unit that would be attacked
+ * @param {Tile} from                   The tile it would be attacked from
+ * @returns {{name: string, skill: string}|null}
+ */
+export function shelteredFrom(guards, target, from) {
+  for ( const guard of guards ?? [] ) {
+    for ( const shelter of guard.shelters ?? [] ) {
+      if ( (tilesApart(guard.tile, target) <= shelter.within) && (tilesApart(guard.tile, from) <= shelter.from) ) {
+        return { name: guard.name ?? "", skill: shelter.skill };
+      }
+    }
+  }
+  return null;
 }
 
 /* -------------------------------------------- */

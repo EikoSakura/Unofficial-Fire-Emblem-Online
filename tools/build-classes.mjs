@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Builds the class compendium (packs/classes) from the Class Sheet, with any hand-kept classes in
- * packs-src/classes laid over it.
+ * packs-src/classes laid over it, and the classes of the Optional Content Sheet that
+ * packs-src/optional-content.json lists.
  *
  * Usage:
  *   node tools/build-classes.mjs [--foundry <path>] [--json <file>] [--check] [--out <folder>] [--quiet]
@@ -104,7 +105,7 @@ for ( const [kind, examples] of read.oddities ) {
  */
 const classes = read.classes.map((entry) => ({
   entry,
-  source: `Class Sheet, ${entry.tab} tab, row ${entry.row}`,
+  source: entry.source ?? `Class Sheet, ${entry.tab} tab, row ${entry.row}`,
   id: stableId(PACK, `${entry.cell}.${entry.name}`),
   handKept: false
 }));
@@ -316,6 +317,12 @@ function promotion(entry, name) {
     report.count("Promotions", "names that cover several classes, each linked", `${where} to ${name}`);
     return name.split("/").flatMap((part) => promotion(entry, part.trim()));
   }
+  // A class of the Optional Content Sheet promotes into those of its line that are in the game: one that
+  // is not on the list is left out, and is linked as soon as it is listed
+  if ( !found.length && entry.optional ) {
+    report.count("Optional Content", "promotions into classes that are not in the game, left out", `${where} to ${name}`);
+    return [];
+  }
   if ( !found.length ) {
     const elsewhere = classes.filter(({ entry: other }) => sameClass(other.name, name));
     const why = elsewhere.length
@@ -352,6 +359,11 @@ const HEAD = "equipment/head";
 
 /** Pools for what a class's name, Special Qualities and proficiencies say about it. The first match wins. */
 const SHAPES = [
+  // The lines of the Optional Content Sheet: warriors taken by spirits, demon-blooded brutes, foot soldiers
+  [/^(rei|hitokiri) \|/i, [...from("creatures/magical", /^spirit-undead-(masked|horned)/), ...from("magic/death", /^undead-ghost-(scream|strike)/)]],
+  [/^(oni savage|yokai|shugoki) \|/i, [...from(HEAD, /^mask-(horned|carved-(face|gargoyle|scream))/), ...from("weapons/clubs", /^club-(heavy-barbed|barbed-skull|spiked)/)]],
+  [/^(merchant|profiteer|tycoon) \|/i, [...from("commodities/currency", /^coins-(plain|crown|gold|assorted-mix-copper-silver-gold)/), ...from("skills/social", /trading-justice/)]],
+  [/^ashigaru \|/i, [...from("skills/melee", /katana/), ...from("weapons/polearms", /^spear-(simple|flared|hooked)/)]],
   [/manakete|dragon|wyvern|wyrm|nidhogg|drake/i, [...from("creatures/reptiles", /dragon|serpent/), ...from("creatures/abilities", /dragon/)]],
   [/heron|raven|hawk/i, from("creatures/birds", /corvid|raptor|songbird|dove/)],
   [/\bcat\b|tiger|\bwolf|taguel|fauskin|beaskin/i, [...from("creatures/mammals", /cat|wolf|fox|rabbit/), ...from("creatures/abilities", /cougar|wolf|lion|paw/)]],
@@ -466,8 +478,11 @@ const documents = classes.map(({ entry, source, id }, index) => {
 
 problems.push(...validate(foundry, documents, folders, (path) => library.exists(path)));
 
-report.add("Totals", `${documents.length} classes in ${folders.length} folders: ${read.classes.length} read from the Class Sheet, `
-  + `${classes.filter((entry) => entry.handKept).length} of them hand-kept in packs-src/classes.`);
+const optionalCount = read.classes.filter((entry) => entry.optional).length;
+report.add("Totals", `${documents.length} classes in ${folders.length} folders: ${read.classes.length - optionalCount} read from the Class Sheet, `
+  + `${classes.filter((entry) => entry.handKept).length} of them hand-kept in packs-src/classes`
+  + `${optionalCount ? `, and ${optionalCount} from the Optional Content Sheet` : ""}.`);
+for ( const entry of read.classes.filter((other) => other.optional) ) report.count("Optional Content", "classes of the Optional Content Sheet that are in the game", `${entry.name} (${entry.tier})`);
 for ( const folder of folders ) {
   const path = [...folderIds].find(([, id]) => id === folder._id)[0];
   const inside = [...folderCounts].filter(([key]) => (key === path) || key.startsWith(`${path} / `)).reduce((sum, [, count]) => sum + count, 0);

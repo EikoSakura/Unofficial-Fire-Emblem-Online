@@ -959,3 +959,7 @@ dark-breath	monster-dark-breath	Dark Breath	Monster Weapons	icons/magic/death/pr
 evil-breath	monster-evil-breath	Evil Breath	Monster Weapons	icons/magic/death/projectile-skull-fire-green.webp
 corrupt-breath	monster-corrupt-breath	Corrupt Breath	Monster Weapons	icons/magic/acid/projectile-glowing-bubbles.webp
 demon-breath	monster-demon-breath	Demon Breath	Monster Weapons	icons/magic/death/projectile-skull-fire-purple.webp
+bronze-katana	katana-bronze-katana	Bronze Katana	Katanas	icons/weapons/swords/sword-katana-tan.webp
+akuma	katana-akuma	Akuma	Katanas	icons/weapons/swords/sword-katana-purple.webp
+iron-katana	katana-iron-katana	Iron Katana	Katanas	icons/weapons/swords/sword-katana-tan.webp
+kotetsu	katana-kotetsu	Kotetsu	Katanas	icons/weapons/swords/sword-katana-purple.webp

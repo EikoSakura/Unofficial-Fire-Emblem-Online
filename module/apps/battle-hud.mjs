@@ -37,7 +37,7 @@ import {
 } from "../helpers/phases.mjs";
 import { layTilesOf, layTrapItem, trapItemOf, warpTilesFor } from "../helpers/traps.mjs";
 import { staffAreaOf, staffMarksOf, staffObjectsOf, staffPlanOf, staffTakesOf, staffTargetsOf, staffTilesOf, staffWhy } from "../helpers/staves.mjs";
-import { registerGround, tileGround } from "../helpers/terrain.mjs";
+import { DEPLOY_ZONE, registerGround, tileGround } from "../helpers/terrain.mjs";
 import { buildWeather, pickWeather, registerWeather } from "../helpers/weather.mjs";
 import { buildMapAffinity, pickMapAffinity, registerMapAffinity } from "../helpers/map-affinity.mjs";
 import { staffWarpAllows, staffWarpOf, staffWarpTilesOf, warpToken } from "../helpers/warp.mjs";
@@ -53,7 +53,7 @@ import { passCost } from "../rules/terrain.mjs";
 import { staffWarpChosen, warpOf } from "../rules/warp.mjs";
 import UnitSheet from "../sheets/unit-sheet.mjs";
 import {
-  buildDock, buildHover, buildHudForecast, buildPalette, buildPhase, buildSplash, buildTerrain
+  buildDock, buildHover, buildHudForecast, buildPalette, buildPhase, buildSplash, buildTerrain, placeForecast
 } from "./battle-hud-context.mjs";
 import { clearSplash, playSplash } from "./phase-splash.mjs";
 
@@ -235,6 +235,13 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
    */
   #forecast = null;
 
+  /**
+   * Where the forecast was last set on the screen, and what that was worked out for, so that it stays put while
+   * the pointer tries the tiles the attack could be made from.
+   * @type {{key: string, style: string}|null}
+   */
+  #forecastSpot = null;
+
   /** Is something being done that must finish before the next click counts? */
   #busy = false;
 
@@ -362,6 +369,19 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
         const grid = token.parent?.grid;
         if ( (token.actor?.type !== "unit") || !grid?.isSquare ) return;
         if ( movedByClick(token) ) return false;
+
+        // Until a battle begins a player sets their units up inside the deployment zone: one that stands in
+        // it goes to another of its tiles and nowhere else. The Game Master puts a unit where they please
+        if ( !game.user.isGM && move.destination && !battle() ) {
+          const from = tokenTile(token);
+          const to = grid.getOffset({ x: move.destination.x + (grid.sizeX / 2), y: move.destination.y + (grid.sizeY / 2) });
+          const leaves = from && (tileGround(token.parent, from).zone === DEPLOY_ZONE)
+            && (tileGround(token.parent, to).zone !== DEPLOY_ZONE);
+          if ( leaves ) {
+            ui.notifications.warn(game.i18n.format("FEO.Zone.deploy.held", { name: token.name || token.actor.name }));
+            return false;
+          }
+        }
 
         // Out of a battle a unit is dragged as any token is. Foundry cuts its path short where the ground
         // cannot be crossed, which would leave it standing between two tiles: it stays where it was instead
@@ -494,7 +514,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
 
   /**
    * Paint the grid: where the selected unit can go and strike, the threat of a unit that is not acting, and
-   * the path of the move being considered.
+   * the way a unit would be shoved or carried by a skill.
    */
   #paint() {
     const view = this.#view;
@@ -630,15 +650,13 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       for ( const key of view.reach.stops ) if ( !(view.moved && view.strikes.has(key)) ) paint.move.push(key);
       for ( const key of view.strikes ) if ( view.moved || !view.reach.stops.has(key) ) strikes.push(key);
 
-      // The path of a move, from where the unit stands: to the tile an attack would be made from, or to the
-      // tile under the pointer
+      // Where a move would end: the tile an attack would be made from, or the tile under the pointer. No line
+      // is drawn to it; what the move would do to the units along its way is shown over each of them before
+      // it is made
       const hover = this.#hoverTile;
       const goal = this.#forecast?.moves ? this.#forecast.from.tile
         : (hover && view.reach.stops.has(tileKey(hover)) && !this.#forecast) ? hover
         : null;
-      if ( goal ) paint.path = [view.standing, ...wayBetween(view.reach, view.standing, goal)];
-
-      // What the move would do to the units along its way is shown over each of them before it is made
       if ( goal && !view.fixed ) paint.marks = this.#harmMarks(goal);
 
       // And the further units the attack being forecast would strike, as a skill has it reach more tiles than
@@ -1178,7 +1196,6 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     if ( !forecast || !token ) return null;
     // The unit that is fought, which is another than the one that was clicked where a unit stands guard for it
     const target = forecast.fought ?? forecast.target;
-    const middle = canvas.clientCoordinatesFromCanvas(forecast.target.center);
     const name = (unit) => unit.document.name || unit.actor.name;
 
     // A weapon a skill lends the unit is shown with its own picture, marked with that of the skill
@@ -1225,10 +1242,65 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       ...built,
       notes: [...guards, ...(built.notes ?? [])],
 
-      // The panel opens on the side of the map away from the fight
-      side: middle.x > (window.innerWidth / 2) ? "left" : "right",
+      style: this.#forecastStyle(forecast, token),
       busy: this.#busy
     };
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Where the forecast stands on the screen: in the middle, between the Phase banner and the dock, and clear
+   * of the units of the fight where one of them is there (see `placeForecast`).
+   * @param {object} forecast     The attack being forecast
+   * @param {Token} token         The selected unit's token
+   * @returns {string}            The style that sets the panel there
+   */
+  #forecastStyle(forecast, token) {
+    // It is worked out again for another foe, another tile chosen to attack from, or another view of the map
+    const stage = canvas.stage;
+    const key = [
+      token.id, forecast.target.id, forecast.pick ? tileKey(forecast.pick) : "",
+      Math.round(stage.pivot.x), Math.round(stage.pivot.y), stage.scale.x.toFixed(3), window.innerWidth, window.innerHeight
+    ].join("|");
+    if ( this.#forecastSpot?.key === key ) return this.#forecastSpot.style;
+    const style = this.#placeForecast(forecast, token);
+    this.#forecastSpot = { key, style };
+    return style;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Work out where the forecast stands, from where the units of the fight are on the screen.
+   * @param {object} forecast
+   * @param {Token} token
+   * @returns {string}
+   */
+  #placeForecast(forecast, token) {
+    const box = (corner, size) => {
+      const from = canvas.clientCoordinatesFromCanvas(corner);
+      const to = canvas.clientCoordinatesFromCanvas({ x: corner.x + size.w, y: corner.y + size.h });
+      return { left: from.x, top: from.y, right: to.x, bottom: to.y };
+    };
+
+    // The units of the fight: the two that fight, the one that was clicked, and the tile the attack is made from
+    const units = new Set([token, forecast.target, forecast.fought ?? forecast.target]);
+    const boxes = [...units].filter((unit) => unit && !unit.destroyed).map((unit) => box(unit, unit));
+    if ( forecast.moves ) boxes.push(box(canvas.grid.getTopLeftPoint(forecast.from.tile), token));
+
+    // The room between the banner and the dock, and the panel as it was last drawn
+    const drawn = this.element?.querySelector(".fc")?.getBoundingClientRect();
+    const dock = this.element?.querySelector(".dock")?.getBoundingClientRect();
+    const bottom = dock?.height ? dock.top - 12 : window.innerHeight - 250;
+    const placed = placeForecast(
+      { width: window.innerWidth, top: 104, bottom },
+      { width: drawn?.width || 286, height: drawn?.height || 340 },
+      boxes
+    );
+    if ( placed.anchor === "above" ) return `bottom:${window.innerHeight - placed.at}px`;
+    if ( placed.anchor === "below" ) return `top:${placed.at}px`;
+    return `top:${placed.at}px;translate:-50% -50%`;
   }
 
   /* -------------------------------------------- */
@@ -1439,7 +1511,16 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     const mine = this.#token;
     if ( !mine || (token === mine) || (token.actor?.type !== "unit") ) return null;
     const bar = targetBar(mine.actor, mine.document, token.actor, token.document);
-    return (bar?.key === "FEO.Act.provoked") ? bar : null;
+    if ( bar?.key === "FEO.Act.provoked" ) return bar;
+
+    // A unit that an ally near it shelters: where that alone keeps the selected unit from attacking it from
+    // every tile it could attack from, a click on it says so
+    const view = this.#view;
+    if ( !view?.range || view.range.staff || attackFrom(view, token.document) ) return null;
+    const open = attackFrom(view, token.document, { unsheltered: true });
+    if ( !open ) return null;
+    const sheltered = targetBar(mine.actor, mine.document, token.actor, token.document, { attack: true, from: open.tile });
+    return (sheltered?.key === "FEO.Act.sheltered") ? sheltered : null;
   }
 
   /* -------------------------------------------- */
@@ -1871,7 +1952,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
-   * Walk the selected unit from where it stands to a tile of its reach, by the way the arrow shows.
+   * Walk the selected unit from where it stands to a tile of its reach, by the shortest way there.
    * @param {{i: number, j: number}} tile
    * @returns {Promise<boolean|"halted">}   Whether it arrived; "halted" where its move was ended on the way,
    *                                        or a unit it did not see kept it from going further
@@ -3439,19 +3520,22 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
-   * Something was picked on the palette of the terrain brush: a kind of terrain, a height, or the eraser.
-   * Picking a kind of terrain or a height puts the eraser down.
+   * Something was picked on the palette of the terrain brush: a kind of terrain, a height, a zone, or the
+   * eraser. Picking a kind of terrain or a height puts the eraser down.
    * @this {BattleHud}
    */
   static #onBrush(event, target) {
-    const { terrain, elevation, erase, object } = target.dataset;
+    const { terrain, elevation, erase, object, zone } = target.dataset;
     const brush = mapTools.brush;
 
     // A door, a chest or a Village takes the place of the paint, and is put down by picking it again
-    if ( object !== undefined ) Object.assign(brush, { object: (brush.object === object) ? null : object, erase: false });
+    if ( object !== undefined ) Object.assign(brush, { object: (brush.object === object) ? null : object, erase: false, zone: null });
+
+    // So does a zone, which the eraser then takes off without touching the ground under it
+    else if ( zone !== undefined ) Object.assign(brush, { zone: (brush.zone === zone) ? null : zone, erase: false, object: null });
     else if ( erase !== undefined ) Object.assign(brush, { erase: !brush.erase, object: null });
-    else if ( terrain !== undefined ) Object.assign(brush, { terrain: terrain || null, erase: false, object: null });
-    else if ( elevation !== undefined ) Object.assign(brush, { elevation: elevation === "" ? null : Number(elevation), erase: false, object: null });
+    else if ( terrain !== undefined ) Object.assign(brush, { terrain: terrain || null, erase: false, object: null, zone: null });
+    else if ( elevation !== undefined ) Object.assign(brush, { elevation: elevation === "" ? null : Number(elevation), erase: false, object: null, zone: null });
     this.refresh({ parts: ["palette"] });
   }
 

@@ -6,13 +6,21 @@
  * A block whose stats are plain numbers is a class a unit starts in; one whose stats are written "+2" or "-" is
  * a class a unit is promoted into. A cell with only a short line of text is a heading, and a long one is a note:
  * for the heading above it, for the classes that start on the next row, or for the class it follows.
+ *
+ * The "Classes" tab of the Optional Content Sheet is laid out the same way. Of it only the classes that are in
+ * the game are read (those listed in packs-src/optional-content.json, each by the cell its block starts at),
+ * with the stat caps and the explanations of starred stats that its cells carry as notes.
  */
 
-import { readWorkbook, columnName } from "./xlsx.mjs";
-import { CLASS_SHEET, isBlank, oneLine, wholeNumber } from "./pack.mjs";
+import { readWorkbook, columnIndex, columnName } from "./xlsx.mjs";
+import { CLASS_SHEET, OPTIONAL_SHEET, isBlank, oneLine, readOptionalList, wholeNumber } from "./pack.mjs";
 import { writtenFirstRank } from "../../module/rules/classes.mjs";
 
 const BLOCK_STARTS = [0, 7, 14];
+
+/** The tab of the Optional Content Sheet that lists classes, and the folder its classes are kept in. */
+export const OPTIONAL_TAB = "Classes";
+export const OPTIONAL_FOLDER = "Optional Content";
 const STAT_ROWS = [["hp", "res", "mov"], ["str", "dex", "con"], ["mag", "spd", "los"], ["def", "luk", "wt"]];
 const STAT_LABELS = { hp: "HP", res: "RES", mov: "MOV", str: "STR", dex: "DEX", con: "CON", mag: "MAG", spd: "SPD", los: "LoS", def: "DEF", luk: "LUK", wt: "WT" };
 
@@ -31,7 +39,8 @@ const ANIMA = ["fire", "thunder", "wind", "water", "earth"];
 const MAGIC = [...ANIMA, "light", "dark"];
 const EVERY = [...PHYSICAL, ...MAGIC, "staff"];
 const WORDS = {
-  sword: ["sword"], lance: ["lance"], axe: ["axe"], bow: ["bow"], knife: ["knife"], dagger: ["knife"],
+  // Maces and Katanas are sub-categories of Axes and of Swords, wielded with their proficiency
+  sword: ["sword"], katana: ["sword"], lance: ["lance"], axe: ["axe"], mace: ["axe"], bow: ["bow"], knife: ["knife"], dagger: ["knife"],
   brawl: ["brawl"], fire: ["fire"], thunder: ["thunder"], wind: ["wind"], water: ["water"], earth: ["earth"],
   light: ["light"], dark: ["dark"], staff: ["staff"], anima: ANIMA
 };
@@ -42,7 +51,7 @@ const WORDS = {
  * @returns {string[]|null}     The proficiencies it names, or null when it names none the system tracks
  */
 function proficiencyWords(text) {
-  const part = text.trim().toLowerCase().replace(/^(?:\d+x|x\d+)\s+/, "").replace(/^any\s+/, "").replace(/\.$/, "").trim();
+  const part = text.trim().toLowerCase().replace(/^(?:\d+x|x\d+)\s+/, "").replace(/^any\s+/, "").replace(/\.$/, "").replace(/\*+$/, "").trim();
   if ( part in WORDS ) return WORDS[part];
   if ( /^(all )?magic$/.test(part) ) return MAGIC;
   if ( /^non-dark magic$/.test(part) ) return MAGIC.filter((key) => key !== "dark");
@@ -281,6 +290,39 @@ export function readClassSheet({ hidden = [] } = {}) {
     for ( const cell of targets ) classes.find((entry) => entry.cell === cell)?.remarks.unshift(text);
   }
 
+  // The classes of the Optional Content Sheet that are in the game: only the blocks the list names are read,
+  // each into a folder named after the heading it stands under on that tab
+  const optional = readOptionalList();
+  problems.push(...optional.problems);
+  const extra = (optional.classes.length && !optional.problems.length)
+    ? readWorkbook(OPTIONAL_SHEET).find((candidate) => candidate.name === OPTIONAL_TAB) : null;
+  if ( optional.classes.length && !optional.problems.length && !extra ) problems.push(`The Optional Content Sheet has no "${OPTIONAL_TAB}" tab.`);
+  for ( const { cell, name } of extra ? optional.classes : [] ) {
+    const place = /^([A-Z]+)(\d+)$/.exec(cell);
+    const start = place ? columnIndex(place[1]) : -1;
+    const row = place ? Number(place[2]) : 0;
+    if ( !BLOCK_STARTS.includes(start) || !extra.cell(row, start) || (extra.cell(row + 1, start) !== "HP") ) {
+      problems.push(`optional-content.json: no class block starts at ${cell} of the ${OPTIONAL_TAB} tab of the Optional Content Sheet (${name})`);
+      continue;
+    }
+
+    // The heading it stands under: the nearest line above that is alone in its row, short, and no note
+    let heading = "";
+    for ( let above = row - 1; (above >= 1) && !heading; above-- ) {
+      const cells = extra.filled(above);
+      const line = oneLine(cells[0]?.text ?? "");
+      if ( (cells.length === 1) && (cells[0].column === 0) && (line.length <= 40) && !line.endsWith(".") && (extra.cell(above + 1, 0) !== "HP") ) heading = line;
+    }
+    const path = heading ? [OPTIONAL_FOLDER, heading] : [OPTIONAL_FOLDER];
+    folderOf([OPTIONAL_FOLDER]);
+    folderOf(path);
+    const { entry } = readBlock(extra, OPTIONAL_FOLDER, row, start, RACES[heading] ?? "beorc", path, odd, problems, { noted: true });
+    if ( !sameClass(entry.name, name) ) problems.push(`optional-content.json: the class at ${cell} of the Optional Content Sheet is ${entry.name}, not ${name}`);
+    entry.optional = true;
+    entry.source = `Optional Content Sheet, ${OPTIONAL_TAB} tab, row ${row}`;
+    classes.push(entry);
+  }
+
   assignTiers(classes, problems);
   return { classes, folders, oddities, problems, skipped };
 }
@@ -292,10 +334,11 @@ const pendingRemarks = [];
 const noteRows = new Map();
 
 /**
- * Read one class block.
+ * Read one class block. With `noted` the notes its stat cells carry are read too: "Stat Cap: 35" is the cap
+ * of that stat, and a line that begins with an asterisk explains a starred stat.
  * @returns {{entry: SheetClass, end: number}}    The class and the last row of its block
  */
-function readBlock(sheet, tab, row, start, race, path, odd, problems) {
+function readBlock(sheet, tab, row, start, race, path, odd, problems, { noted = false } = {}) {
   const cell = `${tab}!${columnName(start)}${row}`;
   const rawName = className(sheet.cell(row, start));
   const starred = /\*$/.test(rawName);
@@ -321,13 +364,21 @@ function readBlock(sheet, tab, row, start, race, path, odd, problems) {
 
   // The four rows of stats
   const values = {};
+  const caps = {};
+  const explained = {};
   for ( let line = 0; line < 4; line++ ) {
     STAT_ROWS[line].forEach((key, position) => {
       const label = sheet.cell(row + 1 + line, start + (position * 2));
       if ( label !== STAT_LABELS[key] ) problems.push(`${where}: expected ${STAT_LABELS[key]} but found "${label}"`);
       values[key] = sheet.cell(row + 1 + line, start + (position * 2) + 1);
+      const pinned = noted ? sheet.note(row + 1 + line, start + (position * 2) + 1) : "";
+      const cap = /\bStat cap:\s*(\d+)/i.exec(pinned);
+      if ( cap && (key !== "wt") ) caps[key] = Number(cap[1]);
+      const lines = pinned.split(/\n+/).map((text) => text.trim()).filter((text) => text.startsWith("*"));
+      if ( lines.length ) explained[key] = lines.map((text) => text.replace(/^\*+\s*/, "")).join(" ");
     });
   }
+  if ( Object.keys(caps).length ) entry.caps = caps;
   const promoted = Object.entries(values).some(([key, value]) => (key !== "wt") && /^(\+|-$|-\*$)/.test(value));
   entry.kind = promoted ? "gains" : "base";
   const stats = {};
@@ -344,6 +395,10 @@ function readBlock(sheet, tab, row, start, race, path, odd, problems) {
       } else {
         entry.transformed[key] = Number(pair[2]);
       }
+    } else if ( marked && explained[key] ) {
+      number = marked[1] === "-" ? 0 : Number(marked[1]);
+      entry.notes.push({ label, value: `${value} ${explained[key]}` });
+      odd("a stat with an asterisk that a note on its cell explains, kept with it as a line of the class", `${where}: ${label} ${value}`);
     } else if ( marked ) {
       number = marked[1] === "-" ? 0 : Number(marked[1]);
       entry.notes.push({ label, value });

@@ -1,7 +1,8 @@
-<div class="feo-card{{#if cls}} {{cls}}{{/if}}">
+<div class="feo-card{{#if cls}} {{cls}}{{/if}}"{{#if army}} data-army="{{army}}"{{/if}}>
   <header>
     <h3>{{title}}</h3>
     {{#if subtitle}}<p>{{subtitle}}</p>{{/if}}
+    {{#if inspect}}<button type="button" class="inspect" data-feo-inspect data-tooltip="{{localize "FEO.Chat.inspectHint"}}" aria-label="{{localize "FEO.Chat.inspect"}}"><i class="fa-solid fa-magnifying-glass"></i></button>{{/if}}
   </header>
   {{#if outcome}}<div class="outcome {{outcome.cls}}">{{outcome.label}}</div>{{/if}}
   {{#if rows.length}}

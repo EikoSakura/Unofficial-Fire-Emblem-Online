@@ -16,6 +16,12 @@ import { weatherOf } from "./map-weather.mjs";
 /** The type of the Region behaviour that carries terrain. */
 export const TERRAIN_BEHAVIOR = "terrain";
 
+/** The flag of a Region that says which zone its tiles belong to: a key of FEO.zones. */
+export const ZONE_FLAG = "zone";
+
+/** The zone the players set their units up in before a battle. */
+export const DEPLOY_ZONE = "deploy";
+
 /** What has been read of each scene's ground, tile by tile, until its Regions change. */
 const read = new WeakMap();
 
@@ -53,28 +59,78 @@ function terrainRegions(scene) {
 /* -------------------------------------------- */
 
 /**
+ * The Regions of a scene that mark a zone, such as the one the players set their units up in.
+ * @param {Scene} scene
+ * @returns {{region: RegionDocument, zone: string}[]}
+ */
+function zoneRegions(scene) {
+  const regions = [];
+  for ( const region of scene.regions ?? [] ) {
+    const zone = region.getFlag(FEO.id, ZONE_FLAG);
+    if ( (typeof zone === "string") && (zone in FEO.zones) ) regions.push({ region, zone });
+  }
+  return regions;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What has been read of a scene's ground so far.
+ * @param {Scene} scene
+ * @returns {{regions: object[]|null, zones: object[]|null, tiles: Map<string, object>}}
+ */
+function knownOf(scene) {
+  let known = read.get(scene);
+  if ( !known ) read.set(scene, known = { regions: null, zones: null, tiles: new Map() });
+  return known;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Is a zone marked anywhere on a scene?
+ * @param {Scene|null} scene
+ * @param {string} [zone]     A key of FEO.zones
+ * @returns {boolean}
+ */
+export function hasZone(scene, zone = DEPLOY_ZONE) {
+  if ( !scene?.grid?.isSquare ) return false;
+  try {
+    const known = knownOf(scene);
+    known.zones ??= zoneRegions(scene);
+    return known.zones.some((entry) => entry.zone === zone);
+  } catch(err) {
+    console.error(err);
+    return false;
+  }
+}
+
+/* -------------------------------------------- */
+
+/**
  * What a tile of a scene is: its kind of terrain and how high it lies. A tile no Region speaks for is open
  * ground on the floor of the map.
  * @param {Scene} scene
  * @param {{i: number, j: number}} tile     Row and column of the tile
- * @returns {{terrain: string, elevation: number, named?: boolean, painted: string}}
+ * @returns {{terrain: string, elevation: number, named?: boolean, painted: string, zone: string|null}}
  *   `named` if a Region says what kind of terrain the tile is, rather than it being open ground for want of one.
  *   `painted` is the terrain as it was painted, where something that stands on the tile makes another kind of
- *   it: a door that is shut is a wall to everyone, and a Village that stands is a House (see `rules/objects.mjs`)
+ *   it: a door that is shut is a wall to everyone, and a Village that stands is a House (see `rules/objects.mjs`).
+ *   `zone` is the zone the tile was marked as, a key of FEO.zones, if it was
  */
 export function tileGround(scene, tile) {
-  const blank = { terrain: FEO.terrain.default, elevation: 0, painted: FEO.terrain.default };
+  const blank = { terrain: FEO.terrain.default, elevation: 0, painted: FEO.terrain.default, zone: null };
   if ( !scene?.grid?.isSquare ) return blank;
-  let known = read.get(scene);
-  if ( !known ) read.set(scene, known = { regions: null, tiles: new Map() });
+  const known = knownOf(scene);
   const key = `${tile.i},${tile.j}`;
   if ( known.tiles.has(key) ) return known.tiles.get(key);
 
   let ground = blank;
   try {
     known.regions ??= terrainRegions(scene);
+    known.zones ??= zoneRegions(scene);
+    const point = (known.regions.length || known.zones.length) ? scene.grid.getCenterPoint({ i: tile.i, j: tile.j }) : null;
     if ( known.regions.length ) {
-      const point = scene.grid.getCenterPoint({ i: tile.i, j: tile.j });
       let terrain = null;
       let elevation = null;
       for ( const entry of known.regions ) {
@@ -84,8 +140,15 @@ export function tileGround(scene, tile) {
         if ( (elevation === null) && (entry.elevation !== null) ) elevation = entry.elevation;
       }
       // Whether a Region names the terrain is kept as well, for whoever draws the ground that was painted
-      ground = { terrain: terrain ?? blank.terrain, elevation: elevation ?? 0, named: terrain !== null, painted: terrain ?? blank.terrain };
+      ground = {
+        terrain: terrain ?? blank.terrain, elevation: elevation ?? 0, named: terrain !== null, painted: terrain ?? blank.terrain,
+        zone: null
+      };
     }
+
+    // A zone is marked over the ground, whatever that is
+    const marked = known.zones.find((entry) => entry.region.polygonTree?.testPoint(point));
+    if ( marked ) ground = { ...ground, zone: marked.zone };
 
     // What stands on the tile may make another kind of ground of it
     const made = objectGround(scene, tile);

@@ -6,7 +6,7 @@ import { cantoPlusEntry } from "../rules/canto.mjs";
 import { carryEntry } from "../rules/capturing.mjs";
 import { resolveCaps } from "../rules/classes.mjs";
 import { parseRange } from "../rules/combat.mjs";
-import { canWield, countedRank, levelRank, wieldLevel } from "../rules/weapons.mjs";
+import { canWield, countedRank, levelRank, weaponEntry, wieldLevel } from "../rules/weapons.mjs";
 import { conditionModifiers, readConditions } from "../rules/conditions.mjs";
 import { deathThreshold, fateReasons, leavesMap, outOfFight, resilience, woundThreshold } from "../rules/defeat.mjs";
 import { skillGrowths } from "../rules/earnings.mjs";
@@ -470,6 +470,13 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       }),
       biography: new HTMLField(),
 
+      // What the unit says on the Level Up splash, by how the level went (see `rules/level-up.mjs`)
+      levelLines: new SchemaField({
+        great: text(),
+        fair: text(),
+        poor: text()
+      }),
+
       // The Character Creator's record of what was chosen for the unit, read by `module/rules/creation.mjs`
       creation: new ObjectField()
     };
@@ -774,6 +781,14 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       if ( held ) entries.push({ ...held, active: false, spends: false, usage: null, state: null });
     }
 
+    // What the weapon in hand gives its unit for as long as it is equipped (the Dodge its Effect adds, and
+    // what every weapon of its kind does, as Katanas do) is read as one more skill of the same kind, named
+    // after the weapon
+    if ( weapon ) {
+      const given = weaponEntry({ category: weapon.system.category, effect: weapon.system.effect, broken: weapon.system.broken }, weapon.name);
+      if ( given ) entries.push({ ...given, active: false, spends: false, usage: null, state: null });
+    }
+
     // How the unit crosses terrain, as its skills and the changes that last on it have it. It is worked out
     // ahead of where the unit stands, since what its tile is to it hangs on this
     this.crossing = skillCrossing([...entries, ...lasting], {
@@ -1076,6 +1091,9 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     this.guard = standing.guard;
     this.wards = standing.wards;
     this.reacts = standing.reacts;
+
+    // And the allies around it that it shelters: an enemy that stands near it attacks none of them
+    this.shelters = standing.shelters;
 
     // Defeat: how long the unit stays down, what is taken off damage past 0 HP, and whether it must now choose
     const defeat = this.defeat;

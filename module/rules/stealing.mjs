@@ -15,6 +15,9 @@
  *   disarms: true               // it disarms the traps and mines it walks over
  *   pillages: true              // it can destroy Villages
  *   discount: 25                // what it buys in a shop costs it this many percent less
+ *   outfit: 10                  // what it buys as its starting equipment, as it is created, costs it this
+ *                               // many percent less
+ *   resale: 10                  // what it sells brings it this many percent more
  *   crafts: { items: 2, cost: 1000, folders: ["Buffing Items", "Combat Items"], uses: { of: "dex", div: 10 } }
  *                               // as a map starts it makes up to so many items of those sections of the Items
  *                               // tab, of that total cost at most, each with that many uses; they are gone as
@@ -57,7 +60,10 @@ export const UNSTOLEN = "unstolen";
 export const UNCAPTURED = "uncaptured";
 
 /** The parts of an effect that are a unit's knacks. */
-export const KNACK_KEYS = ["steal", "opens", "disarms", "pillages", "discount", "crafts", "laid"];
+export const KNACK_KEYS = ["steal", "opens", "disarms", "pillages", "discount", "outfit", "resale", "crafts", "laid"];
+
+/** The knacks that are a share of a price, each with the list that says where it comes from. */
+const SHARES = { discount: "discounts", outfit: "outfits", resale: "resales" };
 
 /** What a `crafts` part can say. */
 export const CRAFT_PARTS = ["items", "cost", "folders", "uses"];
@@ -84,6 +90,10 @@ export const OPENABLE = ["door", "chest"];
  * @property {boolean} pillages         Can it destroy Villages?
  * @property {number} discount          What it buys in a shop costs it this many percent less
  * @property {{name: string, percent: number}[]} discounts    Where that comes from, for whoever shows it
+ * @property {number} outfit            What it buys as its starting equipment costs it this many percent less
+ * @property {{name: string, percent: number}[]} outfits
+ * @property {number} resale            What it sells brings it this many percent more
+ * @property {{name: string, percent: number}[]} resales
  * @property {{skill: string, items: number, cost: number, folders: string[], uses: number}|null} crafts
  *                                      What it makes as a map starts
  * @property {{mines: number, turns: number, exp: number, kill: number, skill: string}} laid
@@ -97,7 +107,7 @@ export const OPENABLE = ["door", "chest"];
  */
 export function emptyKnacks() {
   return {
-    steals: false, opens: [], disarms: false, pillages: false, discount: 0, discounts: [], crafts: null,
+    steals: false, opens: [], disarms: false, pillages: false, discount: 0, discounts: [], outfit: 0, outfits: [], resale: 0, resales: [], crafts: null,
 
     // What its skills add to the mines and traps it lays (see `traps.mjs`)
     laid: emptyLaid(),
@@ -137,11 +147,13 @@ export function addKnacks(total, effect, { skill = "", number = (value) => Numbe
 
   if ( effect?.laid ) addLaid(total.laid ??= emptyLaid(), effect.laid, { skill, number });
 
-  // Discounts stack: each is so many percent of the price, and together they never take all of it
-  const percent = Math.max(Math.trunc(number(effect?.discount ?? 0)), 0);
-  if ( percent > 0 ) {
-    total.discounts.push({ name: skill, percent });
-    total.discount = Math.min(total.discount + percent, FEO.stealing.discountMost);
+  // Discounts stack: each is so many percent of the price, and together they never take all of it. So do
+  // what is taken off starting equipment, and what is added to what its unit sells for
+  for ( const [key, list] of Object.entries(SHARES) ) {
+    const percent = Math.max(Math.trunc(number(effect?.[key] ?? 0)), 0);
+    if ( !(percent > 0) ) continue;
+    (total[list] ??= []).push({ name: skill, percent });
+    total[key] = (key === "resale") ? (total[key] ?? 0) + percent : Math.min((total[key] ?? 0) + percent, FEO.stealing.discountMost);
   }
 
   // Of several skills that make items, the one that makes the most is used
@@ -183,9 +195,10 @@ export function checkKnacks(effect) {
   for ( const key of ["disarms", "pillages"] ) {
     if ( (effect?.[key] !== undefined) && (effect[key] !== true) ) problems.push(`"${key}" is true`);
   }
-  if ( effect?.discount !== undefined ) {
-    const plain = Number.isFinite(effect.discount) && (effect.discount > 0) && (effect.discount <= 100);
-    if ( !plain && !(effect.discount && (typeof effect.discount === "object")) ) problems.push('"discount" is a share of the price in percent, from 1 to 100');
+  for ( const key of Object.keys(SHARES) ) {
+    if ( effect?.[key] === undefined ) continue;
+    const plain = Number.isFinite(effect[key]) && (effect[key] > 0) && (effect[key] <= 100);
+    if ( !plain && !(effect[key] && (typeof effect[key] === "object")) ) problems.push(`"${key}" is a share of the price in percent, from 1 to 100`);
   }
   if ( effect?.crafts !== undefined ) {
     const crafts = effect.crafts;
@@ -256,6 +269,18 @@ export function keyOpens(effect) {
 export function discounted(price, discount = 0) {
   const cut = Math.min(Math.max(discount ?? 0, 0), 100);
   return Math.max(Math.floor(((price ?? 0) * (100 - cut)) / 100), 0);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What a unit is paid for something it sells: so many percent more than it is worth, rounded down.
+ * @param {number} worth        What it sells for (see `sellValue` in `progression.mjs`)
+ * @param {number} [resale]     In percent
+ * @returns {number}
+ */
+export function resold(worth, resale = 0) {
+  return Math.max(Math.floor(((worth ?? 0) * (100 + Math.max(resale ?? 0, 0))) / 100), 0);
 }
 
 /* -------------------------------------------- */

@@ -14,6 +14,9 @@
  *                                                 // Speed, whatever a skill grants it
  *   rules: ["strikesAlways"]                      // what its weapon strikes "when initiating combat" it strikes
  *                                                 // whoever began the fight
+ *   rules: ["foeFirst"]                           // its foe attacks first in a fight its unit starts, where that
+ *                                                 // foe attacks at all; against a foe that has the same rule,
+ *                                                 // or with the rule "first" beside it, the round is as it was
  *   speedLead: { per: 3, damage: 1, hit: 3, critical: 3 }      // against a foe it follows up on: these for
  *                                                 // every `per` Attack Speed it has over that foe beyond what
  *                                                 // a follow-up takes
@@ -42,8 +45,22 @@
  *   proc: { on: "attack", sure: true, from: 2, mounts: true }  // `mounts`: its numbers count once for each
  *                                                              // attack its unit has made since
  *   might: 1                          // added to the weapon's Might for that attack, as `damage` is to its damage
+ *   proc: { on: "attack", sure: true, hurt: true }             // `hurt`: only once an attack has landed on
+ *                                                              // its unit in this fight, for every attack it
+ *                                                              // makes from then on
  *   stat: "mag"                       // the attack adds this stat to the weapon's Might in place of the one the
  *                                     // weapon adds; also in a `sequence`, beside `against`
+ *
+ * On a hit, `proc: { on: "hit", sure: true }`:
+ *
+ *   chain: { most: 4, hit: 50, lone: true }       // its unit makes one more attack at once, at that share of
+ *                                                 // the Hit it comes to in the end (rounded down), and another
+ *                                                 // for as long as each lands, `most` in a row. A chain is begun
+ *                                                 // by an attack of the round and by none a skill added; with
+ *                                                 // `lone`, only by a unit that makes no follow-up attack in
+ *                                                 // that fight. The attacks of a chain are made with the weapon
+ *                                                 // in hand and wear it as any attack does, and set off no
+ *                                                 // attack in answer
  *
  * When struck, `proc: { on: "struck", ... }`:
  *
@@ -85,6 +102,26 @@ export const ORDERS = ["first", "press"];
 
 /** The rule that has a weapon strike as it does "when initiating combat" whoever began the fight. */
 export const STRIKES_ALWAYS = "strikesAlways";
+
+/** The rule that has the foe of its unit attack first in a fight its unit starts. */
+export const FOE_FIRST = "foeFirst";
+
+/* -------------------------------------------- */
+
+/**
+ * Does the unit that is attacked make the first attack of a round? It does where its own skill has it attack
+ * first, and where a skill of the unit that began the fight has its foe do so. Two units that would both
+ * lead, or both give way, leave the round as it is; so does one whose skills say both of itself.
+ * @param {Set<string>|string[]} [initiator]    The combat rules the skills of the unit that began the fight bend
+ * @param {Set<string>|string[]} [defender]     The same for the unit that is attacked
+ * @returns {boolean}
+ */
+export function defenderLeads(initiator = [], defender = []) {
+  const has = (rules, rule) => (rules instanceof Set) ? rules.has(rule) : [].concat(rules ?? []).includes(rule);
+  const leads = (rules) => has(rules, "first") && !has(rules, FOE_FIRST);
+  const yields = (rules) => has(rules, FOE_FIRST) && !has(rules, "first");
+  return (leads(defender) && !leads(initiator)) || (yields(initiator) && !yields(defender));
+}
 
 /** What a fight is said to go on until, where it has no number of rounds. */
 export const UNTIL_FALL = "fall";
@@ -346,6 +383,23 @@ export function checkRounds(effect) {
     if ( effect.sequence ) problems.push('a moment that begins "from" a later attack turns no attack into several');
   }
   if ( proc && (proc.mounts !== undefined) && !((proc.mounts === true) && (proc.from !== undefined)) ) problems.push('"mounts" is true, beside "from"');
+  if ( proc && (proc.hurt !== undefined) ) {
+    if ( (proc.hurt !== true) || (on !== "attack") || !proc.sure ) problems.push('"hurt" is true, for a "sure" moment on an "attack"');
+    if ( proc.from !== undefined ) problems.push('a moment begins "from" a later attack, or once its unit is "hurt", not both');
+    if ( effect.sequence || effect.attack ) problems.push('a moment that waits for its unit to be "hurt" adds no attack');
+  }
+
+  // On a hit
+  if ( "chain" in (effect ?? {}) ) {
+    const chain = effect.chain;
+    if ( (on !== "hit") || !proc?.sure ) problems.push('a chain of attacks is begun by a "sure" moment on a "hit"');
+    if ( !chain || (typeof chain !== "object") || !whole(chain.most, 1) ) problems.push("chain: most is how many attacks it adds in a row at the most");
+    else {
+      for ( const key of Object.keys(chain) ) if ( !["most", "hit", "lone"].includes(key) ) problems.push(`chain cannot say "${key}"`);
+      if ( (chain.hit !== undefined) && !(Number.isFinite(chain.hit) && (chain.hit > 0) && (chain.hit <= 100)) ) problems.push("chain: hit is the share of its Hit each of its attacks is made at, in percent");
+      if ( ![undefined, true].includes(chain.lone) ) problems.push('chain: "lone" is true or left out');
+    }
+  }
   if ( ("might" in (effect ?? {})) && proc && (on !== "attack") ) problems.push('Might is added to an "attack"');
   for ( const part of proc ? [effect, ...(effect.sequence ?? [])] : [] ) {
     if ( (part?.stat !== undefined) && !(part.stat in FEO.stats) ) problems.push(`unknown stat "${part.stat}"`);

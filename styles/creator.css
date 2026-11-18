@@ -459,6 +459,27 @@
 .feo .cr-note-add { display: flex; gap: 6px; }
 .feo .cr-note-add input { flex: 1; min-width: 0; }
 
+/* A unit that waits for help carries the same hand beside its name in the Actors list of the sidebar
+   (module/helpers/help-list.mjs). The list is no sheet, so the mark brings the colour with it */
+.directory .feo-help-mark {
+  --feo-warn: #e8a640;
+  flex: none;
+  display: grid;
+  place-items: center;
+  align-self: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--feo-warn) 16%, transparent);
+  color: var(--feo-warn);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.theme-light .feo-help-mark:not(.theme-light .theme-dark *) { --feo-warn: #b16f12; }
+.directory .feo-help-mark:hover { background: color-mix(in srgb, var(--feo-warn) 30%, transparent); text-shadow: none; }
+.directory .feo-help-mark .feo-icon { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
 /* ---------- Foot ---------- */
 
 .feo .cr-foot { flex: none; display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-top: 1px solid var(--feo-line); color: var(--feo-muted); font-size: 12.5px; }

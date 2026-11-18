@@ -1,6 +1,6 @@
 import { FEO } from "../config.mjs";
 import { USE_MOMENT, momentDice, turnEffects, turnMoment, useMoment } from "../rules/skills.mjs";
-import { harmsOf, keptBetweenMaps, mendsOf, timedName } from "../rules/timed.mjs";
+import { carriedNames, harmsOf, keptBetweenMaps, mendsOf, timedName } from "../rules/timed.mjs";
 import { describeChange } from "./timed-context.mjs";
 import { resetSkill, spendSkill, tickSkill } from "../rules/skill-usage.mjs";
 import { awardActivations, cooldownsFor, resetAffinity, tickAffinity } from "./affinity.mjs";
@@ -8,7 +8,8 @@ import { postCard, rollD100, rollFromResults } from "./chat.mjs";
 import { clockOf } from "./clock.mjs";
 import { conditionsOf, setConditions } from "./conditions.mjs";
 import { cutIn } from "./cut-ins.mjs";
-import { afflictUnit, damageUnit, grantUnit, healUnit } from "./events.mjs";
+import { afflictUnit, awardGold, damageUnit, grantUnit, healUnit } from "./events.mjs";
+import { goldGained, goldTally, turnGold } from "../rules/earnings.mjs";
 import { turnMoveOf } from "./movement.mjs";
 import { standingOf, tokenInView } from "./positions.mjs";
 import { buildSkillTurnCard } from "./skill-turn-context.mjs";
@@ -20,6 +21,19 @@ import { grantTimed, tickTimedFor, timedOf } from "./timed.mjs";
  *
  * @import {TurnMoment} from "../rules/skills.mjs"
  */
+
+/**
+ * Did a skill do nothing at its moment but give its unit gold, as Income does? What it gave is told by the
+ * float over the unit alone: it flashes no cut-in and posts no card, turn after turn.
+ * @param {object} entry      One skill's part of a moment (see `turnMoment`)
+ * @returns {boolean}
+ */
+function onlyGold(entry) {
+  return !!entry.success && !!entry.sure && (entry.gold !== undefined) && !entry.recover && !entry.remind && !entry.granted?.length
+    && !entry.cured?.length && !entry.inflicts?.length && !entry.reached && !entry.spread;
+}
+
+/* -------------------------------------------- */
 
 /**
  * Describe a unit as it is now for the conditions and numbers of its skills.
@@ -43,6 +57,9 @@ function selfOf(actor, place = null, move = null) {
     weapon: weapon ? { name: weapon.name, ...weapon.system } : null,
     near: place?.near ?? null,
     move,
+
+    // The lasting changes of its own that it carries, for a skill that asks for one by name
+    carried: carriedNames(system.timed),
     clock: clockOf(actor),
     qualities: system.specialQualities ?? "",
     shifted: !!system.shift?.transformed
@@ -119,7 +136,7 @@ export async function skillMomentFor(actor, moment, { tracker = [] } = {}) {
   }
 
   // The skills that took effect flash over the unit before what they do is shown
-  cutIn(result.entries.filter((entry) => entry.success && entry.skill).map((entry) => ({ actor, skill: entry.skill })));
+  cutIn(result.entries.filter((entry) => entry.success && entry.skill && !onlyGold(entry)).map((entry) => ({ actor, skill: entry.skill })));
   if ( result.healed > 0 ) await healUnit(actor, result.healed);
 
   // A skill that takes effect by itself a limited number of times is spent by the moment that took effect: a
@@ -137,6 +154,18 @@ export async function skillMomentFor(actor, moment, { tracker = [] } = {}) {
     await awardActivations(actor, result.entries.filter((entry) => entry.grade).map((entry) => entry.grade));
   } catch(err) {
     console.error(err);
+  }
+
+  // Gold its skills give it at this moment, as Income does: each is counted for the map on a tally named
+  // after its skill, and held to what the Game Master allows a map. A float over the unit says what it gained
+  const quiet = !tracker.length && result.entries.every(onlyGold);
+  for ( const entry of result.entries ) {
+    if ( !entry.success || !(entry.gold > 0) ) continue;
+    entry.gained = turnGold(entry.gold, goldGained(actor.system.timed, entry.skill));
+    if ( !(entry.gained > 0) ) continue;
+    await awardGold(actor, entry.gained);
+    const tally = goldTally(entry.skill, entry.gained);
+    if ( tally ) await grantTimed(actor, [tally]);
   }
 
   // Conditions the unit is cured of
@@ -186,6 +215,7 @@ export async function skillMomentFor(actor, moment, { tracker = [] } = {}) {
       if ( !given ) granted.unsaved = true;
     }
   }
+  if ( quiet ) return result;
   await postCard(actor, buildSkillTurnCard(result, game.i18n, { name, moment, tracker }), {
     rolls: used.length ? [rollFromResults(used)] : []
   });

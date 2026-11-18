@@ -255,6 +255,10 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
       // What its skills and what it wears take off a price in a shop, in percent, and where that comes from
       discount: system.knacks?.discount ?? 0,
       discounts: (system.knacks?.discounts ?? []).map((entry) => ({ name: entry.name, percent: entry.percent })),
+
+      // And what they add to what it sells for
+      resale: system.knacks?.resale ?? 0,
+      resales: (system.knacks?.resales ?? []).map((entry) => ({ name: entry.name, percent: entry.percent })),
       icon: weapon ? icon(weapon) : "shield",
       weapon: weapon ? { name: weapon.name, icon: icon(weapon) } : null,
       stats: system.statValues,

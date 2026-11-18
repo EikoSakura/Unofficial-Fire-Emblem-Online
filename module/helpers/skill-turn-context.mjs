@@ -52,6 +52,9 @@ export function buildSkillTurnCard(result, i18n, { name = "", moment = "turnStar
     }
     else {
       if ( entry.recover ) parts.push(i18n.format("FEO.SkillTurn.heals", { amount: entry.healed }));
+
+      // Gold it gave its unit, or that the map allows no more of it
+      if ( entry.gold > 0 ) parts.push((entry.gained > 0) ? i18n.format("FEO.SkillTurn.gold", { amount: entry.gained }) : i18n.localize("FEO.SkillTurn.goldSpent"));
       if ( entry.cured?.length ) parts.push(i18n.format("FEO.SkillTurn.cures", {
         conditions: entry.cured.map((id) => i18n.localize(`FEO.Condition.${id}`)).join(", ")
       }));
@@ -66,7 +69,7 @@ export function buildSkillTurnCard(result, i18n, { name = "", moment = "turnStar
       // What it did to the units around, each with what it took or gained
       const around = entry.spreadTold ? describeSpread(entry.spreadTold, i18n) : "";
       if ( around ) parts.push(around);
-      if ( !entry.recover && !entry.remind && !entry.granted?.length && !entry.cured?.length && !entry.inflicted?.length && !around ) parts.push(i18n.localize("FEO.SkillTurn.activates"));
+      if ( !entry.recover && (entry.gold === undefined) && !entry.remind && !entry.granted?.length && !entry.cured?.length && !entry.inflicted?.length && !around ) parts.push(i18n.localize("FEO.SkillTurn.activates"));
     }
 
     // Changes that last a while which the skill granted: one mention for the unit itself, and one for the
@@ -85,6 +88,9 @@ export function buildSkillTurnCard(result, i18n, { name = "", moment = "turnStar
       }
     }
     const healed = entry.healed || (entry.reached ?? []).some((reached) => reached.healed && !reached.unsaved);
+
+    // A skill that had gold to give and none came of it, as for a unit that did not move, has nothing to tell
+    if ( !parts.length && (entry.gold !== undefined) ) continue;
     rows.push({ label: entry.skill, value: parts.join(" · "), cls: !entry.success ? "muted" : healed ? "good" : "" });
   }
   for ( const entry of tracker ) {

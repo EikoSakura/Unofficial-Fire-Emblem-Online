@@ -1,6 +1,7 @@
 import Compendium from "../apps/compendium.mjs";
 import { FEO } from "../config.mjs";
 import { isArmed, isBroken, wieldOf } from "../rules/creation-fit.mjs";
+import { discounted } from "../rules/stealing.mjs";
 import {
   classOpen, freeGrowth, growthShift, planBonus, planBoon, planCheck, planClass, planGrowth, planRanks, planSource, planWeight, readCreation,
   planVariant, startingSkills, startsGeneric
@@ -338,6 +339,19 @@ export async function openVariant(actor, id) {
 /* -------------------------------------------- */
 
 /**
+ * What a weapon or an item costs a unit as starting equipment: its price, less what the unit's skills take off
+ * what it is outfitted with, as Haggle does.
+ * @param {Actor} actor
+ * @param {number} [price]
+ * @returns {number}
+ */
+export function outfitCost(actor, price) {
+  return discounted(price ?? 0, actor?.system?.knacks?.outfit ?? 0);
+}
+
+/* -------------------------------------------- */
+
+/**
  * Buy a weapon or an item with the unit's Gold.
  * @param {Actor} actor
  * @param {string} uuid       The Item to buy a copy of
@@ -346,7 +360,8 @@ export async function openVariant(actor, id) {
 export async function buy(actor, uuid) {
   const source = await foundry.utils.fromUuid(uuid);
   if ( !source || !["weapon", "gear"].includes(source.type) ) return false;
-  const cost = source.system.cost ?? 0;
+  // What the unit's skills take off its starting equipment is taken off the price (see `discounted`)
+  const cost = outfitCost(actor, source.system.cost);
   const gold = actor._source.system.gold;
   if ( cost > gold ) {
     ui.notifications.warn("FEO.Creator.warn.gold", { localize: true });
@@ -418,7 +433,7 @@ export async function openArmoury(actor, tab = "weapons") {
     const wield = ("category" in entry) ? wieldOf(entry, { unit: actor._source.system, cls: actor.system.classItem }) : { ok: true };
     return {
       sold: !!entry.uuid && !isBroken(entry),
-      can: (entry.cost ?? 0) <= actor._source.system.gold,
+      can: outfitCost(actor, entry.cost) <= actor._source.system.gold,
       fit: wield.ok,
       unfit: wield.ok ? "" : why(wield)
     };
@@ -435,6 +450,10 @@ export async function openArmoury(actor, tab = "weapons") {
       value: i18n.format("FEO.Creator.armoury.goldValue", { left: number(unit.gold), total: number(FEO.creation.gold) })
     }];
     if ( wields.length ) tags.push({ label: i18n.localize("FEO.Creator.gold.wields"), value: wields.join(" · ") });
+
+    // What its skills take off every price here
+    const outfits = actor.system.knacks?.outfits ?? [];
+    if ( outfits.length ) tags.push({ label: i18n.localize("FEO.Creator.armoury.outfit"), value: outfits.map((entry) => `${entry.name} −${entry.percent}%`).join(" · ") });
     return {
       text: i18n.format("FEO.Creator.armoury.banner", { unit: actor.name }),
       tags,

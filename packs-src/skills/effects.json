@@ -20023,6 +20023,494 @@
         }
       ],
       "note": "A unit lays a Mine or a Trap of the Items tab by using the item on a battle map: the free tiles next to it light up, a click lays it there, and that is its Action. It lies hidden from the other side until a unit walks onto it or ends its turn on it; a unit that flies springs it only by ending its turn there, and the unit that laid it never does. What its unit lays has, from the moment it is laid: +5 damage for a Mine that deals damage (an item whose name says Mine or Bomb: the Mine and the Frey Bomb; a Stun Mine deals none to add to), and one turn more for every condition a mine or a trap of its gives (Bear Trap, Silence Trap, Stun Mine, Sleep Trap, Poison Trap). Its unit gains +10 EXP as an enemy springs one of them, and +25 more as the damage of one of its Mines defeats that enemy; a unit that is no enemy of its springs them too, and earns it nothing."
+    },
+    "Fast Recovery": {
+      "effects": [
+        {
+          "proc": {
+            "on": "itemHeal",
+            "sure": true
+          },
+          "grant": {
+            "to": "self",
+            "effects": [],
+            "mend": {
+              "of": "healed",
+              "div": 2
+            },
+            "ends": "turnStart"
+          }
+        }
+      ],
+      "note": "Whenever an item restores HP to the unit, Used by itself or on it by an ally: half the HP it regained, rounded down, are restored again as its next turn starts, and the card of the item says how many. Two items before that turn heal for both. An item that restored nothing leaves nothing."
+    },
+    "Belligerent": {
+      "effects": [
+        {
+          "proc": {
+            "on": "itemHeal",
+            "may": true,
+            "own": true
+          },
+          "healTimes": 0.5,
+          "grant": {
+            "to": "self",
+            "effects": [
+              {
+                "stats": {
+                  "str": 2,
+                  "mag": 2,
+                  "def": 2,
+                  "res": 2,
+                  "dex": 2,
+                  "spd": 2,
+                  "luk": 2,
+                  "con": 2
+                }
+              }
+            ],
+            "ends": "turnStart"
+          }
+        }
+      ],
+      "note": "Asked each time the unit Uses an item that restores HP on itself, before it heals: with a yes the item restores half as much, rounded down, and the unit has +2 STR, MAG, DEF, RES, DEX, SPD, LUK and CON until its next turn starts. \"All stats\" is read as those seven and CON, not HP, MOV or LoS. An item an ally Uses on the unit does not ask."
+    },
+    "Mugen-Ryu": {
+      "effects": [
+        {
+          "proc": {
+            "on": "hit",
+            "sure": true
+          },
+          "chain": {
+            "most": 4,
+            "hit": 50,
+            "lone": true
+          }
+        }
+      ],
+      "note": "In a fight in which the unit makes no follow-up attack, each attack of the round it lands is followed at once by one more with the weapon in hand, at half the Hit it comes to against that foe (rounded down), and by another for as long as each lands: 4 in a row at the most, ended by the first that misses or by the foe's fall. Each wears the weapon as any attack does. The attacks it adds begin no chain of their own and set off no attack in answer, and the forecast shows the round without them."
+    },
+    "Short Tempered": {
+      "effects": [
+        {
+          "rules": [
+            "foeFirst"
+          ]
+        },
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true,
+            "hurt": true
+          },
+          "might": 5
+        }
+      ],
+      "note": "In a fight the unit starts, its foe attacks first where it attacks at all, which the forecast shows; a fight an enemy starts is as it was. Against a foe with the same skill, or beside a skill that has the unit itself attack first, the round is as usual. Once an attack has landed on the unit in a fight, whatever it dealt, every attack it makes for the rest of that fight has +5 Might."
+    },
+    "Hitobashira": {
+      "effects": [
+        {
+          "proc": {
+            "on": "kill",
+            "sure": true
+          },
+          "heal": 100
+        },
+        {
+          "proc": {
+            "on": "turnStart",
+            "sure": true
+          },
+          "when": {
+            "hp": {
+              "op": "gt",
+              "percent": 75
+            }
+          },
+          "recover": 3
+        }
+      ],
+      "note": "An attack of the unit that defeats its foe restores the damage it dealt, which is no more than the HP the foe had left. \"Until they are damaged for 25% or more of their HP\" is read from the HP the unit is missing: it regains 3 HP as its turn starts while it has more than 75% of its maximum HP, and again once it is healed back above that."
+    },
+    "Hard to Kill": {
+      "effects": [
+        {
+          "stats": {
+            "def": {
+              "of": "hpMissing",
+              "div": 3
+            },
+            "res": {
+              "of": "hpMissing",
+              "div": 3
+            }
+          }
+        },
+        {
+          "when": {
+            "hp": {
+              "op": "lt",
+              "percent": 50
+            }
+          },
+          "shelters": {
+            "who": "ally",
+            "within": 2,
+            "from": 2
+          }
+        }
+      ],
+      "note": "+1 DEF and RES for every 3 HP the unit is missing, rounded down; in a fight, by the HP it has as the fight begins. While it is below half its maximum HP, an enemy that stands within 2 tiles of it cannot attack an ally of it within 2 tiles of it: the map offers no tile so near to attack from, and says why when such an ally is clicked. The unit itself can be attacked, and so can those allies from further away. Staves and skills are not attacks, and are not barred."
+    },
+    "Senbonzakura": {
+      "effects": [
+        {
+          "proc": {
+            "on": "kill",
+            "sure": true
+          },
+          "grant": {
+            "to": "self",
+            "effects": [
+              {
+                "stats": {
+                  "str": 1,
+                  "mag": 1,
+                  "def": 1,
+                  "res": 1
+                }
+              }
+            ],
+            "max": 9,
+            "ends": "map"
+          }
+        },
+        {
+          "proc": {
+            "on": "struck",
+            "sure": true
+          },
+          "damaged": true,
+          "grant": {
+            "to": "self",
+            "drop": 1
+          }
+        }
+      ],
+      "note": "A tally kept on the unit for the rest of the map, as its Effect names no end: +1 STR, MAG, DEF and RES for each enemy it defeats, up to +9, and 1 less for each hit of an attack that deals it damage, never below 0. It counts from after the fight in which it changed."
+    },
+    "Demon's Embrace": {
+      "effects": [
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true
+          },
+          "when": {
+            "role": "initiating",
+            "foeHp": {
+              "op": "le",
+              "percent": 30
+            }
+          },
+          "heal": 100
+        },
+        {
+          "proc": {
+            "on": "attack",
+            "sure": true
+          },
+          "when": {
+            "role": "initiating",
+            "hp": {
+              "op": "le",
+              "percent": 30
+            },
+            "foeHp": {
+              "op": "gt",
+              "percent": 30
+            }
+          },
+          "heal": 100
+        }
+      ],
+      "note": "In a fight the unit starts while its foe, or the unit itself, is at or below 30% of its maximum HP as the fight begins: every hit of the unit in that fight restores the damage it dealt, which is no more than the HP the foe had left. What holds as the fight begins holds for all of it."
+    },
+    "Haggle": {
+      "effects": [
+        {
+          "discount": 10,
+          "outfit": 10,
+          "resale": 10
+        }
+      ],
+      "note": "In the Market of the Base the unit pays 10% less, on top of what Bargain and a Bargain Ring take off, and is paid 10% more for what it sells there or from its sheet; each price shown is the one that counts, rounded down, with where it comes from on hover. In the Creator its starting equipment costs it 10% less, which the armoury says, and handing a purchase back returns what was paid."
+    },
+    "Income": {
+      "effects": [
+        {
+          "proc": {
+            "on": "turnStart",
+            "sure": true
+          },
+          "gold": 5
+        },
+        {
+          "proc": {
+            "on": "turnEnd",
+            "sure": true
+          },
+          "gold": {
+            "of": "spacesMoved"
+          }
+        }
+      ],
+      "note": "5 Gold as each of the unit's turns starts, and 1 Gold for each space it moved as that turn ends, the spaces of a move made after its Action included; a move that was taken back counts for nothing. Spaces are counted in a battle on the map. What it has given in this map is counted on the skill, and the world setting \"Most Gold a map gives from a skill such as Income\" holds it to that much a map; at 0 there is no limit. The Gold shows as a float over the unit, without a card."
+    },
+    "Wealth Of Power": {
+      "effects": [
+        {
+          "consumes": {
+            "item": "Green Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (Green Gem)",
+              "effects": [],
+              "mend": 5,
+              "ends": "map"
+            }
+          }
+        },
+        {
+          "consumes": {
+            "item": "Red Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (Red Gem)",
+              "effects": [
+                {
+                  "stats": {
+                    "str": 6
+                  },
+                  "combat": {
+                    "critical": 10
+                  }
+                }
+              ],
+              "ends": "map"
+            }
+          }
+        },
+        {
+          "consumes": {
+            "item": "Blue Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (Blue Gem)",
+              "effects": [
+                {
+                  "combat": {
+                    "dodge": 20
+                  }
+                }
+              ],
+              "ends": "map"
+            }
+          }
+        },
+        {
+          "consumes": {
+            "item": "Purple Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (Purple Gem)",
+              "effects": [],
+              "ends": "map"
+            }
+          }
+        },
+        {
+          "when": {
+            "carries": "Wealth Of Power (Purple Gem)"
+          },
+          "proc": {
+            "on": "hit",
+            "sure": true
+          },
+          "inflicts": [
+            "poison"
+          ]
+        },
+        {
+          "when": {
+            "carries": "Wealth Of Power (Purple Gem)"
+          },
+          "proc": {
+            "on": "turnStart",
+            "sure": true
+          },
+          "spread": {
+            "who": "enemy",
+            "around": "self",
+            "within": 1,
+            "inflicts": [
+              "poison"
+            ]
+          }
+        },
+        {
+          "consumes": {
+            "item": "White Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (White Gem)",
+              "effects": [],
+              "ends": "map"
+            }
+          }
+        },
+        {
+          "when": {
+            "carries": "Wealth Of Power (White Gem)",
+            "noSkill": "Charm"
+          },
+          "aura": {
+            "who": "ally",
+            "within": 3
+          },
+          "combat": {
+            "hit": 10,
+            "dodge": 10
+          }
+        },
+        {
+          "when": {
+            "carries": "Wealth Of Power (White Gem)",
+            "noSkill": "Solidarity"
+          },
+          "aura": {
+            "who": "ally",
+            "within": 3
+          },
+          "combat": {
+            "critical": 10,
+            "critAvoid": 10
+          }
+        },
+        {
+          "consumes": {
+            "item": "Pink Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (Pink Gem)",
+              "effects": [
+                {
+                  "stats": {
+                    "luk": 5
+                  },
+                  "combat": {
+                    "hit": {
+                      "of": "luk",
+                      "less": -5,
+                      "div": 3
+                    },
+                    "dodge": {
+                      "of": "luk",
+                      "less": -5,
+                      "div": 3
+                    }
+                  }
+                }
+              ],
+              "ends": "map"
+            }
+          }
+        },
+        {
+          "consumes": {
+            "item": "Black Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (Black Gem)",
+              "effects": [
+                {
+                  "when": {
+                    "hp": {
+                      "op": "le",
+                      "percent": 50
+                    },
+                    "noSkill": "Wrath"
+                  },
+                  "combat": {
+                    "critical": 50
+                  }
+                },
+                {
+                  "when": {
+                    "hp": {
+                      "op": "le",
+                      "percent": 50
+                    },
+                    "noSkill": "Heroism"
+                  },
+                  "combat": {
+                    "activation": 30
+                  }
+                }
+              ],
+              "ends": "map"
+            }
+          }
+        },
+        {
+          "consumes": {
+            "item": "Rainbow Gem",
+            "grant": {
+              "to": "self",
+              "name": "Wealth Of Power (Rainbow Gem)",
+              "effects": [
+                {
+                  "damageMultiplier": 2,
+                  "combat": {
+                    "hit": 15,
+                    "dodge": 15,
+                    "critical": 15
+                  }
+                }
+              ],
+              "ends": "map"
+            }
+          }
+        }
+      ],
+      "note": "Using a Gem from the unit's pack asks first, then destroys it and is the unit's Action; its power lasts for the rest of the map and shows among the changes on the unit. A Gem whose power is already in effect is kept. Green: 5 HP as each turn starts. Red: +6 STR, +10 Critical. Blue: +20 Dodge. Purple: every hit of the unit Poisons, and every enemy next to it is Poisoned as its turn starts. White: what Charm and Solidarity give the allies within 3 spaces (+10 Hit and Dodge, +10 Critical and Critical Avoid). Pink: +5 LUK, and a third of its LUK with those 5, rounded down, to Hit and Dodge. Black: what Wrath and Heroism give at half HP or less (+50 Critical, +30 Skill Activation). Rainbow: double damage, +15 Hit, Dodge and Critical. A skill a Gem grants is not given twice to a unit that has it."
+    },
+    "Make A Killing": {
+      "effects": [
+        {
+          "combat": {
+            "hit": {
+              "of": "gold",
+              "per": 500
+            },
+            "dodge": {
+              "of": "gold",
+              "per": 1000
+            },
+            "critical": {
+              "of": "gold",
+              "per": 1500
+            },
+            "damage": {
+              "of": "gold",
+              "per": 2000
+            }
+          }
+        }
+      ],
+      "note": "By the Gold on the unit's own sheet: +1 Hit for every 500, +1 Dodge for every 1,000, +1 Critical for every 1,500 and +1 damage for every 2,000, each rounded down. Attack is counted as damage."
     }
   }
 }

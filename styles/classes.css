@@ -232,13 +232,188 @@
 .feo-manual-gains .growth-grid label.proc span { color: var(--feo-good); }
 .feo-manual-gains .growth-grid small { min-height: 1.2em; text-align: center; }
 
-/* Heart Seal Classes on the Growth tab */
-.feo .heart-seals .seal-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.feo .heart-seals .seal-list .tag { display: inline-flex; align-items: center; gap: 4px; }
-.feo .heart-seals .seal-list .remove { display: inline-flex; padding: 0; border: 0; background: none; color: inherit; opacity: .6; cursor: pointer; }
-.feo .heart-seals .seal-list .remove:hover { opacity: 1; }
-.feo .heart-seals .seal-list .remove .feo-icon { width: 12px; height: 12px; }
-.feo .heart-seals .empty { margin: 0; }
+/* Heart Seal Classes on the Growth tab: the whole list on one closed line, which opens the menu of them */
+.feo .window-content .heart-seals .seal-reclass { order: 4; letter-spacing: 0; text-transform: none; }
+
+.feo .window-content button.seal-select {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  height: 36px;
+  padding: 0 11px 0 6px;
+  border: 1px solid var(--feo-line-soft);
+  border-radius: 8px;
+  background: var(--feo-raised);
+  color: var(--feo-ink);
+  font-family: var(--feo-font-ui);
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.feo .window-content button.seal-select:hover,
+.feo.seal-open .window-content button.seal-select { border-color: var(--feo-gold); }
+.feo .window-content button.seal-select:focus-visible { outline: 2px solid var(--feo-gold); outline-offset: 1px; }
+.feo .seal-select :is(img, i) { flex: none; width: 26px; height: 26px; border: 0; border-radius: 6px; object-fit: cover; background: var(--feo-track); }
+.feo .seal-select i { display: grid; place-items: center; color: var(--feo-faint); font-size: 14px; }
+.feo .seal-select .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.feo .seal-select .name.none { padding-left: 5px; font-style: italic; font-weight: 400; color: var(--feo-faint); }
+
+.feo .seal-select .chevron {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: -4px 3px 0 2px;
+  border: solid var(--feo-muted);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: transform .12s ease-out;
+}
+
+.feo.seal-open .seal-select .chevron { margin-top: 4px; border-color: var(--feo-gold); transform: rotate(225deg); }
+.feo .heart-seals .hint { margin-top: 9px; }
+
+/* The menu of classes. It lies over the sheet, in the layer nothing cuts off */
+.feo .seal-picker {
+  position: fixed;
+  inset: auto;
+  z-index: 10000;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  max-height: 380px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--feo-line);
+  border-radius: 10px;
+  background: var(--feo-panel);
+  color: var(--feo-ink);
+  font-family: var(--feo-font-ui);
+  font-size: 14px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .25);
+  animation: feo-seal-picker .12s ease-out;
+}
+
+@keyframes feo-seal-picker {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+
+.feo .seal-picker .sp-find {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--feo-line-soft);
+  color: var(--feo-faint);
+  font-size: 15px;
+}
+
+.feo .seal-picker .sp-find:focus-within { color: var(--feo-gold); }
+
+.feo .seal-picker .sp-find input {
+  all: unset;
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  color: var(--feo-ink);
+  font-family: var(--feo-font-ui);
+  font-size: 14px;
+}
+
+.feo .seal-picker .sp-find input::placeholder { color: var(--feo-faint); }
+.feo .seal-picker .sp-list { flex: 1; min-height: 0; padding: 0 6px 6px; overflow-y: auto; scrollbar-width: thin; }
+.feo .seal-picker .sp-list.plain { padding-top: 6px; }
+.feo .seal-picker [hidden] { display: none; }
+
+.feo .seal-picker h4 {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 8px 5px;
+  border: 0;
+  background: var(--feo-panel);
+  color: var(--feo-muted);
+  font-family: var(--feo-font-ui);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.feo .seal-picker h4 small { font-size: 10.5px; font-weight: 600; letter-spacing: 0; color: var(--feo-faint); }
+
+.feo .seal-picker .sp-row {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 7px;
+  color: var(--feo-ink);
+  font-family: var(--feo-font-ui);
+  cursor: default;
+}
+
+/* A class is pressed only while the sheet is edited, to tick it */
+.feo .seal-picker.editing .sp-row { cursor: pointer; }
+.feo .seal-picker.editing .sp-row:hover { background: var(--feo-track); }
+.feo .seal-picker.editing .sp-row:focus-visible { background: var(--feo-track); box-shadow: inset 0 0 0 2px var(--feo-gold); }
+.feo .seal-picker:focus { outline: none; }
+.feo .seal-picker .sp-row :is(img, i) { flex: none; width: 30px; height: 30px; border: 0; border-radius: 7px; object-fit: cover; background: var(--feo-track); }
+.feo .seal-picker .sp-row i { display: grid; place-items: center; color: var(--feo-faint); font-size: 15px; }
+.feo .seal-picker .sp-words { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.feo .seal-picker .sp-words b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; line-height: 1.15; }
+.feo .seal-picker .sp-words small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; line-height: 1.15; color: var(--feo-muted); }
+.feo .seal-picker .sp-words small:empty { display: none; }
+
+.feo .seal-picker .sp-tick {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--feo-line);
+  border-radius: 50%;
+  color: transparent;
+  font-size: 12px;
+}
+
+.feo .seal-picker .sp-tick .feo-icon { stroke-width: 2.6; }
+.feo .seal-picker .sp-row[aria-selected="true"] .sp-tick { border-color: transparent; background: var(--feo-gold); color: var(--feo-gold-ink); }
+.feo .seal-picker .sp-row[aria-selected="true"] b { color: var(--feo-gold); }
+.feo .seal-picker .sp-none { margin: 0; padding: 22px 12px; font-size: 13.5px; font-style: italic; text-align: center; color: var(--feo-faint); }
+
+.feo .seal-picker .sp-tree {
+  all: unset;
+  box-sizing: border-box;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-top: 1px solid var(--feo-line-soft);
+  color: var(--feo-muted);
+  font-family: var(--feo-font-ui);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.feo .seal-picker .sp-tree:hover,
+.feo .seal-picker .sp-tree:focus-visible { background: var(--feo-track); color: var(--feo-gold); }
 .feo-promotion dl { display: grid; gap: 5px; margin: 0; }
 .feo-promotion dl > div { display: grid; gap: 0; }
 .feo-promotion dt { font-size: .72em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .65; }
@@ -347,19 +522,5 @@
 
 /* ---------- Chat card: what a class changed ---------- */
 
-.feo-card.feo-class-change { display: grid; gap: 8px; }
-.feo-class-change section { display: grid; gap: 3px; }
-
-.feo-class-change h4 {
-  margin: 0;
-  padding-bottom: 2px;
-  border: 0;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
-  font-size: .72em;
-  font-weight: 800;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  opacity: .7;
-}
-
-.feo-class-change .note + .note { margin-top: -4px; }
+/* Its sections and the word or two each change is told in are styled with the other chat cards, in
+   `fire-emblem-online.css` */

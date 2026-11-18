@@ -78,6 +78,60 @@ export function countedRank(held, levelled = null) {
 }
 
 /* -------------------------------------------- */
+/*  What an Equipped Weapon Gives               */
+/* -------------------------------------------- */
+
+/**
+ * The Dodge a weapon adds to the unit that has it equipped, as its Effect says in a part of its own: "+5 Dodge",
+ * "+8 Dodge, Terror", "-50 Dodge, unit makes +2 additional attacks." A part that says more than that is no
+ * such bonus: "User gains +20 Dodge against physical ranged attacks", "Inflicts -15 Dodge on enemy".
+ * @param {string} [effect]     The weapon's Effect
+ * @returns {number}            0 for a weapon that adds none
+ */
+export function weaponDodge(effect) {
+  let dodge = 0;
+  for ( const part of String(effect ?? "").split(/[,.;\n]/) ) {
+    const match = /^\s*([+\-−–])\s*(\d+)\s+Dodge\s*$/i.exec(part);
+    if ( match ) dodge += Number(match[2]) * (match[1] === "+" ? 1 : -1);
+  }
+  return dodge;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What a weapon gives the unit that has it equipped, in the notation of skill effects: what every weapon of
+ * its category does (`FEO.weaponTraits`), as all Katanas grant +2 HST but -1 END, and the Dodge its own Effect
+ * adds. A weapon that is out of uses gives nothing; the broken version it turns into gives what that says.
+ * @param {{category?: string, effect?: string, broken?: boolean}|null} weapon
+ * @param {Record<string, object[]>} [traits]     FEO.weaponTraits
+ * @returns {object[]}          None for a weapon that gives nothing while equipped
+ */
+export function weaponGives(weapon, traits = FEO.weaponTraits) {
+  if ( !weapon || weapon.broken ) return [];
+  const effects = (traits?.[weapon.category] ?? []).map((effect) => structuredClone(effect));
+  const dodge = weaponDodge(weapon.effect);
+  if ( dodge ) effects.push({ combat: { dodge } });
+  return effects;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What a weapon gives the unit that has it equipped, as one more skill of the unit: an entry the skill rules
+ * read like that of an equipped skill, which Nihil does not cancel and which takes none of its skill slots.
+ * @param {{category?: string, effect?: string, broken?: boolean}|null} weapon
+ * @param {string} name             What it goes by in fights and on cards: the weapon's name
+ * @param {Record<string, object[]>} [traits]     FEO.weaponTraits
+ * @returns {{name: string, innate: true, nihil: false, effects: object[]}|null}    Null for a weapon that
+ *          gives nothing while equipped
+ */
+export function weaponEntry(weapon, name, traits = FEO.weaponTraits) {
+  const effects = weaponGives(weapon, traits);
+  return effects.length ? { name, innate: true, nihil: false, effects } : null;
+}
+
+/* -------------------------------------------- */
 
 /**
  * The broken version of a weapon category, if the Broken Weapons table has one.

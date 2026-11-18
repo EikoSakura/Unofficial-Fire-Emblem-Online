@@ -8,8 +8,8 @@ import { stancesOf } from "../rules/stances.mjs";
 import { TileField } from "./tiles.mjs";
 
 /**
- * The battle map on the canvas: painting where a unit can go and what it can strike, the path of a move and
- * what it would cost the units along it, and handing clicks on tiles and tokens to whoever is listening. The Battle HUD listens; this module only draws
+ * The battle map on the canvas: painting where a unit can go and what it can strike, what a move would cost
+ * the units along it, the way a unit would be shoved or carried by a skill, and handing clicks on tiles and tokens to whoever is listening. The Battle HUD listens; this module only draws
  * and reports, and decides nothing.
  *
  * Everything here runs inside Foundry's own drawing and event handling, so nothing in it may throw: whatever
@@ -41,7 +41,7 @@ export const battleCanvas = {
   /** The squares painted on the map. @type {TileField|null} */
   tiles: null,
 
-  /** The line of a move being considered, drawn over the squares and under the tokens. */
+  /** The line a unit would be shoved or carried along, drawn over the squares and under the tokens. */
   path: null,
 
   /** What holds the squares and the path on the ground of the scene. @type {PIXI.Container|null} */
@@ -80,14 +80,14 @@ export const battleCanvas = {
 
   /**
    * Paint the map: the tiles a unit can move to, strike or reach with a staff, the threat of another, and the
-   * path of a move. Whatever was painted before is wiped.
+   * way a unit would be shoved or carried. Whatever was painted before is wiped.
    * @param {object} [paint]
    * @param {Iterable<string>} [paint.move]       Tiles by name, "row,column"
    * @param {Iterable<string>} [paint.strike]
    * @param {Iterable<string>} [paint.staff]
    * @param {Iterable<string>} [paint.warp]       Tiles a skill can warp the unit to
    * @param {Iterable<string>} [paint.threat]
-   * @param {{i: number, j: number}[]} [paint.path]     The tiles of a move, from where it starts to where it ends
+   * @param {{i: number, j: number}[]} [paint.path]     The tiles a unit would be shoved or carried over, from first to last
    * @param {Iterable<string>} [paint.area]       The tiles a skill that takes in an area would cover
    * @param {{tile: {i: number, j: number}, text: string, tone?: "bad"|"good"}[]} [paint.marks]
    *                                              What the move would take off the units along its way, or what
@@ -293,7 +293,8 @@ export const battleCanvas = {
   /* -------------------------------------------- */
 
   /**
-   * Draw the line of a move through the middle of its tiles, with an arrowhead where it ends.
+   * Draw the line a unit would be shoved or carried along through the middle of its tiles, with an arrowhead
+   * where it ends.
    * @param {{i: number, j: number}[]} tiles
    */
   _drawPath(tiles) {

@@ -43,6 +43,7 @@
       "bonds": "Bonds",
       "profile": "Profile",
       "linesVeils": "Lines and Veils",
+      "levelLines": "Level Up Lines",
       "weaponStats": "Weapon Stats",
       "skillDetails": "Details",
       "itemDetails": "Details",
@@ -192,6 +193,7 @@
     },
     "WeaponType": {
       "sword": "Sword",
+      "katana": "Katana",
       "lance": "Lance",
       "axe": "Axe",
       "bow": "Bow",
@@ -268,7 +270,13 @@
       "equipHint": "Worn or carried for its effect instead of being used up.",
       "restoreHint": "HP given back to the user each time the item is used. Leave at 0 for items that do something else.",
       "useHint": "Use the item. With another unit targeted it is used on that unit, which earns EXP.",
-      "notOwner": "You cannot change the targeted unit. Ask its owner or the Game Master."
+      "notOwner": "You cannot change the targeted unit. Ask its owner or the Game Master.",
+      "offer": "Use {skill} with this {item}?",
+      "offerHeal": "Use {skill}? This {item} then restores {then} HP in place of {now}.",
+      "healsLater": "+{amount} HP as its next turn starts",
+      "powerAsk": "Destroy the {item} for this? It lasts {lasts}, and using it is this unit's Action.",
+      "powerActive": "{skill}: the power of a {item} is already in effect, and does not add up with itself.",
+      "powerUsed": "Uses up {item}"
     },
     "Skill": {
       "name": "Skill Name",
@@ -489,7 +497,8 @@
       "boon": "Boon",
       "bane": "Bane",
       "points": "{total} growth points",
-      "autoHint": "Applied automatically by wounds, skills or conditions.",
+      "auto": "{value} from wounds, skills or conditions",
+      "capAt": "Cap {value}",
       "sourceHint": "The stat this one is derived from.",
       "manualHint": "added on top",
       "calcHint": "from skills",
@@ -517,7 +526,22 @@
       "gold": "+{amount} Gold",
       "healed": "+{amount} HP, to {hp}",
       "boost": "{what}, {lasts}",
-      "boostLeft": "+{amount} {stats} by hand"
+      "boostLeft": "+{amount} {stats} by hand",
+      "splash": {
+        "title": "Level Up",
+        "skip": "Skip",
+        "auto": "Auto-advance",
+        "next": "Continue"
+      },
+      "lines": {
+        "hint": "said on the Level Up splash; a blank one says nothing",
+        "great": "A great level",
+        "fair": "A fair level",
+        "poor": "A poor level",
+        "greatHint": "Said when {count} stats or more rise.",
+        "fairHint": "Said when at least {count} stats rise, but not enough for a great level.",
+        "poorHint": "Said when fewer than {count} stats rise."
+      }
     },
     "Ability": {
       "acrobatics": "Acrobatics",
@@ -620,7 +644,17 @@
       "usedUp": "Used up",
       "usesItemOn": "Uses {item} on {target}",
       "rankReached": "Reaches rank {rank}",
-      "broke": "Broke"
+      "broke": "Broke",
+      "inspect": "Inspect",
+      "inspectHint": "Inspect the numbers. Right-clicking the message does the same.",
+      "versus": "{first} against {second}",
+      "dice": "Dice, as they fell",
+      "nothingMore": "The card says all there is to say.",
+      "record": {
+        "setup": "In play",
+        "dice": "Rolls",
+        "after": "Afterwards"
+      }
     },
     "Exchange": {
       "forecast": "Combat Forecast",
@@ -1039,8 +1073,16 @@
     },
     "HeartSeal": {
       "title": "Heart Seal Classes",
-      "add": "Add a class from the class tree",
       "remove": "Take this class off the list",
+      "picker": {
+        "held": "On the list",
+        "search": "Search classes",
+        "searchAdd": "Search classes to add",
+        "others": "No other Heart Seal Classes yet.",
+        "none": "No class of that name.",
+        "empty": "The compendiums hold no class a unit can start in.",
+        "tree": "Browse the class tree"
+      },
       "none": "No Heart Seal Classes yet.",
       "starting": "The class this unit's own line starts in, which is always on the list.",
       "reclass": "Reclass",
@@ -1118,6 +1160,13 @@
         "start": "Starting proficiency"
       }
     },
+    "Migration": {
+      "title": "Skills Brought Up to Date",
+      "count": "Skills: {skills} · Units: {units}",
+      "world": "Items sidebar",
+      "picks": "Still to pick on the unit's sheet: {list}.",
+      "ranks": "Weapon ranks were left as they are; check those of: {list}."
+    },
     "Promotion": {
       "title": "Promote {name}",
       "raise": "In place of the skill",
@@ -1181,6 +1230,8 @@
       "inflicts": "inflicts {conditions}",
       "nullified": "{conditions} nullified",
       "gained": "+{amount} HP",
+      "gold": "+{amount} Gold",
+      "goldSpent": "no more Gold this map",
       "activates": "takes effect",
       "remind": "takes effect, to apply by hand",
       "check": "applies if its condition holds, to apply by hand",
@@ -1496,6 +1547,7 @@
       "refused": "no effect",
       "assured": "{skill} is sure to activate",
       "provoked": "{name} is Provoked by {by} and can target no other enemy.",
+      "sheltered": "{name} cannot attack {target} from so near {by} ({skill}).",
       "sighted": "{skill}: sighted",
       "inSight": "{skill}: in sight",
       "mode": {
@@ -1946,6 +1998,10 @@
         "name": "Additional Conditions",
         "hint": "Adds the Additional Conditions of the Optional Modules to the conditions a unit can be given. Their durations and stacks are counted like any other; most of their effects are shown as reminders and left to the table."
       },
+      "turnGoldMost": {
+        "name": "Most Gold a map gives from a skill such as Income",
+        "hint": "A skill that gives its unit Gold as its turns pass, such as Income, gives no more than this in one map. The Gold it has given so far is counted on the skill. Leave at 0 for no limit."
+      },
       "stolenGold": {
         "name": "Gold stolen from an enemy that carries none",
         "hint": "A skill that steals gold from an enemy, such as Mug, takes the Gold on that enemy's sheet. This is what it takes from an enemy whose sheet has none."
@@ -1955,6 +2011,10 @@
         "hint": "As a skill takes effect, its icon and name flash over its unit before the numbers. Fast shows each more briefly. Off shows none, and skills are named in plain text as before. This is your own choice and changes nothing for the others at the table.",
         "fast": "Fast",
         "normal": "Normal"
+      },
+      "levelUpSplash": {
+        "name": "Level Up splash",
+        "hint": "When a unit levels up, show its new level, its stats and what they gained over the whole screen, with a line from the unit. Off shows none, and the level up is told in chat as before. This is your own choice and changes nothing for the others at the table."
       },
       "cutInSound": {
         "name": "Cut-in sound",
@@ -2009,7 +2069,7 @@
       },
       "skillCapacity": {
         "name": "Skill Capacity",
-        "hint": "Units have 9 skill slots in place of 4, limited by Capacity Points: the Capacity Costs of the skills a unit has equipped may add up to 20, to 40 from the second tier, and to 80 from the third. A unit's own number can be typed on the Optional tab of its sheet."
+        "hint": "Units have 9 skill slots in place of 4, limited by Capacity Points: the Capacity Costs of the skills a unit has equipped may add up to 30, to 60 from the second tier, and to 120 from the third. A unit's own number can be typed on the Optional tab of its sheet."
       },
       "alternateActivation": {
         "name": "Alternate Skill Activation",
@@ -2784,7 +2844,7 @@
       "capacity": {
         "title": "Skill Capacity",
         "own": "Capacity Points",
-        "ownHint": "Leave empty for the usual amount of the tier the unit has reached: 20, 40 or 80.",
+        "ownHint": "Leave empty for the usual amount of the tier the unit has reached: 30, 60 or 120.",
         "spent": "Spent",
         "class": {
           "base": "Citizen",
@@ -3485,6 +3545,7 @@
         "banner": "Buying for {unit}",
         "gold": "Gold left",
         "goldValue": "{left} of {total}",
+        "outfit": "Prices",
         "note": "Press Buy on a row to add it to the sheet. A green dot marks the types of weapon {unit} can wield.",
         "bought": "Bought: {items}. Anything can be handed back from the Creator."
       },
@@ -3571,6 +3632,7 @@
         "notesGM": "Notes left here are seen by whoever works on this unit.",
         "answered": "Mark as answered",
         "flag": "Help asked for",
+        "listed": "Help asked for: {steps}",
         "notice": "{user} asks for help with {unit}: {step}."
       },
       "note": {
@@ -4367,8 +4429,18 @@
       "elevation": "Elevation {level}",
       "terrainRegion": "Painted: {terrain}",
       "elevationRegion": "Painted: elevation {level}",
+      "zoneRegion": "Painted: {zone}",
+      "zones": "Zones",
+      "zoneHint": "Drag to mark the zone. Hold Shift to fill a box. With the Eraser, drag to take it off.",
       "show": "Show to players",
       "showHint": "Draws the ground on the map for everyone, all the time, as a picture under the tokens. Off, it shows only with Survey the ground."
+    },
+    "Zone": {
+      "deploy": {
+        "label": "Deployment zone",
+        "hint": "Deployment zone: the tiles the players set their units up on. Shown to everyone until the battle begins.",
+        "held": "{name} sets up inside the deployment zone until the battle begins."
+      }
     },
     "MapGen": {
       "title": "Map Generator",

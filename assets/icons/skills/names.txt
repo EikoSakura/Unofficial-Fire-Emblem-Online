@@ -758,3 +758,15 @@ aura		Aura	Enemy-Exclusive Skills	icons/magic/death/skull-sand-white-yellow.webp
 goddesss-blessing		Goddess's Blessing	Enemy-Exclusive Skills	icons/magic/holy/angel-winged-humanoid-blue.webp
 mantle		Mantle	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-blue.webp
 immortal		Immortal	Enemy-Exclusive Skills	icons/magic/control/debuff-chains-ropes-purple.webp
+fast-recovery		Fast Recovery	Class-Specific Skills	icons/magic/life/heart-cross-strong-blue.webp
+haggle		Haggle	Class-Specific Skills	icons/skills/social/trading-injustice-scale-gray.webp
+belligerent		Belligerent	Class-Specific Skills	icons/skills/melee/weapons-crossed-swords-black-gray.webp
+mugen-ryu		Mugen-Ryu	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue-yellow.webp
+income		Income	Promotion Skills	icons/magic/control/buff-strength-muscle-damage-orange.webp
+short-tempered		Short Tempered	Promotion Skills	icons/magic/defensive/shield-barrier-flaming-diamond-blue.webp
+hitobashira		Hitobashira	Occult Skills	icons/magic/perception/orb-crystal-ball-scrying-blue.webp
+wealth-of-power		Wealth Of Power	Occult Skills	icons/magic/symbols/rune-sigil-red-orange.webp
+hard-to-kill		Hard to Kill	Occult Skills	icons/magic/symbols/runes-star-orange.webp
+senbonzakura		Senbonzakura	Mastery Skills	icons/magic/light/explosion-star-teal-purple.webp
+make-a-killing		Make A Killing	Mastery Skills	icons/magic/light/explosion-star-teal-purple.webp
+demons-embrace		Demon's Embrace	Mastery Skills	icons/magic/unholy/orb-hands-pink.webp

@@ -368,3 +368,12 @@ cantor		Cantor	Misc. Classes / Enemy/NPC Classes	icons/creatures/eyes/void-singl
 diabolist		Diabolist	Misc. Classes / Enemy/NPC Classes	icons/creatures/eyes/humanoid-single-yellow.webp
 black-dragon	black-dragon-a92	Black Dragon	Misc. Classes / Enemy/NPC Classes	icons/creatures/reptiles/dragon-horned-blue.webp
 deity		Deity	Misc. Classes / Enemy/NPC Classes	icons/equipment/head/crown-horns-brown.webp
+ashigaru		Ashigaru	Optional Content / New Base Classes	icons/weapons/polearms/spear-simple-red-blue.webp
+rei		Rei	Optional Content / New Base Classes	icons/magic/death/undead-ghost-strike-white.webp
+hitokiri		Hitokiri	Optional Content / New Base Classes	icons/creatures/magical/spirit-undead-masked-blue.webp
+oni-savage		Oni Savage	Optional Content / New Base Classes	icons/weapons/clubs/club-spiked-glowing.webp
+yokai		Yokai	Optional Content / New Base Classes	icons/equipment/head/mask-carved-scream-tan.webp
+shugoki		Shugoki	Optional Content / New Base Classes	icons/weapons/clubs/club-heavy-barbed-brown.webp
+merchant		Merchant	Optional Content / New Base Classes	icons/commodities/currency/coins-plain-stack-silver.webp
+profiteer		Profiteer	Optional Content / New Base Classes	icons/commodities/currency/coins-plain-stack-silver.webp
+tycoon		Tycoon	Optional Content / New Base Classes	icons/commodities/currency/coins-plain-gold.webp

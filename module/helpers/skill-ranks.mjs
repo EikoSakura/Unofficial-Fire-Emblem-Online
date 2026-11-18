@@ -155,7 +155,11 @@ export function registerHooks() {
   Hooks.on("deleteItem", (item, options, userId) => look(item, userId, (actor) => gave(actor, item.id)));
   Hooks.on("updateItem", (item, changed, options, userId) => {
     if ( !["choice", "effects", "automate"].some((key) => key in (changed.system ?? {})) ) return;
-    look(item, userId, (actor) => givesRanks(item.system) || gave(actor, item.id));
+
+    // A skill that is brought up to date with the compendium (see `helpers/migration.mjs`) gives no rank it had
+    // not given: its unit had it before the system gave ranks, and its rank was raised by hand
+    const refreshed = !!options?.[FEO.id]?.refreshed;
+    look(item, userId, (actor) => (!refreshed && givesRanks(item.system)) || gave(actor, item.id));
   });
 
   Hooks.on("updateActor", (actor, changed, options, userId) => {

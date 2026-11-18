@@ -86,6 +86,24 @@
     </div>
   </div>
 
+  <div class="card">
+    <h3>{{localize "FEO.Section.levelLines"}} <span class="aside">{{localize "FEO.LevelUp.lines.hint"}}</span></h3>
+    <div class="pairs three">
+      <label class="field" data-tooltip="{{localize "FEO.LevelUp.lines.greatHint" count=config.levelUp.lines.great}}">
+        <span>{{localize "FEO.LevelUp.lines.great"}}</span>
+        <input type="text" name="system.levelLines.great" value="{{system.levelLines.great}}" maxlength="{{config.levelUp.most.text}}">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.LevelUp.lines.fairHint" count=config.levelUp.lines.fair}}">
+        <span>{{localize "FEO.LevelUp.lines.fair"}}</span>
+        <input type="text" name="system.levelLines.fair" value="{{system.levelLines.fair}}" maxlength="{{config.levelUp.most.text}}">
+      </label>
+      <label class="field" data-tooltip="{{localize "FEO.LevelUp.lines.poorHint" count=config.levelUp.lines.fair}}">
+        <span>{{localize "FEO.LevelUp.lines.poor"}}</span>
+        <input type="text" name="system.levelLines.poor" value="{{system.levelLines.poor}}" maxlength="{{config.levelUp.most.text}}">
+      </label>
+    </div>
+  </div>
+
   <div class="cols story">
     <div class="card biography">
       <h3>{{localize "FEO.Unit.biography"}}</h3>

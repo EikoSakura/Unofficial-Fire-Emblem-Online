@@ -1,12 +1,14 @@
 /**
- * Reads the "Skills" tab of the Reference Sheet. Shared by the skills build, which makes a skill of every row,
- * and the classes build, which checks the skills a class names against them.
+ * Reads the "Skills" tab of the Reference Sheet, and the skills of the same tab of the Optional Content Sheet
+ * that are in the game (those listed in packs-src/optional-content.json). Shared by the skills build, which
+ * makes a skill of every row, and the classes build, which checks the skills a class names against them.
  */
 
 import { readWorkbook } from "./xlsx.mjs";
-import { REFERENCE_SHEET, oneLine } from "./pack.mjs";
+import { OPTIONAL_SHEET, REFERENCE_SHEET, oneLine, readOptionalList } from "./pack.mjs";
 
 export const SKILLS_TAB = "Skills";
+export const SKILL_SOURCES = { reference: "Reference Sheet", optional: "Optional Content Sheet" };
 export const SKILL_COLUMNS = { name: 0, effect: 1, prerequisite: 5, capacity: 6 };
 export const SKILL_TITLES = { name: "Name", effect: "Effect", prerequisite: "Prerequisite /Class", capacity: "Capacity Cost" };
 
@@ -62,10 +64,11 @@ export function readSkillName(text) {
 /**
  * Read the tab.
  * @returns {{sheet: object, sections: SkillSection[], preamble: {row: number, text: string}[],
- *   rows: {row: number, section: SkillSection}[], extras: {row: number, section: SkillSection}[],
- *   problems: string[]}}
- *   `rows` are the skills, `extras` the rows of parts that list no skills, `preamble` the notes above the first
- *   heading.
+ *   rows: {row: number, section: SkillSection, from: object, source: string}[],
+ *   extras: {row: number, section: SkillSection}[], problems: string[]}}
+ *   `rows` are the skills, each with the tab it is on (`from`) and the sheet that tab is of (`source`);
+ *   `extras` the rows of parts that list no skills, `preamble` the notes above the first heading. `sheet` is
+ *   the tab of the Reference Sheet.
  */
 export function readSkillsTab() {
   const sheet = readWorkbook(REFERENCE_SHEET).find((candidate) => candidate.name === SKILLS_TAB);
@@ -106,7 +109,47 @@ export function readSkillsTab() {
       continue;
     }
     if ( section.kind === null ) extras.push({ row, section });
-    else rows.push({ row, section });
+    else rows.push({ row, section, from: sheet, source: SKILL_SOURCES.reference });
+  }
+
+  // The skills of the Optional Content Sheet that are in the game: only those the list names are read, each
+  // into the part of the tab it stands in there, which has the headings of the Reference Sheet's
+  const optional = readOptionalList();
+  problems.push(...optional.problems);
+  const extra = (optional.skills.length && !optional.problems.length)
+    ? readWorkbook(OPTIONAL_SHEET).find((candidate) => candidate.name === SKILLS_TAB) : null;
+  if ( optional.skills.length && !optional.problems.length && !extra ) problems.push(`The ${SKILL_SOURCES.optional} has no "${SKILLS_TAB}" tab.`);
+  if ( extra ) {
+    for ( const [key, column] of Object.entries(SKILL_COLUMNS) ) {
+      if ( oneLine(extra.cell(1, column)) !== SKILL_TITLES[key] ) {
+        problems.push(`${SKILL_SOURCES.optional}, row 1: column ${column + 1} should be "${SKILL_TITLES[key]}" but is "${oneLine(extra.cell(1, column))}"`);
+      }
+    }
+    const found = new Set();
+    let place = null;
+    for ( let row = 2; row <= extra.lastRow; row++ ) {
+      const cells = extra.filled(row);
+      if ( !cells.length ) continue;
+      const first = oneLine(extra.cell(row, 0));
+      if ( (cells.length === 1) && (cells[0].column === 0) ) {
+        // A note says nothing of where the rows beneath it belong; any other line is a heading, and one this
+        // tab alone has ends the part before it
+        const bracketed = /^([^()]{1,40}?)\s*\((.+)\)$/.exec(first);
+        const heading = bracketed ? bracketed[1] : first;
+        if ( !(heading in SKILL_SECTIONS) && ((first.length > 40) || first.endsWith(".")) ) continue;
+        place = sections.find((entry) => (entry.key === heading) && (entry.kind !== null)) ?? null;
+        continue;
+      }
+      if ( !place ) continue;
+      const { name } = readSkillName(extra.cell(row, SKILL_COLUMNS.name));
+      if ( !optional.skills.includes(name) ) continue;
+      if ( found.has(name) ) problems.push(`${SKILL_SOURCES.optional}, row ${row}: a second skill named "${name}"`);
+      found.add(name);
+      rows.push({ row, section: place, from: extra, source: SKILL_SOURCES.optional });
+    }
+    for ( const name of optional.skills ) {
+      if ( !found.has(name) ) problems.push(`optional-content.json: the ${SKILLS_TAB} tab of the ${SKILL_SOURCES.optional} has no skill named "${name}"`);
+    }
   }
   return { sheet, sections, preamble, rows, extras, problems };
 }
@@ -116,10 +159,10 @@ export function readSkillsTab() {
  * @returns {Map<string, {name: string, kind: string, row: number}[]>}
  */
 export function readSkillNames() {
-  const { sheet, rows } = readSkillsTab();
+  const { rows } = readSkillsTab();
   const names = new Map();
-  for ( const { row, section } of rows ) {
-    const { name } = readSkillName(sheet.cell(row, SKILL_COLUMNS.name));
+  for ( const { row, section, from } of rows ) {
+    const { name } = readSkillName(from.cell(row, SKILL_COLUMNS.name));
     const key = name.toLowerCase();
     if ( !names.has(key) ) names.set(key, []);
     names.get(key).push({ name, kind: section.kind, row });

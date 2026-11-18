@@ -1,5 +1,6 @@
 import { FEO } from "../config.mjs";
 import { sellValue } from "../rules/progression.mjs";
+import { resold } from "../rules/stealing.mjs";
 import { readShield } from "../rules/blocking.mjs";
 import { breakWeapon, canWield, repairCost, repairWeapon, wieldLevel } from "../rules/weapons.mjs";
 import { postCard } from "./chat.mjs";
@@ -145,7 +146,9 @@ export function quote(item) {
   const repair = (item.type === "weapon") ? repairWeapon({ name: item.name, system }).cost : mends ? repairCost(system.cost, value, max) : 0;
   return {
     repair,
-    sell: sellValue(system.cost, value, max),
+
+    // What its unit's skills add to what it sells for is in the price (see `resold`)
+    sell: resold(sellValue(system.cost, value, max), item.parent?.system?.knacks?.resale ?? 0),
     damaged: mends && (max > 0) && (value < max),
     broken: false
   };

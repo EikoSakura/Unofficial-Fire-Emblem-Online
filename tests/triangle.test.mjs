@@ -100,7 +100,9 @@ test("a typing mistake in what bends the triangle does not pass silently", () =>
 test("the triangles: Swords, Axes and Lances are one, all magic another, the rest stands in none", () => {
   const groups = trianglesOf();
   assert.equal(groups.length, 2);
-  assert.deepEqual([...triangleOf("sword")].sort(), ["axe", "lance", "sword"]);
+
+  // Katanas are a sub-category of Swords, and stand where Swords do
+  assert.deepEqual([...triangleOf("sword")].sort(), ["axe", "katana", "lance", "sword"]);
   assert.ok(triangleOf("dark").includes("fire"), "Anima ties Light and Dark to the elements");
   assert.equal(triangleOf("bow"), null);
 

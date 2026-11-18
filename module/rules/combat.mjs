@@ -19,7 +19,7 @@ import { receiveCondition } from "./events.mjs";
 import { formationAround, reachable, unitsNear, unitsNearFoe } from "./positions.mjs";
 import { spreadGrant, spreadOut, spreadTo } from "./spread.mjs";
 import { followsUp } from "./progression.mjs";
-import { ROUND_MOMENT, STRIKES_ALWAYS, countsEvery, lineUp, roundsOf, speedSteps } from "./rounds.mjs";
+import { ROUND_MOMENT, STRIKES_ALWAYS, countsEvery, defenderLeads, lineUp, roundsOf, speedSteps } from "./rounds.mjs";
 import { combatWith, prepareSkills, weaponStrikes } from "./skill-combat.mjs";
 import { HIT_SOURCES, NO_CRIT_MOMENT, NO_LETHALITY, PROC_TRIGGERS, hpHolds, readNumber, readsDealt, resolveDealt, surpassed, weaponIs } from "./skills.mjs";
 import { isStaggered, staggerHit, staggerInUse, staggerTimes } from "./stagger.mjs";
@@ -1636,7 +1636,7 @@ export function planExchange(initiator, defender, { distance = 1, ground = null,
   const sides = { initiator: side("initiator"), defender: side("defender") };
 
   // The initiator attacks, the defender answers, then whoever is fast enough attacks again. A defender whose
-  // skill lets it go first does. Each attack strikes as many times as the weapon or a skill makes it, and
+  // skill lets it go first does, and so does one whose foe's skill has its enemy attack first. Each attack strikes as many times as the weapon or a skill makes it, and
   // attacks that skills add come after all the others, at the share of their damage the skill gives. Of them
   // all only the attack a side makes for being fast enough is a follow-up, with every strike of it
   // `kinds` says what each attack in the order is: the attack a side makes first ("open"), its follow-up
@@ -1654,7 +1654,7 @@ export function planExchange(initiator, defender, { distance = 1, ground = null,
     }
   };
   if ( !blocked.initiator ) {
-    const first = !blocked.defender && rules("defender").has("first") && !rules("initiator").has("first");
+    const first = !blocked.defender && defenderLeads(rules("initiator"), rules("defender"));
     const opening = first ? ["defender", "initiator"] : ["initiator", "defender"];
     for ( const key of opening ) if ( !blocked[key] ) attack(key, 1, sides[key].openStrikes);
     for ( const key of ["initiator", "defender"] ) {
@@ -1963,8 +1963,10 @@ export function rollBudget(plan) {
     const avenges = (target.chances?.struck ?? []).filter((proc) => proc.attack && (proc.strike ? proc.strike.able : !unarmed)).length;
     const most = Math.max(own.landed + ((ripostes + avenges) * reply), own.missed + (answers * reply));
 
-    // An attack that skills turn into several rolls for each of them
-    const attacks = 1 + chances.reduce((sum, proc) => sum + Math.max((proc.sequence?.length ?? 1) - 1, 0), 0);
+    // An attack that skills turn into several rolls for each of them, and so does one that begins a chain of
+    // attacks, for as many as the chain may come to
+    const links = [...(plan[key].chances?.hit ?? []), ...(plan[key].chances?.crit ?? [])].reduce((sum, proc) => sum + (proc.chain?.most ?? 0), 0);
+    const attacks = 1 + links + chances.reduce((sum, proc) => sum + Math.max((proc.sequence?.length ?? 1) - 1, 0), 0);
     return total + rolled(chances) + upgrades(chances) + (most * attacks);
   }, 0);
   if ( !plan.order.length ) return fight;
@@ -3264,8 +3266,9 @@ function rollExchange(plan, d100, { saved = null, answers = null, standby = null
       const planned = entry.share;
       let next = index + 1;
       for ( const proc of side.chances?.attack ?? [] ) {
-        // What only begins with a later attack of the fight is read below, for every attack
-        if ( proc.from ) continue;
+        // What only begins with a later attack of the fight, or once its unit has been hit in it, is read
+        // below, for every attack
+        if ( proc.from || proc.hurt ) continue;
         if ( !fire(proc, key, procs) ) continue;
         give(proc, key, { part: "own" });
         spreadNow(proc, key);
@@ -3301,6 +3304,14 @@ function rollExchange(plan, d100, { saved = null, answers = null, standby = null
       mine.fired.add(proc.skill);
     }
 
+    // And what they are sure to do for every attack once an attack has landed on their unit in this fight
+    for ( const proc of (side.base && mine.struck) ? (side.chances?.attack ?? []) : [] ) {
+      if ( !proc.hurt || !proc.sure || proc.sequence || (proc.uses && (proc.uses.left === 0)) ) continue;
+      parts.push(proc);
+      procs.push({ skill: proc.skill, on: proc.on, by: key, roll: null, chance: 100, success: true, sure: true });
+      mine.fired.add(proc.skill);
+    }
+
     // The plan's numbers hold until something changes them: a skill that activated, or a strike that changed
     // somebody's conditions. After that the numbers are worked out again for this attack
     let numbers = own ? null : cur;
@@ -3327,7 +3338,7 @@ function rollExchange(plan, d100, { saved = null, answers = null, standby = null
       || Object.values(pending).some(Boolean) || !!side.opener || !!side.folded || !!side.foreseen || (fcm !== 1);
     // `dodgeMore` is Dodge the target gains against this attack alone, as it answers it, and `avoidMore`
     // Critical Avoid
-    const work = (dodgeMore = 0, avoidMore = 0) => {
+    const figure = (dodgeMore = 0, avoidMore = 0) => {
       if ( !from.base ) {
         if ( dodgeMore || avoidMore ) {
           numbers = { ...numbers, hit: clamp(numbers.hit - dodgeMore, 0, 100), crit: clamp((numbers.crit ?? 0) - avoidMore, 0, 100) };
@@ -3353,6 +3364,17 @@ function rollExchange(plan, d100, { saved = null, answers = null, standby = null
       if ( !own ) resisting = made.kind;
       numbers = numbersFor(base, { ...from.strike, damageScale: scale, attacker: mine.conditions, target: foe.conditions, fcm, autoCrit: !!from.strike.autoCrit || made.crit });
       if ( (sure === true) || ((sure === "ifAny") && (numbers.hit >= 1)) ) numbers.hit = 100;
+    };
+
+    // An attack that is made at a share of its final accuracy, as each attack of a chain is: the share is
+    // taken of the Hit it comes to once everything else is counted, each time that is worked out
+    let unshared = null;
+    const work = (dodgeMore = 0, avoidMore = 0) => {
+      if ( unshared ) numbers = unshared;
+      figure(dodgeMore, avoidMore);
+      if ( (entry.hitTimes === undefined) || !numbers ) return;
+      unshared = numbers;
+      numbers = { ...numbers, hit: clamp(Math.floor((numbers.hit * entry.hitTimes) + 1e-9), 0, 100) };
     };
     work();
     might = from.power ?? 0;
@@ -3753,12 +3775,31 @@ function rollExchange(plan, d100, { saved = null, answers = null, standby = null
           continue;
         }
 
+        // A chain of attacks is begun by an attack of the round and carried on by the attacks it added: by
+        // none another skill added, by none made with numbers of its own, and where it says so, only by a
+        // unit that makes no follow-up attack in this fight
+        if ( proc.chain ) {
+          const link = entry.chain ?? null;
+          if ( link ? (link.skill !== proc.skill) : !!entry.added ) continue;
+          if ( own || (link && !(link.left > 0)) ) continue;
+          if ( proc.chain.lone && ((swift[key] !== null) ? swift[key] : !!plan[key].doubles) ) continue;
+        }
+
         // What its unit made of a critical hit in place of its damage was answered as the hit was rolled
         if ( proc.may && proc.plain ) {
           if ( proc !== plain ) continue;
         }
         else if ( !fire(proc, key, procs) ) continue;
         if ( proc.asCrit ) asCrit = true;
+
+        // The next attack of the chain, made at once at its share of the Hit it comes to. It sets off no
+        // attack in answer, and is not made if this hit brings the foe down
+        if ( proc.chain ) {
+          queue.splice(index + 1, 0, {
+            key, share: 1, part: null, added: proc.skill, groups: [], answer: true, round: entry.round,
+            hitTimes: proc.chain.hit, chain: { skill: proc.skill, left: (entry.chain?.left ?? proc.chain.most) - 1 }
+          });
+        }
 
         // A share of the hit that goes to other enemies around the two, once the fight is over
         if ( proc.splash ) {
@@ -4024,7 +4065,9 @@ function rollExchange(plan, d100, { saved = null, answers = null, standby = null
     if ( kill ) {
       for ( const proc of side.chances?.kill ?? [] ) {
         if ( !fire(proc, key, procs) ) continue;
-        recovered += proc.recover;
+
+        // HP it restores to its unit: a number, and a share of the damage the killing blow dealt
+        recovered += proc.recover + Math.floor(((taken * (proc.heal ?? 0)) / 100) + 1e-9);
         if ( proc.gold > 0 ) earned.push({ skill: proc.skill, by: key, gold: proc.gold });
         remind(proc, key);
       }

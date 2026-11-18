@@ -13,7 +13,7 @@ import { warpTiles } from "../rules/warp.mjs";
 import { extraGo } from "./acting.mjs";
 import { lungeOf } from "./affinity.mjs";
 import { movingAgain, walkAgain } from "./canto.mjs";
-import { armyOf, cannotTarget, tokenTile } from "./exchange.mjs";
+import { armyOf, cannotTarget, shelterOver, tokenTile } from "./exchange.mjs";
 import { lentRangeOf } from "./lending.mjs";
 import { movOf, rangesWith, skillsWith, turnMoveOf, turnNote } from "./movement.mjs";
 import { originOf, turnState } from "./phases.mjs";
@@ -490,12 +490,14 @@ export function harmOf(view, tile) {
  * @param {TokenDocument} target        The token it attacks
  * @param {object} [options]
  * @param {boolean} [options.stay]      Must it attack from where it stands?
+ * @param {boolean} [options.unsheltered]   Leave out what an ally of the target that shelters it bars, to
+ *                                      tell whether that alone keeps the unit from attacking
  * @returns {{tile: Tile, cost: number, distance: number, spaces: number, passed: string[]}|null}
  *                                      The tile, the movement and the spaces of the way there from where its
  *                                      turn began, the enemies moved through on it, and the tiles between it
  *                                      and the target; null if it cannot attack the target this turn
  */
-export function attackFrom(view, target, { stay = false } = {}) {
+export function attackFrom(view, target, { stay = false, unsheltered = false } = {}) {
   const there = tokenTile(target);
   if ( !view?.range || view.range.staff || !there ) return null;
 
@@ -511,11 +513,26 @@ export function attackFrom(view, target, { stay = false } = {}) {
     return (elevation * 1000) + (gives.dodge + (gives.def * 10));
   };
   const found = strikeFrom(view.reach, view.standing, goal, view.range, {
-    allows: view.allows, prefer, stay: stay || view.moved, walking: view.walking
+    allows: unsheltered ? view.allows : openTo(view, target), prefer, stay: stay || view.moved, walking: view.walking
   });
   if ( !found ) return null;
   const { spaces, passed } = walkOf(view, found.tile);
   return { ...found, distance: Math.max(tilesApart(found.tile, goal), 1), spaces, passed };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What says whether a unit may attack a target from a tile: what its reach allows, less the tiles from which
+ * an ally of the target that shelters it keeps the unit from attacking (see `shelterOver`).
+ * @param {TokenReach} view             The attacker's reach
+ * @param {TokenDocument} target        The token it attacks
+ * @returns {((from: Tile, to: Tile, distance: number) => boolean)|null}
+ */
+function openTo(view, target) {
+  const barred = shelterOver(view.unit.actor, view.unit.token, target.actor, target);
+  if ( !barred ) return view.allows;
+  return (from, to, distance) => (!view.allows || view.allows(from, to, distance)) && !barred(from);
 }
 
 /* -------------------------------------------- */
@@ -537,7 +554,7 @@ export function attackAt(view, target, tile) {
   const key = tileKey(tile);
   const here = key === tileKey(view.standing);
   if ( !here && (view.moved || !view.reach.stops.has(key)) ) return null;
-  if ( !strikesFrom(tile, goal, here ? view.range : view.walking, view.allows) ) return null;
+  if ( !strikesFrom(tile, goal, here ? view.range : view.walking, openTo(view, target)) ) return null;
   const { spaces, cost, passed } = walkOf(view, tile);
   return { tile: { i: tile.i, j: tile.j }, cost, distance: Math.max(tilesApart(tile, goal), 1), spaces, passed };
 }

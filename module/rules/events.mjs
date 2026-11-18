@@ -31,7 +31,7 @@ import { FOIL_MOMENT, HARM_FOILS } from "./answers.mjs";
 import { applyCondition, conditionConfig, wardOff } from "./conditions.mjs";
 import { takeHit, woundsFrom } from "./defeat.mjs";
 import { hasQuality } from "./positions.mjs";
-import { hpHolds, readsDealt, resolveDealt, resolveProc, skillTotals } from "./skills.mjs";
+import { carriedBy, hpHolds, readsDealt, resolveDealt, resolveProc, skillTotals } from "./skills.mjs";
 import { buildChange } from "./timed.mjs";
 
 /**
@@ -140,6 +140,7 @@ function selfOf(unit) {
   if ( !Array.isArray(self.skills) ) {
     self.skills = (unit.skills ?? []).filter((skill) => !skill.aura && !skill.timed).map((skill) => skill.name);
   }
+  if ( !Array.isArray(self.carried) ) self.carried = carriedBy(unit.skills);
   return self;
 }
 

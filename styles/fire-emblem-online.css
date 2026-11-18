@@ -1219,14 +1219,35 @@
   text-shadow: none;
 }
 
-.feo table.grid td { padding: 3px; border: 0; border-top: 1px solid var(--feo-line-soft); text-align: center; }
+.feo table.grid td { height: 28px; padding: 2px 3px; border: 0; border-top: 1px solid var(--feo-line-soft); text-align: center; }
+.feo table.grid tr.group td { border-top-color: var(--feo-line); }
 .feo table.grid :is(th, td):first-child { text-align: left; }
 .feo table.grid td:first-child { font-size: 12.5px; font-weight: 800; letter-spacing: .08em; color: var(--feo-muted); white-space: nowrap; }
-.feo table.grid td.total { font-family: var(--feo-font-number); font-size: 18px; }
 .feo table.grid th.growth-col { width: 32%; }
+.feo.mode-play table.grid th.growth-col { width: 38%; }
 .feo .window-content table.grid td > input[type="number"] { width: 44px; height: 24px; }
 .feo .window-content table.grid td > select { width: 62px; height: 24px; padding: 0 2px; font-size: 12.5px; }
-.feo .auto { margin-left: 3px; font-size: 12px; font-weight: 700; color: var(--feo-bane); cursor: help; }
+
+/* Each row has one bright number, its total. What it is made of sits beside it, quieter. */
+.feo table.grid td.base { color: var(--feo-muted); }
+.feo table.grid td.total { font-family: var(--feo-font-number); font-size: 19px; line-height: 1; }
+.feo table.grid td.total span { position: relative; }
+.feo table.grid td.total span[data-tooltip] { cursor: help; }
+.feo table.grid td.total .up { color: var(--feo-boon); }
+.feo table.grid td.total .down { color: var(--feo-bane); }
+.feo table.grid td.total :is(.up, .down)::after { position: absolute; left: 100%; top: 50%; margin-left: 2px; font-family: var(--feo-font-ui); font-size: 9px; line-height: 1; transform: translateY(-50%); }
+.feo table.grid td.total .up::after { content: "\25B2"; }
+.feo table.grid td.total .down::after { content: "\25BC"; }
+
+/* A boost of nothing is an empty slot until it is pointed at or typed in */
+.feo .window-content table.grid td.boost input.zero:not(:hover, :focus) { background: none; color: transparent; }
+
+/* In Play mode the Cap column is put away, and the stat an ability is worked out from sits beside its name */
+.feo table.grid td:first-child .from { margin-left: 7px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; color: var(--feo-faint); cursor: help; }
+.feo table.grid td:first-child .from::before { content: "\2190"; margin-right: 4px; font-weight: 400; }
+
+/* Locked numbers share the number face, so a row does not mix three kinds of digit */
+.feo.mode-play .window-content table.grid td.base input:disabled { font-family: var(--feo-font-number); font-size: 15px; }
 
 .feo .pill {
   margin-left: 5px;
@@ -1249,6 +1270,10 @@
 .feo .mini .gauge i { background: var(--feo-gold); }
 .feo .window-content .mini input[type="number"] { flex: none; width: 40px; height: 24px; }
 .feo .mini > span { font-size: 13px; color: var(--feo-muted); }
+.feo .mini .pct { display: inline-flex; flex: none; align-items: baseline; gap: 2px; }
+.feo .mini .pct i { font-size: 12px; font-style: normal; }
+.feo.mode-play .window-content .mini .pct input:disabled { width: 28px; padding: 0; text-align: right; font-family: var(--feo-font-number); font-size: 15px; }
+.feo.mode-play .mini .pct { gap: 1px; }
 .feo .level-line { display: flex; align-items: baseline; gap: 8px; }
 .feo .level-line .big { font-family: var(--feo-font-number); font-size: 34px; line-height: 1; }
 .feo .muted { color: var(--feo-muted); }
@@ -1490,76 +1515,167 @@
    Chat cards
    ============================================================ */
 
-/* Cards wear the sheet's dark palette whatever the theme of the chat log around them */
+/* Cards wear the sheet's dark palette whatever the theme of the chat log around them. Each is a banner in the
+   colours of the side its unit fights for over a dark panel: the headline on the cloth, what came of it
+   beneath. What a card keeps back opens from the magnifying glass on it (see `apps/chat-inspector.mjs`) */
 .feo-card {
   --feo-window: #121824;
   --feo-panel: #18202e;
   --feo-line: #34405a;
+  --feo-hair: rgba(255, 255, 255, .075);
   --feo-ink: #ece6d6;
   --feo-muted: #a0a8b8;
   --feo-good: #62c48d;
   --feo-bane: #f07a7a;
   --feo-boon: #70b2f7;
+  --feo-warn: #e8a640;
 
   --feo-gold: #d9b662;
   --feo-gold-ink: #1b1508;
+  --feo-cloth-ink: #f4eedd;
+  --feo-display: "Marcellus", "Modesto Condensed", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --feo-number: "Alegreya", "Amiri", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+
+  /* A card that speaks for no side wears slate */
+  --feo-army: #8d97ab;
+  --feo-army-deep: #2b3549;
+  --feo-army-dark: #161c29;
+  position: relative;
   display: grid;
-  gap: 6px;
-  padding: 10px 12px;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
   border: 1px solid var(--feo-line);
-  border-radius: 6px;
-  background: var(--feo-panel);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #1b2434, #151c29);
   color: var(--feo-ink);
   font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1.35;
 }
 
-/* A message that carries a card drops the parchment so that the card does not sit in a pale frame */
+:is(.feo-card, .feo-card *)[data-army="player"] { --feo-army: #4a86e4; --feo-army-deep: #1c3a72; --feo-army-dark: #0f2146; }
+:is(.feo-card, .feo-card *)[data-army="enemy"] { --feo-army: #d85252; --feo-army-deep: #6d1d23; --feo-army-dark: #3f0f14; }
+:is(.feo-card, .feo-card *)[data-army="ally"] { --feo-army: #4fae72; --feo-army-deep: #1d5636; --feo-army-dark: #0f3320; }
+:is(.feo-card, .feo-card *)[data-army="other"] { --feo-army: #dba338; --feo-army-deep: #76520f; --feo-army-dark: #46300a; }
+
+/* A message that carries a card is the card: the parchment and its frame make way, and the line that says who
+   spoke sits on the card's own dark */
 .chat-message:has(.feo-card) {
+  padding: 0;
+  overflow: hidden;
   border-color: #34405a;
   background: #121824;
   color: #ece6d6;
 }
 
+.chat-message:has(.feo-card) .message-header { padding: 5px 10px 4px; }
+.chat-message:has(.feo-card) .message-content { padding: 0; }
+.chat-message .message-content > .feo-card { border: 0; border-radius: 0; }
+
 .chat-message:has(.feo-card) .message-header,
 .chat-message:has(.feo-card) .message-header :is(.message-sender, .message-metadata, a) { color: #a0a8b8; }
 
-.feo-card :is(h3, h4, dt, dd) { color: inherit; }
-.feo-card header h3 { margin: 0; border: 0; font-size: 1.05em; font-weight: 700; }
-.feo-card header p { margin: 0; font-size: .9em; opacity: .75; }
+/* The banner: the headline, with what it is about beneath it */
+.feo-card > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: start;
+  padding: 8px 12px 9px;
+  border-bottom: 2px solid var(--feo-gold);
+  background: linear-gradient(180deg, var(--feo-army-deep), color-mix(in srgb, var(--feo-army-deep) 76%, #000));
+  color: var(--feo-cloth-ink);
+}
 
+.feo-card > header:last-child { border-bottom: 0; }
+.feo-card > header > :is(h3, p) { grid-column: 1; }
+.feo-card > header > .inspect { grid-column: 2; grid-row: 1; }
+.feo-card :is(h3, h4, dt, dd) { color: inherit; }
+.feo-card header h3 { margin: 0; border: 0; font-family: var(--feo-display); font-size: 1.4em; font-weight: 400; line-height: 1.2; text-shadow: none; }
+.feo-card header p { margin: 2px 0 0; font-size: .86em; line-height: 1.35; opacity: .8; }
+
+/* The magnifying glass that opens what the card keeps back */
+.feo-card .inspect {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .24);
+  box-shadow: none;
+  color: inherit;
+  font-size: 10px;
+  line-height: 1;
+  opacity: .72;
+  cursor: pointer;
+}
+
+.feo-card .inspect i { margin: 0; }
+.feo-card .inspect:is(:hover, :focus-visible) { border-color: var(--feo-gold); box-shadow: none; color: var(--feo-gold); opacity: 1; outline: none; }
+
+/* What came of it, in one word or one number */
 .feo-card .outcome {
-  padding: 4px 8px;
-  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
-  border-radius: 6px;
-  font-size: 1.25em;
-  font-weight: 700;
+  padding: 7px 12px 8px;
+  border-bottom: 1px solid var(--feo-hair);
+  background: radial-gradient(130% 150% at 50% 0%, color-mix(in srgb, currentColor 15%, transparent), transparent 72%);
+  font-family: var(--feo-display);
+  font-size: 1.5em;
+  line-height: 1.15;
+  letter-spacing: .02em;
   text-align: center;
 }
 
+.feo-card .outcome:last-child { border-bottom: 0; }
 .feo-card .outcome.good { color: var(--feo-good); }
 .feo-card .outcome.bad { color: var(--feo-bane); }
 .feo-card .outcome.crit { color: var(--feo-gold); }
-.feo-card dl { display: grid; gap: 2px; margin: 0; }
-.feo-card dl > div { display: flex; justify-content: space-between; gap: 12px; }
-.feo-card dt { opacity: .75; }
+.feo-card .outcome.total { font-family: var(--feo-number); font-size: 2.1em; font-weight: 700; line-height: 1.05; }
+
+/* The results, a line each */
+.feo-card dl { display: grid; gap: 0; margin: 0; padding: 5px 12px 6px; }
+.feo-card dl > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 3px 0; }
+.feo-card dl > div + div { border-top: 1px solid var(--feo-hair); }
+.feo-card dt { color: var(--feo-muted); }
 .feo-card dd { margin: 0; font-weight: 600; text-align: right; }
 .feo-card .muted dd { font-weight: 400; opacity: .6; }
 .feo-card .good dd { color: var(--feo-good); }
 .feo-card .bad dd { color: var(--feo-bane); }
-.feo-card .strong dd { font-size: 1.1em; }
-.feo-card .note { margin: 0; font-size: .85em; font-style: italic; opacity: .7; }
+.feo-card .strong dd { font-family: var(--feo-number); font-size: 1.15em; font-weight: 700; }
+.feo-card .note { margin: 0; padding: 6px 12px 8px; border-top: 1px solid var(--feo-hair); color: var(--feo-muted); font-size: .85em; font-style: italic; line-height: 1.4; }
+.feo-card > header + .note { border-top: 0; }
+.feo-card .note + .note { padding-top: 0; border-top: 0; }
+
+/* A card told in sections, each under a small heading: rows in the Inspect window, a word or two each on a
+   card that tells what a class changed */
+.feo-card section { padding: 7px 12px 5px; }
+.feo-card section + section { border-top: 1px solid var(--feo-hair); }
+.feo-card section h4 { margin: 0 0 1px; border: 0; color: var(--feo-muted); font-family: inherit; font-size: .7em; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.feo-card section dl { padding: 0; }
+.feo-card .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 3px; }
+.feo-card .chip { padding: 0 8px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--feo-line); font-size: .9em; line-height: 1.75; }
+.feo-card .chip b { font-family: var(--feo-number); font-size: 1.08em; }
+.feo-card .chip.good { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--feo-good) 50%, transparent); }
+.feo-card .chip.good b { color: var(--feo-good); }
+.feo-card .chip.bad { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--feo-bane) 50%, transparent); }
+.feo-card .chip.bad b { color: var(--feo-bane); }
+/* A chip that is bad and has no number is something given up: its name is struck through */
+.feo-card .chip.bad:not(:has(b)) { color: var(--feo-muted); text-decoration: line-through; }
 
 /* A skill shown to the table: its badge, name and kind, its chance, and what it does */
-.feo-card.feo-skill { gap: 8px; }
-.feo-skill header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.feo-skill > header { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 10px; }
 
 .feo-skill .badge {
   width: 34px;
   height: 34px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--feo-line);
+  border: 1px solid color-mix(in srgb, var(--feo-gold) 55%, transparent);
   border-radius: 50%;
+  background: rgba(0, 0, 0, .24);
   color: var(--feo-gold);
   font-size: 17px;
 }
@@ -1574,36 +1690,43 @@
   stroke-linejoin: round;
 }
 
-.feo-card.feo-skill header h3 { font-family: "Marcellus", "Modesto Condensed", "Palatino Linotype", Georgia, serif; font-size: 1.25em; font-weight: 400; line-height: 1.15; }
-.feo-card.feo-skill header p { font-size: .72em; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .7; }
+.feo-card.feo-skill header h3 { line-height: 1.15; }
+.feo-card.feo-skill header p { margin: 0; font-size: .72em; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; opacity: .75; }
 .feo-skill .chance { font-size: .9em; font-weight: 800; color: var(--feo-gold); white-space: nowrap; }
-.feo-skill .forms { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
+.feo-skill .forms { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 8px 12px 0; }
 .feo-skill .forms span { padding: 0 8px; border: 1px solid var(--feo-gold); border-radius: 999px; color: var(--feo-gold); font-size: .82em; font-weight: 700; }
-.feo-skill .effect { margin: 0; padding-top: 8px; border-top: 1px solid var(--feo-line); line-height: 1.4; white-space: pre-line; }
-.feo-skill dl { padding-top: 6px; border-top: 1px solid var(--feo-line); font-size: .92em; }
+.feo-skill .effect { margin: 0; padding: 8px 12px 9px; line-height: 1.45; white-space: pre-line; }
+.feo-skill dl { border-top: 1px solid var(--feo-hair); font-size: .92em; }
 
 /* A combat exchange: who fought, what each strike did and where HP ended up */
-.feo-exchange {
-  --feo-cloth-ink: #f4eedd;
-  --feo-display: "Marcellus", "Modesto Condensed", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  --feo-number: "Alegreya", "Amiri", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  gap: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-.feo-exchange [data-army] { --feo-army: #4a86e4; --feo-army-deep: #1c3a72; --feo-army-dark: #0f2146; }
-.feo-exchange [data-army="enemy"] { --feo-army: #d85252; --feo-army-deep: #6d1d23; --feo-army-dark: #3f0f14; }
-.feo-exchange [data-army="ally"] { --feo-army: #4fae72; --feo-army-deep: #1d5636; --feo-army-dark: #0f3320; }
-.feo-exchange [data-army="other"] { --feo-army: #dba338; --feo-army-deep: #76520f; --feo-army-dark: #46300a; }
-
 .feo-exchange .versus {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border-bottom: 2px solid var(--feo-gold);
 }
-.feo-exchange .side { padding: 9px 12px 11px; background: var(--feo-army-deep); color: var(--feo-cloth-ink); }
-.feo-exchange .side[data-side="defender"] { text-align: right; }
+
+.feo-exchange .side {
+  padding: 9px 12px 11px;
+  background: linear-gradient(180deg, var(--feo-army-deep), color-mix(in srgb, var(--feo-army-deep) 76%, #000));
+  color: var(--feo-cloth-ink);
+}
+
+.feo-exchange .side[data-side="initiator"] { padding-right: 18px; }
+.feo-exchange .side[data-side="defender"] { padding-left: 18px; text-align: right; }
+
+/* The magnifying glass sits where the two sides meet */
+.feo-exchange > .inspect {
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-color: var(--feo-gold);
+  background: #121824;
+  color: var(--feo-gold);
+  opacity: 1;
+}
+
+.feo-exchange > .inspect:is(:hover, :focus-visible) { background: var(--feo-gold); color: var(--feo-gold-ink); }
 
 .feo-exchange .side .name {
   overflow: hidden;
@@ -1632,7 +1755,7 @@
 .feo-exchange .bar.low .left { background: #ee6b6b; }
 .feo-exchange .bar .lost { background: color-mix(in srgb, var(--feo-cloth-ink) 32%, transparent); }
 
-.feo-exchange .strikes { display: grid; gap: 0; margin: 0; padding: 7px 12px 3px; list-style: none; }
+.feo-exchange .strikes { display: grid; gap: 0; margin: 0; padding: 7px 12px 5px; list-style: none; }
 .feo-exchange .strikes li { display: flex; align-items: center; gap: 8px; margin: 0; padding: 4px 0; }
 .feo-exchange .strikes li > i { flex: none; width: 1.1em; color: var(--feo-army); font-size: .95em; text-align: center; }
 .feo-exchange .strikes .who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1672,6 +1795,14 @@
 .feo-exchange .tag.skill.answer { box-shadow: inset 0 0 0 1px currentColor; opacity: .8; }
 .feo-exchange .tag.skill.added { font-style: italic; }
 
+/* What deserves a line of its own, beneath the strikes */
+.feo-exchange .notable { display: grid; justify-items: start; gap: 3px; min-width: 0; opacity: .85; }
+.feo-exchange > .notable { margin: 0; padding: 7px 12px 9px; border-top: 1px solid var(--feo-hair); list-style: none; font-size: .9em; opacity: 1; }
+.feo-exchange > .notable li { margin: 0; opacity: .85; }
+.feo-exchange .notable .gold { opacity: 1; }
+.feo-exchange .notable .bad { color: var(--feo-bane); }
+
+/* A card from before its details moved to the Inspect window keeps them in a section that opens */
 .feo-exchange details { padding: 4px 12px 9px; font-size: .9em; }
 
 .feo-exchange summary {
@@ -1684,28 +1815,32 @@
 }
 
 .feo-exchange summary::-webkit-details-marker { display: none; }
-.feo-exchange .notable { display: grid; justify-items: start; gap: 3px; min-width: 0; opacity: .85; }
-.feo-exchange .notable .gold { opacity: 1; }
-.feo-exchange .notable .bad { color: var(--feo-bane); }
 .feo-exchange .toggle { flex: none; opacity: .65; white-space: nowrap; }
 .feo-exchange summary:hover .toggle { opacity: 1; }
 .feo-exchange .toggle i { font-size: .8em; transition: transform .15s ease; }
 .feo-exchange details[open] .toggle i { transform: rotate(180deg); }
-
-.feo-exchange details dl {
-  margin-top: 7px;
-  padding-top: 7px;
-  border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-}
-
-.feo-exchange details dl { gap: 3px; }
+.feo-exchange details dl { gap: 3px; margin-top: 7px; padding: 7px 0 0; border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent); }
+.feo-exchange details dl > div { padding: 0; border: 0; }
 .feo-card.feo-exchange details dl dt { flex: none; max-width: 55%; font-weight: 400; }
 .feo-card.feo-exchange details dl dd { min-width: 0; font-weight: 400; }
-.feo-exchange details .note { margin-top: 5px; }
+.feo-exchange details .note { margin-top: 5px; padding: 0; border: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .feo-exchange .toggle i { transition: none; }
 }
+
+/* The Inspect window: everything a card was given, in full */
+.feo-inspector .window-content { max-height: min(80vh, 760px); padding: 0; overflow-y: auto; background: #121824; }
+.feo-inspector .feo-card { border: 0; border-radius: 0; }
+.feo-record > header > .result { grid-column: 2; grid-row: 1 / span 2; align-self: center; padding: 1px 10px; border-radius: 999px; background: rgba(0, 0, 0, .28); box-shadow: inset 0 0 0 1px currentColor; font-size: .85em; font-weight: 700; white-space: nowrap; }
+.feo-record > header > .result.good { color: var(--feo-good); }
+.feo-record > header > .result.bad { color: var(--feo-bane); }
+.feo-record > header > .result.crit { color: var(--feo-gold); }
+.feo-record dt { flex: none; max-width: 48%; }
+.feo-record dd { min-width: 0; font-weight: 400; }
+.feo-record :is(.strong, .good, .bad) dd { font-weight: 600; }
+.feo-record .dice { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 3px; }
+.feo-record .dice span { min-width: 2.3em; padding: 1px 5px; border-radius: 5px; background: rgba(255, 255, 255, .07); font-family: var(--feo-number); font-weight: 700; text-align: center; }
 
 /* ============================================================
    Combat forecast dialog
@@ -1864,7 +1999,6 @@
 
 .feo-turn dt { flex: none; }
 
-.feo-exchange { --feo-warn: #e8a640; }
 .feo-exchange .notable .cond { color: var(--feo-warn); opacity: 1; }
 .feo-exchange .notable .good { color: var(--feo-good); opacity: 1; }
 

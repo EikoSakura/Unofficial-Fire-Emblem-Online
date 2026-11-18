@@ -3,7 +3,7 @@ import {
   boutsLeft, canForge, forgePrice, forgeSteps, forgedStats, isMarching, normalizeBase, sparExp, wareKind
 } from "../rules/base.mjs";
 import { sellValue } from "../rules/progression.mjs";
-import { discounted } from "../rules/stealing.mjs";
+import { discounted, resold } from "../rules/stealing.mjs";
 import { postCard } from "./chat.mjs";
 import { awardExp, earnsExp, expRow, useExp } from "./experience.mjs";
 import { linkBond } from "./supports.mjs";
@@ -566,7 +566,8 @@ const ACTIONS = {
       const item = carried(actor, data.item);
       await parts(actor, item);
       const { value, max } = item.system.uses ?? { value: 0, max: 0 };
-      const worth = originalOf(item) ? 0 : sellValue(item.system.cost, value, max);
+      // What the unit's skills add to what it sells for is added to each ware (see `resold`)
+      const worth = originalOf(item) ? 0 : resold(sellValue(item.system.cost, value, max), actor.system.knacks?.resale ?? 0);
       const name = item.name;
       await item.delete();
       await actor.update({ "system.gold": actor.system.gold + worth });

@@ -123,9 +123,12 @@ FEO.proficiencies = {
  * `proficiency` names the proficiency a category is wielded with, when it has one.
  * `ranged` marks bows and their kin and `magic` marks tomes: both lose a use on every attack rather than only
  * on a hit, and tomes are resisted with RES whatever stat they add to their Might.
+ * `kin` names the category a sub-category belongs to, as Katanas belong to Swords: a skill that is for the
+ * one is for the other as well (see `weaponIs` in `module/rules/skills.mjs`).
  */
 FEO.weaponCategories = {
   sword: { label: "FEO.WeaponType.sword", proficiency: "sword" },
+  katana: { label: "FEO.WeaponType.katana", proficiency: "sword", kin: "sword" },
   lance: { label: "FEO.WeaponType.lance", proficiency: "lance" },
   axe: { label: "FEO.WeaponType.axe", proficiency: "axe" },
   bow: { label: "FEO.WeaponType.bow", proficiency: "bow", ranged: true },
@@ -154,6 +157,16 @@ FEO.weaponCategories = {
  * experience it earns goes to every one of them the unit is proficient in.
  */
 FEO.animaProficiencies = ["fire", "thunder", "wind", "water", "earth"];
+
+/**
+ * What every weapon of a category gives the unit that has it equipped, in the notation of skill effects (see
+ * `module/rules/skills.mjs`), as the note above that category's weapons on the sheet has it. All Katanas
+ * grant +2 HST but -1 END. The Dodge each adds is read from its own Effect (see `weaponGives` in
+ * `module/rules/weapons.mjs`).
+ */
+FEO.weaponTraits = {
+  katana: [{ haste: 2, endurance: -1 }]
+};
 
 /**
  * The three weapon types Magic falls into for a skill that is for one weapon type, as Weapon Focus is: each
@@ -344,8 +357,9 @@ FEO.supportRange = 3;
  */
 FEO.triangle = {
   sword: { beats: ["axe"], losesTo: ["lance"] },
-  axe: { beats: ["lance"], losesTo: ["sword"] },
-  lance: { beats: ["sword"], losesTo: ["axe"] },
+  katana: { beats: ["axe"], losesTo: ["lance"] },
+  axe: { beats: ["lance"], losesTo: ["sword", "katana"] },
+  lance: { beats: ["sword", "katana"], losesTo: ["axe"] },
   light: { beats: ["dark"], losesTo: ["anima"] },
   dark: { beats: ["anima"], losesTo: ["light"] },
   anima: { beats: ["light", "fire", "wind", "thunder"], losesTo: ["dark"] },
@@ -408,7 +422,7 @@ FEO.effectiveMight = {
 
 /** The icon drawn for each weapon category. */
 FEO.categoryIcons = {
-  sword: "sword", lance: "lance", axe: "axe", bow: "bow", crossbow: "bow", knife: "knife", brawl: "fist",
+  sword: "sword", katana: "sword", lance: "lance", axe: "axe", bow: "bow", crossbow: "bow", knife: "knife", brawl: "fist",
   bolt: "bow", anima: "tome", fire: "tome", thunder: "tome", wind: "tome", water: "tome", ice: "tome",
   earth: "tome", light: "tome", dark: "tome", staff: "staff", laguz: "claw", manakete: "claw",
   taguel: "claw", monster: "claw"
@@ -631,6 +645,14 @@ FEO.objects = {
   shut: "wall",
   standing: "house",
   tints: { door: 0xC9A66B, chest: 0xF2C14E, village: 0xE08A5A, trap: 0xE05A5A, spent: 0x8B8F9C }
+};
+
+/**
+ * The zones a Game Master marks on a map with the terrain brush, each with the colour its tiles are drawn in.
+ * `deploy` is the deployment zone: the tiles the players set their units up on before a battle begins.
+ */
+FEO.zones = {
+  deploy: { label: "FEO.Zone.deploy.label", icon: "banner", tint: "#4f8fe6" }
 };
 
 /**
@@ -1205,11 +1227,14 @@ FEO.exp = {
  * every stat that rose, "point" for every point gained (a growth rate above 100% can give two).
  * `levelsApart`: the most levels two units are taken to be apart, which bounds the gold a skill that pays by
  * the levels between its unit and the foe may hand out for one kill.
+ * `turnGoldMost`: the most Gold one skill gives its unit in a map at the moments of its turns, as Income does;
+ * 0 for no limit. The world's setting of the same name stands in for it.
  */
 FEO.earnings = {
   expStack: "multiply",
   goldPerGain: "stat",
-  levelsApart: 60
+  levelsApart: 60,
+  turnGoldMost: 0
 };
 
 /* -------------------------------------------- */
@@ -1273,6 +1298,22 @@ FEO.blocking = {
 /* -------------------------------------------- */
 
 /**
+ * The Level Up splash (see `rules/level-up.mjs`): as a unit levels up, the screen shows its new level, what each
+ * stat stands at and what it gained, and the unit says a line. `lines` is how many stats must rise for the unit
+ * to say its line for a great level, or for a fair one; with fewer it says its line for a poor one. `hold` is
+ * how long the splash stays once it has shown everything, in milliseconds, where it leaves by itself. `most` is
+ * how much of one a client takes from another: so many stats and so many notes under them, and so many letters
+ * to anything written.
+ */
+FEO.levelUp = {
+  lines: { great: 5, fair: 2 },
+  hold: 4000,
+  most: { rows: 16, chips: 8, text: 160 }
+};
+
+/* -------------------------------------------- */
+
+/**
  * Skill cut-ins (see `rules/cut-ins.mjs`): as a skill takes effect its icon and name flash over its unit.
  * `speeds` is how long one stays, in milliseconds, by what a user asks for; `most` is how many may wait their
  * turn before those waiting are shown together, and `names` how many skills one of them names before it only
@@ -1318,6 +1359,7 @@ FEO.weapons = {
     bow: { name: "Broken Bow", might: 0, hit: 30, crit: 0, range: "2", weight: 16, wexp: 1, effect: "" },
     crossbow: { name: "Broken Crossbow", might: 0, hit: 30, crit: 0, range: "1", weight: 18, wexp: 1, effect: "" },
     sword: { name: "Broken Sword", might: 0, hit: 30, crit: 0, range: "1", weight: 17, wexp: 1, effect: "" },
+    katana: { name: "Broken Katana", might: 0, hit: 30, crit: 0, range: "1", weight: 18, wexp: 1, effect: "+1 Dodge" },
     knife: { name: "Broken Knife", might: 0, hit: 30, crit: 0, range: "1", weight: 15, wexp: 1, effect: "" },
     staff: {
       name: "Broken Staff", might: 0, hit: 30, crit: 0, range: "1", weight: 15, wexp: 1,
@@ -1594,7 +1636,8 @@ FEO.optionalGrowths = {
  * `skillCapacity` (Skill Capacity): a unit may have `slots` skills equipped, as long as their Capacity Costs
  * add up to no more than its Capacity Points: those of `points` for the tier it has reached, or the number typed
  * on its sheet. A unit whose class does not promote reaches the later tiers at the levels a promotion would
- * have come at.
+ * have come at. The rulebook's own table gives 20, 40 and 80, and names 30, 60 and 120 as what a Game Master
+ * may raise them to for all units: those are the ones used here.
  *
  * `alternateActivation` (Alternate Skill Activation): a chance to activate that is read from a stat is read
  * from the whole stat, whatever the skill divides it by. In the `level` reading a chance read from the stat
@@ -1984,7 +2027,7 @@ FEO.optional = {
   skillCapacity: {
     enabled: false,
     slots: 9,
-    points: { base: 20, second: 40, third: 80 },
+    points: { base: 30, second: 60, third: 120 },
     labels: { base: "FEO.Optional.capacity.class.base", second: "FEO.Optional.capacity.class.second", third: "FEO.Optional.capacity.class.third" }
   },
   alternateActivation: {

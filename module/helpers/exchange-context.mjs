@@ -825,13 +825,17 @@ export function exchangeChanges(plan, result) {
  *                                                          of its own (`answer`), and in a fight of more rounds
  *                                                          than one a line heads each round (`round`)
  * @property {{label: string, cls: string}[]} notable       What deserves a line of its own
- * @property {{label: string, value: string|number}[]} details   Everything else, shown on request
- * @property {string[]} notes                               Remarks shown with the details
+ * @property {{label: string, value: string|number, group: "setup"|"dice"|"after"}[]} details
+ *                                                          Everything else, kept for the window that opens
+ *                                                          when the card is inspected: what was in play, the
+ *                                                          dice, and what came after
+ * @property {string[]} notes                               Remarks kept with the details
  */
 
 /**
  * Build the chat card for a finished exchange. The card itself shows who fought, what each strike did and
- * where HP ended up; rolls, weapon uses and weapon experience sit in a section that opens on request.
+ * where HP ended up; rolls, weapon uses and weapon experience are kept for the window that opens when the
+ * card is inspected (see `chat-context.mjs`).
  * @param {ExchangePlan} plan
  * @param {ExchangeResult} result
  * @param {Localizer} i18n
@@ -1402,6 +1406,7 @@ export function buildExchangeCard(plan, result, i18n, { armies = {}, unapplied =
 
   // The dice, in the order they were rolled: the chances as the fight began, then for each attack the
   // attacker's chances, the hit, the critical, the target's chances and what happens to conditions
+  const diceFrom = details.length;
   for ( const key of SIDES ) {
     const rolled = (result.opening ?? []).filter((proc) => (proc.by === key) && !proc.sure);
     if ( rolled.length ) details.push({
@@ -1484,6 +1489,9 @@ export function buildExchangeCard(plan, result, i18n, { armies = {}, unapplied =
   for ( const entry of result.spreads ?? [] ) {
     if ( entry.rolled?.length ) details.push({ label: `${entry.skill} · ${i18n.localize("FEO.Spread.picked")}`, value: entry.rolled.join(", ") });
   }
+
+  // What the fight wore down and what it taught
+  const afterFrom = details.length;
   for ( const key of SIDES ) {
     const { usesSpent, usesStart, uses } = result[key];
     if ( usesSpent ) details.push({
@@ -1529,6 +1537,12 @@ export function buildExchangeCard(plan, result, i18n, { armies = {}, unapplied =
 
   details.push(...squads.details);
   details.push(...after.details);
+
+  // The details are kept for the window that opens when the card is inspected, sorted into what was in play,
+  // the dice, and what came after
+  details.forEach((row, index) => {
+    row.group = (index >= afterFrom) ? "after" : (index >= diceFrom) ? "dice" : "setup";
+  });
 
   // Why somebody did not attack
   const notes = [];

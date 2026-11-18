@@ -2,10 +2,10 @@
   "id": "fire-emblem-online",
   "title": "Fire Emblem Online",
   "description": "<p>A game system for playing the Fire Emblem Online tabletop rules. Based on the Fire Emblem Online rules documents by Erinys and contributors; see the system credits for the full list.</p>",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "url": "https://github.com/EikoSakura/Unofficial-Fire-Emblem-Online",
   "manifest": "https://github.com/EikoSakura/Unofficial-Fire-Emblem-Online/releases/latest/download/system.json",
-  "download": "https://github.com/EikoSakura/Unofficial-Fire-Emblem-Online/releases/download/v0.4.0/fire-emblem-online.zip",
+  "download": "https://github.com/EikoSakura/Unofficial-Fire-Emblem-Online/releases/download/v0.5.0/fire-emblem-online.zip",
   "compatibility": {
     "minimum": "14",
     "verified": "14.370"

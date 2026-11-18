@@ -124,6 +124,19 @@ export function readCreation(raw = {}, config = FEO.creation) {
 }
 
 /* -------------------------------------------- */
+
+/**
+ * The steps of a unit's creation on which help has been asked for and not yet answered, in the Creator's order.
+ * A step the world no longer plays with waits for nobody.
+ * @param {CreationRecord} record
+ * @param {object} [optional]     FEO.optional
+ * @returns {string[]}
+ */
+export function helpSteps(record, optional = FEO.optional) {
+  return creationSteps(optional).filter((step) => record.help[step.id]).map((step) => step.id);
+}
+
+/* -------------------------------------------- */
 /*  Small helpers                               */
 /* -------------------------------------------- */
 
@@ -838,7 +851,7 @@ export function creationState({ unit, record, cls, taken = [], optional = FEO.op
     ready: !pending.length,
     pending,
     fresh: steps.filter((step) => step.fresh).map((step) => step.id),
-    help: steps.filter((step) => record.help[step.id]).map((step) => step.id),
+    help: helpSteps(record, optional),
     gold: unit.gold,
     bonusLeft: left,
     growth,

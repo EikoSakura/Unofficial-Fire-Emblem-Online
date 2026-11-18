@@ -29,6 +29,9 @@ export const CRAFTED_FLAG = "crafted";
 /** The world setting for the gold a unit steals from an enemy that carries none. */
 export const GOLD_SETTING = "stolenGold";
 
+/** The name of the world setting for the most Gold a skill gives in a map at the moments of a turn. */
+export const TURN_GOLD_SETTING = "turnGoldMost";
+
 /** The name of the hook called once something was stolen: with the thief's token, the other's, and what. */
 export const STOLEN_HOOK = `${FEO.id}.unitStolen`;
 
@@ -37,7 +40,8 @@ export const STOLEN_HOOK = `${FEO.id}.unitStolen`;
 /* -------------------------------------------- */
 
 /**
- * Register the world's setting for stolen gold.
+ * Register the world's settings for gold: what is stolen from a foe that carries none, and the most a skill
+ * such as Income gives in a map.
  */
 export function registerSettings() {
   game.settings.register(FEO.id, GOLD_SETTING, {
@@ -52,6 +56,20 @@ export function registerSettings() {
     }
   });
   FEO.stealing.gold = Math.max(Math.trunc(Number(game.settings.get(FEO.id, GOLD_SETTING)) || 0), 0);
+
+  // The most Gold one skill gives its unit in a map at the moments of its turns, as Income does
+  game.settings.register(FEO.id, TURN_GOLD_SETTING, {
+    name: "FEO.Setting.turnGoldMost.name",
+    hint: "FEO.Setting.turnGoldMost.hint",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: FEO.earnings.turnGoldMost,
+    onChange: (value) => {
+      FEO.earnings.turnGoldMost = Math.max(Math.trunc(Number(value) || 0), 0);
+    }
+  });
+  FEO.earnings.turnGoldMost = Math.max(Math.trunc(Number(game.settings.get(FEO.id, TURN_GOLD_SETTING)) || 0), 0);
 }
 
 /* -------------------------------------------- */

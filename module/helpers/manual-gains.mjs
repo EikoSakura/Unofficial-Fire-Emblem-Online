@@ -2,6 +2,7 @@ import { FEO } from "../config.mjs";
 import { gainRows, planGains, rollGrowths } from "../rules/progression.mjs";
 import { rollD100 } from "./chat.mjs";
 import { rerollFailed } from "./earnings.mjs";
+import { standsAt } from "./level-up.mjs";
 
 /**
  * Manual Stat Gains, as a level up happens in Foundry: rolling the growth rates where the reading in use still
@@ -20,16 +21,10 @@ const TEMPLATE = `systems/${FEO.id}/templates/dialog/manual-gains.hbs`;
  * @returns {object[]}
  */
 export function buildGainRows(rows, system) {
-  const value = (key) => {
-    if ( key === "hp" ) return system.hp.base ?? system.hp.max;
-    if ( key in FEO.abilities ) return system.abilities[key].total;
-    if ( key === "wlv" ) return system.weaponLevel?.base ?? 0;
-    return system.stats[key]?.base ?? 0;
-  };
   return rows.map((row) => ({
     ...row,
     label: FEO.growths[row.key],
-    value: value(row.key),
+    value: standsAt(system, row.key),
     note: row.capped ? "FEO.LevelUp.atCap"
       : row.all ? "FEO.Optional.manualGains.dialog.all"
         : (row.proc && (row.most > 1)) ? "FEO.Optional.manualGains.dialog.opened"

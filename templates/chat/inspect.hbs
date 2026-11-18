@@ -1,0 +1,25 @@
+<div class="feo-card feo-record"{{#if army}} data-army="{{army}}"{{/if}}>
+  <header>
+    <h3>{{title}}</h3>
+    {{#if subtitle}}<p>{{subtitle}}</p>{{/if}}
+    {{#if outcome}}<span class="result {{outcome.cls}}">{{outcome.label}}</span>{{/if}}
+  </header>
+  {{#each sections as |section|}}
+  <section>
+    {{#if section.label}}<h4>{{section.label}}</h4>{{/if}}
+    <dl>
+      {{#each section.rows as |row|}}
+      <div class="{{row.cls}}"><dt>{{row.label}}</dt><dd>{{row.value}}</dd></div>
+      {{/each}}
+    </dl>
+  </section>
+  {{/each}}
+  {{#if dice.length}}
+  <section>
+    <h4>{{localize "FEO.Chat.dice"}}</h4>
+    <p class="dice">{{#each dice as |die|}}<span>{{die}}</span>{{/each}}</p>
+  </section>
+  {{/if}}
+  {{#each notes as |note|}}<p class="note">{{note}}</p>{{/each}}
+  {{#unless sections.length}}{{#unless dice.length}}{{#unless notes.length}}<p class="note">{{localize "FEO.Chat.nothingMore"}}</p>{{/unless}}{{/unless}}{{/unless}}
+</div>

@@ -10,7 +10,7 @@
 import { FEO } from "../config.mjs";
 import { conditionsAround } from "./conditions.mjs";
 import { surroundings } from "./positions.mjs";
-import { chanceOf, holds, multiplyStats, readNumber, skillTotals } from "./skills.mjs";
+import { carriedBy, chanceOf, holds, multiplyStats, readNumber, skillTotals } from "./skills.mjs";
 import { usedName } from "./timed.mjs";
 
 /**
@@ -48,6 +48,9 @@ export function selfOf(unit, near = null) {
 
     // The skills it has equipped, for an aura that asks whether its giver has another skill
     skills: (unit.skills ?? []).filter((skill) => !skill.aura && !skill.timed).map((skill) => skill.name),
+
+    // And the lasting changes of its own that it carries, for one that asks for such a change
+    carried: carriedBy(unit.skills),
     near
   };
 }

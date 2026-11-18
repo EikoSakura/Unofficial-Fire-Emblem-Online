@@ -1,5 +1,6 @@
 import Base from "./module/apps/base.mjs";
 import BattleHud from "./module/apps/battle-hud.mjs";
+import ChatInspector from "./module/apps/chat-inspector.mjs";
 import MapGenerator from "./module/apps/map-generator.mjs";
 import Compendium from "./module/apps/compendium.mjs";
 import OptionalRulesConfig from "./module/apps/optional-rules-config.mjs";
@@ -11,9 +12,12 @@ import * as captureHelpers from "./module/helpers/capturing.mjs";
 import * as conditionHelpers from "./module/helpers/conditions.mjs";
 import * as creationHelpers from "./module/helpers/creation.mjs";
 import * as defeatHelpers from "./module/helpers/defeat.mjs";
+import * as helpListHelpers from "./module/helpers/help-list.mjs";
 import { registerDiscord } from "./module/helpers/discord.mjs";
 import * as eventHelpers from "./module/helpers/events.mjs";
 import * as cutInHelpers from "./module/helpers/cut-ins.mjs";
+import * as levelUpHelpers from "./module/helpers/level-up.mjs";
+import * as migrationHelpers from "./module/helpers/migration.mjs";
 import { APPLY_QUERY, applyExchangeQuery } from "./module/helpers/exchange.mjs";
 import * as experienceHelpers from "./module/helpers/experience.mjs";
 import * as optionalHelpers from "./module/helpers/optional.mjs";
@@ -189,6 +193,10 @@ Hooks.once("init", () => {
   // The search box of the rules journal looks through the text of every page
   registerRulesSearch();
 
+  // A chat card shows its headline and its results. Everything else it was given is kept with the message,
+  // and opens in a window of its own from the message's right-click menu or the magnifying glass on the card
+  ChatInspector.register();
+
   // A Game Master can send any page of the rules journal to a Discord channel, through a webhook set up in the
   // system's settings
   registerDiscord();
@@ -217,6 +225,9 @@ Hooks.once("init", () => {
   // The Character Creator: who is looking at which step of a unit, and calls for help
   Hooks.once("ready", () => creationHelpers.registerCreation());
 
+  // A unit that waits for help in its Creator carries a raised hand beside its name in the Actors list
+  helpListHelpers.registerHooks();
+
   // Encounters count down conditions as the turns of units start and end
   CONFIG.Combat.documentClass = FeoCombat;
 
@@ -234,8 +245,19 @@ Hooks.once("init", () => {
   cutInHelpers.registerHooks();
   game.feo.cutIns = cutInHelpers;
 
+  // The Level Up splash: a level up is shown over the whole screen, to the one who levelled the unit and to
+  // those who watch, each as they ask
+  levelUpHelpers.registerSettings();
+  levelUpHelpers.registerHooks();
+  game.feo.levelUp = levelUpHelpers;
+
   // A skill that picks something as it is learnt asks for it once, wherever it is gained, and keeps it
   pickHelpers.registerHooks();
+
+  // Skills that units learnt from an older skills compendium are brought up to date with the one the system
+  // now has, as a Game Master opens the world; game.feo.migration.refreshSkills() does it again when asked
+  migrationHelpers.registerMigration();
+  game.feo.migration = migrationHelpers;
 
   // Lets a player's staff warp a unit whose token only a Game Master may move, and has a unit that joins a
   // battle under way remember where it took the field

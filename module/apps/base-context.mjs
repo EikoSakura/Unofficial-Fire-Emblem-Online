@@ -9,7 +9,7 @@ import {
   boutsLeft, canForge, forgeCount, forgePrice, forgeSteps, forgedStats, sparExp, wareKind
 } from "../rules/base.mjs";
 import { sellValue } from "../rules/progression.mjs";
-import { discounted } from "../rules/stealing.mjs";
+import { discounted, resold } from "../rules/stealing.mjs";
 import { pointsForNext } from "../rules/supports.mjs";
 import { canWield } from "../rules/weapons.mjs";
 
@@ -49,6 +49,8 @@ import { canWield } from "../rules/weapons.mjs";
  * @property {number} gold
  * @property {number} [discount]          What it pays less in a shop, in percent
  * @property {{name: string, percent: number}[]} [discounts]      The skills and items that comes from
+ * @property {number} [resale]            What it is paid more for what it sells, in percent
+ * @property {{name: string, percent: number}[]} [resales]        The skills that comes from
  * @property {string} icon
  * @property {{name: string, icon: string}|null} weapon     What it has equipped
  * @property {Record<string, number>} stats
@@ -609,7 +611,13 @@ export function buildMarket(world, ui, i18n) {
       const listed = entry.price ?? ware?.cost ?? 0;
       return ware ? { ware: { ...ware, id: entry.id }, price: discounted(listed, discount), left: entry.left, cut: cut(listed) } : null;
     }).filter(Boolean)
-    : visitor.items.map((ware) => ({ ware, price: worthOf(ware), left: null, cut: "" }));
+    : visitor.items.map((ware) => {
+      // What the visitor is paid: what its skills add is added, and said on hover (see `resold`)
+      const worth = worthOf(ware);
+      const price = resold(worth, visitor.resale ?? 0);
+      const parts = (visitor.resales ?? []).map((entry) => `${entry.name} +${entry.percent}%`).join(", ");
+      return { ware, price, left: null, cut: (price > worth) ? fmt("market.discount", { parts, listed: number(worth) }) : "" };
+    });
 
   const query = (ui.query ?? "").trim().toLowerCase();
   const passing = source.filter(({ ware, price }) => (!query || ware.name.toLowerCase().includes(query))

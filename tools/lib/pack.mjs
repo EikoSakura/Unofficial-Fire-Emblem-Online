@@ -17,6 +17,37 @@ export const OPTIONAL_SHEET = join(REFERENCES, "Fire Emblem Online Optional Cont
 
 export const manifest = JSON.parse(readFileSync(join(ROOT, "system.json"), "utf8"));
 
+/** What of the Optional Content Sheet is in the game: the list the builds read (see the file itself). */
+export const OPTIONAL_LIST = join(ROOT, "packs-src", "optional-content.json");
+
+/**
+ * Read that list.
+ * @returns {{weapons: Record<string, string[]>, skills: string[], classes: {cell: string, name: string}[], problems: string[]}}
+ *   Empty where there is no list, or nothing of a kind on it. `problems` says what keeps it from being read:
+ *   a list that names entries needs the sheet itself in References
+ */
+export function readOptionalList() {
+  const list = { weapons: {}, skills: [], classes: [], problems: [] };
+  if ( !existsSync(OPTIONAL_LIST) ) return list;
+  let read;
+  try {
+    read = JSON.parse(readFileSync(OPTIONAL_LIST, "utf8"));
+  } catch ( error ) {
+    list.problems.push(`packs-src/optional-content.json is not valid JSON (${error.message})`);
+    return list;
+  }
+  if ( read.weapons && (typeof read.weapons === "object") ) {
+    for ( const [heading, names] of Object.entries(read.weapons) ) list.weapons[heading] = [].concat(names ?? []).map((name) => String(name).trim());
+  }
+  list.skills = [].concat(read.skills ?? []).map((name) => String(name).trim());
+  list.classes = [].concat(read.classes ?? []).map((entry) => ({ cell: String(entry?.cell ?? "").trim(), name: String(entry?.name ?? "").trim() }));
+  const asked = Object.values(list.weapons).some((names) => names.length) || list.skills.length || list.classes.length;
+  if ( asked && !existsSync(OPTIONAL_SHEET) ) {
+    list.problems.push(`packs-src/optional-content.json lists entries of the Optional Content Sheet, which is not in References. Save it there as "${OPTIONAL_SHEET.split(/[\\/]/).pop()}".`);
+  }
+  return list;
+}
+
 /* -------------------------------------------- */
 /*  Arguments                                   */
 /* -------------------------------------------- */

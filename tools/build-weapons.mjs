@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Builds the weapon compendium (packs/weapons) from the "Weapons" tab of the Reference Sheet.
+ * Builds the weapon compendium (packs/weapons) from the "Weapons" tab of the Reference Sheet, with the weapons
+ * of the Optional Content Sheet that packs-src/optional-content.json lists.
  *
  * Usage:
  *   node tools/build-weapons.mjs [--foundry <path>] [--json <file>] [--check] [--out <folder>] [--quiet]
@@ -112,6 +113,7 @@ const LOOKS = {
       [/katana|wo dao|killing edge|quickdraw/i, from("weapons/swords", /katana/)]
     ]
   },
+  katana: { pool: from("weapons/swords", /katana/), shapes: [] },
   knife: {
     pool: from("weapons/daggers", /^(dagger|knife)/, /kitchen|multitool|butterfly|fan|flat-bar/),
     shapes: [
@@ -235,7 +237,7 @@ const documents = weapons.map((weapon, index) => {
     fallback: "icons/svg/sword.svg",
     materials: !PLAIN.has(category) || /broken|drained/i.test(name)
   });
-  const flags = { row: weapon.row, source: `Reference Sheet, ${TAB} tab, row ${weapon.row}` };
+  const flags = { row: weapon.row, source: `${weapon.source}, ${TAB} tab, row ${weapon.row}` };
   if ( sheetName ) flags.sheetName = sheetName;
   return {
     _id: stableId(PACK, `${category}.${name}${suffix ? `.${suffix}` : ""}`),

@@ -210,6 +210,9 @@
 .feo-hud .fly-row.dim:hover { border-color: var(--feo-line-soft); }
 .feo-hud .fly-row.watch[disabled] { opacity: 1; cursor: default; }
 .feo-hud .fly-row.watch .end { font-weight: 800; color: var(--feo-gold); }
+.feo-hud .fly-row.wait[disabled] { opacity: 1; cursor: not-allowed; }
+.feo-hud .fly-row.wait .ico, .feo-hud .fly-row.wait .txt { opacity: .45; }
+.feo-hud .fly-row.wait .end { font-weight: 800; color: var(--feo-warn); }
 .feo-hud .fly-row .ico { width: 30px; height: 30px; border-radius: 6px; background: var(--feo-panel); border: 1px solid var(--feo-line-soft); overflow: hidden; }
 .feo-hud .fly-row .ico img { width: 100%; height: 100%; object-fit: cover; border: 0; display: block; }
 
@@ -287,9 +290,8 @@
 
 /* ---------- Forecast ---------- */
 
-.feo-hud .fc { top: calc(var(--feo-hud-top) + 98px); width: 286px; }
-.feo-hud .fc[data-side="left"] { left: var(--feo-hud-left); }
-.feo-hud .fc[data-side="right"] { right: var(--feo-hud-right); }
+/* It stands across the middle of the screen; how high is set on the panel, clear of the units of the fight */
+.feo-hud .fc { left: 50%; translate: -50% 0; width: 286px; }
 .feo-hud .fc-names { display: grid; grid-template-columns: 1fr 1fr; border-radius: 9px 9px 0 0; overflow: hidden; }
 .feo-hud .fc-name { padding: 8px 12px 9px; display: grid; gap: 2px; align-content: start; min-width: 0; }
 .feo-hud .fc-name:last-child { text-align: right; }
@@ -386,11 +388,16 @@
 .feo-hud .pl-level.on { background: linear-gradient(180deg, color-mix(in srgb, var(--feo-gold) 86%, #fff), var(--feo-gold)); color: var(--feo-gold-ink); border-color: transparent; }
 .feo-hud .palette.erasing .pl-swatches, .feo-hud .palette.erasing .pl-levels { opacity: .45; }
 .feo-hud .palette.placing .pl-swatches, .feo-hud .palette.placing .pl-levels { opacity: .45; }
+.feo-hud .palette.zoning .pl-swatches, .feo-hud .palette.zoning .pl-levels { opacity: .45; }
 .feo-hud .pl-objects { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
 .feo-hud .pl-objects .eyebrow { grid-column: 1 / -1; }
 .feo-hud .pl-object { display: flex; align-items: center; justify-content: center; gap: 5px; height: 26px; padding: 0 4px; border-radius: 5px; border: 1px solid var(--feo-line-soft); background: var(--feo-raised); font-size: 12.5px; font-weight: 700; white-space: nowrap; }
 .feo-hud .pl-object:hover, .feo-hud .pl-object:focus-visible { border-color: var(--feo-gold); outline: none; }
 .feo-hud .pl-object.on { background: linear-gradient(180deg, color-mix(in srgb, var(--feo-gold) 86%, #fff), var(--feo-gold)); color: var(--feo-gold-ink); border-color: transparent; }
+.feo-hud .pl-zones { display: grid; gap: 4px; }
+.feo-hud .pl-zone { display: flex; align-items: center; justify-content: center; gap: 6px; height: 26px; padding: 0 6px; border-radius: 5px; border: 1px solid color-mix(in srgb, var(--tint) 70%, transparent); background: color-mix(in srgb, var(--tint) 22%, var(--feo-raised)); font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.feo-hud .pl-zone:hover, .feo-hud .pl-zone:focus-visible { border-color: var(--feo-gold); outline: none; }
+.feo-hud .pl-zone.on { background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 86%, #fff), var(--tint)); color: #fff; border-color: transparent; outline: 2px solid var(--feo-gold); outline-offset: 1px; }
 .feo-hud .pl-foot { display: flex; align-items: center; gap: 6px; }
 .feo-hud .pl-foot .btn { flex: 1; }
 .feo-hud .pl-hint { margin: 0; font-size: 11.5px; line-height: 1.25; color: var(--feo-faint); }
@@ -495,6 +502,134 @@
   0%, 8% { translate: -110% 0; opacity: 1; }
   55% { translate: 110% 0; opacity: 1; }
   56%, 100% { translate: 110% 0; opacity: 0; }
+}
+
+/* ---------- The Level Up splash: the emblem, the board of stats and the unit's line, over the whole screen ---------- */
+
+.feo-hud.feo-levelup {
+  --lu-dim: .42;
+  --lu-glass: 38%;
+  --lu-bust: min(48.3vh, 32vw);
+  --lu-brass-bar: linear-gradient(90deg, #a67c2c, #f0d48a 30%, #fff1c2 50%, #f0d48a 70%, #a67c2c);
+  --lu-lattice: repeating-linear-gradient(45deg, rgba(255, 255, 255, .028) 0 2px, transparent 2px 14px), repeating-linear-gradient(-45deg, rgba(255, 255, 255, .028) 0 2px, transparent 2px 14px);
+  z-index: calc(var(--z-index-tooltip, 9999) - 10); overflow: hidden; pointer-events: auto; cursor: pointer;
+}
+.feo-levelup .lu-backdrop { position: absolute; inset: 0; opacity: 0; transition: opacity .4s; background: radial-gradient(60% 80% at 20% 26%, color-mix(in srgb, var(--feo-army-deep) 45%, transparent), transparent 70%), radial-gradient(50% 60% at 88% 84%, rgba(166, 124, 44, .12), transparent 70%), rgb(6 9 15 / var(--lu-dim)); }
+.feo-levelup[data-state="in"] .lu-backdrop { opacity: 1; }
+
+/* Section 1: the emblem, a ribbon of the unit's cloth with the level on it */
+.feo-levelup .lu-emblem { position: absolute; left: 3%; top: 6.5vh; width: 36.5em; font-size: clamp(9px, min(1.05vw, 1.9vh), 19px); transform: rotate(-5deg); transform-origin: 40% 50%; }
+.feo-levelup .lu-rays { position: absolute; left: 50%; top: 54%; width: 150%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; background: repeating-conic-gradient(rgba(246, 220, 151, .16) 0 5deg, transparent 5deg 15deg); -webkit-mask: radial-gradient(closest-side, #000 18%, transparent 72%); mask: radial-gradient(closest-side, #000 18%, transparent 72%); opacity: 0; transition: opacity .6s; }
+.feo-levelup.lu-turned .lu-rays { opacity: 1; animation: feo-lu-turn 70s linear infinite; }
+.feo-levelup .lu-unroll { position: relative; clip-path: inset(-40px 100% -40px -40px); transition: clip-path .6s .1s cubic-bezier(.16, .84, .3, 1); }
+.feo-levelup[data-state="in"] .lu-unroll { clip-path: inset(-40px); }
+.feo-levelup .lu-ribbon { position: relative; padding: 2em 5em 1.2em; display: grid; justify-items: center; color: var(--feo-cloth-ink); background: var(--lu-lattice), radial-gradient(50% 120% at 50% 60%, color-mix(in srgb, var(--feo-army) 34%, transparent), transparent 72%), linear-gradient(180deg, color-mix(in srgb, var(--feo-army-deep) var(--lu-glass), transparent), color-mix(in srgb, var(--feo-army-dark) var(--lu-glass), transparent)); clip-path: polygon(0 0, 100% 0, calc(100% - 2.8em) 50%, 100% 100%, 0 100%, 2.8em 50%); }
+.feo-levelup .lu-ribbon::before, .feo-levelup .lu-ribbon::after { content: ""; position: absolute; left: 0; right: 0; height: 3px; background: var(--lu-brass-bar); }
+.feo-levelup .lu-ribbon::before { top: .65em; }
+.feo-levelup .lu-ribbon::after { bottom: .65em; }
+.feo-levelup .lu-title { font-family: var(--feo-font-display); font-weight: 400; font-size: 4.15em; line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; color: #fbe9b4; text-shadow: 0 3px 0 rgba(0, 0, 0, .45), 0 0 22px rgba(246, 220, 151, .35); transform: skewX(-9deg); }
+.feo-levelup .lu-flip { position: relative; height: 1.06em; margin-top: -.04em; clip-path: inset(0 -2em); font-family: var(--feo-font-display); font-size: 9em; line-height: 1.06; font-variant-numeric: lining-nums; text-shadow: 0 4px 0 rgba(0, 0, 0, .45); transform: skewX(-9deg); }
+.feo-levelup .lu-reel { display: flex; flex-direction: column; align-items: center; transition: transform .6s cubic-bezier(.3, 1.4, .5, 1); }
+.feo-levelup .lu-reel span { height: 1.06em; }
+.feo-levelup .lu-reel span + span { color: #fff0c2; text-shadow: 0 0 30px rgba(246, 220, 151, .8), 0 4px 0 rgba(0, 0, 0, .45); }
+.feo-levelup.lu-turned .lu-reel { transform: translateY(-50%); }
+.feo-levelup .lu-burst { position: absolute; left: 50%; top: 62%; width: 70%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; opacity: 0; background: radial-gradient(closest-side, rgba(255, 236, 170, .75), transparent); }
+.feo-levelup.lu-turned .lu-burst { animation: feo-lu-burst 1s ease-out; }
+.feo-levelup .lu-spark { position: absolute; width: 1.8em; aspect-ratio: 1; background: #fff3c9; opacity: 0; clip-path: polygon(50% 0, 59% 41%, 100% 50%, 59% 59%, 50% 100%, 41% 59%, 0 50%, 41% 41%); filter: drop-shadow(0 0 6px rgba(255, 236, 170, .9)); }
+.feo-levelup.lu-turned .lu-spark { animation: feo-lu-twinkle 2.4s ease-in-out infinite; }
+.feo-levelup .lu-spark.lu-a { left: 7%; top: -9%; }
+.feo-levelup .lu-spark.lu-b { right: 9%; top: 4%; width: 1.25em; animation-delay: .5s; }
+.feo-levelup .lu-spark.lu-c { left: 24%; bottom: -12%; width: 1.35em; animation-delay: 1.1s; }
+.feo-levelup .lu-spark.lu-d { right: 2%; bottom: 8%; width: 2.2em; animation-delay: 1.6s; }
+@keyframes feo-lu-turn { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes feo-lu-burst { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
+@keyframes feo-lu-twinkle { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+
+/* Section 2: the board, every stat as it stands and what it gained */
+.feo-levelup .lu-board { position: absolute; right: 0; top: 8vh; width: clamp(390px, 44vw, 740px); font-size: clamp(12px, min(1.22vw, 2.05vh), 19px); cursor: default; color: var(--feo-ink); text-shadow: 0 1px 2px rgba(0, 0, 0, .7); background: color-mix(in srgb, var(--feo-window) var(--lu-glass), transparent); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); border: 1px solid var(--feo-line); border-right: 0; border-radius: 10px 0 0 10px; overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, .6); opacity: 0; transform: translateX(60px); transition: opacity .35s, transform .45s cubic-bezier(.2, .9, .3, 1); }
+.feo-levelup.lu-unit .lu-board { opacity: 1; transform: none; }
+.feo-levelup .lu-head { position: relative; padding: .55em 1.55em .8em; color: var(--feo-cloth-ink); background: var(--lu-lattice), linear-gradient(180deg, color-mix(in srgb, var(--feo-army-deep) var(--lu-glass), transparent), color-mix(in srgb, var(--feo-army-dark) var(--lu-glass), transparent)); }
+.feo-levelup .lu-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--lu-brass-bar); }
+.feo-levelup .lu-head b { display: block; font-family: var(--feo-font-display); font-weight: 400; font-size: 1.8em; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feo-levelup .lu-class { padding: .6em 1.15em .1em; font-family: var(--feo-font-display); font-size: 1.35em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feo-levelup .lu-rows { list-style: none; margin: 0; padding: .3em 1.55em 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 1.85em; }
+.feo-levelup .lu-row { display: grid; grid-template-columns: 3.6em minmax(0, 1fr) 2.85em 4.15em; align-items: center; gap: .4em; height: 2.65em; margin: 0; padding: 0 .15em; border-bottom: 1px solid var(--feo-line-soft); transition: background-color .25s; }
+.feo-levelup .lu-abbr { font-family: var(--feo-font-display); font-weight: 400; font-size: 1.2em; letter-spacing: .03em; }
+.feo-levelup .lu-note { text-align: right; font-size: .9em; color: var(--feo-faint); white-space: nowrap; overflow: hidden; }
+.feo-levelup .lu-val { font-family: var(--feo-font-display); font-size: 1.65em; line-height: 1; text-align: right; font-variant-numeric: tabular-nums lining-nums; }
+.feo-levelup .lu-gain { display: flex; align-items: center; gap: .15em; padding-left: .4em; font-family: var(--feo-font-display); font-size: 1.35em; line-height: 1; color: #e6c56c; font-variant-numeric: lining-nums; }
+.feo-levelup .lu-up { width: 0; height: 0; border: .32em solid transparent; border-top-width: 0; border-bottom: .52em solid #e6c56c; }
+.feo-levelup .lu-row.lu-capped .lu-val { color: var(--feo-muted); }
+.feo-levelup .lu-row.lu-hit { background: linear-gradient(90deg, transparent 20%, rgba(230, 197, 108, .13)); }
+.feo-levelup .lu-row.lu-hit .lu-val { color: #e6c56c; animation: feo-lu-tick .4s ease-out; }
+.feo-levelup .lu-row.lu-hit .lu-gain { animation: feo-lu-pop .4s ease-out; }
+.feo-levelup .lu-row.lu-hit .lu-up { animation: feo-lu-lift .5s .1s ease-out both; }
+.feo-levelup .lu-row.lu-two .lu-gain { font-size: 1.65em; text-shadow: 0 0 14px rgba(230, 197, 108, .6); }
+@keyframes feo-lu-pop { 0% { transform: translateX(-10px) scale(.5); opacity: 0; } 60% { transform: scale(1.25); opacity: 1; } 100% { transform: none; } }
+@keyframes feo-lu-tick { 0% { transform: translateY(8px); opacity: 0; } 60% { transform: translateY(-2px); opacity: 1; } 100% { transform: none; } }
+@keyframes feo-lu-lift { 0% { transform: translateY(8px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.feo-levelup .lu-foot { display: flex; flex-wrap: wrap; align-items: center; gap: .55em; padding: .8em 1.55em .85em; min-height: 3.7em; }
+.feo-levelup .lu-chip { display: inline-flex; align-items: center; gap: .45em; padding: .1em .8em; border-radius: 999px; font-size: .93em; border: 1px solid var(--feo-line-soft); background: color-mix(in srgb, var(--feo-raised) 80%, transparent); color: var(--feo-muted); text-shadow: none; animation: feo-lu-rise .3s ease-out both; }
+.feo-levelup .lu-chip b { color: var(--feo-ink); font-weight: 700; }
+.feo-levelup .lu-chip.lu-skill { color: var(--feo-boon); border-color: var(--feo-boon); background: none; font-weight: 700; }
+@keyframes feo-lu-rise { from { opacity: 0; transform: translateY(5px); } }
+.feo-levelup .lu-next { margin: 0 0 0 auto; width: auto; height: auto; padding: .25em 1em; border-radius: 999px; border: 0; font: 700 .93em var(--feo-font-ui); line-height: 1.5; color: var(--feo-gold-ink); background: linear-gradient(180deg, color-mix(in srgb, var(--feo-gold) 86%, #fff), var(--feo-gold)); text-shadow: none; cursor: pointer; }
+.feo-levelup .lu-next:hover, .feo-levelup .lu-next:focus-visible { filter: brightness(1.08); box-shadow: 0 0 0 3px color-mix(in srgb, var(--feo-gold) 35%, transparent); outline: none; }
+
+/* Section 3: the voice, the unit beside the talk box of the Base */
+.feo-levelup .lu-voice { position: absolute; inset: 0; pointer-events: none; }
+.feo-levelup .lu-bust { position: absolute; z-index: 2; left: 1.5%; bottom: 0; width: var(--lu-bust); aspect-ratio: 5 / 6; filter: drop-shadow(0 10px 22px rgba(0, 0, 0, .7)); opacity: 0; transform: translate(-30px, 30px); transition: opacity .4s, transform .55s cubic-bezier(.2, .9, .3, 1); }
+.feo-levelup .lu-bust img { display: block; width: 100%; height: 100%; border: 0; object-fit: contain; object-position: 50% 100%; }
+.feo-levelup.lu-unit .lu-bust.lu-ready { opacity: 1; transform: none; }
+.feo-levelup .lu-bust.lu-framed { left: 3.5%; bottom: 4vh; width: calc(var(--lu-bust) * .62); border-radius: 999px 999px 10px 10px; border: 3px solid var(--feo-brass); background: var(--feo-army-dark); overflow: hidden; box-shadow: 0 0 0 4px rgba(0, 0, 0, .3); }
+.feo-levelup .lu-bust.lu-framed img { object-fit: cover; object-position: 50% 0; }
+.feo-levelup .lu-talk { position: absolute; z-index: 1; left: calc(1.5% + var(--lu-bust) * .56); right: 4.5%; bottom: 7vh; display: flex; align-items: center; gap: 14px; min-height: 5.2em; padding: 1.1em 1.3em .8em calc(var(--lu-bust) * .5); font-size: clamp(15px, min(1.75vw, 3vh), 27px); color: var(--feo-cloth-ink); border-radius: var(--feo-radius); border: 1px solid rgba(226, 196, 118, .5); background: var(--lu-lattice), linear-gradient(180deg, color-mix(in srgb, var(--feo-army-deep) var(--lu-glass), transparent), color-mix(in srgb, var(--feo-army-dark) var(--lu-glass), transparent)); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); box-shadow: 0 14px 26px rgba(0, 0, 0, .5); text-shadow: 0 1px 2px rgba(0, 0, 0, .7); opacity: 0; transform: translateY(16px); transition: opacity .3s, transform .4s cubic-bezier(.2, .9, .3, 1); }
+.feo-levelup .lu-talk[hidden] { display: none; }
+.feo-levelup.lu-spoken .lu-talk { opacity: 1; transform: none; }
+.feo-levelup:has(.lu-bust.lu-framed) .lu-talk { left: calc(3.5% + var(--lu-bust) * .5); padding-left: calc(var(--lu-bust) * .2); }
+.feo-levelup.lu-no-bust .lu-talk { left: 4.5%; padding-left: 1.3em; }
+.feo-levelup .lu-who { position: absolute; left: calc(var(--lu-bust) * .44); top: -.9em; min-width: 8.5em; padding: .2em 1.5em .2em 1.05em; text-align: center; font-family: var(--feo-font-display); font-size: .85em; letter-spacing: .04em; color: #241a05; text-shadow: none; background: linear-gradient(180deg, #f6dd96, #c9a14a); clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%, 10px 50%); }
+.feo-levelup:has(.lu-bust.lu-framed) .lu-who { left: calc(var(--lu-bust) * .16); }
+.feo-levelup.lu-no-bust .lu-who { left: 1.2em; }
+.feo-levelup .lu-talk p { margin: 0; flex: 1; min-width: 0; line-height: 1.4; min-height: 1.4em; }
+.feo-levelup .lu-more { flex: none; align-self: flex-end; width: 11px; height: 11px; transform: rotate(45deg); background: #f0d48a; animation: feo-lu-bob 1s ease-in-out infinite alternate; }
+@keyframes feo-lu-bob { to { transform: translateY(4px) rotate(45deg); } }
+
+/* The way on, in the corner */
+.feo-levelup .lu-prompts { position: absolute; z-index: 3; right: 12px; bottom: 9px; display: flex; gap: 8px; }
+.feo-levelup .lu-prompts button { display: inline-flex; align-items: center; gap: 7px; width: auto; height: auto; margin: 0; padding: 2px 12px 2px 4px; border-radius: 999px; border: 1px solid rgba(244, 238, 221, .22); background: rgba(8, 12, 20, .7); color: var(--feo-cloth-muted); font: 12.5px/1.5 var(--feo-font-ui); cursor: pointer; }
+.feo-levelup .lu-prompts .lu-auto { padding-left: 12px; }
+.feo-levelup .lu-prompts kbd { min-width: 20px; padding: 0 6px; border: 0; border-radius: 999px; text-align: center; font: 800 10.5px/18px var(--feo-font-ui); letter-spacing: .04em; color: #10151f; background: var(--feo-cloth-ink); box-shadow: none; }
+.feo-levelup .lu-prompts button:hover, .feo-levelup .lu-prompts button:focus-visible { border-color: var(--feo-brass); color: var(--feo-cloth-ink); outline: none; box-shadow: none; }
+.feo-levelup .lu-prompts button[aria-pressed="true"] { border-color: var(--feo-brass); color: #f6dc97; }
+
+/* Leaving, and skipping: whoever skips sees the result at once */
+.feo-levelup[data-state="out"] .lu-backdrop { transition: opacity .4s .25s; }
+.feo-levelup[data-state="out"] .lu-unroll { clip-path: inset(-40px -40px -40px 100%); transition: clip-path .36s cubic-bezier(.7, 0, .84, .16); }
+.feo-levelup[data-state="out"] :is(.lu-rays, .lu-spark) { opacity: 0; animation: none; transition: opacity .2s; }
+.feo-levelup[data-state="out"] .lu-board { opacity: 0; transform: translateX(60px); transition: opacity .25s, transform .3s cubic-bezier(.7, 0, .84, .16); }
+.feo-levelup[data-state="out"] :is(.lu-bust.lu-ready, .lu-talk) { opacity: 0; transform: translateY(26px); transition: opacity .25s, transform .3s cubic-bezier(.7, 0, .84, .16); }
+.feo-levelup[data-state="out"] .lu-prompts { opacity: 0; }
+.feo-levelup.lu-fast, .feo-levelup.lu-fast *, .feo-levelup.lu-fast *::before, .feo-levelup.lu-fast *::after { transition: none !important; animation: none !important; }
+.feo-levelup.lu-fast.lu-turned :is(.lu-rays, .lu-spark) { opacity: 1; }
+
+/* A narrow screen: the three sections stack */
+@media (max-width: 720px) {
+  .feo-hud.feo-levelup { display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 14px 12px 44px; }
+  .feo-levelup .lu-emblem { position: relative; left: auto; top: auto; width: 100%; font-size: 6px; transform: none; }
+  .feo-levelup :is(.lu-rays, .lu-burst, .lu-spark) { display: none; }
+  .feo-levelup .lu-ribbon { padding: 2em 7em 1.7em; display: flex; align-items: center; justify-content: space-between; }
+  .feo-levelup .lu-flip { margin: 0; font-size: 8.3em; }
+  .feo-levelup .lu-board { position: relative; right: auto; top: auto; width: 100%; font-size: 12.5px; border-right: 1px solid var(--feo-line); border-radius: 10px; }
+  .feo-levelup .lu-head { padding: .5em 1.1em .7em; }
+  .feo-levelup .lu-rows { padding: .15em .95em 0; column-gap: .95em; }
+  .feo-levelup .lu-row { grid-template-columns: 3em minmax(0, 1fr) 2.4em 3.5em; gap: .25em; }
+  .feo-levelup .lu-foot { padding: .7em .95em .8em; }
+  .feo-levelup .lu-voice { position: relative; inset: auto; display: flex; align-items: flex-end; }
+  .feo-levelup .lu-bust, .feo-levelup .lu-bust.lu-framed { position: relative; left: auto; bottom: auto; flex: none; width: 84px; margin-right: -16px; }
+  .feo-levelup .lu-talk, .feo-levelup:has(.lu-bust.lu-framed) .lu-talk, .feo-levelup.lu-no-bust .lu-talk { position: relative; left: auto; right: auto; bottom: auto; flex: 1; min-width: 0; min-height: 72px; padding: 18px 14px 12px 28px; font-size: 16px; }
+  .feo-levelup.lu-no-bust .lu-talk { padding-left: 14px; }
+  .feo-levelup .lu-who, .feo-levelup:has(.lu-bust.lu-framed) .lu-who, .feo-levelup.lu-no-bust .lu-who { left: 24px; top: -13px; min-width: 0; }
 }
 
 /* ---------- Narrow screens: the terrain card rises clear of the dock, and the dock folds ---------- */
