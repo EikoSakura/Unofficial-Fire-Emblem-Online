@@ -6,6 +6,7 @@ import {
   planVariant, startingSkills, startsGeneric
 } from "../rules/creation.mjs";
 import { embedClass, grantSkills } from "./classes.mjs";
+import { askPicks } from "./picks.mjs";
 import { openGenericRoll } from "./skill-roll.mjs";
 import { settled } from "./skill-ranks.mjs";
 
@@ -28,7 +29,7 @@ const STALE = 45000;
 
 /** The fields of a unit the Creator's own inputs may set as they are. */
 const FIELDS = new Set([
-  "name", "system.player", "system.affinity",
+  "name", "system.player", "system.affinity", "system.affinityRank",
   ...["gender", "age", "race", "homeland", "allegiance", "occupation", "lines", "veils"].map((key) => `system.profile.${key}`)
 ]);
 
@@ -290,8 +291,8 @@ export function takenSkills(actor) {
   return ["class", "generic"].flatMap((slot) => record.skills[slot].items.flatMap((id) => {
     const item = actor.items.get(id);
     if ( item?.type !== "skill" ) return [];
-    const { effects, choice, automate } = item.system;
-    return [{ id, slot, name: item.name, effects, choice, automate }];
+    const { effects, picks, choice, automate } = item.system;
+    return [{ id, slot, name: item.name, effects, picks, choice, automate }];
   }));
 }
 
@@ -303,14 +304,35 @@ export function takenSkills(actor) {
  * @param {Actor} actor
  * @param {string} id         The Item the skill was added as
  * @param {string} value      The variant, or the growth rate
+ * @param {number} [index]    Which of the skill's picks
  * @returns {Promise<boolean>}
  */
-export async function chooseVariant(actor, id, value) {
+export async function chooseVariant(actor, id, value, index = 0) {
   const skill = takenSkills(actor).find((taken) => taken.id === id);
-  const choice = skill ? planVariant(skill, value) : null;
+  const choice = skill ? planVariant(skill, value, index) : null;
   if ( choice === null ) return false;
   await actor.items.get(id).update({ "system.choice": choice });
   return commit(actor, {}, "skills");
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Open the picker for what a starting skill has its unit pick, where the list is too long for the step: the
+ * Compendium at the skill's page, or a dialog for a skill the Compendium does not know.
+ * @param {Actor} actor
+ * @param {string} id         The Item the skill was added as
+ * @returns {Promise<boolean>}
+ */
+export async function openVariant(actor, id) {
+  const item = takenSkills(actor).some((taken) => taken.id === id) ? actor.items.get(id) : null;
+  if ( !item ) return false;
+  return askPicks(item, {
+    take: async (choice) => {
+      if ( choice !== item.system.choice ) await item.update({ "system.choice": choice });
+      await commit(actor, {}, "skills");
+    }
+  });
 }
 
 /* -------------------------------------------- */

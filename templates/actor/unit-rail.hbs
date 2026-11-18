@@ -154,6 +154,10 @@
   <div class="vital">
     <div class="vital-head">
       <span class="label">{{localize "FEO.Unit.exp"}}</span>
+      {{#if editable}}
+      <button type="button" class="step" data-action="giveExp"
+              aria-label="{{localize "FEO.Exp.give"}}" data-tooltip="{{localize "FEO.Exp.giveHint"}}">{{feoIcon "plus"}}</button>
+      {{/if}}
       <span class="value small">
         <input type="number" name="system.exp" value="{{system.exp}}" min="0" step="1" data-play
                aria-label="{{localize "FEO.Unit.exp"}}">

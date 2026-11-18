@@ -1,24 +1,34 @@
 import { FEO } from "../config.mjs";
 import { authorityBonus, authorityNext, authorityRank, battalionBonuses, hasRetreated } from "../rules/battalions.mjs";
+import { guardOf, shieldsBarred } from "../rules/blocking.mjs";
 import { abilityScore, computeCombat, statTotal, unitWeight } from "../rules/combat-stats.mjs";
+import { cantoPlusEntry } from "../rules/canto.mjs";
 import { carryEntry } from "../rules/capturing.mjs";
 import { resolveCaps } from "../rules/classes.mjs";
 import { parseRange } from "../rules/combat.mjs";
-import { countedRank, levelRank } from "../rules/weapons.mjs";
+import { canWield, countedRank, levelRank, wieldLevel } from "../rules/weapons.mjs";
 import { conditionModifiers, readConditions } from "../rules/conditions.mjs";
-import { deathThreshold, fateReasons, resilience, woundThreshold } from "../rules/defeat.mjs";
+import { deathThreshold, fateReasons, leavesMap, outOfFight, resilience, woundThreshold } from "../rules/defeat.mjs";
 import { skillGrowths } from "../rules/earnings.mjs";
 import {
-  affinityEntry, atLevelLimit, bloodGrowths, bloodProficiencies, effectiveGrowths, levelLimit, moduleCap, optionalSources,
+  AFFINITY_ID, affinityCooldown, affinityEntry, affinityUsage, hasCooldown, atLevelLimit, bloodGrowths, bloodProficiencies, effectiveGrowths, levelLimit, moduleCap, optionalSources,
   powerEntries, powerExtras, skillRoom
 } from "../rules/optional.mjs";
 import { abilityBonus, abilityPointsPerLevel, supportBonus, supportTotals } from "../rules/progression.mjs";
+import { burdened } from "../rules/rescue.mjs";
 import { staggerInUse, staggerOf, staggerTimes } from "../rules/stagger.mjs";
 import { formBonuses, gaugeProfile, shiftBends, shiftMode, shiftPercent, shiftedBonuses, transformsLeft } from "../rules/shifting.mjs";
-import { countsAsSkill, effectsOf, skillTotals } from "../rules/skills.mjs";
+import { IMITATION_FLAG, overlay, readImitation } from "../rules/imitation.mjs";
+import { gripEntry } from "../rules/actions.mjs";
+import {
+  bestRankOf, countsAsSkill, effectsOf, multiplyStats, skillCanto, skillCarry, skillCrossing, skillKnacks, skillPassing, skillRule, skillShove, skillStanding, skillStars, skillTotals, unitTier
+} from "../rules/skills.mjs";
+import { addKnacks, gearKnacks } from "../rules/stealing.mjs";
 import { staffPassiveEntry } from "../rules/staves.mjs";
+import { usedUp } from "../rules/skill-usage.mjs";
 import { kinBonus } from "../rules/supports.mjs";
-import { TIMED_ENDS, timedEntries } from "../rules/timed.mjs";
+import { WEATHERPROOF } from "../rules/weather.mjs";
+import { TIMED_ENDS, TIMED_ONCE, skillCounts, tempHp, timedEntries } from "../rules/timed.mjs";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -97,6 +107,15 @@ function affinityEffectName(affinity) {
 }
 
 /**
+ * What the effect of Canto+ that a Laguz has in its animal form goes by among the unit's skills: "Transformed".
+ * @returns {string}
+ */
+function shiftedName() {
+  const i18n = globalThis.game?.i18n;
+  return i18n?.localize ? i18n.localize("FEO.Shift.transformed") : "Transformed";
+}
+
+/**
  * What carrying a captive goes by among the unit's skills and numbers: "Captive: Brigand".
  * @param {string} name     The captive's name
  * @returns {string}
@@ -104,6 +123,16 @@ function affinityEffectName(affinity) {
 function captiveName(name) {
   const i18n = globalThis.game?.i18n;
   return i18n?.format ? i18n.format("FEO.Optional.capturing.carrying", { name }) : name;
+}
+
+/**
+ * What carrying an ally goes by among the unit's skills and numbers: "Carrying: Lyn".
+ * @param {string} name     The ally's name
+ * @returns {string}
+ */
+function carriedName(name) {
+  const i18n = globalThis.game?.i18n;
+  return i18n?.format ? i18n.format("FEO.Rescue.carrying", { name }) : name;
 }
 
 /**
@@ -130,6 +159,14 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
    */
   static standing = null;
 
+  /**
+   * Tells how a unit moved this turn, as its token on the map in view has noted it (see `rules/movement.mjs`),
+   * or null where that cannot be judged: for a unit that is not on that map, and outside of a battle. Set when
+   * the system starts; while it is not, no unit's movement can be judged.
+   * @type {((actor: object, options: {mov: number, weapon: string}) => object|null)|null}
+   */
+  static moving = null;
+
   /** @override */
   static defineSchema() {
     return {
@@ -140,6 +177,23 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       exp: integer(0, { min: 0 }),
       gold: integer(0, { min: 0 }),
       affinity: new StringField({ required: true, blank: true, choices: AFFINITIES }),
+
+      // The proficiency chosen for an Affinity that gives a rank in one of its unit's choice, as Tome does
+      affinityRank: new StringField({ required: true, blank: true, choices: Object.keys(FEO.proficiencies) }),
+
+      // The skill chosen for an Affinity that shortens the cooldown of one of its unit's choice, as Key does:
+      // the id of its Item
+      affinitySkill: text(),
+
+      // Where an Affinity its unit chooses when to use stands, as a skill keeps it (see `rules/skill-usage.mjs`):
+      // switched on, the turn starts until it can be used again and until it switches itself off, and the
+      // times it was spent since its uses last came back
+      affinityUse: new SchemaField({
+        active: new BooleanField(),
+        cooldown: integer(0, { min: 0 }),
+        lasting: integer(0, { min: 0 }),
+        used: integer(0, { min: 0 })
+      }),
       specialQualities: text(),
       army: new StringField({ required: true, blank: true, choices: Object.keys(FEO.armies) }),
 
@@ -181,6 +235,23 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
         name: text(),
         hp: integer(0, { min: 0 }),
         held: new BooleanField()
+      }),
+
+      // Rescue: the ally the unit carries, by its Actor and its token, whether that ally is no load to it as
+      // the ally's own skills have it, and whether the unit could not carry it by its Weight, as when a skill
+      // had it come for the ally: it then sets the ally down as its next turn starts. And for a unit that is
+      // carried, who carries it
+      rescuing: new SchemaField({
+        uuid: text(),
+        token: text(),
+        name: text(),
+        light: new BooleanField(),
+        over: new BooleanField()
+      }),
+      rescued: new SchemaField({
+        by: text(),
+        token: text(),
+        name: text()
       }),
 
       // What became of a unit brought to 0 HP: blank while it is in the fight
@@ -274,7 +345,39 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
         clock: text(),
         stacks: integer(1, { min: 0 }),
         max: integer(0, { min: 0 }),
-        fades: new BooleanField()
+        fades: new BooleanField(),
+
+        // Temporary HP it still holds for its unit: lost before the unit's own, and gone with the change
+        hp: integer(0, { min: 0 }),
+
+        // The condition it lasts with, if any: it ends when its unit suffers from that condition no longer
+        while: text(),
+
+        // The fight that uses it up, if one does: the next it is attacked in and would have answered, the next
+        // it starts, or the next of either kind
+        once: new StringField({ required: true, blank: true, choices: TIMED_ONCE }),
+
+        // The turns of its unit still to start before it begins, whether it is granted again once it has, the
+        // HP it restores as each of those turns starts, whether a second one spoils it and whether one has,
+        // and whether it only keeps count of something for a skill
+        wait: integer(0, { min: 0 }),
+        lone: new BooleanField(),
+        mend: integer(0, { min: 0 }),
+
+        // The damage it deals to its unit as each of its turns starts, and the unit whose skill deals it
+        harm: integer(0, { min: 0 }),
+        by: text(),
+        spoils: new BooleanField(),
+        spoiled: new BooleanField(),
+        mark: new BooleanField(),
+
+        // The HP it takes off its unit as it moves and once it has attacked, and whether it keeps track of its
+        // unit standing in sight of the unit it comes from (see the rules of action skills)
+        toll: new ObjectField(),
+        watch: new BooleanField(),
+
+        // The stance it is, for one its unit is in until something ends it (see the rules of stances)
+        stance: new ObjectField({ required: false })
       })),
 
       bonds: new ArrayField(new SchemaField({
@@ -376,6 +479,26 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
   /*  Data Preparation                            */
   /* -------------------------------------------- */
 
+  /**
+   * A unit that imitates another has what it took on of that unit laid over its own data, each time it is
+   * prepared and before its Items are: its own is what is saved, and is never written over (see
+   * `rules/imitation.mjs`). `imitating` says whom it imitates and with which skill; null for a unit that is
+   * itself.
+   * @override
+   */
+  prepareBaseData() {
+    const note = readImitation(this.parent?.flags?.[FEO.id]?.[IMITATION_FLAG]);
+    this.imitating = null;
+    if ( !note ) return;
+
+    // The class it took on is an Item of its own; one that is gone leaves it the name of that class
+    const cls = note.classId ? (this.parent?.items?.get?.(note.classId) ?? null) : null;
+    overlay(this, note.taken, { classId: (cls?.type === "class") ? note.classId : "" });
+    this.imitating = { name: note.ally, of: note.of, skill: note.name, item: note.skill, change: note.change };
+  }
+
+  /* -------------------------------------------- */
+
   /** @override */
   prepareDerivedData() {
     const items = Array.from(this.parent?.items ?? []);
@@ -385,10 +508,14 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     // a Grave Wound. A world that does not play with it keeps what a unit was given but counts none of it
     const health = FEO.defeat.enabled;
     this.graveWounds = health ? Math.floor(this.wounds / FEO.woundsPerGraveWound) : 0;
-    this.hp.base = this._source.hp.max;
+    // A unit that imitates another has that unit's maximum HP for as long as it does
+    this.hp.base = this.imitating ? this.hp.max : this._source.hp.max;
     this.hp.lost = health ? (this.wounds * FEO.woundPenalty) + (this.injuries * FEO.injuryPenalty) : 0;
     this.hp.max = Math.max(this.hp.base - this.hp.lost, 0);
     this.hp.woundThreshold = health ? woundThreshold(this.hp.base) : 0;
+
+    // Temporary HP: what the changes that last on the unit hold for it, on top of its own and lost first
+    this.hp.temp = tempHp(this.timed);
     this.hp.deathThreshold = deathThreshold(this.hp.base);
 
     // Class: its name is shown as the unit's class, and the caps it gives take the place of hand-typed ones
@@ -435,9 +562,13 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
 
     // What the unit's skills change about it is read here, ahead of its other skill effects, since the stats
     // of a transformed unit are among the numbers those are worked out from
-    shift.bends = shiftBends(items.filter((item) => (item.type === "skill") && item.system.equipped && (item.system.automate !== false)).map((item) => {
-      return { name: item.name, active: !!item.system.usage?.kind && !!item.system.state?.active, effects: effectsOf(item.system) };
-    }));
+    // A change that lasts on it may say so too, as one that lets it Shift at will for a turn
+    shift.bends = shiftBends([
+      ...items.filter((item) => (item.type === "skill") && item.system.equipped && (item.system.automate !== false)).map((item) => {
+        return { name: item.name, active: !!item.system.usage?.kind && !!item.system.state?.active, effects: effectsOf(item.system) };
+      }),
+      ...timedEntries(this.timed).map((entry) => ({ name: entry.name, active: true, effects: entry.effects }))
+    ]);
     shift.profile = gaugeProfile(cls?.system.notes, shift, shift.bends.gauge);
     shift.limit = shift.usesMax ?? (FEO.shift.stone.uses + shift.bends.transforms);
     shift.left = shift.bends.endless ? Math.max(transformsLeft(shift.uses, shift.limit), 1) : transformsLeft(shift.uses, shift.limit);
@@ -467,6 +598,19 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       granted: battalionBonuses(squad.system)
     } : null;
     for ( const [key, ability] of Object.entries(this.abilities) ) ability.modifier = this.battalion?.granted.abilities[key] ?? 0;
+
+    // What skills ask of the unit beyond its numbers: its class tier, counted by its level where its class
+    // does not promote, and whether its highest weapon rank is a physical or a magical one
+    this.classTier = unitTier({ tier: cls?.system.tier ?? null, promotes: (cls?.system.promotesTo?.length ?? 0) > 0, level: this.level });
+    this.bestRank = bestRankOf(Object.fromEntries(Object.entries(this.proficiencies).map(([key, proficiency]) => [key, proficiency.rank])));
+
+    // Authority & Leadership: the Leadership Stars the unit's skills are count with those typed on its sheet
+    const leadership = this.leadership;
+    leadership.fromSkills = FEO.optional.leadership.enabled
+      ? skillStars(items.filter((item) => (item.type === "skill") && item.system.equipped && (item.system.automate !== false))
+        .map((item) => ({ effects: effectsOf(item.system) })))
+      : 0;
+    leadership.total = leadership.stars + leadership.fromSkills;
 
     // Collect everything that adjusts stats or combat stats
     const sources = this.#collectSources(items);
@@ -506,6 +650,9 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     const bareModifiers = sources.filter((source) => source.combat).map((source) => ({
       label: source.label,
       localize: source.localize,
+
+      // What a support partner in range adds, which a fight may cancel (see `rules/choices.mjs`)
+      ...(source.support ? { support: true } : {}),
       ...source.combat
     }));
     const mastery = this.masteryFor(weapon?.system ?? null);
@@ -521,14 +668,27 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
         modifiers: mastery ? [mastery, ...bareModifiers] : bareModifiers
       }, weapon?.system ?? null).accuracy.value
     };
+    // What the unit's Affinity takes off the cooldown of the one skill chosen for it, as Key does
+    const affinityIn = extras.resonance ? { config: { ...FEO.optional.affinityEffects, enabled: true } } : {};
+    const keyed = affinityCooldown(this, affinityIn);
     const entries = items.filter((item) => (item.type === "skill") && item.system.equipped).map((item) => {
-      const { stats, combat, effects, choice, automate, nihil, usage, state } = item.system;
+      const { stats, combat, effects, choice, raises, automate, nihil, chosen, usage, state } = item.system;
       return {
         id: item.id,
         name: item.name,
         nihil,
+
+        // Turns added to the cooldown of this skill alone
+        ...(((keyed?.skill === item.id) && hasCooldown(item.system)) ? { cooldowns: keyed.turns } : {}),
+
+        // Is it chosen when to activate, as the reference sheet marks it, and what did its unit pick for a
+        // fight (see `rules/choices.mjs`)?
+        chosen: !!chosen,
+        picked: { ...(state?.picked ?? {}) },
         choice,
-        effects: effectsOf(automate === false ? { stats, combat } : { stats, combat, effects, choice }),
+        effects: effectsOf(automate === false ? { stats, combat } : {
+          stats, combat, effects, choice, raises, early: !!state?.early, over: !!usage?.over && usedUp(usage, state)
+        }),
 
         // A skill that is chosen when to activate: is it switched on, and does a fight spend it?
         active: !!usage?.kind && !!state?.active,
@@ -539,21 +699,68 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     });
 
     // Additional Affinity Effects: what the unit's Affinity builds into it is read as one more skill, named
-    // after the Affinity, which Nihil does not cancel and which takes none of its skill slots
+    // after the Affinity, which Nihil does not cancel and which takes none of its skill slots. It is marked
+    // `innate`, as everything here is that is no skill of the unit: what cancels skills in a fight leaves it
     // A unit whose Affinity counts at all times has that effect whether or not the world plays with them
-    const innate = affinityEntry(this.affinity, affinityEffectName(this.affinity),
-      extras.resonance ? { config: { ...FEO.optional.affinityEffects, enabled: true } } : {});
-    if ( innate ) entries.push({ ...innate, active: false, spends: false, usage: null, state: null });
+    // One its unit chooses when to use is switched on and spent as such a skill is, and keeps where it stands
+    // on the unit: it goes by `AFFINITY_ID` in place of the id an Item has
+    const innate = affinityEntry(this.affinity, affinityEffectName(this.affinity), affinityIn);
+    const chosenUse = innate ? affinityUsage(this.affinity, affinityIn) : null;
+    this.affinityWay = chosenUse ? { ...chosenUse, name: innate.name, on: !!this.affinityUse.active } : null;
+    if ( innate && chosenUse ) {
+      entries.push({
+        ...innate, innate: true, id: AFFINITY_ID, active: !!this.affinityUse.active, spends: chosenUse.spentBy === "fight",
+        usage: chosenUse.usage, state: { ...this.affinityUse }
+      });
+    }
+    else if ( innate ) entries.push({ ...innate, innate: true, active: false, spends: false, usage: null, state: null });
 
     // Glory: each Power the unit holds is one more skill of the same kind, named after the Power
     for ( const power of powerEntries(this.glory.powers, powerName) ) {
-      entries.push({ ...power, active: false, spends: false, usage: null, state: null });
+      entries.push({ ...power, innate: true, active: false, spends: false, usage: null, state: null });
+    }
+
+    // Changing form: a Laguz in its animal form has the effect of Canto+, which is read as one more skill of
+    // the same kind
+    if ( (shift.mode === "gauge") && shift.active ) {
+      entries.push({ ...cantoPlusEntry(shiftedName()), innate: true, active: false, spends: false, usage: null, state: null });
+    }
+
+    // What the unit's skills, and the changes that last on it, make of carrying a unit and of being carried
+    const lasting = timedEntries(this.timed);
+    this.carry = skillCarry([...entries, ...lasting], {
+      hp: this.hp.value,
+      hpMax: this.hp.max,
+      level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
+      stats: bareStats,
+      weapon: weapon ? { name: weapon.name, ...weapon.system } : null,
+      conditions: this.conditions,
+      qualities: this.specialQualities,
+      shifted: shift.transformed,
+      waiting: this.waiting
+    });
+
+    // Rescue: a unit that carries an ally is slowed by it, which is read as one more skill of its own, named
+    // after the ally; unless its skills make nothing of the load, or the ally is no load to anyone
+    if ( this.rescuing.uuid && burdened(this.carry, this.rescuing.light) ) {
+      entries.push({ ...carryEntry(carriedName(this.rescuing.name)), innate: true, active: false, spends: false, usage: null, state: null });
     }
 
     // Capturing: a unit that carries a captive is slowed by it as by a Rescued unit, which is read as one more
     // skill of the same kind, named after the captive
-    if ( FEO.optional.capturing.enabled && this.captive.held && this.captive.uuid ) {
-      entries.push({ ...carryEntry(captiveName(this.captive.name)), active: false, spends: false, usage: null, state: null });
+    if ( FEO.optional.capturing.enabled && this.captive.held && this.captive.uuid && burdened(this.carry) ) {
+      entries.push({ ...carryEntry(captiveName(this.captive.name)), innate: true, active: false, spends: false, usage: null, state: null });
+    }
+
+    // A unit that has hold of another, as Death Grip has it, gives the unit it holds what being held comes to:
+    // read as one more skill of the same kind, named after the skill it holds with, whose aura is only for
+    // that unit and lasts while the two stand next to each other
+    const grip = this.parent?.flags?.[FEO.id]?.grip;
+    if ( (typeof grip?.token === "string") && grip.token ) {
+      entries.push({ ...gripEntry(grip.skill || "Death Grip", grip.token), innate: true, active: false, spends: false, usage: null, state: null });
     }
 
     // Passive Staff Effects: what the staff a unit has equipped does for it, for as long as it is, is read as
@@ -567,32 +774,121 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       if ( held ) entries.push({ ...held, active: false, spends: false, usage: null, state: null });
     }
 
+    // How the unit crosses terrain, as its skills and the changes that last on it have it. It is worked out
+    // ahead of where the unit stands, since what its tile is to it hangs on this
+    this.crossing = skillCrossing([...entries, ...lasting], {
+      hp: this.hp.value,
+      hpMax: this.hp.max,
+      level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
+      stats: bareStats,
+      weapon: weapon ? { name: weapon.name, ...weapon.system } : null,
+      conditions: this.conditions,
+      qualities: this.specialQualities,
+      shifted: shift.transformed,
+      waiting: this.waiting
+    });
+
+    // Whether its skills spare it the effects of weather, and the Line of Sight it has without the weather:
+    // both are known ahead of where it stands, since what the weather of its map gives it comes with that
+    this.weather = {
+      proof: skillRule([...entries, ...lasting], WEATHERPROOF, {
+        hp: this.hp.value,
+        hpMax: this.hp.max,
+        level: this.level,
+        tier: this.classTier,
+        stats: bareStats,
+        weapon: weapon ? { name: weapon.name, ...weapon.system } : null,
+        conditions: this.conditions,
+        qualities: this.specialQualities,
+        shifted: shift.transformed,
+        waiting: this.waiting
+      }),
+      los: bareStats.los ?? 0
+    };
+
     // Where the unit stands: what it has around it, and what the skills of those units give it. Their auras
     // are read as skills of its own, each named after its skill and the unit it comes from
     const place = (this.parent ? UnitData.standing?.(this.parent) : null) ?? null;
     const auras = place?.auras ?? [];
-    const lasting = timedEntries(this.timed);
-    const skills = skillTotals([...entries, ...lasting, ...auras], {
+
+    // How it moved this turn, for the skills that ask. The MOV it has left is counted from its MOV with what
+    // its skills add, so that these are read again where they add any
+    const rooted = !!this.defeat.state || Object.keys(this.conditions ?? {}).some((id) => FEO.conditions[id]?.noMove);
+    const moving = (mov) => {
+      if ( !this.parent || !UnitData.moving ) return null;
+      return UnitData.moving(this.parent, { mov: rooted ? 0 : Math.max(mov ?? 0, 0), weapon: weapon?.id ?? "" }) ?? null;
+    };
+    // The weapons it carries and cannot wield, for a skill that counts them: by its ranks, with the ranks above
+    // its own that its skills let it wield, which are only known once they are read
+    const cannotWield = (above) => !FEO.weapons.rankCheck ? 0 : items.filter((item) => {
+      if ( (item.type !== "weapon") || item.system.broken || item.flags?.[FEO.id]?.summoned ) return false;
+      return !canWield(this.proficiencies, item.system, { above, level: wieldLevel(this) }).ok;
+    }).length;
+    let unusable = cannotWield(0);
+
+    // The turn of the battle it is in and the Phase that is running, for the skills that ask
+    const clock = (this.parent ? UnitData.clock?.(this.parent) : null) ?? null;
+    const read = (move) => skillTotals([...entries, ...lasting, ...auras], {
+      unusable,
+      proficiencies: this.proficiencies,
       hp: this.hp.value,
       hpMax: this.hp.max,
       level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
       gold: this.gold,
       stats: bareStats,
       base: this.bare.base,
       accuracy: this.bare.accuracy,
       waiting: this.waiting,
       weapon: weapon ? { name: weapon.name, ...weapon.system, reach: parseRange(weapon.system.range, bareStats) } : null,
+      shield: this.equippedShield?.system.asShield ?? null,
       near: place?.near ?? null,
+      move,
+      clock,
       conditions: this.conditions,
       qualities: this.specialQualities,
       shifted: shift.transformed
     });
+    const move = moving(bareStats.mov);
+    let skills = read(move);
+    let walked = move;
+    if ( move && skills.stats.mov ) {
+      walked = moving((bareStats.mov ?? 0) + skills.stats.mov);
+      skills = read(walked);
+    }
+    if ( skills.wield && (cannotWield(skills.wield) !== unusable) ) {
+      unusable = cannotWield(skills.wield);
+      skills = read(walked);
+    }
+    this.unusable = unusable;
+
+    // And the weapons and tomes it carries and may wield, for what the units around count of them
+    this.wieldable = items.filter((item) => {
+      if ( (item.type !== "weapon") || item.system.broken ) return false;
+      return !FEO.weapons.rankCheck || canWield(this.proficiencies, item.system, { above: skills.wield ?? 0, level: wieldLevel(this) }).ok;
+    }).map((item) => ({ category: item.system.category, name: item.name }));
     sources.unshift(...skills.sources.map((source) => {
       return { label: source.name, localize: false, stats: source.stats, combat: source.combat };
     }));
     if ( skills.sources.length ) total();
+
+    // Stats that are multiplied once everything is added to them, as one that is halved for a while is: what
+    // that comes to is one more source, under the names of the skills that do so
+    const multiplied = multiplyStats(Object.fromEntries(Object.entries(this.stats).map(([key, stat]) => [key, stat.total])), skills.statTimes, skills.bends?.debuffs);
+    if ( Object.keys(multiplied.change).length ) {
+      sources.unshift({ label: multiplied.names.join(", "), localize: false, stats: multiplied.change });
+      total();
+    }
     this.hp.max += skills.hpMax;
     this.haste += skills.haste ?? 0;
+    for ( const [key, amount] of Object.entries(skills.abilities ?? {}) ) {
+      if ( this.abilities[key] ) this.abilities[key].modifier = (this.abilities[key].modifier ?? 0) + amount;
+    }
     // The room it has for skills: its slots, and with Skill Capacity its Capacity Points
     this.skillRoom = skillRoom({
       costs: items.filter((item) => (item.type === "skill") && item.system.equipped && countsAsSkill(item.system.effect))
@@ -610,6 +906,10 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       entries,
       auras,
       timed: lasting,
+
+      // The turn of the battle the unit is in, and what its skills keep count of, by skill (see the timed rules)
+      clock,
+      counts: skillCounts(this.timed),
       lasting: skills.lasting,
       near: place?.near ?? null,
       received: skills.auras,
@@ -622,8 +922,26 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       rules: Array.from(skills.rules),
 
       // How the skills bend the rules of conditions, which the start of a turn reads
-      bends: skills.bends
+      bends: skills.bends,
+
+      // What they make of blocking (see `rules/blocking.mjs`)
+      block: skills.block,
+
+      // Turns they add to the cooldown of every skill the unit uses (see `rules/choices.mjs`)
+      cooldowns: skills.cooldowns ?? 0,
+
+      // The combat stats they multiply once everything is added, each under the name of its skill
+      combatTimes: (skills.combatTimes ?? []).map(({ skill, key, times }) => ({ label: skill, key, times }))
     };
+
+    // What the unit blocks a physical attack from next to it with, outside of any fight: its Shield, a weapon
+    // that acts as one or the weapon it guards with, and how likely. Null when it blocks with nothing
+    this.block = guardOf({
+      shield: this.equippedShield?.system.asShield ?? null,
+      weapon: weapon ? { name: weapon.name, ...weapon.system } : null,
+      stats: this.statValues,
+      block: skills.block
+    });
 
     // Growth rates that skills raise, on top of what Holy Blood adds. `growthPicks` lists the skills whose
     // growth rates are still to be picked
@@ -661,11 +979,113 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     this.checkPointsPerLevel = abilityPointsPerLevel(values.cha, values.int, values.luk);
     this.checkPointLimit = 5 + this.level;
 
+    // How units stand in its way, and it in theirs, as its skills and the changes that last on it have it: read
+    // by the map as it works out where units can go. Its numbers may be read from the unit's level, its Weight
+    // and its ability checks, so it is worked out once those are
+    this.passing = skillPassing([...(this.skills?.entries ?? []), ...(this.skills?.timed ?? [])], {
+      hp: this.hp.value,
+      hpMax: this.hp.max,
+      level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
+      stats: values,
+      weight: this.wt.total,
+      checks: Object.fromEntries(Object.entries(this.checks).map(([key, check]) => [key, check.bonus])),
+      weapon: this.equippedWeapon ? { name: this.equippedWeapon.name, ...this.equippedWeapon.system } : null,
+      conditions: this.conditions,
+      qualities: this.specialQualities,
+      shifted: !!this.shift?.transformed,
+      waiting: this.waiting
+    });
+
+    // Whether it may move again after an Action, as Canto has it, and how it curbs that for its enemies: read
+    // by the map as an Action is taken
+    this.canto = skillCanto([...(this.skills?.entries ?? []), ...(this.skills?.timed ?? [])], {
+      hp: this.hp.value,
+      hpMax: this.hp.max,
+      level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
+      stats: values,
+      weapon: this.equippedWeapon ? { name: this.equippedWeapon.name, ...this.equippedWeapon.system } : null,
+      conditions: this.conditions,
+      qualities: this.specialQualities,
+      shifted: !!this.shift?.transformed,
+      waiting: this.waiting
+    });
+
+    // What its skills let it do with gear and with the things on a map: steal, open doors and chests without
+    // a key, disarm traps, destroy Villages, buy for less, make items as a map starts. What it wears adds to
+    // them: an accessory is worn while it is carried (see `rules/stealing.mjs`)
+    this.knacks = skillKnacks([...(this.skills?.entries ?? []), ...(this.skills?.timed ?? [])], {
+      hp: this.hp.value,
+      hpMax: this.hp.max,
+      level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
+      stats: values,
+      weapon: this.equippedWeapon ? { name: this.equippedWeapon.name, ...this.equippedWeapon.system } : null,
+      conditions: this.conditions,
+      qualities: this.specialQualities,
+      shifted: !!this.shift?.transformed,
+      waiting: this.waiting
+    });
+    for ( const item of this.parent?.items ?? [] ) {
+      if ( (item.type !== "gear") || !item.system.equip || item.system.isShield ) continue;
+      const gives = gearKnacks(item.system.effect);
+      if ( gives ) addKnacks(this.knacks, gives, { skill: item.name });
+    }
+
+    // What its skills make of its Shove: how far it pushes, and whether shoving an enemy takes movement in
+    // place of its Action. Read by the map as the unit shoves
+    this.shoving = skillShove([...(this.skills?.entries ?? []), ...(this.skills?.timed ?? [])], {
+      hp: this.hp.value,
+      hpMax: this.hp.max,
+      level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
+      stats: values,
+      weapon: this.equippedWeapon ? { name: this.equippedWeapon.name, ...this.equippedWeapon.system } : null,
+      conditions: this.conditions,
+      qualities: this.specialQualities,
+      shifted: !!this.shift?.transformed,
+      waiting: this.waiting
+    });
+
+    // What it does for its side outside of its own turn, as its skills and the stances it is in have it: the
+    // allies it fights in the place of, the hits on an ally it takes or turns back, and what it reacts to.
+    // Read by the map as an enemy attacks or moves
+    const standing = skillStanding([...(this.skills?.entries ?? []), ...(this.skills?.timed ?? [])], {
+      hp: this.hp.value,
+      hpMax: this.hp.max,
+      level: this.level,
+      tier: this.classTier,
+      gender: this.profile?.gender ?? "",
+      bestRank: this.bestRank,
+      stats: values,
+      weapon: this.equippedWeapon ? { name: this.equippedWeapon.name, ...this.equippedWeapon.system } : null,
+      conditions: this.conditions,
+      qualities: this.specialQualities,
+      shifted: !!this.shift?.transformed,
+      waiting: this.waiting
+    });
+    this.guard = standing.guard;
+    this.wards = standing.wards;
+    this.reacts = standing.reacts;
+
     // Defeat: how long the unit stays down, what is taken off damage past 0 HP, and whether it must now choose
     const defeat = this.defeat;
     defeat.resilience = resilience(...FEO.defeat.resilience.checks.map((key) => this.checks[key]?.bonus));
     defeat.down = defeat.state === "incapacitated";
-    defeat.out = ["retreated", "dead", "captured"].includes(defeat.state);
+    // A unit left at 0 HP with nothing said of what became of it is out of the fight all the same
+    // So is one that an ally carries, for as long as it is carried: it rides on that ally's token
+    defeat.carried = !!this.rescued.by;
+    defeat.out = outOfFight({ state: defeat.state, hp: this.hp.value, hpMax: this.hp.base, carried: defeat.carried });
+    defeat.gone = leavesMap(defeat.state, { carried: defeat.carried });
     defeat.fate = FEO.defeat.enabled ? fateReasons({
       hp: this.hp.value,
       hpMax: this.hp.base,
@@ -723,6 +1143,7 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       sources.push({
         label: bond.name || "FEO.Bond.unnamed",
         localize: !bond.name,
+        support: true,
         combat: { damage: atk, hit, dodge, critical, critAvoid }
       });
     }
@@ -742,7 +1163,7 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     // Partners in a Bond Support gain more while side by side
     for ( const bond of this.bonds ) {
       const bonus = kinBonus(bond);
-      if ( bonus ) sources.push({ label: "FEO.Bond.kinBonus", localize: true, combat: bonus });
+      if ( bonus ) sources.push({ label: "FEO.Bond.kinBonus", localize: true, support: true, combat: bonus });
     }
 
     // Optional Modules: Leadership Stars, and the kills made with the weapon in hand
@@ -781,6 +1202,30 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     const items = this.parent?.items;
     if ( !items ) return null;
     return items.find((item) => (item.type === "weapon") && item.system.equipped) ?? null;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The Shield this unit currently has equipped, if any. One that is out of uses blocks nothing, and is put
+   * away as it breaks. A unit that a lasting change keeps from equipping Shields has none for as long as that
+   * lasts: the Shield it had is in its hands again once the change is over.
+   * @type {Item|null}
+   */
+  get equippedShield() {
+    const items = this.parent?.items;
+    if ( !items || this.shieldsBarred ) return null;
+    return items.find((item) => (item.type === "gear") && item.system.equipped && item.system.isShield && !item.system.spent) ?? null;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Is this unit kept from having a Shield equipped, by a change that lasts on it?
+   * @type {boolean}
+   */
+  get shieldsBarred() {
+    return shieldsBarred(this.timed);
   }
 
   /* -------------------------------------------- */
@@ -841,6 +1286,11 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
   combatWith(weapon) {
     const mastery = this.masteryFor(weapon);
     const modifiers = mastery ? [mastery, ...(this.modifiers ?? [])] : (this.modifiers ?? []);
-    return computeCombat({ stats: this.battleValues, boosts: this.combatBoosts, calc: this.calc, modifiers }, weapon);
+
+    // The Shield it has equipped adds to its Weight as Attack Speed is worked out, armed or not
+    const burden = this.equippedShield?.system.shield.weight ?? 0;
+    const held = !burden ? weapon : weapon ? { ...weapon, weight: (weapon.weight ?? 0) + burden } : { weight: burden };
+    return computeCombat({ stats: this.battleValues, boosts: this.combatBoosts, calc: this.calc, modifiers, times: this.skills?.combatTimes ?? [] }, held);
+
   }
 }

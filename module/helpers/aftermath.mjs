@@ -1,8 +1,10 @@
 import { FEO } from "../config.mjs";
 import { exchangeWounds, fateReasons, hpTransition } from "../rules/defeat.mjs";
 import { earnerOf, expSources, scaleExp } from "../rules/earnings.mjs";
+import { activationExp } from "../rules/optional.mjs";
 import { exchangeExp, gainExp } from "../rules/experience.mjs";
 import { gaugeAfterCombat } from "../rules/shifting.mjs";
+import { spareLines } from "./defeat-context.mjs";
 import { expTimes } from "./earnings-context.mjs";
 
 /**
@@ -19,6 +21,8 @@ import { expTimes } from "./earnings-context.mjs";
  * What the rules after an exchange need to know about a unit, carried on its Combatant as `record`.
  * @property {number} level
  * @property {number} exp
+ * @property {string} [affinity]                          Its Affinity, for one that gives experience
+ * @property {boolean} [affinityAlways]                   Does its Affinity count whatever the world plays with?
  * @property {number} hpBase                              Maximum HP before Wounds and Injuries
  * @property {number} injuries
  * @property {number} graveWounds
@@ -34,6 +38,8 @@ import { expTimes } from "./earnings-context.mjs";
  *           Experience earned, or null for a unit that earns none. When skills multiplied it: what it was
  *           before (`base`), by how much (`times`) and which skills did
  * @property {number} wounds                Wounds caused by the hits the unit took
+ * @property {object[]} [spared]            What was rolled to spare it those Wounds (see `saveHarm` in
+ *                                          `rules/events.mjs`), set by whoever rolls the fight
  * @property {{event: string, turns: number, fate: string[]}|null} defeat   Set when the unit went down
  * @property {object|null} shift            What the fight did to the unit's Shift Gauge or stone
  */
@@ -51,6 +57,8 @@ export function recordOf(actor) {
   return {
     level: system.level,
     exp: system.exp,
+    affinity: system.affinity ?? "",
+    affinityAlways: !!system.glory?.extras?.resonance,
     hpBase: system.hp.base ?? system.hp.max,
     injuries: system.injuries,
     graveWounds: system.graveWounds ?? 0,
@@ -97,14 +105,20 @@ export function exchangeAftermath(plan, result, { earns = {}, heirs = {} } = {})
     const outcome = result[side];
     const aftermath = { exp: null, wounds: 0, defeat: null, shift: null };
 
-    if ( earns[side] && fought ) {
+    // A unit whose skill ended the fight early may earn nothing from it
+    const forgone = (result.fled?.side === side) && !!result.fled.forgoExp;
+    if ( earns[side] && fought && !forgone ) {
       // Skills of the unit, and of the units around it, can multiply what it earns
       const earner = earnerOf(unit);
-      const scaled = scaleExp(awards[side].amount, expSources(earner.skills, earner.self));
+
+      // An Affinity gives experience for the unit's own Skills that rolled to activate and did, as Emblem does
+      const sparked = activationExp(info.affinity, outcome.sparked ?? [], info.affinityAlways ? { config: { ...FEO.optional.affinityEffects, enabled: true } } : {});
+      const scaled = scaleExp(awards[side].amount + sparked, expSources(earner.skills, earner.self));
       // What a summoned unit earns is added to what its summoner has
       const heir = heirs[side] ?? null;
       const { exp, ready } = gainExp(heir ? heir.exp : info.exp, scaled.amount);
       aftermath.exp = { ...awards[side], amount: scaled.amount, total: exp, ready };
+      if ( sparked > 0 ) aftermath.exp.sparked = { amount: sparked, skills: outcome.sparked.length };
       if ( heir ) aftermath.exp.to = heir.name;
       if ( scaled.sources.length && (scaled.base > 0) ) Object.assign(aftermath.exp, { base: scaled.base, times: scaled.times, sources: scaled.sources });
     }
@@ -170,7 +184,10 @@ export function aftermathChanges(changes, aftermath) {
     if ( after.shift?.mode === "gauge" ) {
       change.shift = { value: after.shift.value, active: after.shift.active, fought: after.shift.fought };
     }
-    else if ( after.shift?.mode === "stone" ) change.shift = { uses: after.shift.uses };
+    else if ( after.shift?.mode === "stone" ) change.shift = { uses: after.shift.uses + (change.transforms ?? 0) };
+
+    // Transformations a unit gave up for damage are counted with the one the fight used, and nowhere else
+    delete change.transforms;
   }
   return changes;
 }
@@ -216,6 +233,15 @@ export function aftermathLines(plan, aftermath, i18n) {
       cls: "bad"
     });
 
+    // A Wound a skill spared the unit is told where the Wound would have been, with its roll; a roll that
+    // failed is among the details
+    const spared = after.spared ?? [];
+    notable.push(...spareLines(spared.filter((entry) => entry.success), name, i18n));
+    for ( const entry of spared.filter((roll) => !roll.success) ) details.push({
+      label: `${name} · ${entry.skill}`,
+      value: spareLines([entry], name, i18n)[0].label
+    });
+
     if ( after.exp ) {
       const { amount, reason, total, ready } = after.exp;
 
@@ -228,7 +254,8 @@ export function aftermathLines(plan, aftermath, i18n) {
 
       // Why, and what skills multiplied it by
       const times = expTimes(after.exp, i18n);
-      const why = i18n.localize(`FEO.Exp.reason.${reason}`);
+      const sparked = after.exp.sparked ? i18n.format("FEO.Exp.activations", after.exp.sparked) : "";
+      const why = [i18n.localize(`FEO.Exp.reason.${reason}`), sparked].filter(Boolean).join(", ");
       if ( (amount > 0) || (reason !== "none") ) details.push({
         label: `${earner} · ${i18n.localize("FEO.Unit.exp")}`,
         value: i18n.format("FEO.Exp.detail", {

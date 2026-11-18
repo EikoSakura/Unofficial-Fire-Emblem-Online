@@ -46,7 +46,9 @@ export function captureCheck(actor, token, target, targetToken) {
  */
 export function withReadiedCapture(actor, token, target, targetToken, unit) {
   if ( !FEO.optional.capturing.enabled || !actor.system.capturing ) return unit;
-  return readyCapture(unit, captureCheck(actor, token, target, targetToken), game.i18n.localize("FEO.Optional.capturing.attempt"));
+  return readyCapture(unit, captureCheck(actor, token, target, targetToken), game.i18n.localize("FEO.Optional.capturing.attempt"), {
+    free: !!actor.system.carry?.free
+  });
 }
 
 /* -------------------------------------------- */
@@ -63,7 +65,7 @@ export async function toggleCapture(actor) {
     await actor.update({ "system.capturing": false });
     return true;
   }
-  const why = !FEO.optional.capturing.enabled ? "off" : actor.system.captive?.uuid ? "holding" : null;
+  const why = !FEO.optional.capturing.enabled ? "off" : (actor.system.captive?.uuid || actor.system.rescuing?.uuid) ? "holding" : null;
   if ( why ) {
     ui.notifications.warn(`FEO.Optional.capturing.cannot.${why}`, { localize: true });
     return false;

@@ -1,0 +1,19 @@
+{{#if effect}}<p class="pick-effect">{{effect}}</p>{{/if}}
+{{#each picks as |pick|}}
+<section class="pick-group{{#if pick.open}} open{{/if}}">
+  <header>
+    <b>{{pick.label}}</b>
+    {{#if pick.tally}}<small>{{pick.tally}}</small>{{/if}}
+  </header>
+  <div class="pick-tiles">
+    {{#each pick.options as |option|}}
+    <button type="button" class="pick-tile" data-pick="{{pick.index}}" data-value="{{option.value}}" aria-pressed="{{option.pressed}}"
+      {{#if option.barred}}disabled{{/if}}>
+      <b>{{option.label}}</b>
+      {{#if option.cost}}<i>{{option.cost}}</i>{{/if}}
+      {{#if option.hint}}<small>{{option.hint}}</small>{{/if}}
+    </button>
+    {{/each}}
+  </div>
+</section>
+{{/each}}

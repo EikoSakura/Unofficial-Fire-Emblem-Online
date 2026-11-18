@@ -1,6 +1,7 @@
 import { FEO } from "../config.mjs";
 import { paintScene, paintShown, terrainTint, veilPaint } from "../helpers/paint.mjs";
 import { tileGround } from "../helpers/terrain.mjs";
+import { objectOn } from "../helpers/map-objects.mjs";
 import { boxTiles, brushHolds, lineTiles } from "../rules/paint.mjs";
 import { tileKey } from "../rules/reach.mjs";
 import { drawGround } from "./ground-art.mjs";
@@ -31,10 +32,11 @@ export const MAP_TOOLS = { survey: "feoSurvey", paint: "feoPaint" };
 export const mapTools = {
 
   /**
-   * What the terrain brush holds.
-   * @type {Brush}
+   * What the terrain brush holds: a kind of terrain, a height, the eraser; or in their place a door, a chest
+   * or a Village to set down on the tile that is clicked (`object`, see `rules/objects.mjs`).
+   * @type {Brush & {object: "door"|"chest"|"village"|null}}
    */
-  brush: { terrain: "forest", elevation: null, erase: false },
+  brush: { terrain: "forest", elevation: null, erase: false, object: null },
 
   /**
    * Called when the tools change: the set is opened or left, or another tool is taken up.
@@ -163,8 +165,9 @@ export const groundArt = {
         cell,
         tints: FEO.terrain.tints,
         groundAt: (i, j) => {
+          // The picture shows the ground as it was painted, whatever stands on it
           const ground = tileGround(scene, { i: i + first.i, j: j + first.j });
-          return ground.named ? ground : null;
+          return ground.named ? { ...ground, terrain: ground.painted ?? ground.terrain } : null;
         }
       });
       if ( !drawn ) return;
@@ -307,7 +310,7 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
       style.fontSize = Math.round(size * 0.26);
       for ( let i = first.i; i <= last.i; i++ ) {
         for ( let j = first.j; j <= last.j; j++ ) {
-          const { terrain, elevation } = tileGround(scene, { i, j });
+          const { painted: terrain, elevation } = tileGround(scene, { i, j });
           const open = terrain === FEO.terrain.default;
           if ( open && !elevation ) continue;
           const { x, y } = canvas.grid.getTopLeftPoint({ i, j });
@@ -368,7 +371,55 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
     const scene = canvas.scene;
     const brush = { ...mapTools.brush };
     if ( !tiles.length || brushHolds(brush).idle ) return;
-    this.#laying = this.#laying.then(() => paintScene(scene, tiles, brush)).catch((err) => {
+    this.#laying = this.#laying.then(async () => {
+      await paintScene(scene, tiles, brush);
+
+      // The eraser takes away what stands on the tiles as well
+      if ( brush.erase ) {
+        const { placeObject } = await import("../helpers/objects.mjs");
+        for ( const tile of tiles ) if ( objectOn(scene, tile) ) await placeObject(scene, tile, null);
+
+        // And the mines and traps that lie on them
+        const { laidOn, placeTrap } = await import("../helpers/traps.mjs");
+        for ( const tile of tiles ) {
+          if ( laidOn(scene).some((trap) => (trap.i === tile.i) && (trap.j === tile.j)) ) await placeTrap(scene, tile, null);
+        }
+      }
+    }).catch((err) => {
+      console.error(err);
+      ui.notifications.error("FEO.Hud.failed", { localize: true });
+    });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Set down the door, the chest or the Village the brush holds on a tile; on a tile where something stands
+   * already, have the Game Master set what that is and holds. A chest and a Village are asked about as they
+   * are set down, since each is there for what it holds.
+   * @param {Tile} tile
+   */
+  #place(tile) {
+    const scene = canvas.scene;
+    const kind = mapTools.brush.object;
+    this.#laying = this.#laying.then(async () => {
+      // A mine or a trap is set down as the first of the Mines of the Items tab, and the Game Master is then
+      // asked which it is; a click on one that lies there asks the same
+      if ( kind === "trap" ) {
+        const { configureTrap, laidOn, placeTrap, trapItems } = await import("../helpers/traps.mjs");
+        const lies = laidOn(scene).find((trap) => (trap.i === tile.i) && (trap.j === tile.j));
+        if ( lies ) return configureTrap(scene, lies.id);
+        const items = await trapItems();
+        if ( !items.length ) return ui.notifications.warn("FEO.Trap.config.none", { localize: true });
+        const made = await placeTrap(scene, tile, items[0]);
+        return made ? configureTrap(scene, made.id) : null;
+      }
+      const { configureObject, placeObject } = await import("../helpers/objects.mjs");
+      const found = objectOn(scene, tile);
+      if ( found ) return configureObject(scene, found.id);
+      const made = await placeObject(scene, tile, kind);
+      if ( made && (made.kind !== "door") ) await configureObject(scene, made.id);
+    }).catch((err) => {
       console.error(err);
       ui.notifications.error("FEO.Hud.failed", { localize: true });
     });
@@ -384,7 +435,8 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
     try {
       if ( !mapTools.painting ) return;
       const tile = mapTile(event.interactionData?.origin);
-      if ( tile ) this.#lay([tile]);
+      if ( tile && mapTools.brush.object ) this.#place(tile);
+      else if ( tile ) this.#lay([tile]);
     } catch(err) {
       console.error(err);
     }
@@ -394,7 +446,8 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
 
   /** @override */
   _canDragLeftStart(user, event) {
-    return mapTools.painting;
+    // What stands on a tile is set down one click at a time
+    return mapTools.painting && !mapTools.brush.object;
   }
 
   /* -------------------------------------------- */

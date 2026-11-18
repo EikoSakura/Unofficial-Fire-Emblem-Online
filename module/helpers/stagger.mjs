@@ -40,7 +40,8 @@ export function staggerBarOf(actor) {
  * @returns {boolean}
  */
 function inTurn(actor) {
-  return turnState(actor, actor.token ?? null) === "ready";
+  const state = turnState(actor, actor.token ?? null);
+  return (state === "ready") || (state === "moving");
 }
 
 /* -------------------------------------------- */

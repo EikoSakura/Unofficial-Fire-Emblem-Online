@@ -1,19 +1,21 @@
 import { FEO } from "../config.mjs";
-import { hpTransition, spendRound, tickIncapacitation, treat } from "../rules/defeat.mjs";
+import { hpTransition, plainTransition, spendRound, tickIncapacitation, treat } from "../rules/defeat.mjs";
 import { postCard, rollD100 } from "./chat.mjs";
 import { buildDefeatCard, buildTreatCard } from "./defeat-context.mjs";
 import { incapacitates } from "./exchange.mjs";
 import { awardExp, earnsExp, expRow } from "./experience.mjs";
-import { livesOf, postLifeCard, reviveLife, spendLife } from "./optional.mjs";
+import { postLifeCard, reviveLife, spendLife } from "./optional.mjs";
 
 /**
  * Defeat on units in Foundry. Whenever a unit's HP changes, whatever changed it, the system works out what
  * that means: a unit of a side that uses the Incapacitation system goes down, gets back up with an Injury or
- * has its timer paused; a unit of any other side is defeated at 0 HP.
+ * has its timer paused; a unit of any other side, and every unit of a world that plays without that system, is
+ * defeated at 0 HP. A unit that dies or retreats leaves the map: its token is drawn no longer (see
+ * `canvas/battle-canvas.mjs`).
  */
 
 /** The update option that carries each unit's HP from before an update, by Actor UUID. */
-const HP_BEFORE = "feoHpBefore";
+export const HP_BEFORE = "feoHpBefore";
 
 /** The update option that keeps the system from posting a card of its own for a unit going down. */
 export const QUIET = { [FEO.id]: { quietDefeat: true } };
@@ -67,28 +69,29 @@ export async function followHp(actor, changed, options, userId) {
   if ( (actor?.type !== "unit") || (userId !== game.user.id) ) return null;
   if ( !foundry.utils.hasProperty(changed, "system.hp.value") ) return null;
 
-  // Without the Incapacitation system nothing follows from HP, except for a unit with lives to lose
-  if ( !FEO.defeat.enabled && !livesOf(actor).used ) return null;
   const system = actor.system;
   const state = system.defeat.state;
   const after = system.hp.value;
   const before = options?.[HP_BEFORE]?.[actor.uuid] ?? (state ? after : 1);
 
-  // A side that does not use the Incapacitation system: defeated at 0 HP, and back when raised above it
+  // A unit the Incapacitation system does not apply to, as every unit is in a world that plays without it:
+  // defeated at 0 HP, and back when raised above it
   if ( !incapacitates(actor, actor.token) ) {
-    if ( !state && (after <= 0) && (before > 0) && (system.hp.base > 0) ) {
+    const plain = { hpMax: system.hp.base, defeat: { state } };
+    const fall = plainTransition(plain, before, after);
+    if ( fall?.event === "defeated" ) {
       // With Additional Lives, a unit that would die loses a life and leaves the battle instead
       const life = spendLife(actor);
-      const fallen = life && !life.dead ? "retreated" : "dead";
-      await actor.update({ "system.defeat": { state: fallen, turns: 0, paused: false }, ...(life?.update ?? {}) });
+      const fallen = plainTransition(plain, before, after, { spare: !!life && !life.dead }).defeat;
+      await actor.update({ "system.defeat": fallen, ...(life?.update ?? {}) });
       await syncStatus(actor);
       if ( life ) await postLifeCard(actor, life.dead ? "last" : "lost", life);
-      return fallen;
+      return fallen.state;
     }
-    if ( (state === "dead") && (after > 0) ) {
+    if ( fall?.event === "returned" ) {
       // A unit brought back from death returns with one life
       const life = reviveLife(actor);
-      await actor.update({ "system.defeat": { state: "", turns: 0, paused: false }, ...(life?.update ?? {}) });
+      await actor.update({ "system.defeat": fall.defeat, ...(life?.update ?? {}) });
       await syncStatus(actor);
       if ( life ) await postLifeCard(actor, "revived", life);
       return "returned";
@@ -98,6 +101,21 @@ export async function followHp(actor, changed, options, userId) {
 
   const change = hpTransition(profileOf(actor), before, after);
   if ( !change ) return null;
+
+  // The Injury of getting back up may be spared by a skill of the unit, which is rolled for here
+  let spared = [];
+  let dice = [];
+  if ( (change.event === "recovered") && (change.injuries > system.injuries) ) {
+    try {
+      const { spareHarm } = await import("./events.mjs");
+      const saved = await spareHarm(actor, "injury", change.injuries - system.injuries);
+      spared = saved.rolls;
+      dice = saved.roll ? [saved.roll] : [];
+      change.injuries = system.injuries + saved.left;
+    } catch(err) {
+      console.error(err);
+    }
+  }
   const update = { "system.defeat": change.defeat };
   if ( change.injuries !== system.injuries ) {
     // An Injury lowers maximum HP, which current HP cannot exceed
@@ -114,8 +132,9 @@ export async function followHp(actor, changed, options, userId) {
     turns: change.defeat.turns,
     injuries: change.injuries,
     hp: after,
-    fate: actor.system.defeat.fate
-  }, game.i18n));
+    fate: actor.system.defeat.fate,
+    spared
+  }, game.i18n), { rolls: dice });
   return change.event;
 }
 

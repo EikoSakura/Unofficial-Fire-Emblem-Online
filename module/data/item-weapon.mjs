@@ -57,6 +57,22 @@ export default class WeaponData extends foundry.abstract.TypeDataModel {
   /* -------------------------------------------- */
 
   /**
+   * A weapon that is taken in hand has yet to attack: what a skill has it take from the weapon its unit attacked
+   * with before waits for its first attack again (see `module/rules/triangle.mjs`).
+   * @override
+   */
+  async _preUpdate(changes, options, user) {
+    const allowed = await super._preUpdate(changes, options, user);
+    if ( allowed === false ) return false;
+    if ( (changes.system?.equipped === true) && !this.equipped && this.parent?.getFlag?.(FEO.id, "swung") ) {
+      foundry.utils.setProperty(changes, `flags.${FEO.id}.swung`, false);
+    }
+    return allowed;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * The proficiency this weapon is wielded with, or null if its category has none.
    * @type {string|null}
    */

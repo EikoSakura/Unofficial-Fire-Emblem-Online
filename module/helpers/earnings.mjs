@@ -1,5 +1,7 @@
 import { FEO } from "../config.mjs";
-import { expSources, failedGrowths, killGold, levelUpOutcome, rerollGrowths, rerollSkill, scaleExp, staffRow } from "../rules/earnings.mjs";
+import {
+  classGains, expSources, failedGrowths, killGold, levelUpOutcome, rerollGrowths, rerollSkill, scaleExp, staffRow
+} from "../rules/earnings.mjs";
 import { rollD100 } from "./chat.mjs";
 import { levelUpRows } from "./earnings-context.mjs";
 import { standingOf, tokenInView } from "./positions.mjs";
@@ -38,6 +40,7 @@ export function earnerOfActor(actor, { around = true } = {}) {
       hp: system.hp?.value ?? 0,
       hpMax: system.hp?.max ?? 0,
       level: system.level ?? 1,
+      tier: system.classTier,
       stats: system.bare?.stats ?? system.statValues ?? {},
       weapon: weapon ? { name: weapon.name, ...weapon.system } : null,
       waiting: !!system.waiting,
@@ -58,7 +61,12 @@ export function earnerOfActor(actor, { around = true } = {}) {
  */
 export function mostEarned(actor) {
   const { skills, self } = earnerOfActor(actor);
-  return { exp: scaleExp(FEO.expPerLevel, expSources(skills, self)).amount, gold: killGold(skills, self) };
+
+  // An Affinity that gives experience for Skills that activated may add to a level's worth: as much as a
+  // fight of many activations could come to
+  const table = FEO.optional.affinityEffects.activationExp?.[actor.system.affinity] ?? [];
+  const sparked = Math.max(0, ...table.map((row) => row.exp)) * FEO.expPerLevel / 5;
+  return { exp: scaleExp(FEO.expPerLevel + sparked, expSources(skills, self)).amount, gold: killGold(skills, self) };
 }
 
 /* -------------------------------------------- */
@@ -97,10 +105,11 @@ export async function rerollFailed(actor, results) {
 /* -------------------------------------------- */
 
 /**
- * What a unit's skills do once its growth rates have been rolled: gold, HP restored, a boost that lasts.
- * Nothing is saved here. A unit that is down or out of the fight is not healed.
+ * What a unit's skills do at a level up, once it is known what it raised: gold, HP restored, a boost that
+ * lasts. Nothing is saved here. A unit that is down or out of the fight is not healed.
  * @param {Actor} actor
- * @param {GrowthResult[]} results      The growth rolls, after any that were rolled again
+ * @param {GrowthResult[]} results      The growth rolls, after any that were rolled again; or what a class
+ *                                      gave, in their shape (see `classLevelUp`)
  * @param {object} [update]             What the level up is about to save, for the HP it leaves the unit at
  * @returns {{outcome: LevelUpOutcome, update: object, rows: {label: string, value: string, cls: string}[],
  *   grants: import("../rules/timed.mjs").TimedChange[]}}
@@ -115,7 +124,7 @@ export function levelUpSkills(actor, results, update = {}) {
   const hp = update["system.hp.value"] ?? system.hp.value;
 
   // The unit as the level up leaves it. One that is down has no HP to restore
-  const after = { ...self, hp, hpMax: standing ? system.hp.max + hpGain : hp };
+  const after = { ...self, hp, hpMax: standing ? Math.max(system.hp.max + hpGain, hp) : hp };
   const outcome = levelUpOutcome(skills, after, results);
   const extra = {};
   if ( outcome.goldTotal > 0 ) extra["system.gold"] = system.gold + outcome.goldTotal;
@@ -126,4 +135,22 @@ export function levelUpSkills(actor, results, update = {}) {
     rows: levelUpRows(outcome, game.i18n),
     grants: outcome.granted.map((granted) => granted.change).filter(Boolean)
   };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The level up that a class brings by itself: the promotion that takes the place of a level up, and the stats
+ * a class gives on reaching a level. The unit's skills see it as they see the growth rates being rolled, with
+ * each stat the class raised as one the level up raised.
+ * @param {Actor} actor
+ * @param {import("../rules/classes.mjs").ClassChange|null} change     What the class changes; null for a
+ *                                      promotion whose class is applied by hand, which raises nothing here
+ * @param {object} [update]             What is about to be saved for the unit, for the HP it leaves it at
+ * @returns {ReturnType<typeof levelUpSkills> & {notes: string[]}}     As `levelUpSkills`, with its rows as
+ *                                      lines for the foot of a card
+ */
+export function classLevelUp(actor, change, update = {}) {
+  const skills = levelUpSkills(actor, classGains(change), update);
+  return { ...skills, notes: skills.rows.map((row) => `${row.label}: ${row.value}`) };
 }

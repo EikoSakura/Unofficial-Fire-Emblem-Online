@@ -208,6 +208,8 @@
       "earth": "Earth",
       "light": "Light",
       "dark": "Dark",
+      "darkLight": "Dark and Light",
+      "scrolls": "Scrolls and Magicite",
       "staff": "Staff",
       "laguz": "Laguz",
       "manakete": "Manakete",
@@ -310,12 +312,12 @@
       "effectsCount": "{count} effects applied by the system",
       "effectsBad": "The effects were not saved: {problem}",
       "automated": "Applied by the system",
-      "needsChoice": "Choose a variant on the skill for it to apply",
+      "needsChoice": "Pick what the skill does for it to apply",
       "rankRaised": "{unit}: {skill} raises {proficiency} from {from} to {to} Rank.",
       "rankLowered": "{unit}: without {skill}, {proficiency} goes back from {from} to {to} Rank.",
       "formHint": "Take on or put off this Special Quality. It is written to the unit's Special Qualities, and the skill's boosts follow.",
       "check": "By hand",
-      "checkHint": "This skill hangs on something the system cannot see, such as terrain or movement. It is named in a fight and applied by hand.",
+      "checkHint": "This skill hangs on something the system cannot see here, such as terrain, or how the unit moved outside of a battle. It is named in a fight and applied by hand.",
       "unseen": "No token",
       "unseenHint": "This skill asks where units stand. The unit has no token on the scene in view, so the skill is shown and not applied.",
       "nearby": "From units nearby",
@@ -450,6 +452,7 @@
       "silence": "Silence",
       "berserk": "Berserk",
       "petrification": "Petrification",
+      "malaise": "Malaise",
       "dazzle": "Dazzle",
       "brand": "Brand",
       "sanction": "Sanction",
@@ -645,6 +648,7 @@
         "silenced": "A condition rules out the weapon in hand",
         "skill": "A skill rules it out",
         "elevation": "Melee cannot reach a different elevation",
+        "obstructed": "Something stands in the way",
         "artRange": "The readied Combat Art cannot be performed from this distance",
         "break": "Suffers from Break",
         "staggered": "Is Staggered"
@@ -667,7 +671,8 @@
       "warn": {
         "oneTarget": "Target one token to attack. Attacks on several targets at once are not supported yet.",
         "noUnit": "The targeted token is not a unit.",
-        "self": "A unit cannot attack itself."
+        "self": "A unit cannot attack itself.",
+        "untargetable": "That unit cannot be targeted by its enemies right now."
       },
       "note": {
         "ranged": "{condition}: {hit} Hit at this range",
@@ -707,7 +712,17 @@
         "kill": "{skill}: {chance}% on defeating the foe",
         "after": "{skill}: {chance}% after combat",
         "inflict": "{skill}: {chance}% on inflicting a condition",
-        "afflicted": "{skill}: {chance}% on being given a condition"
+        "afflicted": "{skill}: {chance}% on being given a condition",
+        "block": "{skill}: {chance}% on blocking",
+        "blocked": "{skill}: {chance}% when blocked",
+        "blockFail": "{skill}: {chance}% on failing to block",
+        "curbed": "{skill}: {chance}% when its hit is blocked or reduced",
+        "unhurt": "{skill}: {chance}% on taking no damage",
+        "attacked": "{skill}: {chance}% when attacked",
+        "landing": "{skill}: {chance}% when a hit would land",
+        "critMiss": "{skill}: {chance}% on a failed critical",
+        "foil": "{skill}: {chance}% to negate",
+        "round": "{skill}: {chance}% to fight the round again"
       },
       "sure": {
         "attack": "{skill}: on each attack",
@@ -720,7 +735,17 @@
         "kill": "{skill}: on defeating the foe",
         "after": "{skill}: after combat",
         "inflict": "{skill}: on inflicting a condition",
-        "afflicted": "{skill}: on being given a condition"
+        "afflicted": "{skill}: on being given a condition",
+        "block": "{skill}: on blocking",
+        "blocked": "{skill}: when blocked",
+        "blockFail": "{skill}: on failing to block",
+        "curbed": "{skill}: when its hit is blocked or reduced",
+        "unhurt": "{skill}: on taking no damage",
+        "attacked": "{skill}: when attacked",
+        "landing": "{skill}: when a hit would land",
+        "critMiss": "{skill}: on a failed critical",
+        "foil": "{skill}: negates",
+        "round": "{skill}: fights the round again"
       },
       "once": {
         "attack": "{skill}: on the first attack",
@@ -729,10 +754,14 @@
       "procRoll": "{skill} {roll} / {chance}",
       "closing": "After combat",
       "harmed": "{name} takes {amount} damage from {skill}",
+      "paid": "{name} pays {amount} HP for {skill}",
       "remind": "{name}: {skill} takes effect, to apply by hand",
       "opening": "As combat begins",
       "activates": "{name}: {skill} activates",
       "added": "{skill}: extra attack",
+      "worn": "{skill}: {name}'s {gear}",
+      "wornItem": "{item} −{amount} uses",
+      "cancelled": "{skill}: {name}'s next attack is cancelled",
       "answer": "{skill} ({name})",
       "reflected": "{name} takes {amount} damage in return",
       "auras": "From units nearby: {skills}",
@@ -961,6 +990,14 @@
         "nihil": "Nihil",
         "nihilText": "Cancelled in combat by Nihil."
       },
+      "coverage": {
+        "done": "Runs by itself",
+        "part": "Runs in part",
+        "text": "Text only",
+        "doneText": "The system applies the whole Effect.",
+        "partText": "The system applies part of the Effect; the rest is for the table.",
+        "textText": "The system only shows the Effect; applying it is for the table."
+      },
       "equipment": {
         "title": "The Armoury",
         "lead": "Weapons by type with their numbers, and the items a convoy carries.",
@@ -1059,8 +1096,34 @@
         "cardSubtitle": "Learned from {partner}"
       }
     },
+    "Pick": {
+      "title": "{unit}: {skill}",
+      "confirm": "Confirm",
+      "change": "Change what was picked",
+      "label": "Picked",
+      "count": "{picked} of {count}",
+      "points": "{spent} of {points} points",
+      "ask": "Pick for {unit} from the list above.",
+      "sofar": "{unit} picks {picked}.",
+      "picked": "{unit} picked {picked}.",
+      "elsewhere": "{unit} is picking for {skill}.",
+      "banner": "{unit} learns {skill}: pick what it does",
+      "note": "Picked once, as the skill is learnt. It cannot be changed afterwards.",
+      "locked": "What {skill} picked as it was learnt cannot be changed. The Game Master can change it on the skill's sheet.",
+      "from": {
+        "variant": "Choose one",
+        "stats": "Stat",
+        "growths": "Growth rates",
+        "proficiencies": "Proficiency",
+        "start": "Starting proficiency"
+      }
+    },
     "Promotion": {
       "title": "Promote {name}",
+      "raise": "In place of the skill",
+      "raiseNone": "Learn the skill of the new class",
+      "raiseSkill": "Raise {skill} instead",
+      "raised": "{skill} was raised in place of the skill of the new class.",
       "lead": "Choose the class this {from} becomes.",
       "missing": "Not found, so not offered: {names}.",
       "known": "Already proficient: it rises one rank with the others.",
@@ -1113,7 +1176,10 @@
       "roll": "{roll} / {chance}",
       "nothing": "no effect",
       "heals": "+{amount} HP",
+      "harms": "−{amount} HP",
       "cures": "cures {conditions}",
+      "inflicts": "inflicts {conditions}",
+      "nullified": "{conditions} nullified",
       "gained": "+{amount} HP",
       "activates": "takes effect",
       "remind": "takes effect, to apply by hand",
@@ -1126,12 +1192,683 @@
       "grants": "{names}: {what}, {lasts}",
       "grantUnsaved": "{names}: {what}, {lasts}, to apply by hand"
     },
+    "Canto": {
+      "only": "This unit has taken its Action: it can only move again, or Wait.",
+      "noGear": "This unit keeps the weapon it holds while it moves again after its Action."
+    },
+    "Acting": {
+      "noAttack": "This unit acts again, but may not attack."
+    },
+    "Shove": {
+      "label": "Shove",
+      "nobody": "No unit next to this one can be shoved.",
+      "failed": "{name} could not be moved.",
+      "blocked": {
+        "apart": "{name} does not stand next to this unit.",
+        "rooted": "{name} cannot be moved.",
+        "weight": "{name} is too heavy for this unit to shove.",
+        "edge": "{name} has its back to the edge of the map.",
+        "wall": "A wall is behind {name}.",
+        "terrain": "{name} cannot stand on the tile behind it.",
+        "taken": "Someone stands behind {name}."
+      }
+    },
+    "Steal": {
+      "label": "Steal",
+      "nobody": "No enemy next to this unit can be stolen from.",
+      "failed": "Nothing could be taken from {name}.",
+      "from": "Steal from {name}",
+      "hint": "pick what to take",
+      "weapon": "Weapon · Weight {weight}",
+      "item": "Item",
+      "took": "+{item}",
+      "blocked": {
+        "cannot": "This unit cannot Steal.",
+        "apart": "{name} does not stand next to this unit.",
+        "side": "{name} is no enemy.",
+        "out": "{name} is out of the fight.",
+        "guarded": "{name} cannot be stolen from.",
+        "speed": "This unit's SPD is not higher than {name}'s.",
+        "empty": "{name} carries nothing.",
+        "nothing": "{name} carries nothing this unit can take."
+      },
+      "kept": {
+        "equipped": "In hand",
+        "worn": "Worn",
+        "heavy": "Too heavy · Weight {weight}",
+        "bound": "Never changes hands"
+      },
+      "keptTip": {
+        "equipped": "What a unit has equipped cannot be stolen.",
+        "worn": "What a unit wears cannot be stolen.",
+        "heavy": "Its Weight of {weight} is more than this unit's STR.",
+        "bound": "A weapon a unit was summoned with never changes hands."
+      }
+    },
+    "Trade": {
+      "label": "Trade",
+      "hint": "Hand a weapon or an item to an ally next to this unit, or take one. Trading is free, but the unit cannot move afterwards.",
+      "nobody": "No ally next to this unit can be traded with.",
+      "failed": "Nothing changed hands with {name}.",
+      "with": "Trade with {name}",
+      "pick": "pick what to give or take; Pass when done",
+      "give": "Give",
+      "take": "Take",
+      "giveHint": "Give to {name}",
+      "takeHint": "Take from {name}",
+      "inHand": "in hand",
+      "got": "+{item}",
+      "blocked": {
+        "apart": "{name} does not stand next to this unit.",
+        "side": "{name} is no ally.",
+        "out": "{name} is out of the fight.",
+        "locked": "Nothing goes into or out of that pack.",
+        "empty": "Neither of the two carries anything.",
+        "nothing": "Neither of the two carries anything that changes hands."
+      },
+      "kept": {
+        "bound": "Never changes hands"
+      },
+      "keptTip": {
+        "bound": "A weapon a unit was summoned with never changes hands."
+      }
+    },
+    "Loot": {
+      "gmPick": "{skill}: which of {foe}'s items does {name} gain?",
+      "gmNone": "None",
+      "pick": "Take an item from {foe}, or pass",
+      "die": "D{faces}: {roll}"
+    },
+    "Disarm": {
+      "down": "Puts down {items}"
+    },
+    "Craft": {
+      "banner": "{skill}: {unit} makes items for this battle",
+      "make": "Make",
+      "items": "Items",
+      "itemsValue": "{made} of {most}",
+      "cost": "Cost left",
+      "costValue": "{left} of {total}",
+      "uses": "Uses each",
+      "made": "Made: {items}. They are gone when the battle ends.",
+      "note": "Pick from the Buffing and Combat items that still fit. What is made is gone when the battle ends.",
+      "later": "{unit} has yet to make its items with {skill}."
+    },
+    "Objects": {
+      "label": "Open",
+      "title": "Doors, chests, Villages",
+      "nothing": "Nothing in reach that this unit can open, break down or visit.",
+      "failed": "Nothing could be done with {name}.",
+      "kind": {
+        "door": "Door",
+        "chest": "Chest",
+        "village": "Village",
+        "trap": "Mine or Trap"
+      },
+      "door": {
+        "wooden": "Wooden Door",
+        "reinforcedWooden": "Reinforced Wooden Door",
+        "iron": "Iron Door",
+        "reinforcedIron": "Reinforced Iron Door",
+        "portcullis": "Portcullis",
+        "castle": "Castle Door"
+      },
+      "blocked": {
+        "spent": "Nothing more can be done with {name}.",
+        "apart": "{name} is out of reach.",
+        "key": "{name} is locked: it takes a key, or a skill that opens it.",
+        "unarmed": "{name} is locked, and this unit holds nothing to break it down with.",
+        "range": "{name} is locked, and out of the reach of the weapon in hand.",
+        "shut": "{name} has shut its gates.",
+        "cannot": "This unit can do nothing with {name}."
+      },
+      "hint": {
+        "openKey": "Open with {by}",
+        "openSkill": "Open with {by}",
+        "break": "Strike for {damage}: {left} of {max} HP left",
+        "visit": "Visit {name}",
+        "pillage": "Destroy {name}"
+      },
+      "mark": {
+        "open": "Open",
+        "visit": "Visit",
+        "pillage": "Raze"
+      },
+      "done": {
+        "open": "{name} opened",
+        "broken": "{name} broken down",
+        "struck": "{name} −{damage} ({left} left)",
+        "visit": "{name} visited",
+        "pillage": "{name} destroyed"
+      },
+      "state": {
+        "shut": "Shut · {hp}/{max} HP. Blocks movement and sight.",
+        "open": "Stands open",
+        "broken": "Broken down",
+        "closed": "Locked",
+        "opened": "Opened: empty",
+        "standing": "Gates open: a unit on this tile may visit",
+        "visited": "Visited: its gates are shut",
+        "destroyed": "Destroyed"
+      },
+      "card": {
+        "visit": "{name} visits {village}"
+      },
+      "place": {
+        "door": "Door: shut, it is a wall to everyone. Opened with a key or by a skill, or broken down.",
+        "chest": "Chest: opened with a key or by a skill, it gives what you put in it.",
+        "village": "Village: a unit on its tile visits it for the reward you set. A Bandit may destroy it.",
+        "trap": "Mine or Trap: lies hidden from the players and is sprung by any unit that walks onto it or ends its turn on it. Click one that lies to say which it is.",
+        "hint": "Click a tile to set it down. Click one that stands to set what it is and holds."
+      },
+      "config": {
+        "title": "{name}",
+        "name": "Name",
+        "door": "Kind of door",
+        "hp": "HP left",
+        "open": "Stands open",
+        "gold": "Gold",
+        "contents": "Contents",
+        "reward": "Reward",
+        "noItems": "Nothing yet",
+        "dropHint": "Drop weapons and items here, from the sidebar, a compendium or a sheet.",
+        "note": "What it tells its visitor",
+        "spentVillage": "State",
+        "spentChest": "State",
+        "whole": "Untouched",
+        "visited": "Visited",
+        "destroyed": "Destroyed",
+        "opened": "Opened",
+        "save": "Save",
+        "delete": "Take it off the map",
+        "remove": "Remove"
+      }
+    },
+    "Block": {
+      "label": "Block",
+      "abbr": "Blk",
+      "shield": "Shield",
+      "parry": "Parry",
+      "parried": "Parried",
+      "blocked": "Block −{amount}",
+      "with": "{name} blocks with {item}",
+      "roll": "Block {roll} / {chance}",
+      "parryRoll": "Parry {roll} / {chance}",
+      "parryChance": "Parry {chance}%.",
+      "barred": "{name} cannot equip a Shield right now.",
+      "equip": "Equip this Shield",
+      "unequip": "Put this Shield away",
+      "takes": {
+        "label": "A block takes",
+        "line": "A block takes {amount}.",
+        "amount": "{amount} off",
+        "percent": "{amount}% off",
+        "to": "all but {amount}",
+        "all": "everything"
+      },
+      "stance": {
+        "name": "{skill}: Guard",
+        "hint": "Until your next turn starts: +{bonus} Block with the weapon in hand, and no counter-attack."
+      }
+    },
+    "Rescue": {
+      "label": "Rescue",
+      "drop": "Drop",
+      "carrying": "Carrying: {name}",
+      "slowed": "DEX and SPD are halved while it carries a unit.",
+      "unslowed": "Carried at no penalty.",
+      "nobody": "No ally next to this unit can be picked up, and none carries a unit it could take.",
+      "nowhere": "No free tile to drop {name} on, and no ally next to this unit that could carry them.",
+      "failed": "{name} could not be picked up or set down.",
+      "saved": "{by} comes for {name}, who is left with 1 HP and carried off ({skill})",
+      "savedTag": "Saved: {skill}",
+      "halvedTag": "Halved: {skill}",
+      "hint": {
+        "save": "an ally is about to fall: click it, or a violet tile to come to, to carry it off"
+      },
+      "blocked": {
+        "self": "A unit does not carry itself.",
+        "apart": "{name} does not stand next to this unit.",
+        "side": "Only an ally is picked up.",
+        "out": "{name} is out of the fight.",
+        "holding": "This unit has its hands full already.",
+        "carrying": "{name} is carrying a unit.",
+        "nobody": "{name} carries nobody.",
+        "quality": "{name} cannot be picked up ({qualities}).",
+        "rooted": "{name} cannot be moved.",
+        "weight": "{name} is too heavy for this unit to carry.",
+        "tile": "{name} cannot be set down there."
+      }
+    },
+    "Refresh": {
+      "label": "Refresh",
+      "sing": "Sing",
+      "regular": "The ally moves and acts again this turn.",
+      "instead": "Instead",
+      "onTop": "On top",
+      "cooldown": "Cooldown {turns}",
+      "nobody": "No ally in reach has acted yet, or none of them can be Refreshed.",
+      "failed": "{name} could not be Refreshed.",
+      "hint": {
+        "foe": "several enemies stand equally near: click the one on green that is to suffer it",
+        "near": "click an ally on green: those next to this unit, or those next to the fallen foe, act again",
+        "pick": "click an ally on green to have it act again, or pass"
+      },
+      "own": {
+        "act": "Act again",
+        "actHint": "One more Action from where this unit stands, without moving.",
+        "move": "Move again",
+        "moveHint": "One more move of its whole MOV, without another Action."
+      },
+      "blocked": {
+        "self": "A unit does not Refresh itself.",
+        "side": "Only an ally is Refreshed.",
+        "out": "{name} is out of the fight.",
+        "apart": "{name} is out of reach.",
+        "singer": "{name} has Refresh, and cannot be Refreshed.",
+        "barred": "{name} cannot be Refreshed right now.",
+        "ready": "{name} has not acted yet.",
+        "phase": "It is not the turn of {name}.",
+        "full": "{name} is at full HP.",
+        "well": "{name} suffers from no condition.",
+        "gauge": "{name} has no Shift Gauge."
+      }
+    },
+    "Forced": {
+      "pass": "Pass",
+      "hint": {
+        "pick": "pick on violet, or pass",
+        "back": "click the violet tile to step back",
+        "shove": "click the violet tile to shove",
+        "place": "click a violet tile to throw the foe there, or the foe to strike it where it stands"
+      }
+    },
+    "Act": {
+      "noTarget": "{skill} has nobody in reach to be used on.",
+      "worn": "{item} −{amount} uses",
+      "failed": "{skill} could not do its part, so it was not used.",
+      "success": "Success",
+      "failure": "Failure",
+      "noPick": "{skill} has no stat picked yet: pick it on the skill first.",
+      "noWeapon": "{name} carries no weapon {skill} could be used with.",
+      "healed": "+{amount} HP",
+      "harmed": "−{amount} HP",
+      "refused": "no effect",
+      "assured": "{skill} is sure to activate",
+      "provoked": "{name} is Provoked by {by} and can target no other enemy.",
+      "sighted": "{skill}: sighted",
+      "inSight": "{skill}: in sight",
+      "mode": {
+        "one": {
+          "ally": "One ally",
+          "enemy": "One enemy"
+        },
+        "all": {
+          "ally": "All allies in reach",
+          "enemy": "All enemies in reach"
+        }
+      },
+      "lend": {
+        "wields": "{skill}: {weapon}",
+        "foes": "{skill}: against {weapon}",
+        "die": "Let the die pick",
+        "askWields": "The kind of weapon the ally is better with",
+        "askFoes": "The kind of weapon the ally is better against"
+      }
+    },
+    "Area": {
+      "confirm": "Confirm",
+      "nobody": "{skill} would reach nobody from here.",
+      "empty": "{skill} would catch nobody there.",
+      "noShare": "{skill}: click an ally to give it a share first.",
+      "warded": "{condition} nullified",
+      "miss": "Miss",
+      "crit": "Critical",
+      "gauge": "Gauge",
+      "gaugeUp": "+{amount} Shift Gauge",
+      "attack": {
+        "miss": "miss (Hit {hit})",
+        "hit": "{damage} damage (Hit {hit})",
+        "sure": "{damage} damage",
+        "crit": "critical hit, {damage} damage"
+      },
+      "around": "{name}: near the afflicted",
+      "aroundAt": {
+        "start": "As its turn starts",
+        "end": "As its turn ends"
+      },
+      "again": {
+        "title": "{skill}: extended",
+        "name": "{skill}: extending",
+        "hint": "Extend it for one more turn",
+        "yes": "Extend (−{amount} HP)",
+        "yesHint": "The unit takes no action this turn but to move and Wait",
+        "no": "Let it end"
+      }
+    },
+    "Imitate": {
+      "float": "Imitates {name}",
+      "reverts": "Reverts",
+      "revert": "Revert",
+      "revertHint": "Revert to itself now, as no Action. {skill} then cannot be used for {turns} turns.",
+      "revertFree": "Revert to itself now, as no Action.",
+      "row": "Imitates {name} for {turns} turns, or until it reverts",
+      "putAway": "Put away: it cannot wield it for now",
+      "swapped": "Put away for {weapon}: it cannot wield it for now",
+      "chip": "Imitating {name}",
+      "chipTip": "{skill}: it has the stats, class, weapon ranks, Special Qualities and skills of {name} {lasts}{what}",
+      "blocked": {
+        "unit": "Only a unit can be imitated.",
+        "already": "It already imitates {name}: revert first.",
+        "people": "{name} is of the {people}, whom this skill cannot imitate.",
+        "side": "{name} is no ally of this unit.",
+        "growth": "{name} imitates {ally}: this waits until it is itself again."
+      }
+    },
+    "Grip": {
+      "label": "Hold",
+      "held": "Held",
+      "free": "Broke free",
+      "status": "Held by {name}: Break Free, or Wait",
+      "breakFree": "Break Free",
+      "release": "Let go of {name}",
+      "cannotAct": "This unit is held: it can only try to break free, or Wait.",
+      "retry": "Break free of {skill}",
+      "retryTurn": "As its turn starts",
+      "retryAction": "As its Action"
+    },
     "Wait": {
       "label": "Wait",
       "waiting": "Waiting",
       "hint": "The unit Waits: skills that act on Waiting take effect, and it counts as Waiting until its next turn starts.",
       "already": "This unit is already Waiting.",
-      "down": "A unit that is out of the fight cannot Wait."
+      "down": "A unit that is out of the fight cannot Wait.",
+      "only": "This unit has run too far to do anything but Wait this turn.",
+      "held": "{skill} stays on: take the move back first."
+    },
+    "Choice": {
+      "always": "Always in effect. Click what it picks to change it.",
+      "idle": "Switched on, but it does nothing in this fight and is not spent.",
+      "stopped": "{skill}: {name} stops skills that are chosen when to activate.",
+      "stoppedTag": "Stopped by {skill}: {skills}",
+      "idleTag": "No effect here: {skills}",
+      "parity": "{skill}: terrain, supports, weapon, equipment and skill effects are cancelled",
+      "cap": "{skill}: a hit takes at most {amount} HP off {name}",
+      "capped": "{skill}: held to {amount}",
+      "asCrit": "Counts as a critical hit",
+      "cooldown": "CD {turns}",
+      "single": "{skill}: one attack in place of {attacks}",
+      "steps": {
+        "all": "All or none"
+      },
+      "stat": {
+        "auto": "Auto",
+        "best": "Largest bonus",
+        "bestHint": "Whichever stat the foe gains the most in",
+        "bonus": "{name} gains +{amount}",
+        "tip": "Pick the stat"
+      },
+      "rearm": {
+        "hint": "{foe} attacks: change weapon?",
+        "note": "{name} may change weapon",
+        "answers": "can answer",
+        "silent": "cannot answer"
+      },
+      "token": {
+        "accuracy": "Hit",
+        "hit": "Hit",
+        "critical": "Crit",
+        "dodge": "Ddg",
+        "endurance": "END",
+        "haste": "HST",
+        "damage": "Dmg",
+        "might": "Mt",
+        "hp": "HP",
+        "transforms": "Forms"
+      }
+    },
+    "Stance": {
+      "halted": "Halted: {skill}",
+      "needsGround": "{skill} is used on: {kinds}.",
+      "until": {
+        "move": "it is moved",
+        "alone": "no ally stands next to it",
+        "attack": "it attacks",
+        "terrain": "it stands on other ground",
+        "or": " or "
+      },
+      "lasts": {
+        "only": "until {until}",
+        "also": "{lasts}, or until {until}"
+      },
+      "about": {
+        "attack": "{foe} attacks {ally}",
+        "move": "{foe} moves within reach",
+        "pass": "{foe} is about to walk into {name}",
+        "hurt": "{foe} hurt {ally}"
+      },
+      "hint": {
+        "slip": "Pick the tile to move to."
+      },
+      "forecast": {
+        "stood": "{skill}: {name} fights in {ally}'s place",
+        "may": "{skill}: {name} may step in",
+        "formation": "{skill}: with {first} and {second}",
+        "formationTip": "{first} and {second} stand in formation around the target. They do not attack and spend nothing."
+      },
+      "card": {
+        "formation": "{skill}: {name} attacks in formation with {first} and {second}",
+        "stood": "{name} fights in {ally}'s place ({skill})",
+        "redirect": "{by} takes the hit meant for {name}: {amount} damage ({skill})",
+        "rebuke": "{by} turns the hit on {name} back: {amount} damage to {foe} ({skill})",
+        "redirectTag": "Taken: {skill}",
+        "rebukeTag": "Negated: {skill}"
+      },
+      "does": {
+        "guards": "fights in the place of an ally next to it",
+        "guardsThrough": "has an ally fight in its place",
+        "guardsGiver": "fights in the place of the unit it comes from",
+        "takes": "takes hits meant for an ally next to it",
+        "negates": "turns back heavy hits on an ally next to it",
+        "move": "attacks enemies that move within its reach",
+        "enters": "rallies its allies as an enemy comes into reach",
+        "pass": "answers an enemy that walks into it",
+        "allyHurt": "strikes enemies that hurt an ally"
+      }
+    },
+    "Trap": {
+      "noWeapon": "A trap is laid with a Tome in hand.",
+      "noUses": "The Tome in hand has too few uses left to lay a trap.",
+      "noTile": "There is no free tile next to the unit to lay a trap on.",
+      "spent": "−{uses} use ({left} left)",
+      "laid": "Trap laid ({count} of {most})",
+      "moved": "Trap laid in place of the oldest ({count} of {most})",
+      "disarmed": "{skill}: {trap} disarmed",
+      "notNow": "{name} cannot lay a {item} now.",
+      "nowhere": "There is no free tile next to {name} to lay a {item} on.",
+      "cannotLay": "The {item} could not be laid there.",
+      "kind": {
+        "skill": "A trap laid by a skill",
+        "mine": "A Mine: sprung by a unit that walks onto it or ends its turn on it",
+        "trap": "A Trap: sprung by a unit that walks onto it or ends its turn on it"
+      },
+      "card": {
+        "sprung": "{name} springs a {trap}",
+        "waited": "{name} waits on a {trap}",
+        "laidBy": "Laid by {name}",
+        "damage": "Damage",
+        "turn": "{turns} turn",
+        "turns": "{turns} turns",
+        "warded": "Nullified",
+        "warp": "Warp",
+        "warped": "Set down elsewhere",
+        "noRoom": "No room to be set down"
+      },
+      "config": {
+        "title": "Mine or Trap",
+        "item": "What it is",
+        "warp": "Warps to",
+        "col": "Column",
+        "row": "Row",
+        "nobody": "It belongs to nobody: every unit that walks onto it or ends its turn on it springs it, and only you see it.",
+        "laidBy": "Laid by {name}.",
+        "save": "Save",
+        "remove": "Take away",
+        "noWarp": "A trap that warps needs a tile to warp to: a column and a row of the map that a unit could stand on.",
+        "none": "The Items compendium has no Mine or Trap to set down."
+      }
+    },
+    "Answer": {
+      "title": "Answer",
+      "pass": "Pass",
+      "negated": "Negated",
+      "forecast": "{skill}: may answer",
+      "about": {
+        "own": "{name} attacks {foe}",
+        "foe": "{foe} attacks {name}"
+      },
+      "hint": {
+        "shift": "Take its animal form now",
+        "dodge": "Dodge this hit ({damage} damage)",
+        "dodgeCrit": "Dodge this critical hit ({damage} damage)",
+        "dodgeMore": "+{amount} Dodge against this attack: Hit {hit} → {after} ({damage} damage)",
+        "cancel": "Negate this attack (Hit {hit}, {damage} damage)",
+        "end": "End the fight before this attack (Hit {hit}, {damage} damage). No EXP",
+        "reroll": "Roll again: missed by {margin}",
+        "rerollCrit": "Roll the critical again: failed by {margin}",
+        "harm": "{amount} damage to the target, for {cost} weapon uses",
+        "harmFree": "{amount} damage to the target",
+        "reduce": "−{amount} damage: {damage} → {left}",
+        "reduceItem": "−{amount} damage: {damage} → {left}, for {cost} uses",
+        "reduceFree": "−{amount} damage: {damage} → {left}",
+        "plain": "No critical damage; {amount} damage to {others} other enemies nearby",
+        "stop": "End the fight before round {next}: {name} {hp} HP, {foe} {foeHp} HP",
+        "spread": "Reach {others} more",
+        "guard": "Fight in {ally}'s place",
+        "guardThrough": "Have {by} fight in {ally}'s place",
+        "redirect": "Take the hit for {ally}: {amount} damage",
+        "rebuke": "Negate the hit on {ally} ({damage}): {amount} damage to {foe}",
+        "react": "Attack {foe}",
+        "reactHalt": "Attack {foe} and end its move",
+        "strike": "Strike {foe}: no counter-attack",
+        "slip": "Move away, up to {amount} spaces",
+        "use": "Use it now",
+        "raise": "Raise {foe} on this unit's side ({amount} left this map)"
+      },
+      "card": {
+        "dodge": "{skill}: dodged",
+        "dodgeMore": "{skill}: +{amount} Dodge",
+        "cancel": "{skill}: attack negated",
+        "end": "{skill}: ends the fight",
+        "reroll": "{skill}: Hit rolled again",
+        "rerollCrit": "{skill}: critical rolled again",
+        "harm": "{skill}: +{amount} damage",
+        "reduce": "{skill}: −{amount} damage",
+        "reduceItem": "{skill}: −{amount} damage ({item})",
+        "plain": "{skill}: no critical damage",
+        "use": "{skill}",
+        "foiled": "{skill}: negated by {by}"
+      },
+      "foil": {
+        "crit": "{skill}: critical negated",
+        "block": "{skill}: block negated",
+        "activation": "{skill}: {what} negated",
+        "choose": "{skill}: {what} negated",
+        "art": "{skill}: {what} negated"
+      },
+      "roll": {
+        "again": "{skill}: Hit {roll} / {chance}, rolled again",
+        "againCrit": "{skill}: Crit {roll} / {chance}, rolled again",
+        "twice": "Hit {first} and {second} / {chance}, the worse counts"
+      },
+      "splash": {
+        "hint": "{amount} damage: pick an enemy ({left} to go)",
+        "dealt": "{skill}: {amount} damage to {names}"
+      }
+    },
+    "Spread": {
+      "card": "{skill}: {what}",
+      "damage": "−{amount} HP",
+      "heal": "+{amount} HP",
+      "warded": "{conditions} nullified",
+      "pushed": "pushed back",
+      "blocked": "−{amount} HP, held in place",
+      "down": "defeated",
+      "marked": "marked",
+      "picked": "unit picked by die",
+      "attack": {
+        "miss": "attacked, miss (Hit {hit})",
+        "hit": "attacked, {damage} damage",
+        "crit": "attacked, critical hit, {damage} damage"
+      },
+      "hint": {
+        "pick": "Pick a unit ({left} to go)"
+      },
+      "forecast": {
+        "sure": "{skill}: {what}",
+        "may": "{skill}: may reach {what}",
+        "chance": "{skill} {chance}%: {what}",
+        "on": {
+          "start": "{skill}: {what}",
+          "after": "{skill}: {what}",
+          "attack": "{skill}: {what} with each attack",
+          "hit": "{skill}: {what} on a hit",
+          "crit": "{skill}: {what} on a critical hit",
+          "kill": "{skill}: {what} on a kill"
+        },
+        "enemies": "enemies ×{count}",
+        "allies": "allies ×{count}",
+        "among": "{count} of: {units}",
+        "attack": "attacked"
+      }
+    },
+    "Formula": {
+      "instead": "{skill}: D{dice} {roll} → {amount}",
+      "insteadNot": "{skill}: D{dice} {roll} → {amount}, less than the hit",
+      "slain": "{skill}: lethal",
+      "cutShare": "{name} loses {amount} HP to {skill}",
+      "cutKill": "{name} is slain by {skill}",
+      "echo": "{name} takes {amount} {element} damage from {skill}",
+      "echoTag": "{skill}: {percent}% of each hit again as {element} damage",
+      "echoSum": "{skill} ({element})",
+      "harmless": "{skill}: on a critical hit that deals no damage"
+    },
+    "Triangle": {
+      "times": "Weapon triangle ×{times}",
+      "by": "{label} ({skills})",
+      "spared": "{skills}: no Weapon Triangle disadvantage",
+      "handed": "{skill}: {gains} from {weapon} on the first attack"
+    },
+    "Round": {
+      "label": "Round {round}",
+      "short": "R{round}",
+      "by": "Round {round} · {skill}",
+      "fight": "Fight",
+      "rounds": "{skill}: {rounds} rounds",
+      "untilFall": "{skill}: until a unit falls",
+      "fought": "{rounds} rounds fought",
+      "stopped": "{skill}: ends the fight here",
+      "noCounter": "{skill}: {name} cannot counter-attack from here.",
+      "strike": "Attack {n}",
+      "staffFollow": "Cast again",
+      "about": "Round {round} is over. Pass to fight on",
+      "forecast": {
+        "later": "{skill}: on each attack after the first",
+        "every": "{skill}: every {every} attacks made against it",
+        "perDamage": "{skill}: {percent}% per point of damage when hit",
+        "led": "{skill}: {damage} damage, {hit} Hit, {critical} Critical"
+      }
+    },
+    "Lend": {
+      "auto": "{skill}: by itself at {range} range",
+      "wait": "CD {turns}",
+      "spent": "Used up",
+      "numbers": "Mt {might} · Hit {hit} · Rng {range}",
+      "castHint": "{skill}: which tome is infused?",
+      "noCast": "{skill} has no tome to infuse: its unit has a rank of E or higher with no kind of magic.",
+      "cast": "{skill}: {weapon}",
+      "better": "{skill}: {weapon} in place of {plain}",
+      "line": "{skill}: also strikes {name}"
     },
     "Usage": {
       "title": "Choosing when to activate",
@@ -1149,12 +1886,15 @@
       "hint": {
         "declare": "Declare this skill for the unit's next fight, which spends it.",
         "toggle": "Switch this skill on or off.",
-        "action": "Use this skill now."
+        "action": "Use this skill now.",
+        "early": "Use this skill before its cooldown is over, at a penalty."
       },
       "blocked": {
         "cooldown": "{skill} is on cooldown.",
-        "uses": "{skill} has no uses left."
+        "uses": "{skill} has no uses left.",
+        "moved": "{skill} is used before the unit moves."
       },
+      "useEarly": "Use early",
       "declare": "Declare",
       "declared": "Declared",
       "on": "On",
@@ -1166,6 +1906,7 @@
       "cooldownLeft": "Cooldown {turns}",
       "readyNext": "Ready next turn",
       "usesLeft": "{left} of {uses} left",
+      "overUses": "Used up: again at a penalty",
       "lastingTurn": "Until next turn",
       "lastingTurns": "{turns} more turns",
       "ready": "ready again",
@@ -1205,9 +1946,37 @@
         "name": "Additional Conditions",
         "hint": "Adds the Additional Conditions of the Optional Modules to the conditions a unit can be given. Their durations and stacks are counted like any other; most of their effects are shown as reminders and left to the table."
       },
+      "stolenGold": {
+        "name": "Gold stolen from an enemy that carries none",
+        "hint": "A skill that steals gold from an enemy, such as Mug, takes the Gold on that enemy's sheet. This is what it takes from an enemy whose sheet has none."
+      },
+      "cutIns": {
+        "name": "Skill cut-ins",
+        "hint": "As a skill takes effect, its icon and name flash over its unit before the numbers. Fast shows each more briefly. Off shows none, and skills are named in plain text as before. This is your own choice and changes nothing for the others at the table.",
+        "fast": "Fast",
+        "normal": "Normal"
+      },
+      "cutInSound": {
+        "name": "Cut-in sound",
+        "hint": "Play a sound with each skill cut-in. It is as loud as Foundry's Interface volume."
+      },
+      "cutInSoundFile": {
+        "name": "Sound of a skill cut-in",
+        "hint": "Which of the sounds that come with Foundry a skill cut-in plays, for everyone who has the sound on.",
+        "none": "None",
+        "spark": "Spark",
+        "magic": "Magic",
+        "chime": "Chime",
+        "hit": "Drum hit",
+        "lock": "Lock"
+      },
+      "gmAnswers": {
+        "name": "Game Master's units answer by themselves",
+        "hint": "Some skills let a unit answer in the middle of a fight: dodge a hit, roll a miss again, soak a hit with a tome. A unit a player owns has its player asked, with one click and a short wait. With this on, units no player owns answer by themselves: they keep off or lessen a hit that would take a quarter of the HP they have left, roll a missed attack again, and come for an ally that would fall; they never end a fight early or trade a critical hit away. With this off, the Game Master is asked for them as a player is."
+      },
       "incapacitation": {
         "name": "Incapacitation System",
-        "hint": "Player units brought to 0 HP are Incapacitated instead of dying: hard hits cause Wounds, damage past 0 HP is kept, getting back up causes an Injury, and in the end the unit chooses between retreat and death. Units of other sides are simply defeated at 0 HP. Turn this off to handle defeat by hand."
+        "hint": "Player units brought to 0 HP are Incapacitated instead of dying: hard hits cause Wounds, damage past 0 HP is kept, getting back up causes an Injury, and in the end the unit chooses between retreat and death. Units of other sides are simply defeated at 0 HP. With this off, every unit is defeated at 0 HP: it dies and leaves the map, and returns if it is raised above 0 HP or brought back from its sheet."
       },
       "supportMethod": {
         "name": "Support Points",
@@ -1220,7 +1989,7 @@
       },
       "affinityEffects": {
         "name": "Additional Affinity Effects",
-        "hint": "Every unit gains the innate effect of its Affinity, for itself only. The system applies most of them in fights and at the start of a turn. A few are announced on the fight card for the table to apply, and those about movement, Shove and one-off choices are shown on the sheet and left to the table."
+        "hint": "Every unit gains the innate effect of its Affinity, for itself only, and the system applies all of them. Anima, Wood, Breath and Muscle are for their unit to use when it wants: switch them on from the Battle tab of its sheet or the Skill list of the Battle HUD. The rank Blade and Tome give is chosen in the Character Creator or on the Story tab, and the skill whose cooldown Key shortens on the Story tab."
       },
       "heartSeals": {
         "name": "Heart Seals and Reclassing",
@@ -1342,6 +2111,7 @@
       "silence": "Cannot speak, or use tomes or staves.",
       "berserk": "Out of control: attacks the most vulnerable unit in its range, ally or not.",
       "petrification": "Cannot move, act, counter-attack or dodge.",
+      "malaise": "−4 DEX and SPD, and loses 10% of maximum HP at the start of each of its turns. Its allies within 3 spaces have −2 DEX and SPD and lose 10% of their maximum HP once in each of their turns.",
       "dazzle": "Cannot counter-attack. Lasts for the combat.",
       "brand": "At the end of its turn takes damage equal to its Brand, which then falls by a third. Count it by hand.",
       "sanction": "Takes 1d6 damage when it attacks or does anything but move and Wait.",
@@ -1382,8 +2152,17 @@
         "kill": "foe defeated",
         "hit": "damage dealt",
         "pity": "no damage dealt",
-        "none": "could not attack"
+        "none": "could not attack",
+        "noExp": "the foe gives no experience"
       },
+      "give": "Give",
+      "giveHint": "Give this unit experience. Its skills, and those of the units around it, multiply what it is given.",
+      "giveTitle": "Give experience: {name}",
+      "giveAmount": "Amount",
+      "giveBonus": "Bonus EXP",
+      "giveBonusHint": "Bonus EXP is not multiplied by skills that say so, such as Greenhorn.",
+      "float": "+{amount} EXP",
+      "activations": "+{amount} for skills that activated ({skills})",
       "row": "+{amount} · {total} / {next}",
       "rowReady": "+{amount} · {total} / {next} · can level up",
       "notListed": "The experience tables do not list this, so no EXP was given. Award it by hand if it should earn some.",
@@ -1403,6 +2182,16 @@
       "fateNote": "Must now choose between retreat and death: {reason}.",
       "wound": "{name} takes a Wound",
       "wounds": "{name} takes {count} Wounds",
+      "woundShort": "Wound",
+      "spared": {
+        "title": "Luck",
+        "wound": "{skill} {roll} / {chance}: {name} takes no Wound",
+        "woundSure": "{skill}: {name} takes no Wound",
+        "woundFail": "{skill} {roll} / {chance}: the Wound stays",
+        "injury": "{skill} {roll} / {chance}: {name} takes no Injury",
+        "injurySure": "{skill}: {name} takes no Injury",
+        "injuryFail": "{skill} {roll} / {chance}: the Injury stays"
+      },
       "reason": {
         "injuries": "5 Injuries",
         "damage": "damage of three times maximum HP",
@@ -1441,6 +2230,7 @@
       "killTitle": "Killed",
       "killPrompt": "{name} dies. Go ahead?",
       "cannotAttack": "This unit is out of the fight.",
+      "targetOut": "The target is out of the fight.",
       "woundAt": "Wound at {damage}+ damage",
       "woundAtHint": "A single hit that deals this much or more causes a Wound: maximum HP divided by 1.5."
     },
@@ -1461,38 +2251,61 @@
       "failure": "No improvement",
       "noHealer": "No other unit of yours can treat this one. Select the healer's token, or ask its owner."
     },
-    "Summon": {
-      "name": "{name}'s Phantom",
-      "side": {
-        "north": "North",
-        "east": "East",
-        "south": "South",
-        "west": "West"
-      },
-      "dialog": {
-        "title": "{name} summons",
-        "where": "Where does the Phantom appear?",
-        "taken": "Not free",
-        "weapon": "What does it fight with?",
-        "kept": "It keeps this weapon type for good.",
-        "confirm": "Summon"
+    "Creature": {
+      "folder": "Summoned",
+      "name": "{name}'s {what}",
+      "bound": "{item} was handed to a summoned unit as it appeared: it is not traded, stored or sold.",
+      "locked": "{name}'s pack cannot be manipulated.",
+      "ask": {
+        "option": "Which one?",
+        "weapon": "What does it wield?",
+        "kind": "What does it fight with? It keeps this weapon type for good.",
+        "count": "How many?"
       },
       "row": {
-        "unit": "Summoned",
-        "unitValue": "{name}, Lv {level}",
+        "unit": "Appears",
+        "one": "{name}, Lv {level}",
+        "many": "{name} ×{count}",
         "weapon": "Weapon",
         "behind": "Level ups waiting"
       },
-      "created": "{name} is new. Assign its {points} growth points on its sheet before it levels up; none may go into {barred}.",
+      "raise": {
+        "about": "{name} has killed {foe}."
+      },
+      "growth": {
+        "title": "{name}: growth rates",
+        "hint": "{name} is new. Assign its {points} growth points; none may go into {barred}.",
+        "left": "{left} of {points} left",
+        "confirm": "Assign",
+        "later": "Later"
+      },
+      "skill": {
+        "banner": "{from}: a skill for {name}'s creatures",
+        "note": "Pick one skill. Every creature this skill is for has it from then on.",
+        "ask": "Give it to {name}'s creatures ({from})",
+        "confirm": "Give",
+        "taken": "{skill} is what {from} gives.",
+        "other": "{from} gives a skill of this kind: {sort}."
+      },
+      "prepared": {
+        "title": "{skill}: {name} calls",
+        "hint": "Give each unit that appears a number, up to {most} in all. They appear as tokens of these units.",
+        "hintOne": "Give the unit that appears a 1.",
+        "level": "Lv {level}",
+        "tally": "{total} of {most}",
+        "confirm": "Call"
+      },
       "warn": {
-        "noToken": "Summoning needs the unit's token on a map with a square grid.",
-        "limitOne": "Its Phantom is already on the map.",
-        "limit": "All {limit} of its Phantoms are already on the map.",
-        "noRoom": "There is no free tile next to the unit.",
-        "noGM": "Summoning needs a Game Master to be connected.",
-        "noWeapon": "The weapon drawn for the Phantom was not found in the weapons compendium.",
-        "noClass": "The Phantom class was not found in the world or the class compendium.",
-        "failed": "The Phantom could not be summoned."
+        "noGM": "{skill} needs a Game Master to be connected.",
+        "gmOnly": "{skill} brings in units the Game Master has prepared: it is the Game Master's to use.",
+        "noPrepared": "There is no unit to bring in: prepare one among the Actors that no player owns.",
+        "limitOne": "{skill}: the one it may have out stands on the map already.",
+        "limit": "{skill}: all {limit} that may stand at once are on the map.",
+        "noRoom": "{skill}: there is no free tile for it.",
+        "cost": "{skill}: each costs {hp} HP, and the unit has too few to pay for one.",
+        "noWeapon": "{skill}: its weapon was not found in the weapons compendium.",
+        "noClass": "{skill}: the {class} class was not found in the world or the class compendium.",
+        "failed": "{skill}: nothing could be brought onto the map."
       }
     },
     "Repair": {
@@ -1568,6 +2381,10 @@
       "boostedToggle": "+10%",
       "boostedHint": "Started its turn next to another Non-Beorc ally: 10% more from transforming until its next turn starts.",
       "cannotInitiate": "A Laguz in humanoid form cannot start a fight, only answer one. Shift first.",
+      "fistsOnly": "In humanoid form it starts a fight with its Fists and nothing else.",
+      "offer": "Shift into animal form",
+      "offerHint": "Until its next turn starts, whatever its Shift Gauge holds.",
+      "stay": "Stay in humanoid form",
       "stoneHint": "Transforms for each combat, up to {limit} times a turn. Out of transformations it fights in humanoid form.",
       "useOne": "Use a transformation",
       "giveOne": "Give a transformation back",
@@ -1697,6 +2514,7 @@
           "rider": "A unit that is {qualities} cannot be captured unless a condition leaves it helpless.",
           "shifted": "A Laguz in its animal form cannot be captured.",
           "transforms": "A unit with transformations left cannot be captured.",
+          "watchful": "A skill keeps this unit from being captured.",
           "far": "The unit must stand next to {name} to pick it up."
         },
         "outright": {
@@ -2087,6 +2905,21 @@
       },
       "affinityEffect": {
         "name": "{affinity} Affinity",
+        "rank": {
+          "label": "Affinity Rank",
+          "hint": "Choose the proficiency here: the rank is given at once, and moves when the choice changes."
+        },
+        "rankLowered": "{unit}: {proficiency} goes back from {from} to {to} Rank, which its Affinity no longer raises.",
+        "use": {
+          "fight": "Switch this on for the unit's next fight, which spends it.",
+          "move": "Switch this on before the unit moves. A move that makes use of it spends it; otherwise it is switched off again when the unit acts.",
+          "shove": "Switch this on before the unit Shoves. A Shove that needs it spends it."
+        },
+        "skill": {
+          "label": "Affinity Skill",
+          "hint": "Choose the skill here: its cooldown is 1 turn shorter.",
+          "none": "{name} has chosen no skill for its Affinity to shorten the cooldown of. Choose one on the Story tab of its sheet."
+        },
         "mode": {
           "auto": "(Applied by the system.)",
           "announced": "(Announced in a fight; applied by hand.)",
@@ -2279,6 +3112,7 @@
       "leadership": {
         "title": "Authority & Leadership",
         "stars": "Own stars",
+        "fromSkills": "+{stars} from skills",
         "authority": "Authority",
         "noAuthority": "None",
         "elsewhere": "Not on this scene",
@@ -2306,8 +3140,98 @@
       "endurance": "END",
       "taken": "damage taken",
       "dealt": "damage dealt",
+      "tempHp": "temporary HP",
+      "mend": "HP as each of its turns starts",
+      "harm": "HP as its next turn starts",
+      "first": {
+        "might": "Might for its next attack",
+        "hit": "Hit for its next attack",
+        "critical": "Critical for its next attack",
+        "damage": "damage for its next attack"
+      },
+      "foe": {
+        "hit": "Hit for units that attack it",
+        "damage": "damage for units that attack it",
+        "critical": "Critical for units that attack it",
+        "dodge": "Dodge for units that attack it"
+      },
+      "spoiltLine": "{name}: {skill} is lost to a second hit",
+      "rule": {
+        "foeNoCrit": "cannot be critically hit",
+        "halveFatal": "fatal blows halved",
+        "noRefresh": "cannot be Refreshed",
+        "noTurn": "loses its turn",
+        "held": "cannot move",
+        "noCounter": "no counter-attack",
+        "noShield": "no Shield",
+        "worstHit": "rolls Hit twice, takes the worse",
+        "neutral": "stands apart from every side",
+        "noCombat": "attacks nobody",
+        "untargetable": "cannot be targeted by enemies",
+        "unstolen": "cannot be stolen from",
+        "uncaptured": "cannot be captured",
+        "hidden": "unseen by enemies",
+        "turned": "targets neither its enemies nor others turned as it is",
+        "provoked": "can target no enemy but the unit that Provoked it",
+        "onlyWait": "takes no action but to move and Wait",
+        "answers": "counter-attacks whatever would keep it from it",
+        "unforced": "no enemy holds it or slows it",
+        "possessed": "the unit that possesses it acts for it",
+        "noSong": "cannot use Refresh",
+        "noCounterWeaker": "no counter-attack unless its {stat} is well above the attacker's"
+      },
+      "foeStat": "{stat} for its foes",
+      "debuffsTurned": "stat penalties count as bonuses",
+      "triangleLoses": "Weapon Triangle disadvantage against {stat}",
+      "effectiveTaken": "Might at most for weapons effective against it",
+      "shiftAtWill": "may Shift whatever its Shift Gauge holds",
+      "assures": "sure to activate: {stat}",
+      "toll": {
+        "move": "HP each time it moves",
+        "attack": "HP after each fight it attacks in"
+      },
+      "count": {
+        "most": "{counted} of {most}",
+        "of": {
+          "kill": "Foes defeated: {count}",
+          "dodged": "Attacks dodged: {count}",
+          "noCrit": "Attacks without a critical hit: {count}",
+          "inflict": "Conditions inflicted: {count}",
+          "start": "Fights begun: {count}",
+          "block": "Blocks: {count}",
+          "blockFail": "Failed blocks: {count}",
+          "unhurt": "Hits shrugged off: {count}",
+          "hit": "Hits landed: {count}",
+          "crit": "Critical hits: {count}",
+          "struck": "Hits taken: {count}",
+          "dealt": "Damage dealt this turn: {count}",
+          "other": "Counted: {count}"
+        }
+      },
+      "tempHpTip": "{own} HP of its own and {temp} temporary HP, which are lost first.",
+      "lowest": "fights with its lowest stats",
+      "chipFrom": "{skill}, from {from}: {what}",
+      "nowTag": "{skill}: {name} {what} from here on",
+      "pick": {
+        "one": "Pick the stat",
+        "more": "Pick a stat ({left} to go)",
+        "hint": "{amount} {stat}",
+        "about": "{name}: which stats of {foe}?",
+        "around": "{name}: which stat of the enemies around?"
+      },
       "lasts": {
         "map": "for the rest of the map",
+        "never": "from map to map, until it is lost",
+        "once": {
+          "defend": "the next time it would counter-attack",
+          "attack": "for the next fight it starts",
+          "fight": "for its next fight",
+          "strike": "until it has attacked",
+          "struck": "until an attack lands on it"
+        },
+        "wait": "from its next turn",
+        "waitMany": "in {turns} turns",
+        "phaseEnd": "until this Phase ends",
         "fades": "fading over {turns} turns",
         "turnStart": {
           "own": "until its next turn starts",
@@ -2456,6 +3380,7 @@
         "boonBane": "▲ {boon}  ▼ {bane}",
         "none": "None",
         "affinity": "{affinity}",
+        "affinityRank": "Choose its proficiency",
         "gm": "Given by the GM",
         "granted": "{name}",
         "waiting": "Waiting on the GM",
@@ -2506,6 +3431,8 @@
         "giveUp": "Give it up",
         "capacity": "Capacity {cost}",
         "variantOpen": "{name} · choose its variant",
+        "pickOpen": "Pick in the Compendium",
+        "pickChange": "Change",
         "variant": "{name} · variant",
         "growths": "{name} · choose {count} growth rates · {picked} of {count}"
       },
@@ -2522,6 +3449,10 @@
         "notGeneric": "Only a Generic Skill can be the one {unit} starts with.",
         "noGeneric": "{unit} is a Trainee, and starts without a Generic Skill.",
         "unmet": "{unit} does not meet its prerequisite yet: {what}. Take it only if your GM allows."
+      },
+      "affinity": {
+        "rankOpen": "{name} · choose its proficiency",
+        "rank": "{name} · +{steps} Rank in"
       },
       "ranks": {
         "gives": "{name} gives: {note}",
@@ -2654,9 +3585,6 @@
     "Staff": {
       "healed": "{name} +{amount} HP",
       "healedUnsaved": "{name} +{amount} HP, to apply by hand",
-      "harm": "{name} takes {amount} damage",
-      "harmNamed": "{amount} damage to the closest enemy of {name} ({names}), to apply by hand",
-      "harmByHand": "{amount} damage to the closest enemy within {within} spaces of {name}, to apply by hand",
       "spared": "the staff loses no use",
       "warped": "moved to the space chosen",
       "warpedRandom": "warped to a random space in range",
@@ -2683,7 +3611,46 @@
       "double": "Double-Cast",
       "doubleHint": "The chance that this staff is cast a second time at once, unless its target is at full HP. (DEX + SPD + LUK) ÷ 2.",
       "doubleYes": "casts a second time",
-      "doubleNo": "no second cast"
+      "doubleNo": "no second cast",
+      "mended": "+{amount} HP as each of its next {turns} turns starts",
+      "cured": "cured of {conditions}",
+      "cleared": "rid of {changes}",
+      "given": "{what} {lasts}",
+      "refused": "takes nothing from it",
+      "afflicted": "afflicted with {condition}",
+      "warded": "{condition} warded off ({skill})",
+      "damaged": "takes {amount} damage",
+      "slain": "destroyed",
+      "stolen": "{item} taken",
+      "nothingToTake": "carries nothing to take",
+      "again": "acts again",
+      "againLater": "will act again once it has acted",
+      "repaired": "{item}: {value} / {max} uses",
+      "endless": "{item} no longer loses uses",
+      "nothingToRepair": "carries nothing it could repair",
+      "unlocked": "opened",
+      "revived": "back at full HP",
+      "nobodyFallen": "no fallen ally to bring back",
+      "byHand": "to apply by hand",
+      "byHandPlain": "to apply by hand",
+      "pickFoe": "pick the enemy it strikes",
+      "pickTile": "pick where it stands",
+      "noFight": "{name} cannot start a fight with a staff in hand.",
+      "fightBeside": "{name} fights with {staff} only against a unit next to it.",
+      "why": {
+        "self": "{user} cannot use {staff} on itself.",
+        "selfNot": "{staff} is not used on its own unit.",
+        "down": "{name} is out of the fight.",
+        "ally": "{staff} is for an ally.",
+        "enemy": "{staff} is for an enemy.",
+        "barred": "{name} cannot be targeted right now.",
+        "out": "{name} is out of {staff}'s range ({range}).",
+        "beside": "{staff} is for a unit next to {user}.",
+        "immune": "{name} is immune to {staff}.",
+        "nothing": "{staff} does nothing to {name}.",
+        "unmoved": "{name} is not moved by {user}.",
+        "nobody": "{staff} reaches nobody it could be used on."
+      }
     },
     "Base": {
       "title": "The Base",
@@ -3020,6 +3987,7 @@
         "toConvoy": "To the convoy",
         "goldLeft": "Gold left",
         "buyFor": "Buy for {total}",
+        "discount": "{parts} · {listed} before",
         "soldOut": "Sold out",
         "forgeTip": "The forge is lit: temper it once bought",
         "usesLeftLabel": "Uses left",
@@ -3128,7 +4096,8 @@
         "soldOut": "The {item} is sold out.",
         "cannotForge": "{item} cannot be forged.",
         "bonded": "The two already have a support with {name}.",
-        "noBouts": "{name} has no bouts left before the next battle."
+        "noBouts": "{name} has no bouts left before the next battle.",
+        "bound": "{item} cannot leave {name}'s pack."
       }
     },
     "Terrain": {
@@ -3147,7 +4116,10 @@
       "healhedge": "Healhedge",
       "wardwood": "Wardwood",
       "cover": "Cover, Barricade",
+      "wall": "Wall, Obstacle",
+      "impassable": "Nobody crosses this, on foot or flying.",
       "note": {
+        "wall": "A wall, a building, a fence or a rock-face.",
         "thicket": "Reduces LoS by 1. A unit here is not revealed in Fog of War unless a unit is adjacent.",
         "house": "Any relevant shop services are reached from here.",
         "desert": "Costs Armored and Mounted units 3. Magic users, Thieves and Shifted Laguz cross it freely."
@@ -3170,6 +4142,65 @@
           "label": "Elevation",
           "hint": "How high the ground lies: 0 is the floor of the map. Ranged attacks gain against lower ground and lose against higher, and melee cannot reach across levels. Leave it blank for a Region that only sets terrain."
         }
+      }
+    },
+    "MapAffinity": {
+      "title": "Map Affinity",
+      "none": "Map Affinity: none. Click to set the Affinity of this map.",
+      "tip": "Map Affinity: {affinity}. Units of that Affinity gain +{hit} Hit and +{dodge} Dodge on this map.",
+      "gains": "{name} does.",
+      "pickHint": "A unit whose Affinity is the same as the map's gains +{hit} Hit and +{dodge} Dodge on it.",
+      "noneOption": "None",
+      "set": "Set"
+    },
+    "Weather": {
+      "title": "Weather",
+      "clear": "Weather: clear. Click to set the weather of this map.",
+      "pickHint": "What is ticked is the weather of this map until it is changed. Each effect counts once, at the most any kind makes of it.",
+      "set": "Set",
+      "clearAll": "Clear skies",
+      "fogNote": "Fog of War is not drawn by the system: it is yours to run, with the vision and lighting of the scene or by hand.",
+      "spared": "{name} is spared it.",
+      "kind": {
+        "rain": "Rain",
+        "snowstorm": "Snowstorm",
+        "thunderstorm": "Thunderstorm",
+        "windstorm": "Windstorm",
+        "hail": "Hail",
+        "heatWave": "Heat Wave",
+        "fog": "Fog",
+        "sandstorm": "Sandstorm",
+        "darkness": "Darkness",
+        "ashStorm": "Ash Storm",
+        "mist": "Mist",
+        "ballista": "Ballista Fire"
+      },
+      "strike": {
+        "lightning": "Lightning",
+        "ballista": "Ballista Fire"
+      },
+      "does": {
+        "move": "Tiles cost {infantry} more MOV to cross for infantry and {mounted} more for Mounted units.",
+        "fly": "Tiles cost {flying} more MOV to cross for Flying units.",
+        "stat": "Units have {amount} {stat}.",
+        "harm": "Units take {amount} damage as their turn ends, and cannot die of it.",
+        "fog": "Causes Fog of War, which the Game Master runs.",
+        "los": "The LoS of every unit is {los} at the least.",
+        "lightning": "As each turn of the battle ends a coin is flipped: on tails a bolt strikes a random tile for {damage} damage{more}, unless the tile is indoors.",
+        "ballista": "As every other turn of the battle ends 1D{dice} bolts strike random tiles for {damage} damage each, unless a tile is indoors.",
+        "against": " ({amount} to a unit with the {quality} quality)"
+      },
+      "card": {
+        "title": "Weather",
+        "turn": "Turn {turn} ends",
+        "bolts": "{count} bolts",
+        "none": {
+          "lightning": "Heads: no bolt",
+          "ballista": "No bolt"
+        },
+        "hit": "Column {col}, row {row}: {name} takes {amount} damage",
+        "empty": "Column {col}, row {row}: nobody there",
+        "indoors": "Column {col}, row {row}: indoors, nothing happens"
       }
     },
     "Phase": {
@@ -3221,6 +4252,7 @@
       "item": "Item",
       "sheet": "Sheet",
       "noStaff": "No staff carried",
+      "shiftGauge": "Shift Gauge {value} / {max}; it can Shift at {at}.",
       "noSkill": "No skill to use or declare",
       "noItem": "No item carried",
       "noConditions": "No conditions",
@@ -3229,6 +4261,7 @@
       "spend": "Spend a round",
       "spendHint": "Give up a turn of the Incapacitation timer to take one Action, or to move half.",
       "cannotCross": "{name} cannot cross this.",
+      "passesThrough": "{name} passes through, but cannot stop here.",
       "outOfReach": "Out of {name}'s reach this turn.",
       "higher": "{levels} above {name}. Ranged attacks up there: −{damage} damage, −{hit} Hit. Melee cannot reach.",
       "lower": "{levels} below {name}. Ranged attacks down there: +{damage} damage, +{hit} Hit. Melee cannot reach.",
@@ -3250,11 +4283,42 @@
         "notYours": "Not yours to command",
         "down": "Incapacitated · turns left: {turns}",
         "acted": "Has acted this Phase",
+        "moving": "{skill}: move again, or Wait",
+        "movingCurbed": "{skill}, halved by {by}: move again, or Wait",
         "waiting": "Acts on the {phase}",
         "target": "Choose a foe on red",
-        "staff": "Choose a unit in reach, or this one",
+        "staff": "Choose a unit in reach",
+        "staffArea": "{staff}: {count} in reach",
+        "staffObject": "{staff}: choose a door or a chest in reach",
         "warp": "Choose a tile on violet to warp to",
+        "lay": "{item}: choose a tile on violet to lay it on",
+        "layWarp": "{item}: choose the tile on violet it warps a unit to",
+        "shove": "Choose a unit on green to shove",
+        "steal": "Choose an enemy on green to steal from",
+        "trade": "Choose an ally on green to trade with",
+        "stand": "No movement left: choose an Action, or Wait",
+        "object": "Choose a door, a chest or a Village on green",
+        "rescue": "Choose an ally on green to pick up, or to take its passenger",
+        "drop": "{name}: a violet tile to drop, or an ally on green to give",
+        "refresh": "{skill}: choose an ally on green",
+        "refreshMany": "{skill}: choose allies on green ({picked} of {most})",
+        "refreshAll": "{skill}: click an ally on green, and all of them act again",
+        "choose": "choose one, or pass",
+        "act": "{skill}: choose a unit on green",
+        "actTile": "{skill}: choose a tile on violet, or the unit to trade places",
+        "area": {
+          "self": "{skill}: click the area to confirm, anywhere else to cancel",
+          "tile": "{skill}: choose where on violet",
+          "unit": "{skill}: choose the unit it runs through",
+          "share": "{skill}: click allies to share out · −{cost} HP for +{total}"
+        },
         "moved": "Moved {spent} of {movement}. Choose an Action.",
+        "go": "{skill}: act again",
+        "goStill": "{skill}: act again, without moving",
+        "goNoAttack": "{skill}: act again, without attacking",
+        "goBarred": "{skill}: act again, without moving or attacking",
+        "onlyWait": "Ran too far to act: Wait, or take the move back",
+        "mustAttack": "{skill}: attack an enemy this space brought within reach, or take the move back",
         "free": "No battle is running",
         "ready": "Ready: move, then one Action"
       },
@@ -3278,6 +4342,8 @@
         "highGround": "High ground",
         "lowGround": "Low ground",
         "defence": "Foe's defence",
+        "def": "Foe's DEF",
+        "res": "Foe's RES",
         "tile": "Foe's tile",
         "dodge": "Foe's Dodge",
         "critAvoid": "Foe's Crit Avoid",

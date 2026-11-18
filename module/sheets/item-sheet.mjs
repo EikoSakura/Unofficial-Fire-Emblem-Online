@@ -164,6 +164,9 @@ export default class FeoItemSheet extends HandlebarsApplicationMixin(ItemSheetV2
 
       // A skill that raises growth rates of its unit's picking offers a field for each
       context.picks = growthPickFields(system.effects, system.choice);
+
+      // Anything else a skill has its unit pick is shown as it is written, for the Game Master to put right
+      context.pickText = (system.picks?.length > 0) && !context.choices && !context.picks;
       context.effectCount = system.effects.length;
       context.effectsJson = JSON.stringify(system.effects, null, 2);
     }

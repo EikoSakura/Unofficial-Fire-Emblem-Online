@@ -3,6 +3,7 @@ import { expSources, scaleExp } from "../rules/earnings.mjs";
 import { gainExp, isPromoted, skillExp, staffExp } from "../rules/experience.mjs";
 import { earnerOfActor, staffRowFor } from "./earnings.mjs";
 import { expAmount } from "./earnings-context.mjs";
+import { pop } from "./events.mjs";
 import { armyOf } from "./exchange.mjs";
 
 /**
@@ -35,21 +36,26 @@ export function isPromotedUnit(actor) {
 /* -------------------------------------------- */
 
 /**
- * Give a unit experience. Its skills, and those of the units around it, can multiply what it earns.
+ * Give a unit experience, from whatever source: a staff or a skill it used, a treatment, a spar, or what the
+ * table gives it by hand. Its skills, and those of the units around it, can multiply what it earns.
  * @param {Actor} actor
- * @param {number} amount               Experience as the tables give it
+ * @param {number} amount               Experience as the tables give it, or as it is given by hand
  * @param {object} [options]
+ * @param {boolean} [options.bonus]     Is it Bonus EXP? A skill that says so does not multiply it
  * @param {{row: string, skill: string}|null} [options.staff]   The skill that chose the column of the staff
  *                                                              table the amount was read from, to be told
  * @returns {Promise<{gained: number, exp: number, ready: boolean, base?: number, times?: number,
  *   sources?: {skill: string, times: number}[], staff?: {row: string, skill: string}}>}
  *          What it gained and now has, and whether it can level up; with what skills made of the amount
  */
-export async function awardExp(actor, amount, { staff = null } = {}) {
+export async function awardExp(actor, amount, { staff = null, bonus = false } = {}) {
   const earner = earnerOfActor(actor);
-  const scaled = scaleExp(amount, expSources(earner.skills, earner.self));
+  const scaled = scaleExp(amount, expSources(earner.skills, earner.self, { bonus }));
   const { exp, gained, ready } = gainExp(actor.system.exp, scaled.amount);
-  if ( gained > 0 ) await actor.update({ "system.exp": exp });
+  if ( gained > 0 ) {
+    await actor.update({ "system.exp": exp });
+    pop(actor, [{ text: game.i18n.format("FEO.Exp.float", { amount: gained }), tone: "exp" }]);
+  }
   const award = { gained, exp, ready };
   if ( scaled.sources.length && (scaled.base > 0) ) Object.assign(award, { base: scaled.base, times: scaled.times, sources: scaled.sources });
   if ( staff ) award.staff = staff;
@@ -76,14 +82,14 @@ export function staffExpBy(actor) {
  * @param {string} name
  * @returns {number|null}     Null when the table does not list it, or the unit earns no experience
  */
-export function useExp(actor, kind, name) {
+export function useExp(actor, kind, name, { terrors = 0 } = {}) {
   if ( !earnsExp(actor) ) return null;
   const promoted = isPromotedUnit(actor);
   if ( kind !== "staff" ) return skillExp(name, promoted);
 
   // A skill can have staves earn by the other column of their table
   const by = staffExpBy(actor);
-  return staffExp(name, by ? (by.row === "promoted") : promoted);
+  return staffExp(name, by ? (by.row === "promoted") : promoted, { terrors });
 }
 
 /* -------------------------------------------- */

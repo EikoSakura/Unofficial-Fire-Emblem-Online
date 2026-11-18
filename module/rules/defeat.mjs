@@ -187,6 +187,66 @@ export function hpTransition(unit, before, after) {
 /* -------------------------------------------- */
 
 /**
+ * What a change of HP means for a unit the Incapacitation system does not apply to, as every unit is in a
+ * world that plays without it: it is defeated at 0 HP, and back in the fight when it is raised above it.
+ * - A standing unit brought to 0 HP or below is dead, or retreats if it has a life to spare.
+ * - A dead unit raised above 0 HP returns.
+ * @param {{hpMax: number, defeat: DefeatState}} unit     The unit before the change
+ * @param {number} before           HP before the change
+ * @param {number} after            HP after the change
+ * @param {object} [options]
+ * @param {boolean} [options.spare]   Does it lose a life and leave the battle instead of dying?
+ * @returns {{event: "defeated"|"returned", defeat: DefeatState}|null}    Null when nothing about the unit's
+ *          defeat changes
+ */
+export function plainTransition(unit, before, after, { spare = false } = {}) {
+  const state = unit.defeat?.state ?? "";
+  if ( !Number.isFinite(after) ) return null;
+  if ( !state ) {
+    if ( (after > 0) || !(before > 0) || !(unit.hpMax > 0) ) return null;
+    return { event: "defeated", defeat: { state: spare ? "retreated" : "dead", turns: 0, paused: false } };
+  }
+  if ( (state === "dead") && (after > 0) ) return { event: "returned", defeat: { state: "", turns: 0, paused: false } };
+  return null;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Is a unit out of the fight? One that has retreated, died or been captured is, and so is one that stands at
+ * 0 HP with nothing said of what became of it. Such a unit holds no tile, threatens nothing, gives and
+ * receives no aura and is nobody's target. An Incapacitated unit is still in the fight. A unit that an ally
+ * carries is out of it for as long as it is carried, whatever else is true of it (see `rescue.mjs`).
+ * @param {object} unit
+ * @param {string} [unit.state]     Its defeat state
+ * @param {number} [unit.hp]        Its HP
+ * @param {number} [unit.hpMax]     Its maximum HP: a unit that was never given any has not been brought to 0
+ * @param {boolean} [unit.carried]  Is it carried by an ally that Rescued it?
+ * @returns {boolean}
+ */
+export function outOfFight({ state = "", hp = 1, hpMax = 0, carried = false } = {}) {
+  if ( carried || ["retreated", "dead", "captured"].includes(state) ) return true;
+  return !state && (hpMax > 0) && (hp <= 0);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Has a unit left the map? One that died or retreated has: its token is taken off it. An Incapacitated unit
+ * lies where it fell, and so does a captured one until it is carried, which is shown by other means. A unit
+ * that an ally carries is off the map as well, and rides on its carrier's token until it is set down.
+ * @param {string} state          Its defeat state
+ * @param {object} [options]
+ * @param {boolean} [options.carried]     Is it carried by an ally that Rescued it?
+ * @returns {boolean}
+ */
+export function leavesMap(state, { carried = false } = {}) {
+  return carried || (state === "dead") || (state === "retreated");
+}
+
+/* -------------------------------------------- */
+
+/**
  * An Incapacitated unit's turn starts: a paused timer starts running again, a running one loses a turn.
  * @param {DefeatState} defeat
  * @returns {{defeat: DefeatState, resumed: boolean, from: number, to: number}|null}   Null for a unit that

@@ -3,7 +3,7 @@ import { FEO } from "../config.mjs";
 import { startingRanksOf } from "../rules/classes.mjs";
 import { isArmed } from "../rules/creation-fit.mjs";
 import { abilityTotals, boonWorth, classOpen, creationState, pointCost, savedStat } from "../rules/creation.mjs";
-import { affinityEffectMode } from "../rules/optional.mjs";
+import { AFFINITY_RANK, affinityEffectMode, affinityRankOf } from "../rules/optional.mjs";
 import { givenSteps, raisedRank, readGiven } from "../rules/skill-ranks.mjs";
 
 /**
@@ -18,6 +18,11 @@ import { givenSteps, raisedRank, readGiven } from "../rules/skill-ranks.mjs";
 const abbr = (key) => `FEO.Stat.${key}.abbr`;
 const number = (value) => Number(value ?? 0).toLocaleString("en-US");
 const signed = (value) => (value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : "");
+
+/** What the effect an Affinity builds into its unit goes by: "Tome Affinity". */
+const affinityName = (affinity, i18n) => {
+  return i18n.format("FEO.Optional.affinityEffect.name", { affinity: i18n.localize(FEO.affinities[affinity] ?? "") });
+};
 
 /* -------------------------------------------- */
 /*  The header button and the banner            */
@@ -262,18 +267,24 @@ const PANELS = {
     const offered = state.skills;
 
     // What a skill taken has its unit choose is asked right under it
+    // A long list, or one whose options say what they do, is picked in the Compendium, as a class is
     const variants = (slot) => state.variants.filter((variant) => variant.slot === slot).map((variant) => {
       const growths = variant.kind === "growths";
-      const data = { name: variant.name, count: variant.count, picked: variant.picked.length };
+      const data = { name: variant.label ? `${variant.name} · ${variant.label}` : variant.name, count: variant.count, picked: variant.picked.length };
+      const options = variant.options.map((option) => ({
+        value: option.value,
+        label: option.localize ? loc(option.label) : option.label,
+        hint: option.hint,
+        pressed: variant.picked.includes(option.value)
+      }));
       return {
         id: variant.id,
+        index: variant.index,
         open: variant.open,
+        long: (options.length > 4) || options.some((option) => option.hint),
+        picked: options.filter((option) => option.pressed).map((option) => option.label).join(", "),
         title: i18n.format(`FEO.Creator.skills.${growths ? "growths" : variant.open ? "variantOpen" : "variant"}`, data),
-        options: variant.options.map((value) => ({
-          value,
-          label: growths ? loc(FEO.growths[value]) : value,
-          pressed: variant.picked.includes(value)
-        }))
+        options
       };
     });
     const classSkills = {
@@ -306,6 +317,7 @@ const PANELS = {
 
     // The ranks the starting skills have added, so that a rank above what the class gives explains itself
     const names = new Map(skills.map((skill) => [skill.id, skill.name]));
+    if ( unit.affinity ) names.set(AFFINITY_RANK, affinityName(unit.affinity, i18n));
     const raised = readGiven(unit.skillRanks).filter((entry) => names.has(entry.item)).map((entry) => {
       return i18n.format("FEO.Creator.ranks.raised", { skill: names.get(entry.item), proficiency: label(entry.key), steps: entry.steps });
     });
@@ -461,7 +473,7 @@ const PANELS = {
     };
   },
 
-  affinity({ unit, loc }) {
+  affinity({ unit, i18n, loc }) {
     const boosts = (key) => Object.entries(FEO.affinityBoosts[key] ?? {}).map(([boost, amount]) => {
       return `+${amount} ${loc(`FEO.Creator.boost.${boost}`)}`;
     }).join(", ");
@@ -480,10 +492,19 @@ const PANELS = {
     const core = entries.filter(([key]) => !(key in FEO.optionalAffinities));
     const optional = entries.filter(([key]) => key in FEO.optionalAffinities);
     const chosen = unit.affinity ? effect(unit.affinity) : "";
+
+    // An Affinity that gives a rank in a proficiency of the unit's choice has it chosen here
+    const gives = affinityRankOf(unit);
+    const data = { name: affinityName(unit.affinity, i18n), steps: gives?.steps };
     return {
       tiles: core.map(tile),
       more: optional.length ? { label: loc("FEO.Setting.optionalAffinities.name"), tiles: optional.map(tile) } : null,
-      chosen: chosen ? { label: loc(FEO.affinities[unit.affinity] ?? ""), effect: chosen } : null
+      chosen: chosen ? { label: loc(FEO.affinities[unit.affinity] ?? ""), effect: chosen } : null,
+      rank: gives ? {
+        open: !gives.choice,
+        title: i18n.format(`FEO.Creator.affinity.${gives.choice ? "rank" : "rankOpen"}`, data),
+        options: gives.options.map((key) => ({ value: key, label: loc(FEO.proficiencies[key]), pressed: gives.choice === key }))
+      } : null
     };
   },
 

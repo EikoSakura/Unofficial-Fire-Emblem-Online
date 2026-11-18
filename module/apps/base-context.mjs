@@ -9,6 +9,7 @@ import {
   boutsLeft, canForge, forgeCount, forgePrice, forgeSteps, forgedStats, sparExp, wareKind
 } from "../rules/base.mjs";
 import { sellValue } from "../rules/progression.mjs";
+import { discounted } from "../rules/stealing.mjs";
 import { pointsForNext } from "../rules/supports.mjs";
 import { canWield } from "../rules/weapons.mjs";
 
@@ -46,6 +47,8 @@ import { canWield } from "../rules/weapons.mjs";
  * @property {string} cls
  * @property {{value: number, max: number}} hp
  * @property {number} gold
+ * @property {number} [discount]          What it pays less in a shop, in percent
+ * @property {{name: string, percent: number}[]} [discounts]      The skills and items that comes from
  * @property {string} icon
  * @property {{name: string, icon: string}|null} weapon     What it has equipped
  * @property {Record<string, number>} stats
@@ -592,13 +595,21 @@ export function buildMarket(world, ui, i18n) {
   const gold = visitor?.gold ?? 0;
   const who = visitor?.name ?? loc("market.visitor");
 
-  // What is listed: the stall's stock, or what the visitor carries
+  // What is listed: the stall's stock, or what the visitor carries. A price is what the visitor pays: what its
+  // skills and what it wears take off is taken off, and said on hover (see `discounted`)
+  const discount = buying ? (visitor?.discount ?? 0) : 0;
+  const cut = (listed) => {
+    if ( !(discount > 0) ) return "";
+    const parts = (visitor.discounts ?? []).map((entry) => `${entry.name} −${entry.percent}%`).join(", ");
+    return fmt("market.discount", { parts, listed: number(listed) });
+  };
   const source = buying
     ? (shop?.stock ?? []).map((entry) => {
       const ware = world.stock.get(entry.uuid);
-      return ware ? { ware: { ...ware, id: entry.id }, price: entry.price ?? ware.cost, left: entry.left } : null;
+      const listed = entry.price ?? ware?.cost ?? 0;
+      return ware ? { ware: { ...ware, id: entry.id }, price: discounted(listed, discount), left: entry.left, cut: cut(listed) } : null;
     }).filter(Boolean)
-    : visitor.items.map((ware) => ({ ware, price: worthOf(ware), left: null }));
+    : visitor.items.map((ware) => ({ ware, price: worthOf(ware), left: null, cut: "" }));
 
   const query = (ui.query ?? "").trim().toLowerCase();
   const passing = source.filter(({ ware, price }) => (!query || ware.name.toLowerCase().includes(query))
@@ -626,9 +637,10 @@ export function buildMarket(world, ui, i18n) {
 
   const chosen = source.find(({ ware }) => ware.id === ui.ware) ?? shown[0] ?? source[0] ?? null;
   const cell = (value) => ({ value: value ?? "–", zero: !value });
-  const row = ({ ware, price, left }) => {
+  const row = ({ ware, price, left, cut: off }) => {
     const item = ware.type !== "weapon";
     return {
+      cut: off ?? "",
       id: ware.id,
       kind: ware.kind,
       icon: ware.icon,
@@ -704,12 +716,13 @@ export function buildMarket(world, ui, i18n) {
  * The ware chosen from a ledger, set out beside it.
  * @param {BaseWorld} world
  * @param {object} ui
- * @param {{ware: Ware, price: number, left: number|null}} chosen
+ * @param {{ware: Ware, price: number, left: number|null, cut?: string}} chosen    `cut`: what was taken off the
+ *                                                price for this visitor, in words
  * @param {{buying: boolean, shop: object|null}} options
  * @param {object} i18n
  * @returns {object}
  */
-function buildWare(world, ui, { ware, price, left }, { buying, shop }, i18n) {
+function buildWare(world, ui, { ware, price, left, cut = "" }, { buying, shop }, i18n) {
   const { visitor, user } = world;
   const loc = (key) => i18n.localize(`FEO.Base.${key}`);
   const fmt = (key, data) => i18n.format(`FEO.Base.${key}`, data);
@@ -765,6 +778,9 @@ function buildWare(world, ui, { ware, price, left }, { buying, shop }, i18n) {
     toConvoy: ui.dest === "convoy",
     destPack: fmt("market.toPack", { name: who }),
     buyLabel: left === 0 ? loc("market.soldOut") : fmt("market.buyFor", { total: number(total) }),
+
+    // What was taken off the price for this visitor, where anything was
+    cut,
     sellLabel: fmt("market.sellFor", { gold: number(price) }),
     goldLeft: number(gold - total),
     short: total > gold,

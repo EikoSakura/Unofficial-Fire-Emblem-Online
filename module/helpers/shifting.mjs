@@ -1,5 +1,5 @@
 import { FEO } from "../config.mjs";
-import { canShift, changeGauge, gaugeTurnStart } from "../rules/shifting.mjs";
+import { canShift, changeGauge, gaugeTurnStart, isHumanWeapon, shiftLapses } from "../rules/shifting.mjs";
 import { postCard } from "./chat.mjs";
 import { armyOf, measureDistance } from "./exchange.mjs";
 
@@ -8,6 +8,12 @@ import { armyOf, measureDistance } from "./exchange.mjs";
  */
 
 const nameOf = (actor) => actor.token?.name ?? actor.name;
+
+/** The flag of a unit whose Shift was made at will, with a gauge that did not hold enough for it. */
+const LENT_FLAG = "shiftLent";
+
+/** The units that were offered a Shift, each with the turn it was offered in: nobody is asked twice a turn. */
+const offered = new Map();
 
 /**
  * A card about a unit's form.
@@ -44,11 +50,28 @@ const gaugeRow = (from, to) => ({
  * @returns {Promise<void>}
  */
 export async function equipForForm(actor, transformed) {
+  // A unit whose skills let it start a fight in humanoid form does so with what a unit fights with in that
+  // form: one that carries none is handed it, so that its hands need not be looked at before it attacks
+  if ( !transformed && Number.isFinite(actor.system.shift?.bends?.humanFight)
+    && !actor.items.some((item) => (item.type === "weapon") && isHumanWeapon(item.name)) ) {
+    try {
+      const { findItem } = await import("./classes.mjs");
+      const source = await findItem("weapon", FEO.shift.humanWeapon);
+      if ( source ) {
+        const data = source.inCompendium ? game.items.fromCompendium(source, { clearFolder: true }) : source.toObject();
+        delete data._id;
+        data.system = { ...(data.system ?? {}), equipped: false };
+        await actor.createEmbeddedDocuments("Item", [data]);
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  }
   const weapons = actor.items.filter((item) => item.type === "weapon");
   const natural = (item) => FEO.shift.weaponCategories.includes(item.system.category);
   const wanted = transformed
     ? weapons.find(natural)
-    : weapons.find((item) => item.name.trim().toLowerCase() === FEO.shift.humanWeapon.toLowerCase());
+    : weapons.find((item) => isHumanWeapon(item.name));
   const updates = [];
   for ( const item of weapons ) {
     const equip = wanted ? (item === wanted) : (item.system.equipped && (transformed || !natural(item)));
@@ -74,7 +97,13 @@ export async function toggleShift(actor, { force = false } = {}) {
     return false;
   }
   const active = !shift.active;
-  await actor.update({ "system.shift.active": active });
+
+  // A Shift that only a change lasting on the unit lets it make, as Gregarious does for a turn, ends with it
+  const lent = active && !force && !canShift(shift) && !!shift.bends?.atWill && !!shift.bends?.brief;
+  await actor.update({
+    "system.shift.active": active,
+    ...(lent ? { [`flags.${FEO.id}.${LENT_FLAG}`]: true } : (actor.getFlag(FEO.id, LENT_FLAG) ? { [`flags.${FEO.id}.-=${LENT_FLAG}`]: null } : {}))
+  });
   await equipForForm(actor, active);
   await shiftCard(actor, active ? "FEO.Shift.shifts" : "FEO.Shift.reverts", {
     rows: [gaugeRow(shift.value, shift.value)],
@@ -82,6 +111,105 @@ export async function toggleShift(actor, { force = false } = {}) {
     cls: active ? "good" : ""
   });
   return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A unit whose Shift was only made at will, as a change that lasts on it for a turn let it, is in humanoid
+ * form again once nothing lets it Shift at will any longer; unless its gauge has come to hold enough.
+ * @param {Actor} actor
+ * @returns {Promise<boolean>}    Whether it reverted
+ */
+async function lapseShift(actor) {
+  if ( (actor?.type !== "unit") || !actor.isOwner || !actor.getFlag(FEO.id, LENT_FLAG) ) return false;
+  const shift = actor.system.shift;
+  if ( (shift.mode !== "gauge") || !shift.active ) {
+    await actor.unsetFlag(FEO.id, LENT_FLAG);
+    return false;
+  }
+  if ( !shiftLapses(shift, { lent: true, atWill: !!shift.bends?.atWill }) ) {
+    // A gauge that holds enough makes the Shift the unit's own from here on
+    if ( !shift.bends?.brief ) await actor.unsetFlag(FEO.id, LENT_FLAG);
+    return false;
+  }
+  await actor.update({ "system.shift.active": false, [`flags.${FEO.id}.-=${LENT_FLAG}`]: null });
+  await equipForForm(actor, false);
+  await shiftCard(actor, "FEO.Shift.reverts", { rows: [gaugeRow(shift.value, shift.value)] });
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Offer a Shift to a unit that a change lasting on it lets Shift at will for a while, as Gregarious does:
+ * whoever acts for it is asked once a turn, above the dock on their own map, and a unit that answers by itself
+ * Shifts. A unit that is transformed, or whose gauge lets it Shift anyway, is not asked.
+ * @param {Actor} actor
+ * @returns {Promise<boolean>}    Whether it Shifted
+ */
+async function offerShift(actor) {
+  const shift = actor?.system?.shift;
+  if ( (actor?.type !== "unit") || (shift?.mode !== "gauge") || shift.active || !shift.bends?.brief || !shift.bends?.atWill ) return false;
+  if ( canShift(shift) || actor.system.defeat?.state || !(actor.system.hp?.value > 0) ) return false;
+  const combat = game.combat?.started ? game.combat : null;
+  const stamp = combat ? `${combat.id}:${combat.round}:${combat.getFlag?.(FEO.id, "phase") ?? ""}` : "";
+  if ( stamp && (offered.get(actor.uuid) === stamp) ) return false;
+  offered.set(actor.uuid, stamp);
+
+  // The change that lets it, for what the offer is called
+  const by = (actor.system.timed ?? []).find((change) => (change.effects ?? []).some((effect) => effect?.shift?.brief))?.name ?? game.i18n.localize("FEO.Shift.title");
+  const { answersAlone, askFor } = await import("./answers.mjs");
+  let take = answersAlone(actor);
+  if ( !take ) {
+    const { tokenInView } = await import("./positions.mjs");
+    const token = actor.token ?? tokenInView(actor);
+    const picked = await askFor({ token, actor }, {
+      index: 0, on: "shift", side: "initiator", attack: null,
+      about: game.i18n.localize("FEO.Shift.offerHint"),
+      offers: [{ key: "shift", skill: by, id: null, what: "shift", item: { name: game.i18n.localize("FEO.Shift.shift") } }]
+    }, "", { alone: false });
+    take = picked === "shift";
+  }
+  if ( !take ) return false;
+
+  // Asked a moment ago, it may have Shifted meanwhile, or lost what let it
+  const now = actor.system.shift;
+  if ( now.active || !now.bends?.atWill ) return false;
+  if ( actor.isOwner ) return toggleShift(actor);
+  return false;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A unit's turn has started and its skills have had their moment: of the units on its scene, those whose
+ * Shift was only lent them revert where nothing lends it any longer, and those that may now Shift at will for
+ * a while are offered it. The offers are not waited for, so that the turn goes on meanwhile.
+ * @param {Actor} actor
+ * @returns {Promise<void>}
+ */
+export async function settleShiftsFor(actor) {
+  if ( actor?.type !== "unit" ) return;
+  const { tokenInView } = await import("./positions.mjs");
+  const scene = (actor.token ?? tokenInView(actor))?.parent ?? null;
+  const units = new Set([actor]);
+  for ( const token of scene?.tokens ?? [] ) if ( token.actor?.type === "unit" ) units.add(token.actor);
+  const asked = [];
+  for ( const unit of units ) {
+    if ( unit.system.shift?.mode !== "gauge" ) continue;
+    try {
+      await lapseShift(unit);
+    } catch(err) {
+      console.error(err);
+    }
+    if ( unit.system.shift.bends?.brief && unit.isOwner ) asked.push(unit);
+  }
+  if ( asked.length ) {
+    (async () => {
+      for ( const unit of asked ) await offerShift(unit);
+    })().catch((err) => console.error(err));
+  }
 }
 
 /* -------------------------------------------- */
@@ -102,7 +230,9 @@ export async function resetGauge(actor, { keep = false } = {}) {
     active: false,
     fought: { own: 0, other: 0 }
   } });
-  if ( wasActive ) await equipForForm(actor, false);
+  // A unit that may start a fight in humanoid form has what it fights with there in hand as the map starts
+  if ( wasActive || Number.isFinite(shift.bends?.humanFight) ) await equipForForm(actor, false);
+  if ( actor.getFlag(FEO.id, LENT_FLAG) ) await actor.unsetFlag(FEO.id, LENT_FLAG);
 }
 
 /* -------------------------------------------- */

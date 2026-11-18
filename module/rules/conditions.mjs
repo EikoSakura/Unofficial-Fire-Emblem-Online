@@ -281,6 +281,68 @@ export function endTurn({ conditions }) {
 }
 
 /* -------------------------------------------- */
+/*  The Units Around                            */
+/* -------------------------------------------- */
+
+/**
+ * @typedef ConditionAround
+ * What a condition an ally suffers from does to a unit that stands near that ally.
+ * @property {string} id                  The condition
+ * @property {string} name                What it goes by among the unit's numbers
+ * @property {string} unit                The ally that suffers it, by what tells its token from the others
+ * @property {string} from                That ally's name
+ * @property {Record<string, number>|null} stats      What the unit loses while it stands that near
+ * @property {{percent: number, round?: string}|null} tick    The share of its own maximum HP it takes once in
+ *                                        each of its turns
+ */
+
+/**
+ * What the conditions of the allies around a unit do to it (see `around` in the conditions table): each
+ * condition once, from the nearest ally that suffers it, however many do.
+ * @param {{others: {id: string, name?: string, relation: string|null, distance: number, conditions?: string[],
+ *   hp?: number, out?: boolean}[]}|null} near      What the unit has around it (see `positions.mjs`)
+ * @returns {ConditionAround[]}
+ */
+export function conditionsAround(near) {
+  const found = new Map();
+  for ( const other of near?.others ?? [] ) {
+    if ( (other.relation !== "ally") || other.out || !((other.hp ?? 1) > 0) ) continue;
+    for ( const id of other.conditions ?? [] ) {
+      const around = conditionConfig(id)?.around;
+      if ( !around || found.has(id) || (other.distance > (around.within ?? 1)) ) continue;
+      found.set(id, {
+        id, name: around.name ?? id, unit: other.id, from: other.name ?? "",
+        stats: around.stats ? { ...around.stats } : null, tick: around.tick ? { ...around.tick } : null
+      });
+    }
+  }
+  return [...found.values()];
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The damage the conditions of the allies around a unit deal it in one of its turns: a share of its own
+ * maximum HP for each such condition, once a turn. It is dealt as the turn starts where the unit stands that
+ * near then, and otherwise as the turn ends where it stands that near by then.
+ * @param {object|null} near                  What the unit has around it
+ * @param {number} hpMax                      Its maximum HP
+ * @param {object} [options]
+ * @param {string[]} [options.taken]          The conditions that have dealt it their damage this turn already
+ * @returns {{id: string, name: string, from: string, percent: number, damage: number}[]}
+ */
+export function aroundTicks(near, hpMax, { taken = [] } = {}) {
+  const ticks = [];
+  for ( const found of conditionsAround(near) ) {
+    if ( !found.tick || taken.includes(found.id) ) continue;
+    const exact = (Math.max(hpMax, 0) * found.tick.percent) / 100;
+    const damage = (found.tick.round === "up") ? Math.ceil(exact) : Math.floor(exact);
+    ticks.push({ id: found.id, name: found.name, from: found.from, percent: found.tick.percent, damage });
+  }
+  return ticks;
+}
+
+/* -------------------------------------------- */
 /*  Stats                                       */
 /* -------------------------------------------- */
 
@@ -683,6 +745,9 @@ export function resolveHit(target, hit, d100) {
     }
     let turns = entry.dice ? Math.max(Math.ceil((d100() * entry.dice) / 100), 1) : (entry.turns ?? undefined);
     if ( entry.more ) turns = (turns ?? config.turns) + entry.more;
+
+    // One that a skill has last so many percent longer: a part of a turn is a turn, so that one turn is two
+    if ( (entry.amp > 0) && Number.isFinite(turns ?? config.turns) ) turns = Math.ceil(((turns ?? config.turns) * (100 + entry.amp)) / 100);
     const applied = applyCondition(state, entry.id, { turns });
     state = applied.state;
     inflicted.push({

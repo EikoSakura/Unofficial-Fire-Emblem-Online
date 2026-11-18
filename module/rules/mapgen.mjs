@@ -312,7 +312,7 @@ function runWater(draft, { kind, width = 1, bridges = 0, fords = 0, open = [] })
  */
 export function walkable(kind) {
   const type = FEO.terrain.types[kind];
-  return !!type && !type.needs?.length;
+  return !!type && !type.needs?.length && !type.impassable;
 }
 
 /* -------------------------------------------- */

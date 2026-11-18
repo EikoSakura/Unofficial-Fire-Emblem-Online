@@ -87,6 +87,10 @@ export function attackSpeed(speed, con, weight) {
  *                                              critAvoid)
  * @property {{accuracy: string, critical: string, dodge: string}} [calc]   Calculation modes
  * @property {CombatModifier[]} [modifiers]     Automatic adjustments
+ * @property {{label: string, key: string, times: number}[]} [times]
+ *                                              What multiplies a combat stat once everything is added to it, as
+ *                                              a skill may: the stat by the name of its boost (hit, damage,
+ *                                              critical, dodge, critAvoid), and the name it is told under
  */
 
 /**
@@ -212,20 +216,30 @@ export function computeCombat(unit, weapon) {
   const parry = calc.dodge === "parry";
   const dodgeSpeed = parry ? attackSpeed(s("dex"), s("con"), w.weight) + sum(adjust.attackSpeed) : as;
 
-  const stat = (terms, { negative = false } = {}) => {
-    const total = Math.floor(sum(terms));
-    return { value: negative ? total : Math.max(total, 0), terms: terms.filter((term) => term.value !== 0) };
+  // What multiplies a combat stat once everything is added to it is one more term: what it adds, under the
+  // name of what multiplies
+  const stat = (terms, { negative = false, key = null } = {}) => {
+    let total = Math.floor(sum(terms));
+    if ( !negative ) total = Math.max(total, 0);
+    const told = terms.filter((term) => term.value !== 0);
+    for ( const entry of key ? (unit.times ?? []) : [] ) {
+      if ( (entry.key !== key) || !Number.isFinite(entry.times) || (entry.times === 1) ) continue;
+      const more = Math.floor((total * entry.times) + 1e-9) - total;
+      total += more;
+      if ( more ) told.push({ label: entry.label, localize: false, value: more, modifier: true });
+    }
+    return { value: total, terms: told };
   };
 
   return {
-    accuracy: stat([...accuracyTerms, ...adjust.hit]),
-    damage: stat([{ ...key("FEO.Weapon.might"), value: w.might }, damageTerm, ...adjust.damage]),
+    accuracy: stat([...accuracyTerms, ...adjust.hit], { key: "hit" }),
+    damage: stat([{ ...key("FEO.Weapon.might"), value: w.might }, damageTerm, ...adjust.damage], { key: "damage" }),
     critical: stat([
       critTerm ?? { ...key(`FEO.Term.${critStat}Half`), value: s(critStat) / 2 },
       { ...key("FEO.Term.lukHalf"), value: s("luk") / 2 },
       { ...key("FEO.Term.weaponCrit"), value: w.crit },
       ...adjust.critical
-    ]),
+    ], { key: "critical" }),
     attackSpeed: stat([...speedTerms("spd"), ...adjust.attackSpeed]),
 
     // A unit a skill leaves no Dodge has none, whatever would add to it
@@ -233,8 +247,8 @@ export function computeCombat(unit, weapon) {
       { ...key(parry ? "FEO.Term.parrySpeedDouble" : "FEO.Term.speedDouble"), value: dodgeSpeed * 2 },
       { ...abbr("luk"), value: s("luk") },
       ...adjust.dodge
-    ]),
-    critAvoid: stat([{ ...abbr("luk"), value: s("luk") }, ...adjust.critAvoid], { negative: true }),
+    ], { key: "dodge" }),
+    critAvoid: stat([{ ...abbr("luk"), value: s("luk") }, ...adjust.critAvoid], { negative: true, key: "critAvoid" }),
     staffHit: stat([
       { ...key("FEO.Term.weaponHit"), value: w.hit },
       { ...key("FEO.Term.magTimesFive"), value: s("mag") * 5 },

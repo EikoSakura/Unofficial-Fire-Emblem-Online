@@ -15,9 +15,9 @@
 import { FEO } from "../config.mjs";
 import { addQualities, classSkills, splitNames, startingRanksOf } from "./classes.mjs";
 import { abilityScore } from "./combat-stats.mjs";
-import { growthChoice, growthPickCount, growthPicks } from "./earnings.mjs";
+import { affinityRankOf } from "./optional.mjs";
 import { givenSteps, raisedRank } from "./skill-ranks.mjs";
-import { choicesOf } from "./skills.mjs";
+import { pickStates, planPick } from "./picks.mjs";
 
 /* -------------------------------------------- */
 /*  Steps                                       */
@@ -281,33 +281,34 @@ export function startsGeneric(cls, tiers = FEO.classTiers) {
 
 /**
  * @typedef SkillVariant
- * What a skill has its unit choose before the system can apply it.
- * @property {"variant"|"growths"} kind   One of several variants, or a number of growth rates
- * @property {string[]} options           What can be chosen
+ * What a skill has its unit choose before the system can apply it: one of its picks (see `picks.mjs`).
+ * @property {number} index               Which of the skill's picks
+ * @property {"variant"|"growths"} kind   A number of growth rates, or anything else
+ * @property {string} label               The heading the skill gives the pick; blank where it gives none
+ * @property {import("./picks.mjs").PickOption[]} options     What can be chosen
  * @property {string[]} picked            What is chosen
- * @property {number} count               How many are to be chosen
+ * @property {number} count               How many are to be chosen, or the points to spend on them
  * @property {boolean} open               Is something still to be chosen?
  */
 
 /**
- * What a skill has its unit choose: the variant of a skill that comes in several, or the growth rates of one
- * that raises some of the unit's choosing.
- * @param {{effects?: object[], choice?: string, automate?: boolean}} skill
- * @param {object} [options]
- * @param {string[]} [options.growths]    The growth rates in use: the keys of FEO.growths
- * @returns {SkillVariant|null}           Null for a skill with nothing to choose, or one that is run by hand
+ * What a skill has a new unit choose: each of its picks, as the variant of a skill that comes in several or
+ * the growth rates of one that raises some of the unit's choosing. The proficiency a unit starts with is not
+ * among them: the Creator has it chosen in a step of its own.
+ * @param {{effects?: object[], picks?: object[], choice?: string, automate?: boolean}} skill
+ * @param {import("./picks.mjs").PickUnit} [unit]
+ * @returns {SkillVariant[]}              None for a skill with nothing to choose, or one that is run by hand
  */
-export function skillVariant(skill, { growths = Object.keys(FEO.growths) } = {}) {
-  if ( skill.automate === false ) return null;
-  const variants = choicesOf(skill.effects);
-  if ( variants.length ) {
-    const picked = variants.filter((variant) => variant === skill.choice);
-    return { kind: "variant", options: variants, picked, count: 1, open: !picked.length };
-  }
-  const count = growthPickCount(skill.effects);
-  if ( !count ) return null;
-  const picked = growthPicks(skill.choice, growths).slice(0, count);
-  return { kind: "growths", options: growths, picked, count, open: picked.length < count };
+export function skillVariants(skill, unit = {}) {
+  return pickStates(skill, { ...unit, creating: true }).flatMap((state, index) => (state.given ? [] : [{
+    index,
+    kind: state.pick.from === "growths" ? "growths" : "variant",
+    label: state.pick.label,
+    options: state.options,
+    picked: state.picked,
+    count: state.pick.points || state.pick.count,
+    open: state.open
+  }]));
 }
 
 /**
@@ -315,16 +316,12 @@ export function skillVariant(skill, { growths = Object.keys(FEO.growths) } = {})
  * picked longest ago makes room for a new one.
  * @param {{effects?: object[], choice?: string, automate?: boolean}} skill
  * @param {string} value                  A variant, or a growth rate to take or give up
- * @param {object} [options]              As for `skillVariant`
+ * @param {number} [index]                Which of the skill's picks
+ * @param {import("./picks.mjs").PickUnit} [unit]
  * @returns {string|null}                 The skill's choice, or null when nothing changes
  */
-export function planVariant(skill, value, options = {}) {
-  const variant = skillVariant(skill, options);
-  if ( !variant?.options.includes(value) ) return null;
-  if ( variant.kind === "variant" ) return variant.picked.includes(value) ? null : value;
-  const next = variant.picked.includes(value) ? variant.picked.filter((key) => key !== value) : [...variant.picked, value];
-  while ( next.length > variant.count ) next.shift();
-  return growthChoice(next);
+export function planVariant(skill, value, index = 0, unit = {}) {
+  return planPick(skill, index, value, { ...unit, creating: true });
 }
 
 /**
@@ -574,11 +571,16 @@ export function growthBudget(unit, {
 export function planGrowth(unit, key, value, options = {}) {
   const budget = growthBudget(unit, options);
   const row = budget.rows.find((entry) => entry.key === key);
-  if ( !row || !Number.isInteger(value) || (value < row.start) || (value > row.cap) ) return null;
+  if ( !row || !Number.isInteger(value) || (value < row.start) ) return null;
   const change = value - row.value;
   if ( !change ) return null;
-  const room = budget.freeLeft + (row.mind ? budget.abilityLeft : 0);
-  if ( change > room ) return null;
+
+  // Only a rate that rises needs room under its cap and points to pay for it. One that falls is always
+  // allowed: that is how a unit with more placed than it has, as one that became a Trainee, is put right
+  if ( change > 0 ) {
+    const room = budget.freeLeft + (row.mind ? budget.abilityLeft : 0);
+    if ( (value > row.cap) || (change > room) ) return null;
+  }
   return { update: { [`system.growths.${key}`]: Math.max(value + row.shift, 0) }, record: {} };
 }
 
@@ -702,11 +704,15 @@ export function pointBudget(unit, { config = FEO.creation, checks = FEO.abilityC
 export function planCheck(unit, key, points, options = {}) {
   const check = unit.checks[key];
   const budget = pointBudget(unit, options);
-  if ( !check || !Number.isInteger(points) || (points < 0) || (points > budget.limit) ) return null;
+  if ( !check || !Number.isInteger(points) || (points < 0) ) return null;
   const change = points - check.points;
   if ( !change ) return null;
-  const save = (options.checks ?? FEO.abilityChecks)[key]?.group === "saves";
-  if ( change > budget.generalLeft + (save ? budget.savesLeft : 0) ) return null;
+
+  // As with a growth rate, only points that are added need room: those taken off always may be
+  if ( change > 0 ) {
+    const save = (options.checks ?? FEO.abilityChecks)[key]?.group === "saves";
+    if ( (points > budget.limit) || (change > budget.generalLeft + (save ? budget.savesLeft : 0)) ) return null;
+  }
   return { update: { [`system.checks.${key}.points`]: points }, record: {} };
 }
 
@@ -746,10 +752,7 @@ export function creationState({ unit, record, cls, taken = [], optional = FEO.op
   const left = bonusLeft(record, config);
   const skills = startingSkills(cls);
   const generic = startsGeneric(cls);
-  const variants = taken.flatMap((skill) => {
-    const variant = skillVariant(skill);
-    return variant ? [{ ...variant, id: skill.id, slot: skill.slot, name: skill.name }] : [];
-  });
+  const variants = taken.flatMap((skill) => skillVariants(skill).map((variant) => ({ ...variant, id: skill.id, slot: skill.slot, name: skill.name })));
   const options = cls?.system.proficiencies?.options ?? [];
   const need = cls ? (cls.system.proficiencies?.choose || options.length) : 0;
   const is = (state, note, data = {}) => ({ state, note, data });
@@ -801,7 +804,13 @@ export function creationState({ unit, record, cls, taken = [], optional = FEO.op
         if ( points.generalLeft < 0 ) return is("issue", "over", { count: -points.generalLeft });
         return open === 0 ? is("done", "placed") : is("todo", "left", { count: open });
       }
-      case "affinity": return unit.affinity ? is("done", "affinity") : is("todo", "notChosen");
+      case "affinity": {
+        if ( !unit.affinity ) return is("todo", "notChosen");
+
+        // An Affinity that gives a rank in a proficiency of the unit's choice gives none until it is chosen
+        const gives = affinityRankOf(unit, { config: optional.affinityEffects });
+        return gives && !gives.choice ? is("todo", "affinityRank") : is("done", "affinity");
+      }
       case "heartSeals": {
         // Three classes beside the one the unit starts in. A unit that has since gained more has enough
         const open = (optional.heartSeals?.picks ?? 0) - (unit.heartSeals?.length ?? 0);

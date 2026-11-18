@@ -23,6 +23,46 @@ function fateNote(fate, i18n) {
 /* -------------------------------------------- */
 
 /**
+ * The lines that tell of the chances a unit's skills gave it to take no Wound, or no Injury (see `saveHarm`
+ * in `rules/events.mjs`): one for each roll, as the skill, the roll against its chance and what came of it.
+ * @param {{skill: string, roll: number|null, chance: number, success: boolean, sure?: boolean, foils: string}[]} rolls
+ * @param {string} name       The unit's name
+ * @param {Localizer} i18n
+ * @returns {{label: string, cls: string}[]}
+ */
+export function spareLines(rolls, name, i18n) {
+  return (rolls ?? []).map((entry) => {
+    const key = `FEO.Defeat.spared.${entry.foils}${entry.sure ? "Sure" : entry.success ? "" : "Fail"}`;
+    return { label: i18n.format(key, { skill: entry.skill, roll: entry.roll ?? "", chance: entry.chance, name }), cls: entry.success ? "good" : "" };
+  });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Build the card for a unit whose skills spared it a Wound outside of a fight, or tried to.
+ * @param {string} name
+ * @param {Parameters<typeof spareLines>[0]} rolls
+ * @param {Localizer} i18n
+ * @returns {ChatCard}
+ */
+export function buildSpareCard(name, rolls, i18n) {
+  const lines = spareLines(rolls, name, i18n);
+  const spared = lines.filter((line) => line.cls);
+  const failed = lines.filter((line) => !line.cls);
+  const head = spared[0] ?? failed.shift();
+  return {
+    title: name,
+    subtitle: i18n.localize("FEO.Defeat.spared.title"),
+    outcome: head ? { label: head.label, cls: head.cls } : undefined,
+    rows: [],
+    note: [...spared.slice(1), ...failed].map((line) => line.label).join(" ") || undefined
+  };
+}
+
+/* -------------------------------------------- */
+
+/**
  * Build the card for something that happened to a unit's defeat state.
  * @param {"down"|"recovered"|"paused"|"resumed"|"tick"|"spent"|"retreated"|"dead"|"returned"} event
  * @param {object} data
@@ -31,10 +71,11 @@ function fateNote(fate, i18n) {
  * @param {number} [data.injuries]    Injuries the unit now has
  * @param {number} [data.hp]          The unit's HP
  * @param {string[]} [data.fate]      Why the unit must now choose, if it must
+ * @param {object[]} [data.spared]    What was rolled to spare it the Injury of recovering (see `spareLines`)
  * @param {Localizer} i18n
  * @returns {ChatCard}
  */
-export function buildDefeatCard(event, { name, turns = 0, injuries = 0, hp = 0, fate = [] }, i18n) {
+export function buildDefeatCard(event, { name, turns = 0, injuries = 0, hp = 0, fate = [], spared = [] }, i18n) {
   const rows = [];
   const turnsRow = () => rows.push({ label: i18n.localize("FEO.Defeat.turnsLeft"), value: turns, cls: turns ? "" : "bad" });
   let outcome;
@@ -49,8 +90,16 @@ export function buildDefeatCard(event, { name, turns = 0, injuries = 0, hp = 0, 
       break;
     case "recovered":
       outcome = { label: i18n.localize("FEO.Defeat.recovered"), cls: "good" };
-      rows.push({ label: i18n.localize("FEO.Health.injuries"), value: injuries, cls: "bad" });
-      note = i18n.format("FEO.Defeat.recoveredNote", { penalty: FEO.injuryPenalty });
+      // The roll of a skill that may spare it the Injury stands where the Injury is told of
+      for ( const entry of spared ) rows.push({
+        label: entry.skill,
+        value: entry.sure ? "" : `${entry.roll} / ${entry.chance}`,
+        cls: entry.success ? "good" : ""
+      });
+      rows.push({ label: i18n.localize("FEO.Health.injuries"), value: injuries, cls: spared.some((entry) => entry.success) ? "" : "bad" });
+      note = spared.some((entry) => entry.success)
+        ? spareLines(spared.filter((entry) => entry.success), name, i18n)[0].label
+        : i18n.format("FEO.Defeat.recoveredNote", { penalty: FEO.injuryPenalty });
       break;
     case "paused":
       outcome = { label: i18n.localize("FEO.Defeat.paused"), cls: "" };

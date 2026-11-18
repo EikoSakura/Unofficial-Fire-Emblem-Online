@@ -7,6 +7,7 @@
  * @import {Localizer} from "./exchange-context.mjs"
  */
 import { describeChange } from "./timed-context.mjs";
+import { describeSpread } from "./spread-context.mjs";
 
 /**
  * Build the chat card for a moment of a unit's turn: each skill that had its moment, the roll it made if it
@@ -54,8 +55,18 @@ export function buildSkillTurnCard(result, i18n, { name = "", moment = "turnStar
       if ( entry.cured?.length ) parts.push(i18n.format("FEO.SkillTurn.cures", {
         conditions: entry.cured.map((id) => i18n.localize(`FEO.Condition.${id}`)).join(", ")
       }));
+      // Conditions the unit was given, and those that something nullified
+      const names = (list) => list.map(({ id }) => i18n.localize(`FEO.Condition.${id}`)).join(", ");
+      const given = (entry.inflicted ?? []).filter((inflicted) => inflicted.success);
+      const warded = (entry.inflicted ?? []).filter((inflicted) => !inflicted.success);
+      if ( given.length ) parts.push(i18n.format("FEO.SkillTurn.inflicts", { conditions: names(given) }));
+      if ( warded.length ) parts.push(i18n.format("FEO.SkillTurn.nullified", { conditions: names(warded) }));
       if ( entry.remind ) parts.push(i18n.localize("FEO.SkillTurn.remind"));
-      if ( !entry.recover && !entry.remind && !entry.granted?.length && !entry.cured?.length ) parts.push(i18n.localize("FEO.SkillTurn.activates"));
+
+      // What it did to the units around, each with what it took or gained
+      const around = entry.spreadTold ? describeSpread(entry.spreadTold, i18n) : "";
+      if ( around ) parts.push(around);
+      if ( !entry.recover && !entry.remind && !entry.granted?.length && !entry.cured?.length && !entry.inflicted?.length && !around ) parts.push(i18n.localize("FEO.SkillTurn.activates"));
     }
 
     // Changes that last a while which the skill granted: one mention for the unit itself, and one for the
@@ -78,6 +89,18 @@ export function buildSkillTurnCard(result, i18n, { name = "", moment = "turnStar
   }
   for ( const entry of tracker ) {
     const parts = [];
+
+    // HP a change that lasts on the unit restored to it as its turn started
+    if ( entry.healed > 0 ) {
+      rows.push({ label: entry.skill, value: i18n.format("FEO.SkillTurn.heals", { amount: entry.healed }), cls: "good" });
+      continue;
+    }
+
+    // And damage one of them dealt to it
+    if ( entry.harmed > 0 ) {
+      rows.push({ label: entry.skill, value: i18n.format("FEO.SkillTurn.harms", { amount: entry.harmed }), cls: "bad" });
+      continue;
+    }
     if ( entry.ended ) parts.push(i18n.localize("FEO.Usage.ended"));
     if ( entry.ready ) parts.push(i18n.localize("FEO.Usage.ready"));
     if ( parts.length ) rows.push({ label: entry.skill, value: parts.join(" · "), cls: "" });

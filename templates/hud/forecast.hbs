@@ -5,10 +5,34 @@
       {{#each names as |unit|}}
       <div class="fc-name cloth" data-army="{{unit.army}}">
         <b>{{unit.name}}</b>
-        <span>{{#if unit.weaponImg}}<img src="{{unit.weaponImg}}" alt="">{{/if}}{{unit.weapon}}{{#if unit.triangleUp}}<i class="up" data-tooltip="{{localize "FEO.Exchange.triangle"}}">▲</i>{{/if}}{{#if unit.triangleDown}}<i class="dn" data-tooltip="{{localize "FEO.Exchange.triangle"}}">▼</i>{{/if}}</span>
+        <span>{{#if unit.weaponImg}}<img src="{{unit.weaponImg}}" alt="">{{/if}}{{#if unit.weaponMark}}<img class="lent-mark" src="{{unit.weaponMark}}" alt="" data-tooltip="{{unit.weaponBy}}">{{/if}}{{unit.weapon}}{{#if unit.triangleUp}}<i class="up" data-tooltip="{{unit.triangleTip}}">▲{{unit.triangleTimes}}</i>{{/if}}{{#if unit.triangleDown}}<i class="dn" data-tooltip="{{unit.triangleTip}}">▼{{unit.triangleTimes}}</i>{{/if}}</span>
       </div>
       {{/each}}
     </div>
+    {{#if choices.length}}
+    <div class="fc-choices">
+      {{#each choices as |choice|}}
+      <div class="fc-choice {{#if choice.on}}on{{/if}} {{#if choice.dim}}dim{{/if}} {{#if choice.fixed}}fixed{{/if}} {{#if choice.picks.length}}wide{{/if}}" data-item-id="{{choice.id}}">
+        <button type="button" class="tick" data-action="forecastSkill" data-tooltip="{{choice.tip}}" {{#if choice.disabled}}disabled{{/if}}>
+          <i class="box"></i><b>{{choice.name}}</b>{{#if choice.end}}<small>{{choice.end}}</small>{{/if}}
+        </button>
+        {{#each choice.picks as |pick|}}
+        <span class="fc-pick" data-pick="{{pick.id}}">
+          {{#if pick.stat}}
+          <button type="button" class="n wide" data-action="forecastStat" data-tooltip="{{localize "FEO.Choice.stat.tip"}}">{{pick.value}}</button>
+          {{else}}
+          <em>{{pick.label}}</em>
+          <button type="button" data-action="forecastStep" data-how="less" {{#if pick.none}}disabled{{/if}}>−</button>
+          <button type="button" class="n" data-action="forecastStep" data-how="all" data-tooltip="{{localize "FEO.Choice.steps.all"}} ({{pick.most}})" {{#if pick.none}}disabled{{/if}}>{{pick.value}}</button>
+          <button type="button" data-action="forecastStep" data-how="more" {{#if pick.none}}disabled{{/if}}>+</button>
+          {{/if}}
+        </span>
+        {{/each}}
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+    {{#if notes.length}}<div class="fc-notes">{{#each notes as |note|}}<span class="{{note.cls}}"{{#if note.tip}} data-tooltip="{{note.tip}}"{{/if}}>{{note.label}}</span>{{/each}}</div>{{/if}}
     <div class="fc-rows">
       {{#each rows as |row|}}
       <div class="fc-row">
@@ -23,13 +47,17 @@
         {{else}}
         {{#each row.cells as |cell|}}
         {{#if @index}}<span class="fc-mid">{{row.label}}</span>{{/if}}
-        {{#if cell.active}}
+        {{#if cell.bare}}
+        <div class="fc-cell off"><div class="n">–</div></div>
+        {{else if cell.active}}
         <div class="fc-cell {{#if cell.lead}}lead{{/if}} {{#if @index}}r{{/if}}" tabindex="0">
-          <div class="n">{{cell.value}}{{#if cell.times}}<small> × {{cell.times}}</small>{{/if}}{{#if cell.then includeZero=true}}<small> → {{cell.then}}</small>{{/if}}</div>
+
+          <div class="n">{{cell.value}}{{#if cell.more}}<small> {{cell.more}}</small>{{/if}}{{#if cell.then includeZero=true}}<small> → {{cell.then}}</small>{{/if}}</div>
           <div class="why">
             {{#each cell.lines as |line|}}<div class="{{line.cls}}"><span>{{line.label}}</span><b>{{line.value}}</b></div>{{/each}}
             <div class="sum"><span>{{localize "FEO.Hud.sum.result"}}</span><span>{{cell.result}}</span></div>
             {{#if cell.after}}<div class="pos"><span>{{cell.after.label}}</span><b>{{cell.after.value}}</b></div>{{/if}}
+            {{#each cell.strikes as |strike|}}<div class="strike"><span>{{strike.label}}{{#if strike.note}} <small>{{strike.note}}</small>{{/if}}</span><b>{{strike.value}}</b></div>{{/each}}
           </div>
         </div>
         {{else}}

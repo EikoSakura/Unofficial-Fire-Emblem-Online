@@ -67,6 +67,16 @@
 </fieldset>
 {{/if}}
 
+{{#if raisable.length}}
+<fieldset class="skill-raise">
+  <legend>{{localize "FEO.Promotion.raise"}}</legend>
+  <label><input type="radio" name="raise" value="" checked> {{localize "FEO.Promotion.raiseNone"}}</label>
+  {{#each raisable as |name|}}
+  <label><input type="radio" name="raise" value="{{name}}"> {{localize "FEO.Promotion.raiseSkill" skill=name}}</label>
+  {{/each}}
+</fieldset>
+{{/if}}
+
 <fieldset class="growths">
   <legend>{{localize "FEO.Class.card.growths"}}</legend>
   <p class="hint">{{localize "FEO.Promotion.growthHint" gain=gain expected=expected reallocate=reallocate over=capBreak}}</p>

@@ -31,10 +31,16 @@ import { FEO } from "../config.mjs";
  * @property {string} [className]
  * @property {string[]} [conditions]      The conditions it suffers from
  * @property {object[]} [skills]          Its equipped skills, for the auras they give
+ * @property {boolean} [untargetable]     Can no enemy make it the target of anything? (see `reachable`)
+ * @property {{category: string, name?: string}[]} [carried]
+ *                                        The weapons and tomes it carries and may wield, for what counts them
+ * @property {string} [summoner]          For a summoned unit: what tells the Actor of its summoner from the others
  */
 
 /**
- * @typedef {PlacedUnit & {relation: "ally"|"enemy"|null, distance: number}} Neighbour
+ * @typedef {PlacedUnit & {relation: "ally"|"enemy"|null, distance: number, seen?: boolean, sees?: boolean}} Neighbour
+ * `seen`: the unit asked about has this one in its Line of Sight; `sees`: this one has the unit asked about in
+ * its own (see `sight.mjs`). Both are left out where sight cannot be told.
  */
 
 /**
@@ -59,6 +65,9 @@ import { FEO } from "../config.mjs";
  * @property {string[]} [class]       Of any of these classes
  * @property {number} [min]           As a condition: at least this many, 1 unless `max` is given
  * @property {number} [max]           As a condition: at most this many
+ * @property {string[]} [carries]     That carry a weapon of one of these categories or groups which they may wield
+ * @property {boolean} [sees]         That have the unit they are counted around in their Line of Sight
+ * @property {boolean} [seen]         That the unit they are counted around has in its Line of Sight
  */
 
 /* -------------------------------------------- */
@@ -91,9 +100,11 @@ export function relationOf(side, other, camps = FEO.camps) {
  * @param {string} id                                               The unit asked about
  * @param {(a: PlacedUnit, b: PlacedUnit) => number|null} measure   Tiles between two units, null if that
  *                                                                  cannot be told
+ * @param {((a: PlacedUnit, b: PlacedUnit) => boolean)|null} [sight]    Does the first unit have the second in
+ *                                                                  its Line of Sight?
  * @returns {Surroundings|null}       Null for a unit that is not on the map
  */
-export function surroundings(units, id, measure) {
+export function surroundings(units, id, measure, sight = null) {
   const self = (units ?? []).find((unit) => unit.id === id);
   if ( !self ) return null;
   const others = [];
@@ -101,7 +112,7 @@ export function surroundings(units, id, measure) {
     if ( (unit === self) || unit.out || (unit.actor && (unit.actor === self.actor)) ) continue;
     const distance = measure(self, unit);
     if ( !Number.isFinite(distance) ) continue;
-    others.push({ ...unit, relation: relationOf(self.side, unit.side), distance });
+    others.push({ ...unit, relation: relationOf(self.side, unit.side), distance, ...(sight ? { seen: !!sight(self, unit), sees: !!sight(unit, self) } : {}) });
   }
   others.sort((a, b) => a.distance - b.distance);
   return { id: self.id, side: self.side, tile: self.tile ?? null, ground: self.ground ?? null, others };
@@ -137,7 +148,44 @@ export function matchesNear(other, filter) {
     const name = String(other.className ?? "").trim().toLowerCase();
     if ( !filter.class.some((entry) => entry.toLowerCase() === name) ) return false;
   }
+  if ( filter.carries?.length && !carriesAny(other.carried, filter.carries) ) return false;
+
+  // A unit that carries the mark of a skill, as one that skill was used on does
+  if ( filter.marked && !(other.marks ?? []).includes(filter.marked) ) return false;
+
+  // A unit that has the one it is counted around in its Line of Sight, or that this one has in its own. Where
+  // sight cannot be told, the LoS stat of the one that looks is counted in spaces
+  if ( filter.sees && !(other.sees ?? (other.distance <= (other.totals?.los ?? other.stats?.los ?? 0))) ) return false;
+  if ( filter.seen && !other.seen ) return false;
   return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Does a unit carry a weapon of one of the listed kinds that it may wield? A kind is a weapon category, or
+ * "magic" for every tome.
+ * @param {{category: string}[]} [carried]    The weapons and tomes it carries and may wield
+ * @param {string[]} list
+ * @returns {boolean}
+ */
+export function carriesAny(carried, list) {
+  return (carried ?? []).some((item) => {
+    return list.some((entry) => ((entry === "magic") ? !!FEO.weaponCategories[item?.category]?.magic : (item?.category === entry)));
+  });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Can a skill reach a unit near its own, to do something to it? Not one that has left the fight or has no HP,
+ * and not an enemy that cannot be targeted: what picks nobody by name still passes such a unit over.
+ * @param {Neighbour} other
+ * @returns {boolean}
+ */
+export function reachable(other) {
+  if ( !other || other.out || !((other.hp ?? 1) > 0) ) return false;
+  return !(other.untargetable && (other.relation === "enemy"));
 }
 
 /* -------------------------------------------- */
@@ -245,6 +293,89 @@ export function alliesOpposite(near, foeNear) {
   return near.others.filter((other) => {
     return (other.relation === "ally") && (other.id !== foeNear.id) && other.tile && oppositeSides(near.tile, foeNear.tile, other.tile);
   });
+}
+
+/* -------------------------------------------- */
+/*  Formations                                  */
+/* -------------------------------------------- */
+
+/**
+ * The spaces between two units on a square grid, counted along rows and columns between the nearest tiles
+ * each takes up: 1 for units side by side, 2 for units corner to corner.
+ * @param {Tile|null} a
+ * @param {Tile|null} b
+ * @returns {number|null}     Null where either has no tile
+ */
+export function tilesApart(a, b) {
+  if ( !a || !b ) return null;
+  const gap = (start1, size1, start2, size2) => Math.max(start2 - (start1 + size1 - 1), start1 - (start2 + size2 - 1), 0);
+  return gap(a.j, size(a).width, b.j, size(b).width) + gap(a.i, size(a).height, b.i, size(b).height);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Do three units stand in a triangle around a fourth? They do where they are not in one line and the middle of
+ * the fourth's space lies inside the triangle between the middles of theirs, its edges included: so three
+ * units on three sides of it do (the T of the games), and so do two on opposite sides with a third anywhere
+ * off their line, while three that all stand to one side of it do not.
+ * @param {Tile[]} corners    The three units
+ * @param {Tile} middle       The unit they stand around
+ * @returns {boolean}
+ */
+export function standAround(corners, middle) {
+  if ( (corners?.length !== 3) || corners.some((tile) => !tile) || !middle ) return false;
+  // Twice the middle of each space, so that every number is whole
+  const point = (tile) => ({ x: (2 * tile.j) + size(tile).width - 1, y: (2 * tile.i) + size(tile).height - 1 });
+  const [a, b, c] = corners.map(point);
+  const p = point(middle);
+  const cross = (o, u, v) => ((u.x - o.x) * (v.y - o.y)) - ((u.y - o.y) * (v.x - o.x));
+  if ( cross(a, b, c) === 0 ) return false;
+  const sides = [cross(a, b, p), cross(b, c, p), cross(c, a, p)];
+  return sides.every((side) => side >= 0) || sides.every((side) => side <= 0);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * @typedef FormationFilter
+ * A formation a unit makes with allies around the unit it fights.
+ * @property {string} with          The skill each of those allies has equipped
+ * @property {number} [others]      How many allies it takes; 2 unless given
+ * @property {number} [from]        Every unit of it stands at least this many spaces from the unit fought; 1
+ * @property {number} [within]      And at most this many; 2
+ */
+
+/**
+ * The allies a unit makes a formation with around the unit it fights (see `standAround`): two others that
+ * have the skill asked for equipped, each of the three no nearer to the unit fought and no further from it
+ * than the formation allows. Where several pairs would do, the pair nearest to the unit fought is taken.
+ * @param {Surroundings|null} near        What the unit has around it; its `tile` is where it fights from
+ * @param {Surroundings|null} foeNear     What its foe has around it
+ * @param {FormationFilter} filter
+ * @returns {Neighbour[]|null}    The allies, or none where the formation does not stand; null when that
+ *                                cannot be told: a unit is not on the map, or the map has no square grid
+ */
+export function formationAround(near, foeNear, filter) {
+  if ( !near?.tile || !foeNear?.tile || !filter?.with ) return null;
+  const from = filter.from ?? 1;
+  const within = filter.within ?? 2;
+  const inReach = (tile) => {
+    const apart = tilesApart(tile, foeNear.tile);
+    return (apart !== null) && (apart >= from) && (apart <= within);
+  };
+  if ( (filter.others ?? 2) !== 2 ) return [];
+  if ( !inReach(near.tile) ) return [];
+  const partners = near.others
+    .filter((other) => (other.relation === "ally") && (other.id !== foeNear.id) && other.tile && reachable(other) && inReach(other.tile))
+    .filter((other) => (other.skills ?? []).some((skill) => skill?.name === filter.with))
+    .sort((a, b) => tilesApart(a.tile, foeNear.tile) - tilesApart(b.tile, foeNear.tile));
+  for ( let first = 0; first < partners.length; first++ ) {
+    for ( let second = first + 1; second < partners.length; second++ ) {
+      if ( standAround([near.tile, partners[first].tile, partners[second].tile], foeNear.tile) ) return [partners[first], partners[second]];
+    }
+  }
+  return [];
 }
 
 /* -------------------------------------------- */

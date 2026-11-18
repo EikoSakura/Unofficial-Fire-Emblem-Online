@@ -1,6 +1,6 @@
 import { FEO } from "../config.mjs";
 import { moverOf } from "../helpers/terrain.mjs";
-import { moveCost } from "../rules/terrain.mjs";
+import { passCost } from "../rules/terrain.mjs";
 
 const { NumberField, StringField } = foundry.data.fields;
 
@@ -48,7 +48,7 @@ export default class TerrainRegionBehavior extends foundry.data.regionBehaviors.
   _getTerrainEffects(token, segment, options) {
     try {
       if ( !this.terrain || (token?.actor?.type !== "unit") ) return [];
-      const difficulty = moveCost(this.terrain, moverOf(token.actor));
+      const difficulty = passCost(this.terrain, moverOf(token.actor)).cost;
       return difficulty === 1 ? [] : [{ name: "difficulty", difficulty }];
     } catch(err) {
       console.error(err);

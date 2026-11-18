@@ -22,6 +22,7 @@
       <span class="nm">{{#if row.taken}}<i class="tk" data-tooltip="{{localize "FEO.Compendium.skills.taken"}}">{{feoIcon "check"}}</i>{{/if}}{{row.name}}</span>
       <span class="ex">{{row.effect}}</span>
       <span class="cap" data-tooltip="{{localize "FEO.Skill.capacity"}}">{{#if row.capacity}}{{localize "FEO.Compendium.skills.cap"}}<b class="num">{{row.capacity}}</b>{{/if}}</span>
+      <span class="cv">{{#if row.coverage}}<i class="sk-cover" data-state="{{row.coverage.state}}" data-tooltip-html="{{row.coverage.hint}}" aria-label="{{row.coverage.label}}"></i>{{/if}}</span>
     </button>
     {{/each}}
     {{/each}}

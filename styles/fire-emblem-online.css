@@ -1499,6 +1499,8 @@
   --feo-muted: #a0a8b8;
   --feo-good: #62c48d;
   --feo-bane: #f07a7a;
+  --feo-boon: #70b2f7;
+
   --feo-gold: #d9b662;
   --feo-gold-ink: #1b1508;
   display: grid;
@@ -1637,6 +1639,21 @@
 .feo-exchange .strikes .result { font-family: var(--feo-number); font-size: 1.5em; font-weight: 700; line-height: 1; }
 .feo-exchange .strikes .miss .result { font-family: inherit; font-size: 1em; font-style: italic; font-weight: 400; opacity: .6; }
 .feo-exchange .strikes .crit .result { color: var(--feo-gold); }
+
+/* A hit that was blocked is a beat of its own: steel blue, with what the block took off */
+.feo-exchange .strikes .block .result { color: var(--feo-boon); }
+.feo-exchange .strikes li.answer { padding: 2px 0; font-size: .92em; }
+.feo-exchange .strikes li.answer .who { flex: none; max-width: 45%; opacity: .8; }
+.feo-exchange .strikes li.answer .said { flex: 1; min-width: 0; font-weight: 600; text-align: right; }
+.feo-exchange .strikes li.answer.foiled .said { font-weight: 400; opacity: .7; }
+
+/* A fight of more rounds than one is told round by round: a thin rule with the round's name heads each */
+.feo-exchange .strikes li.round { gap: 8px; margin-top: 4px; padding: 3px 0 1px; font-size: .78em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.feo-exchange .strikes li.round:first-child { margin-top: 0; }
+.feo-exchange .strikes li.round::before, .feo-exchange .strikes li.round::after { content: ""; flex: 1; height: 1px; background: currentColor; opacity: .35; }
+.feo-exchange .tag.blocked { display: inline-flex; align-items: center; gap: 4px; background: var(--feo-boon); color: #0b1524; }
+.feo-exchange .tag.blocked i { font-size: .85em; }
+
 
 .feo-exchange .tag,
 .feo-exchange .notable .gold {
@@ -2007,6 +2024,11 @@
 /* Skills the system applies by itself */
 .feo .skill .auto-mark { display: inline-grid; place-items: center; color: var(--feo-good); font-size: 13px; }
 .feo .skill .kind.warn { color: var(--feo-warn); border-color: var(--feo-warn); }
+.feo .skill .title .count, .feo .lasting .count { display: inline-block; min-width: 1.6em; padding: 0 .4em; border-radius: 999px; font-size: .8em; font-weight: 800; text-align: center; vertical-align: middle; color: var(--feo-gold); border: 1px solid color-mix(in srgb, var(--feo-gold) 55%, transparent); }
+.feo .skill .title .count small { font-weight: 600; opacity: .75; }
+.feo .skill button.kind.pick { all: unset; font-size: 9.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--feo-faint); cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.feo .skill button.kind.pick.warn { color: var(--feo-warn); }
+.feo .skill button.kind.pick:hover, .feo .skill button.kind.pick:focus-visible { color: var(--feo-ink); }
 .feo .skill .btn.usage.on { border-color: var(--feo-gold); color: var(--feo-gold); }
 .feo .skill .btn.usage[disabled] { opacity: .5; cursor: default; }
 
@@ -2144,3 +2166,19 @@
   .feo .card.optional .opt-grid,
   .feo .blood-chart { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* What a door, a chest or a Village of the map is and holds, as the Game Master sets it */
+.feo-object-config .feo-object-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; min-height: 34px; border: 1px dashed var(--color-border-light-tertiary, #8884); border-radius: 6px; padding: 4px; }
+.feo-object-config .feo-object-items li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.feo-object-config .feo-object-items li.none { display: block; padding: 4px 6px; opacity: .65; font-style: italic; }
+.feo-object-config .feo-object-items img { width: 26px; height: 26px; border: 0; border-radius: 4px; object-fit: cover; }
+.feo-object-config .feo-object-items button { width: 24px; height: 24px; padding: 0; line-height: 1; }
+.feo-object-config textarea { width: 100%; resize: vertical; }
+
+/* ---------- Weather ---------- */
+
+.feo-weather-list { display: grid; gap: 4px; max-height: 60vh; overflow-y: auto; }
+.feo-weather-row { display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: 8px; padding: 4px 6px; border-radius: 6px; cursor: pointer; }
+.feo-weather-row:hover { background: rgba(127, 127, 127, .12); }
+.feo-weather-row span { display: grid; gap: 1px; }
+.feo-weather-row small { opacity: .75; line-height: 1.3; }

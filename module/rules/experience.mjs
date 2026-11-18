@@ -9,7 +9,7 @@ import { FEO } from "../config.mjs";
 /**
  * @typedef ExpAward
  * @property {number} amount                          Experience earned
- * @property {"kill"|"hit"|"pity"|"none"} reason      Why: the foe was defeated, damage was dealt, the unit could
+ * @property {"kill"|"hit"|"pity"|"none"|"noExp"} reason      Why: the foe was defeated, damage was dealt, the unit could
  *                                                    attack but dealt none, or it could not attack at all
  * @property {number} gap                             The unit's level minus its foe's, as the table reads it
  */
@@ -138,8 +138,10 @@ export function earnsSkillExp(name) {
 
 /**
  * Experience each side earns from an exchange.
- * A unit that defeats its foe earns kill experience; one that dealt damage earns combat experience; one that
- * could attack but dealt none earns pity experience; one that could not attack earns nothing.
+ * A unit that defeats its foe earns kill experience, whether an attack of its own did or the damage of one of
+ * its skills; one that dealt damage earns combat experience; one that could attack but dealt none earns pity
+ * experience; one that could not attack earns nothing. Defeating a foe whose skills say that it gives no
+ * experience (`rules: ["noExp"]`) earns nothing either.
  * @param {ExchangePlan} plan
  * @param {ExchangeResult} result
  * @param {{initiator?: number, defender?: number}} levels    Each unit's level
@@ -150,7 +152,10 @@ export function exchangeExp(plan, result, levels = {}) {
     const foe = other(side);
     const gap = levelGap(levels[side], levels[foe]);
     const mine = result.attacks.filter((attack) => attack.side === side);
-    if ( mine.some((attack) => attack.kill) ) return { amount: killExp(levels[side], levels[foe]), reason: "kill", gap };
+    if ( mine.some((attack) => attack.kill) || (result.slain ?? []).some((entry) => entry.by === side) ) {
+      if ( plan[foe].unit?.fx?.rules?.has?.("noExp") ) return { amount: 0, reason: "noExp", gap };
+      return { amount: killExp(levels[side], levels[foe]), reason: "kill", gap };
+    }
     if ( mine.some((attack) => attack.hit && (attack.damage > 0)) ) {
       return { amount: combatExp(levels[side], levels[foe]), reason: "hit", gap };
     }

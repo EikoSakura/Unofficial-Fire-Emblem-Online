@@ -1,22 +1,37 @@
+import { fightsWithStaff } from "../rules/staves.mjs";
 import { FEO } from "../config.mjs";
 import { gridDistance, parseRange, planExchange, resolveExchange, rollBudget } from "../rules/combat.mjs";
 import { conditionConfig } from "../rules/conditions.mjs";
-import { touchesCorner } from "../rules/positions.mjs";
-import { weaponIs } from "../rules/skills.mjs";
+import { relationOf, touchesCorner } from "../rules/positions.mjs";
+import { spendSkill } from "../rules/skill-usage.mjs";
+import { PROVOKED, armedWith, provokers } from "../rules/actions.mjs";
+import { NEUTRAL, TURNED, UNTARGETABLE, weaponIs } from "../rules/skills.mjs";
+import { isHumanWeapon } from "../rules/shifting.mjs";
 import { isStaggered, staggerInUse } from "../rules/stagger.mjs";
+import { AFFINITY_ID } from "../rules/optional.mjs";
+import { extraGo } from "./acting.mjs";
+import { cooldownsFor, saveAffinity } from "./affinity.mjs";
 import { aftermathChanges, exchangeAftermath } from "./aftermath.mjs";
 import { withReadiedArt } from "./arts.mjs";
 import { captureOutright, settleCapture, withReadiedCapture } from "./capturing.mjs";
 import { postCard, rollD100, rollFromResults } from "./chat.mjs";
 import { setConditions } from "./conditions.mjs";
+import { cutInFight } from "./cut-ins.mjs";
 import { mostEarned } from "./earnings.mjs";
 import { buildExchangeCard, buildForecast, combatantOf, exchangeChanges } from "./exchange-context.mjs";
+import { betweenOn, reachOf } from "./battle-map.mjs";
+import { bareFor, lentFor, offersOf, stillHeld, takeUp } from "./lending.mjs";
+import { onlyWaits, turnMoveOf } from "./movement.mjs";
+import { turnState } from "./phases.mjs";
 import { standingOf } from "./positions.mjs";
-import { summonerOf } from "./summon.mjs";
+import { sightFrom } from "./sight.mjs";
+import { creatureOf, heirOf as summonerOf } from "./creatures.mjs";
 import { STAGGER_SETTLED } from "./stagger.mjs";
 import { groundUnder } from "./terrain.mjs";
-import { grantTimed, setTimed } from "./timed.mjs";
-import { breakItem } from "./weapons.mjs";
+import { buildChange, splitHp } from "../rules/timed.mjs";
+import { cleanWielded } from "../rules/triangle.mjs";
+import { grantTimed, loseTemp, setTimed } from "./timed.mjs";
+import { breakItem, breakShield } from "./weapons.mjs";
 
 /**
  * @import {ExchangeChange} from "./exchange-context.mjs"
@@ -40,6 +55,8 @@ const FORECAST_TEMPLATE = `systems/${FEO.id}/templates/dialog/forecast.hbs`;
  * @returns {"player"|"enemy"|"ally"|"other"}
  */
 export function armyOf(actor, token) {
+  // A unit that a change which lasts on it has stand apart from every side, as a Charm does
+  if ( actor.system.skills?.rules?.includes(NEUTRAL) ) return "other";
   if ( actor.system.army ) return actor.system.army;
   if ( actor.hasPlayerOwner ) return "player";
   const disposition = (token ?? actor.prototypeToken)?.disposition;
@@ -52,6 +69,59 @@ export function armyOf(actor, token) {
 /* -------------------------------------------- */
 
 /**
+ * Is a unit one that another cannot make the target of an attack, a staff or a skill: one that no enemy can
+ * target for now, as a skill of its own has it, asked by one of its enemies?
+ * @param {Actor|null} actor              The unit that would target it
+ * @param {TokenDocument|null} token
+ * @param {Actor|null} target             The unit it would target
+ * @param {TokenDocument|null} [targetToken]
+ * @returns {boolean}
+ */
+export function cannotTarget(actor, token, target, targetToken = null) {
+  return !!targetBar(actor, token, target, targetToken);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Why a unit cannot make another the target of an attack, a staff or a skill, if it cannot: the other is one
+ * no enemy can target for now, the unit was turned on its own side, or it was forced to target a unit that
+ * still stands on the map and this is another of its enemies.
+ * @param {Actor|null} actor              The unit that would target it
+ * @param {TokenDocument|null} token
+ * @param {Actor|null} target             The unit it would target
+ * @param {TokenDocument|null} [targetToken]
+ * @returns {{key: string, data: object}|null}    A sentence of the language file and what goes into it
+ */
+export function targetBar(actor, token, target, targetToken = null) {
+  if ( !actor || !target ) return null;
+  const rules = (unit) => unit.system?.skills?.rules ?? [];
+  const enemies = () => relationOf(armyOf(actor, token), armyOf(target, targetToken)) === "enemy";
+  const plain = { key: "FEO.Exchange.warn.untargetable", data: {} };
+
+  // A unit that was turned on its own side targets neither its enemies nor another unit that was turned so
+  if ( rules(actor).includes(TURNED) && (rules(target).includes(TURNED) || enemies()) ) return plain;
+  if ( rules(target).includes(UNTARGETABLE) && enemies() ) return plain;
+
+  // A unit that was forced to target another makes no other enemy its target while that one stands
+  if ( rules(actor).includes(PROVOKED) && enemies() ) {
+    const forced = provokers(actor.system?.timed);
+    if ( forced.length && !forced.includes(target.uuid) ) {
+      const scene = token?.parent ?? targetToken?.parent ?? null;
+      const standing = (scene?.tokens ?? []).find((other) => {
+        return forced.includes(other.actor?.uuid) && !other.actor.system.defeat?.out && (other.actor.system.hp?.value > 0);
+      });
+      if ( standing ) {
+        return { key: "FEO.Act.provoked", data: { name: token?.name || actor.name, by: standing.name || standing.actor.name } };
+      }
+    }
+  }
+  return null;
+}
+
+/* -------------------------------------------- */
+
+/**
  * Does the Incapacitation system apply to a unit? It does for the sides listed in the configuration, while
  * the world uses it; units of other sides are simply defeated at 0 HP.
  * @param {Actor} actor
@@ -59,6 +129,8 @@ export function armyOf(actor, token) {
  * @returns {boolean}
  */
 export function incapacitates(actor, token = null) {
+  // A creature a skill made is no unit that lies down to be saved: it falls
+  if ( creatureOf(actor) ) return false;
   return FEO.defeat.enabled && FEO.defeat.armies.includes(armyOf(actor, token ?? actor.token ?? null));
 }
 
@@ -73,6 +145,9 @@ export function incapacitates(actor, token = null) {
  */
 function earns(actor, token = null) {
   if ( actor.system.atMaxLevel ) return false;
+
+  // A creature a skill made earns nothing of its own; what its skill says its maker earns is seen to apart
+  if ( creatureOf(actor) && !creatureOf(actor).keeps ) return false;
   return FEO.exp.armies.includes(armyOf(actor, token ?? actor.token ?? null));
 }
 
@@ -214,9 +289,26 @@ async function applyChange(actor, change) {
   const update = {};
   const system = actor.system;
 
-  // Damage past 0 HP is kept for a unit that can be Incapacitated
-  if ( Number.isInteger(change.hp) ) update["system.hp.value"] = incapacitates(actor) ? change.hp : Math.max(change.hp, 0);
-  for ( const [key, proficiency] of Object.entries(change.proficiencies ?? {}) ) {
+  // Damage past 0 HP is kept for a unit that can be Incapacitated. A fight counts a unit's temporary HP with
+  // its own: what it lost is taken off those first
+  let tempLost = 0;
+  if ( Number.isInteger(change.hp) ) {
+    const temp = system.hp.temp ?? 0;
+    const split = temp ? splitHp({ value: system.hp.value, max: system.hp.max, temp }, change.hp) : { value: change.hp, temp: 0 };
+    tempLost = temp - split.temp;
+    update["system.hp.value"] = incapacitates(actor) ? split.value : Math.max(split.value, 0);
+  }
+  // A unit that imitates another fought with that unit's weapon ranks, which are not its own to raise: what
+  // it earned goes to its own proficiencies of the same kind
+  let trained = change.proficiencies ?? {};
+  try {
+    const { ownProficiencies } = await import("./imitation.mjs");
+    trained = ownProficiencies(actor, trained) ?? trained;
+  } catch(err) {
+    console.error(err);
+    trained = actor.getFlag(FEO.id, "imitation") ? {} : trained;
+  }
+  for ( const [key, proficiency] of Object.entries(trained) ) {
     const { rank, wexp } = proficiency ?? {};
     if ( !(key in FEO.proficiencies) || !(rank in FEO.ranks) || !Number.isFinite(wexp) ) continue;
     update[`system.proficiencies.${key}.rank`] = rank;
@@ -333,6 +425,23 @@ async function applyChange(actor, change) {
     if ( (uses === 0) && (weapon.system.uses.max > 0) ) await breakItem(weapon);
   }
 
+  // So does another weapon or tome it carries, of which an answer in the middle of the fight spent uses
+  for ( const spent of Array.isArray(change.items) ? change.items : [] ) {
+    const item = actor.items.get(spent?.id);
+    if ( (item?.type !== "weapon") || !Number.isInteger(spent.uses) || !(item.system.uses.max > 0) ) continue;
+    const uses = Math.min(Math.max(spent.uses, 0), item.system.uses.value);
+    await item.update({ "system.uses.value": uses });
+    if ( uses === 0 ) await breakItem(item);
+  }
+
+  // So does a Shield: it is a Broken Shield from then on, and is put away
+  const shield = actor.items.get(change.shield?.id);
+  if ( (shield?.type === "gear") && shield.system.isShield && Number.isInteger(change.shield.uses) && (shield.system.uses.max > 0) ) {
+    const uses = Math.min(Math.max(change.shield.uses, 0), shield.system.uses.max);
+    await shield.update({ "system.uses.value": uses });
+    if ( uses === 0 ) await breakShield(shield);
+  }
+
   // A Laguz whose gauge ran out is back in humanoid form, with what it fights with in that form
   if ( reverted ) {
     const { equipForForm } = await import("./shifting.mjs");
@@ -345,6 +454,13 @@ async function applyChange(actor, change) {
     const skill = actor.items.get(spent?.id);
     const state = spent?.state ?? {};
     const count = (value) => Number.isInteger(value) && (value >= 0) && (value <= 99);
+    const sensible = (typeof state.active === "boolean") && count(state.cooldown) && count(state.lasting) && count(state.used);
+
+    // An Affinity its unit chooses when to use keeps where it stands on the unit, not on an Item
+    if ( (spent?.id === AFFINITY_ID) && sensible ) {
+      await saveAffinity(actor, state);
+      continue;
+    }
     if ( (skill?.type !== "skill") || !skill.system.usage?.kind ) continue;
     if ( (typeof state.active !== "boolean") || !count(state.cooldown) || !count(state.lasting) || !count(state.used) ) continue;
     await skill.update({
@@ -360,6 +476,23 @@ async function applyChange(actor, change) {
   // what it was granted. Anything that is not a sensible change is dropped
   if ( Array.isArray(change.timed) ) await setTimed(actor, change.timed);
   if ( Array.isArray(change.grants) ) await grantTimed(actor, change.grants);
+  if ( tempLost > 0 ) await loseTemp(actor, tempLost);
+
+  // The attacks made against the unit since its own turn began, for a skill that counts them across fights:
+  // kept while a battle runs, which is what has turns
+  if ( Number.isInteger(change.attacked) && (change.attacked >= 0) && (change.attacked <= 999) && game.combat?.started && actor.inCombat ) {
+    await actor.setFlag(FEO.id, "attacked", change.attacked);
+  }
+
+  // The weapon the unit attacked with, for one whose skills have a weapon take something from the one used
+  // before (see `rules/triangle.mjs`): it has attacked since it was taken in hand, which lasts until a weapon
+  // is taken in hand anew, and the unit remembers it as the last of its kind it attacked with
+  if ( change.wielded && (typeof change.wielded === "object") ) {
+    const held = actor.items.get(change.wielded.id);
+    if ( (held?.type === "weapon") && !held.getFlag(FEO.id, "swung") ) await held.setFlag(FEO.id, "swung", true);
+    const last = cleanWielded(change.wielded.last);
+    if ( last ) await actor.setFlag(FEO.id, "wielded", last);
+  }
 
   // Conditions gained, changed or ended; anything that is not a condition and a sensible number is dropped
   const conditions = {};
@@ -403,8 +536,41 @@ export async function applyChanges(changes) {
 /* -------------------------------------------- */
 
 /**
+ * Say what was blocked in a fight where it happened: "Block" floats over the unit that blocked, for everyone
+ * who has its map in view, and a block sounds like one.
+ * @param {import("../rules/combat.mjs").ExchangeResult} result
+ * @param {{initiator: Actor, defender: Actor}} actors
+ * @returns {Promise<void>}
+ */
+async function showBlocks(result, actors) {
+  const blocks = result.attacks.filter((attack) => attack.block?.success);
+  if ( !blocks.length ) return;
+  const { pop } = await import("./events.mjs");
+  for ( const attack of blocks ) {
+    const text = game.i18n.localize(attack.block.parry?.success ? "FEO.Block.parry" : "FEO.Block.label");
+    pop(actors[(attack.side === "initiator") ? "defender" : "initiator"], [{ text, tone: "block" }]);
+  }
+  const src = FEO.blocking.sound;
+  if ( !src ) return;
+
+  // The sound comes with the word, which waits for the fight's cut-ins to be over
+  const play = () => foundry.audio.AudioHelper.play({ src, volume: 0.8, autoplay: true, loop: false }, true);
+  let hold = 0;
+  try {
+    hold = (await import("./cut-ins.mjs")).cutInHold();
+  } catch(err) {
+    console.error(err);
+  }
+  if ( hold > 0 ) setTimeout(play, hold);
+  else play();
+}
+
+/* -------------------------------------------- */
+
+/**
  * Answer another user's request to save the changes from an exchange. Runs for a Game Master.
- * Only current HP, weapon uses, proficiencies, conditions, experience and gold earned, Wounds taken, the Shift
+ * Only current HP, the uses of a weapon and of a Shield, proficiencies, conditions, experience and gold earned, Wounds taken, the Shift
+
  * Gauge, the state of declared skills, a Combat Art being readied, the changes that last a while, Authority,
  * what a fight or a Gambit does to the Battalion a unit commands, whether a unit suffers from Break, who is
  * captured, held or free again, and what a fight left of a Stagger bar can be changed this way.
@@ -431,7 +597,13 @@ export async function applyExchangeQuery({ changes } = {}) {
  *                                        else is set then
  * @property {Actor} target               The unit behind the targeted token
  * @property {{initiator: string, defender: string}} names
- * @property {(distance: number) => ExchangePlan} makePlan    Plan the exchange at a distance
+ * @property {(distance: number, foiled?: object|null, options?: {better?: boolean}) => ExchangePlan} makePlan
+ *                                        Plan the exchange at a distance; `foiled` is what a skill brought to
+ *                                        nothing before the fight (see `rules/answers.mjs`), and `better` has a
+ *                                        lent weapon be the better one its skill names
+ * @property {(distance: number) => import("../rules/lending.mjs").LendOffer|null} lent
+ *                                        The weapon a skill lends the unit that it attacks with at a distance,
+ *                                        if it attacks with one (see `rules/lending.mjs`)
  * @property {number|null} measured       The distance measured between the tokens, if it could be
  * @property {number} distance            The distance to start from
  * @property {{initiator: object, defender: object}|null} ground    What each unit stands on
@@ -446,9 +618,29 @@ export async function applyExchangeQuery({ changes } = {}) {
  * @param {object} [options]
  * @param {{i: number, j: number}|null} [options.from]    A tile to attack from instead of the one the unit
  *                                        stands on, as when it is about to move there
+ * @param {{spaces: number, cost: number, passed?: string[]}|null} [options.walk]
+ *                                        The way to that tile from where the unit's turn began, and the
+ *                                        enemies moved through on it, which its movement this turn is then
+ *                                        counted by
+ * @param {{initiator: number, defender: number}|null} [options.lost]
+ *                                        The HP that way takes off the two before the fight begins, as a
+ *                                        skill may have it deal damage along it
+ * @param {{rounds: number|"fall", skill?: string}|null} [options.rounds]
+ *                                        A fight of several rounds, as a skill used as an action starts one
+ *                                        (see `rules/rounds.mjs`)
+ * @param {{skill?: string, hit?: number, share?: number, free?: boolean}|null} [options.extra]
+ *                                        One attack on another unit beside a fight, as a skill has its unit
+ *                                        make it (see `rules/spread.mjs`): it is no Action of the unit's turn
+ * @param {{tile: {i: number, j: number}, skill?: string, effects?: object[]}|null} [options.stand]
+ *                                        The unit attacked fights in the place of another, as one that stands
+ *                                        guard does (see `rules/stances.mjs`): the tile of the unit it stands
+ *                                        in for, which the fight is measured to and whose ground it is fought
+ *                                        on, and what it has for that fight alone
+ * @param {{initiator?: {skill: string, effects: object[]}, defender?: {skill: string, effects: object[]}}|null} [options.lend]
+ *                                        What a skill has either unit have for this fight alone
  * @returns {Matchup}
  */
-export function planAttack(actor, token, targetToken, { from = null } = {}) {
+export function planAttack(actor, token, targetToken, { from = null, walk = null, lost = null, rounds = null, extra = null, stand = null, lend = null } = {}) {
   const target = targetToken.actor;
   if ( target?.type !== "unit" ) return { warning: "FEO.Exchange.warn.noUnit" };
   if ( (target === actor) || (token && (targetToken.document === token)) ) return { warning: "FEO.Exchange.warn.self" };
@@ -457,10 +649,45 @@ export function planAttack(actor, token, targetToken, { from = null } = {}) {
   if ( (actor.system.shift?.mode === "gauge") && !actor.system.shift.active && !Number.isFinite(actor.system.shift.bends?.humanFight) ) {
     return { warning: "FEO.Shift.cannotInitiate" };
   }
+
+  // One a skill lets start a fight in that form does so with what a unit fights with there, and nothing else
+  if ( (actor.system.shift?.mode === "gauge") && !actor.system.shift.active && !extra?.arm ) {
+    const held = actor.system.equippedWeapon;
+    if ( held && (held.system.category !== "staff") && !isHumanWeapon(held.name) ) return { warning: "FEO.Shift.fistsOnly" };
+  }
   if ( actor.system.defeat?.state ) return { warning: "FEO.Defeat.cannotAttack" };
+
+  // Nobody starts a fight with a staff in its hand but a unit whose skill lets it, or with a staff that says
+  // anybody may; and then only against a unit next to it. Anybody answers an attack with one
+  const wielded = extra?.arm ? null : actor.system.equippedWeapon;
+  if ( (wielded?.system.category === "staff") && !wielded.system.broken ) {
+    const data = { name: token?.name || actor.name, staff: wielded.name };
+    if ( !fightsWithStaff({ effect: wielded.system.effect }, actor.system.skills?.rules) ) return { warning: "FEO.Staff.noFight", warningData: data };
+    const apart = from ? null : measureDistance(token, targetToken.document);
+    if ( (apart ?? 1) > 1 ) return { warning: "FEO.Staff.fightBeside", warningData: data };
+  }
+
+  // Nobody fights a unit that is out of the fight; one that was captured is another matter
+  if ( target.system.defeat?.out && (target.system.defeat.state !== "captured") ) return { warning: "FEO.Defeat.targetOut" };
+
+  // Nor does an enemy attack a unit that none of them can make their target for now, nor a unit that was
+  // forced to target another any enemy but that one
+  const bar = targetBar(actor, token, target, targetToken.document);
+  if ( bar ) return { warning: bar.key, warningData: bar.data };
 
   // A Staggered unit cannot act
   if ( isStaggered(actor.system.stagger) ) return { warning: "FEO.Optional.stagger.cannotAct" };
+
+  // Neither can a unit that a skill leaves nothing but Waiting, as one that has Run, nor one that has taken
+  // its Action and is only moving again
+  if ( !extra && (turnState(actor, token) === "moving") ) return { warning: "FEO.Canto.only" };
+
+  // Nor one that another unit has hold of
+  if ( actor.system.skills?.rules?.includes("gripped") ) return { warning: "FEO.Grip.cannotAct" };
+
+  // Nor does a unit attack on a go that leaves it every Action but that
+  if ( !extra && (turnState(actor, token) === "ready") && extraGo(actor)?.bars.includes("attack") ) return { warning: "FEO.Acting.noAttack" };
+  if ( !extra && onlyWaits(actor, token, { walk }) ) return { warning: "FEO.Wait.only" };
 
   const names = { initiator: token?.name || actor.name, defender: targetToken.document.name || target.name };
 
@@ -470,29 +697,91 @@ export function planAttack(actor, token, targetToken, { from = null } = {}) {
 
   // The ground under both: what each tile gives the unit on it, and how high it lies. Without a token on a
   // square grid the fight is on open, level ground
-  const footing = { initiator: groundUnder(token, from), defender: groundUnder(targetToken.document) };
+  const footing = { initiator: groundUnder(token, from), defender: groundUnder(targetToken.document, stand?.tile ?? null) };
   const ground = (footing.initiator && footing.defender) ? footing : null;
 
-  // A unit that attacks from another tile than its token stands on is asked about the ground of that tile
+  // A unit that attacks from another tile than its token stands on is asked about the ground of that tile,
+  // and stands on it for what is asked about the space it is in
   if ( from && places.initiator && footing.initiator ) {
     const { terrain, effects } = footing.initiator;
-    places.initiator = { ...places.initiator, near: { ...places.initiator.near, ground: { terrain, effects } } };
+    const near = places.initiator.near;
+    const tile = near.tile ? { ...near.tile, i: from.i, j: from.j } : near.tile;
+    places.initiator = { ...places.initiator, near: { ...near, tile, ground: { terrain, effects } } };
   }
+
+  // And whether the two have each other in their Line of Sight is told from that tile
+  if ( from && places.initiator && places.defender ) {
+    try {
+      Object.assign(places, sightFrom(places, token, targetToken.document, from));
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  // How both moved this turn: the unit that attacks by the way to the tile it attacks from, the other by what
+  // its last turn came to. Outside of a battle that cannot be judged, and what hangs on it is shown, not applied
+  const moves = { initiator: turnMoveOf(token, { walk }), defender: turnMoveOf(targetToken.document) };
+
+  // A unit in its own turn that attacks from where it stands is counted from where that turn began, whatever
+  // its token has noted
+  if ( !walk && token && (turnState(actor, token) === "ready") ) moves.initiator = reachOf(token)?.move ?? moves.initiator;
 
   // A unit that has readied a Combat Art performs it: it pays the Art's HP as the fight begins. One that has
   // readied an attempt to capture fights to capture its target
   const attacker = (unit) => withReadiedCapture(actor, token, target, targetToken.document, withReadiedArt(actor, unit));
-  const makePlan = (distance) => planExchange(
-    attacker(combatantOf(actor, names.initiator, { incapacitates: incapacitates(actor, token), place: places.initiator })),
-    combatantOf(target, names.defender, { incapacitates: incapacitates(target, targetToken.document), place: places.defender }),
-    { distance, ground }
+
+  // What the way to the fight takes off a unit's HP is gone as the fight begins
+  const hurt = (unit, amount) => (amount > 0) ? { ...unit, hp: Math.max(unit.hp - amount, 0) } : unit;
+
+  // What a skill has either unit have for this fight alone, as a change that lasts no longer than the fight
+  const lent = (given) => given?.effects?.length
+    ? [buildChange({ name: given.skill || "Stance", effects: given.effects, ends: "turnEnd" }, { skill: given.skill || "Stance", own: true })]
+    : [];
+  const lending = { initiator: lent(lend?.initiator), defender: [...lent(lend?.defender), ...lent(stand)] };
+  const more = (lending.initiator.length || lending.defender.length) ? lending : null;
+
+  // A weapon a skill lends the unit (see `rules/lending.mjs`): the one it took up, or one that is used by
+  // itself from where the weapon in its hand does not reach. One attack a skill has it make is made with
+  // what that skill says, and a fight of several rounds with the weapon in hand
+  // A further attack a skill has it make beside a fight is made with the lent weapon it took up for that fight
+  const told = !!extra && ("arm" in extra);
+  const offers = (told || rounds) ? [] : offersOf(actor);
+  const lentAt = (distance) => {
+    if ( !offers.length ) return null;
+    if ( !extra ) return lentFor(actor, distance, { offers, move: moves.initiator }) ?? bareFor(actor, offers);
+    return stillHeld(actor, offers);
+  };
+
+  // A unit that is attacked with no weapon in its hand attacks back with the one a skill lends its bare hands
+  const answering = (unit) => {
+    const offer = unit.weapon ? null : bareFor(target);
+    return offer ? armedWith(unit, offer.arm) : unit;
+  };
+  const armed = (unit, distance, better) => {
+    const offer = lentAt(distance);
+    return offer ? armedWith(unit, (better && offer.better) ? offer.better.arm : offer.arm) : unit;
+  };
+
+  // What stands between the two, for a unit whose skill lets it attack from further than its weapon reaches
+  // only where nothing does (see `weaponRange` in `rules/skills.mjs`)
+  const reaching = (actor.system.skills?.entries ?? []).some((skill) => (skill.effects ?? []).some((effect) => effect?.weaponRange?.open));
+  const here = tokenTile(token);
+  const own = tokenTile(targetToken.document);
+  const stood = (from && here) ? { i: from.i, j: from.j } : here;
+  const way = (reaching && stood && own && token?.parent)
+    ? { blocked: betweenOn(token.parent, stood, own, { but: [token, targetToken.document] }) }
+    : null;
+  const makePlan = (distance, foiled = null, { better = false } = {}) => planExchange(
+    attacker(armed(hurt(combatantOf(actor, names.initiator, { incapacitates: incapacitates(actor, token), place: places.initiator, move: moves.initiator }), lost?.initiator), distance, better)),
+    hurt(answering(combatantOf(target, names.defender, { incapacitates: incapacitates(target, targetToken.document), place: places.defender, move: moves.defender })), lost?.defender),
+    { distance, ground, foiled, rounds, extra, more, way }
   );
 
-  // Start from the measured distance, or failing that from as close as the weapon can strike
-  const here = tokenTile(token);
-  const there = tokenTile(targetToken.document);
-  const measured = (from && here && there)
-    ? Math.max(gridDistance({ ...here, i: from.i, j: from.j }, there), 1)
+  // Start from the measured distance, or failing that from as close as the weapon can strike. A unit that
+  // fights in the place of another is fought at the distance to that unit's tile
+  const there = (stand?.tile && own) ? { ...own, i: stand.tile.i, j: stand.tile.j } : own;
+  const measured = ((from || stand?.tile) && here && there)
+    ? Math.max(gridDistance(from ? { ...here, i: from.i, j: from.j } : here, there), 1)
     : measureDistance(token, targetToken.document);
   const weapon = actor.system.equippedWeapon;
   const reach = weapon ? parseRange(weapon.system.range, actor.system.statValues) : null;
@@ -500,11 +789,11 @@ export function planAttack(actor, token, targetToken, { from = null } = {}) {
 
   // A unit whose skill lets it strike a diagonal neighbour in melee fights it as if it stood next to it,
   // with a weapon that does not reach 2 tiles by itself
-  const cornered = !from && (measured === 2) && !!reach && (reach.max < 2) && !!actor.system.skills?.rules?.includes("diagonalMelee")
+  const cornered = !from && !stand?.tile && (measured === 2) && !!reach && (reach.max < 2) && !!actor.system.skills?.rules?.includes("diagonalMelee")
     && weaponIs({ name: weapon.name, category: weapon.system.category }, ["melee"])
     && touchesCorner(tokenTile(token), tokenTile(targetToken.document));
   return {
-    target, names, makePlan, measured, ground,
+    target, names, makePlan, measured, ground, lent: lentAt,
     distance: cornered ? 1 : (measured ?? Math.max(nearest ?? 1, 1))
   };
 }
@@ -522,12 +811,23 @@ export function planAttack(actor, token, targetToken, { from = null } = {}) {
  *                                        Asks the player to commit to the attack and answers with the distance
  *                                        to fight at, or with anything else to call it off. The forecast
  *                                        dialog asks unless something else is given
+ * @param {{moves?: object[], acts?: object[], steps?: object[]}} [options.told]     Filled in with what the fight leaves its unit to do: the
+ *                                        `moves` its skills have it make now that the fight is over, the goes
+ *                                        they earn it (`acts`), and the `steps` they have units take
+ * @param {{rounds: number|"fall", skill?: string, item?: string}|null} [options.rounds]
+ *                                        A fight of several rounds, as a skill used as an action starts one:
+ *                                        how many, the skill's name, and its Item, which the fight then spends
+ * @param {object|null} [options.extra]   One attack a skill used as an action has its unit make in place of a
+ *                                        fight (see `strikeOf` in `helpers/actions.mjs`): what it is made
+ *                                        with, and the skill's Item, which it then spends
+ * @param {object|null} [options.stand]   The unit attacked fights in the place of another (see `planAttack`)
+ * @param {object|null} [options.lend]    What a skill has either unit have for this fight alone
  * @returns {Promise<ChatMessage|null>}   The message that was posted, or null if no exchange took place
  */
-export async function attackTarget(actor, token, targetToken, { confirm = null } = {}) {
-  const matchup = planAttack(actor, token, targetToken);
+export async function attackTarget(actor, token, targetToken, { confirm = null, told = null, rounds = null, extra = null, stand = null, lend = null } = {}) {
+  const matchup = planAttack(actor, token, targetToken, { rounds, extra, stand, lend });
   if ( matchup.warning ) {
-    ui.notifications.warn(matchup.warning, { localize: true });
+    ui.notifications.warn(game.i18n.format(matchup.warning, matchup.warningData ?? {}));
     return null;
   }
   const { target, names, makePlan } = matchup;
@@ -537,7 +837,26 @@ export async function attackTarget(actor, token, targetToken, { confirm = null }
   if ( !Number.isFinite(distance) ) return null;
 
   // Plan again from the units as they are now, then roll it out
-  const plan = makePlan(distance);
+  let plan = makePlan(distance);
+
+  // A weapon a skill lends the unit may be bettered by a chance of another of its skills, which is rolled as
+  // the fight is started: the fight is then planned with the better weapon that skill names
+  const offer = matchup.lent?.(distance) ?? null;
+  const lentRolls = [];
+  const lentDice = [];
+  let better = false;
+  const chance = offer?.better
+    ? (plan.initiator.chances?.lend ?? []).find((proc) => (proc.skill === offer.better.skill) && (proc.betters === offer.skill))
+    : null;
+  if ( chance && !plan.initiator.blocked ) {
+    const sure = chance.chance >= 100;
+    const rolled = sure ? null : (await rollD100(1)).results[0];
+    better = sure || (rolled <= chance.chance);
+    if ( !sure ) lentDice.push(rolled);
+    lentRolls.push({ skill: chance.skill, on: "lend", by: "initiator", roll: rolled, chance: chance.chance, success: better, sure });
+    if ( better ) plan = makePlan(distance, null, { better });
+  }
+  const replan = (foiled = null) => makePlan(distance, foiled, { better });
 
   // Capturing: a target that cannot fight back is captured without a fight by a unit that stands next to it
   const attempt = plan.initiator.unit.capture;
@@ -548,13 +867,60 @@ export async function attackTarget(actor, token, targetToken, { confirm = null }
     ui.notifications.warn(`FEO.Exchange.blocked.${plan.initiator.blocked}`, { localize: true });
     return null;
   }
+
+  // A fight of several rounds is only started with a foe that can counter-attack
+  if ( rounds && !plan.rounds ) {
+    ui.notifications.warn(game.i18n.format("FEO.Round.noCounter", { skill: rounds.skill ?? "", name: names.defender }));
+    return null;
+  }
+
+  // A unit that an enemy attacks may change its weapon first, where a skill lets it: whoever acts for it is
+  // offered the weapons in its pack on their map, and the fight is planned again with the one they pick
+  // One attack a skill has its unit make is not answered, so that nothing is offered
+  try {
+    const { offerRearm } = await import("./choices.mjs");
+    if ( !extra && (await offerRearm(token, targetToken.document, plan.distance)) ) plan = replan();
+  } catch(err) {
+    console.error(err);
+  }
+  // What a skill of either unit brings to nothing before the fight: the skills its foe chose for it, and the
+  // Combat Art its foe performs. Each is rolled for, and the fight is planned again without what went
+  const answering = await import("./answers.mjs");
+  let before = { rolls: [], dice: [] };
+  try {
+    before = await answering.foilBefore(plan, (foiled) => replan(foiled));
+    plan = before.plan;
+  } catch(err) {
+    console.error(err);
+  }
+
+  // The dice of the fight are rolled at once. A fight that takes more of them than were rolled rolls on
   const { results } = await rollD100(rollBudget(plan));
   const used = [];
-  const result = resolveExchange(plan, () => {
-    const next = results[used.length];
-    used.push(next);
-    return next;
+  const next = () => {
+    if ( results[used.length] === undefined ) results[used.length] = Math.floor((CONFIG.Dice.randomUniform?.() ?? Math.random()) * 100) + 1;
+    const rolled = results[used.length];
+    used.push(rolled);
+    return rolled;
+  };
+
+  // The fight is rolled out. Where a skill lets whoever acts for a unit answer in the middle of it (dodge
+  // this hit, roll this miss again, come for an ally that would fall), the fight stops, that user is offered
+  // it on their map, and the fight is rolled out again from the same dice with what they answered
+  const { result, saver } = await answering.rollAnswered(plan, { next, reset: () => (used.length = 0) }, {
+    initiator: { token, actor },
+    defender: { token: targetToken.document, actor: target }
   });
+  if ( lentRolls.length || before.rolls.length ) result.opening = [...lentRolls, ...before.rolls, ...(result.opening ?? [])];
+  if ( told ) {
+    told.moves = result.moves ?? [];
+    told.acts = result.acts ?? [];
+    told.steps = result.steps ?? [];
+    told.refreshes = result.refreshes ?? [];
+    told.loot = result.loot ?? [];
+    told.raises = result.raises ?? [];
+    told.disarmed = result.disarmed ?? [];
+  }
 
   // What follows from the fight: experience, Wounds, a unit going down, a Shift Gauge moving. What a summoned
   // unit would earn goes to its summoner, if that one earns experience
@@ -567,7 +933,19 @@ export async function attackTarget(actor, token, targetToken, { confirm = null }
     },
     heirs: { initiator: heir(summoners.initiator), defender: heir(summoners.defender) }
   });
+  // A Wound a hit would cause may be spared by a skill of the unit that takes it
+  const spareDice = await spareWounds(aftermath, { initiator: [actor, token], defender: [target, targetToken.document] });
   const changes = aftermathChanges(exchangeChanges(plan, result), aftermath);
+
+  // The skill that started a fight of several rounds was used: its cooldown starts and a use is counted
+  // So was the skill that had its unit make one attack of the skill's own
+  // And so was the skill that lent the weapon the unit attacked with, where it counts its uses
+  const starter = (plan.rounds && rounds?.item) ? actor.items.get(rounds.item) : extra?.item ? actor.items.get(extra.item)
+    : (offer?.spends && offer.id && (plan.initiator.unit.weapon?.lent === offer.skill)) ? actor.items.get(offer.id) : null;
+  if ( (starter?.type === "skill") && starter.system.usage?.kind ) {
+    const state = spendSkill(starter.system.usage, starter.system.state, { cooldowns: cooldownsFor(actor, starter) });
+    changes.initiator.skills = [...(changes.initiator.skills ?? []).filter((entry) => entry.id !== starter.id), { id: starter.id, name: starter.name, state }];
+  }
   const inherited = Object.entries(summoners)
     .filter(([side, unit]) => unit && (aftermath[side].exp?.amount > 0))
     .map(([side, unit]) => ({ uuid: unit.uuid, exp: aftermath[side].exp.amount }));
@@ -580,6 +958,14 @@ export async function attackTarget(actor, token, targetToken, { confirm = null }
     const near = targetToken.document.parent?.tokens.get(entry.unit)?.actor;
     return near ? { uuid: near.uuid, name: entry.name, grants: entry.grants } : null;
   }).filter(Boolean);
+
+  // The skills that took effect by chance or by choice flash over their units in the order they did, before
+  // what the fight did is saved and its numbers are shown
+  try {
+    cutInFight(result, { initiator: actor, defender: target }, { started: (starter?.type === "skill") ? starter.name : "" });
+  } catch(err) {
+    console.error(err);
+  }
   const unsaved = await applyChanges([
     { uuid: actor.uuid, ...changes.initiator },
     { uuid: target.uuid, ...changes.defender },
@@ -591,9 +977,199 @@ export async function attackTarget(actor, token, targetToken, { confirm = null }
   if ( unsaved.includes(target.uuid) ) unapplied.push(names.defender);
   for ( const other of others ) if ( unsaved.includes(other.uuid) ) unapplied.push(other.name);
 
+  // A hit that was blocked says so over the unit that blocked it
+  try {
+    await showBlocks(result, { initiator: actor, defender: target });
+  } catch(err) {
+    console.error(err);
+  }
+
+  // A unit that loses HP whenever it attacks, as a change on it has it, does now that it has
+  try {
+    const { takeToll } = await import("./actions.mjs");
+    for ( const [side, unit, its] of [["initiator", actor, token], ["defender", target, targetToken.document]] ) {
+      if ( result.attacks.some((attack) => attack.side === side) ) await takeToll(unit, "attack", its);
+    }
+  } catch(err) {
+    console.error(err);
+  }
+
+  // What was answered in the fight says so over the unit that answered
+  try {
+    await answering.showAnswers(result, { initiator: actor, defender: target });
+  } catch(err) {
+    console.error(err);
+  }
+
+  // An ally outside the fight that took a hit in a unit's place takes its damage, and one that turned a hit
+  // back has its skill used; and a unit that made an attack is in no stance that lasts until it attacks
+  let warded = [];
+  try {
+    const stances = await import("./stances.mjs");
+    warded = await stances.takeWards(result, { initiator: token, defender: targetToken.document });
+    for ( const [side, its] of [["initiator", token], ["defender", targetToken.document]] ) {
+      if ( its && result.attacks.some((attack) => attack.side === side) ) await stances.settleStances(its, { attacked: true });
+    }
+  } catch(err) {
+    console.error(err);
+  }
+
+  // The ally that came for a unit moves to it and carries it off, now that the unit stands at 1 HP
+  if ( saver ) {
+    try {
+      await saver.finish();
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  // What a skill has go to the enemies around the two, now that the fight is over
+  let splashed = [];
+  try {
+    splashed = await answering.takeSplashes(result, { initiator: token, defender: targetToken.document });
+  } catch(err) {
+    console.error(err);
+  }
+
+  // And what skills do to the units around (see `rules/spread.mjs`): each unit caught gets its share through
+  // the one way damage, healing and conditions come to a unit, and shows its own number on the map
+  let spread = [];
+  const further = [];
+  try {
+    const { takeSpreads } = await import("./spread.mjs");
+    spread = await takeSpreads(result, { initiator: token, defender: targetToken.document }, { dice: further });
+  } catch(err) {
+    console.error(err);
+  }
+
+  // The lent weapon it took up is put down again: the next attack is made with the weapon in hand
+  if ( offer && !offer.auto ) {
+    try {
+      await takeUp(actor, null);
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
   const armies = { initiator: armyOf(actor, token), defender: armyOf(target, targetToken.document) };
-  return postCard(actor, buildExchangeCard(plan, result, game.i18n, { armies, unapplied, aftermath }), {
-    rolls: [rollFromResults(used)],
+  // A fight in which nothing was rolled, as one whose only attack was negated, shows no dice
+  const dice = [...lentDice, ...before.dice, ...used, ...further, ...spareDice];
+  return postCard(actor, buildExchangeCard(plan, result, game.i18n, { armies, unapplied, aftermath, splashed, spread, stood: stand?.ally ? { ally: stand.ally, skill: stand.skill ?? "" } : null }), {
+    rolls: dice.length ? [rollFromResults(dice)] : [],
     template: "exchange"
   });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The Wounds a fight would cause its units may be spared by their skills (see `saveHarm` in
+ * `rules/events.mjs`): each is rolled for, what is left stays in the aftermath, and what was rolled is noted
+ * there as `spared` for the card.
+ * @param {{initiator: object, defender: object}} aftermath     As `exchangeAftermath` returns it; changed here
+ * @param {{initiator: [Actor, TokenDocument|null], defender: [Actor, TokenDocument|null]}} units
+ * @returns {Promise<number[]>}     The dice that were rolled
+ */
+async function spareWounds(aftermath, units) {
+  const dice = [];
+  for ( const side of ["initiator", "defender"] ) {
+    const after = aftermath[side];
+    const [unit, its] = units[side];
+    if ( !(after?.wounds > 0) || !incapacitates(unit, its) ) continue;
+    try {
+      const { spareHarm } = await import("./events.mjs");
+      const saved = await spareHarm(unit, "wound", after.wounds, { token: its });
+      after.wounds = saved.left;
+      after.spared = saved.rolls;
+      dice.push(...saved.rolls.map((entry) => entry.roll).filter((roll) => Number.isFinite(roll)));
+    } catch(err) {
+      console.error(err);
+    }
+  }
+  return dice;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Have a unit make one attack on another unit beside a fight, as a skill has it (see `rules/spread.mjs`): one
+ * attack with the weapon in hand at whatever distance the two stand, with so much more or less Hit and that
+ * share of its damage, which the unit attacked does not answer and which sets off no further attack of that
+ * kind. It is rolled out and saved as a fight is. The unit earns experience for it only where it defeats the
+ * unit attacked, and that unit earns none.
+ * @param {Actor} actor                   The unit that attacks
+ * @param {TokenDocument|null} token      Its token
+ * @param {Token} targetToken             The token it attacks
+ * @param {object} [options]
+ * @param {string} [options.skill]        The skill that has it attack
+ * @param {number} [options.hit]          Added to its Hit
+ * @param {number} [options.share]        The share of its damage the attack deals
+ * @param {boolean} [options.free]        Does it cost the weapon no use?
+ * @param {object|null} [options.extra]   What else the attack is told (see `strikeOf` in `helpers/actions.mjs`):
+ *                                        the weapon it is made with, whether it activates skills, what its unit
+ *                                        has for it alone
+ * @param {boolean} [options.earns]       Does its unit earn experience for it as for any attack, and not only
+ *                                        where it defeats the unit attacked?
+ * @returns {Promise<{name: string, hit: boolean, crit: boolean, damage: number, kill: boolean, hitChance: number,
+ *   hitRoll: number|null, dice: number[]}|null>}     What came of it; null where no attack was made
+ */
+export async function strikeBeside(actor, token, targetToken, { skill = "", hit = 0, share = 1, free = false, extra = null, earns: always = false } = {}) {
+  const { item: spent, ...more } = extra ?? {};
+  const matchup = planAttack(actor, token, targetToken, { extra: { ...more, skill, hit, share, free } });
+  if ( matchup.warning ) return null;
+  const { target, names, makePlan } = matchup;
+  const plan = makePlan(matchup.measured ?? matchup.distance);
+  if ( plan.initiator.blocked || !plan.order.length ) return null;
+  const { results } = await rollD100(rollBudget(plan));
+  const used = [];
+  const next = () => {
+    if ( results[used.length] === undefined ) results[used.length] = Math.floor((CONFIG.Dice.randomUniform?.() ?? Math.random()) * 100) + 1;
+    const rolled = results[used.length];
+    used.push(rolled);
+    return rolled;
+  };
+
+  // Nobody is asked anything in the middle of it
+  const result = resolveExchange(plan, next);
+  const made = result.attacks.find((attack) => attack.side === "initiator");
+  if ( !made ) return null;
+  const kill = !!result.defender.defeated;
+  const summoner = summonerOf(actor);
+  const heir = summoner ? { name: summoner.token?.name ?? summoner.name, exp: summoner.system.exp } : null;
+  const aftermath = exchangeAftermath(plan, result, {
+    earns: { initiator: (kill || always) && (summoner ? earns(summoner) : earns(actor, token)), defender: false },
+    heirs: { initiator: heir, defender: null }
+  });
+  used.push(...await spareWounds(aftermath, { initiator: [actor, token], defender: [target, targetToken.document] }));
+  const changes = aftermathChanges(exchangeChanges(plan, result), aftermath);
+  const inherited = (summoner && (aftermath.initiator.exp?.amount > 0)) ? [{ uuid: summoner.uuid, exp: aftermath.initiator.exp.amount }] : [];
+  try {
+    cutInFight(result, { initiator: actor, defender: target });
+  } catch(err) {
+    console.error(err);
+  }
+  await applyChanges([{ uuid: actor.uuid, ...changes.initiator }, { uuid: target.uuid, ...changes.defender }, ...inherited]);
+  try {
+    await showBlocks(result, { initiator: actor, defender: target });
+  } catch(err) {
+    console.error(err);
+  }
+
+  // A unit that made an attack is in no stance that lasts until it attacks
+  try {
+    const { settleStances } = await import("./stances.mjs");
+    if ( token ) await settleStances(token, { attacked: true });
+  } catch(err) {
+    console.error(err);
+  }
+  return {
+    name: names.defender,
+    hit: !!made.hit,
+    crit: !!made.crit,
+    damage: made.hit ? Math.max(Math.min(made.hpBefore ?? made.damage, made.damage), 0) : 0,
+    kill,
+    hitChance: made.hitChance ?? 0,
+    hitRoll: made.hitRoll ?? null,
+    dice: used
+  };
 }

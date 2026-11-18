@@ -10,15 +10,16 @@ import {
 } from "../rules/battalions.mjs";
 import { breakInUse } from "../rules/breaking.mjs";
 import { promotesAt } from "../rules/classes.mjs";
+import { blockTip } from "../helpers/block-context.mjs";
 import { doublesAtOrBelow } from "../rules/combat-stats.mjs";
-import { growthPickCount, growthPicks } from "../rules/earnings.mjs";
 import { earnsSkillExp } from "../rules/experience.mjs";
-import { affinityEffectMode } from "../rules/optional.mjs";
-import { choicesOf, countsAsSkill, formsOf } from "../rules/skills.mjs";
+import { affinityCooldown, affinityEffectMode, affinityRankOf, hasCooldown } from "../rules/optional.mjs";
+import { countsAsSkill, formsOf } from "../rules/skills.mjs";
 import { staggerInUse } from "../rules/stagger.mjs";
 import { sellValue } from "../rules/progression.mjs";
 import { pointsForNext } from "../rules/supports.mjs";
 import { canWield, countedRank, repairCost, wieldLevel } from "../rules/weapons.mjs";
+import { picksOf } from "../helpers/picks.mjs";
 import { prepareUsage } from "../helpers/skill-usage-context.mjs";
 import { staffTags } from "../helpers/staff-context.mjs";
 import { timedRows } from "../helpers/timed-context.mjs";
@@ -109,7 +110,19 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
       effect: affinityEffectMode(system.affinity) ? {
         text: `FEO.Optional.affinityEffect.text.${system.affinity}`,
         mode: `FEO.Optional.affinityEffect.mode.${affinityEffectMode(system.affinity)}`
-      } : null
+      } : null,
+
+      // An Affinity that gives a rank in a proficiency of the unit's choice: what can be chosen
+      rank: affinityRankOf(system) ? {
+        text: `FEO.Optional.affinityEffect.text.${system.affinity}`,
+        options: Object.fromEntries(affinityRankOf(system).options.map((key) => [key, FEO.proficiencies[key]]))
+      } : null,
+
+      // One its unit chooses when to use: the button that switches it on, and where it stands
+      use: prepareAffinityUse(system),
+
+      // One that shortens the cooldown of a skill of the unit's choice: the skills it has equipped that have one
+      skill: prepareAffinitySkill(actor)
     } : null,
 
     forecast: prepareForecast(system, equipped, skills),
@@ -166,6 +179,37 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
  * @param {object} system
  * @returns {object}
  */
+/**
+ * The button and the note for an Affinity its unit chooses when to use, as for a skill that is.
+ * @param {object} system
+ * @returns {object|null}     Null for an Affinity that is always there
+ */
+function prepareAffinityUse(system) {
+  const way = system.affinityWay ?? null;
+  const usage = way ? prepareUsage({ usage: way.usage, state: system.affinityUse, equipped: true }) : null;
+  if ( !usage ) return null;
+  return { ...usage, action: "switchAffinity", hint: `FEO.Optional.affinityEffect.use.${way.spentBy}` };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The skills an Affinity may shorten the cooldown of, as Key does: those the unit has equipped that have one.
+ * @param {Actor} actor
+ * @returns {{text: string, options: Record<string, string>}|null}    Null for an Affinity that shortens none
+ */
+function prepareAffinitySkill(actor) {
+  const system = actor.system;
+  if ( !affinityCooldown({ affinity: system.affinity, affinitySkill: "any", glory: system.glory }) ) return null;
+  const options = {};
+  for ( const item of actor.items ) {
+    if ( (item.type === "skill") && item.system.equipped && hasCooldown(item.system) ) options[item.id] = item.name;
+  }
+  return { text: `FEO.Optional.affinityEffect.text.${system.affinity}`, options };
+}
+
+/* -------------------------------------------- */
+
 function prepareVitals(system) {
   const { value, max } = system.hp;
   const hpPct = max > 0 ? Math.min(Math.max(value / max, 0), 1) * 100 : 0;
@@ -356,6 +400,10 @@ function prepareWeapon(item, system) {
  */
 function prepareGear(item) {
   const { value, max } = item.system.uses;
+
+  // A Shield is equipped like a weapon, wears out like one, and is repaired like one
+  const shield = !!item.system.isShield;
+  const original = shield ? (item.flags?.[FEO.id]?.original ?? null) : null;
   return {
     id: item.id,
     name: item.name,
@@ -364,10 +412,17 @@ function prepareGear(item) {
     uses: value,
     max,
     dots: (max > 0) && (max <= 6) ? Array.from({ length: max }, (_, index) => index < value) : null,
-    sell: sellValue(item.system.cost, value, max),
-    spent: item.system.spent
+    sell: original ? 0 : sellValue(item.system.cost, value, max),
+    spent: item.system.spent,
+    shield,
+    equipped: shield && !!item.system.equipped,
+    wasBroken: !!original,
+    originalName: original?.name ?? null,
+    repair: original ? item.system.cost : repairCost(item.system.cost, value, max),
+    canRepair: shield && (!!original || ((max > 0) && (value < max)))
   };
 }
+
 
 /* -------------------------------------------- */
 
@@ -495,6 +550,7 @@ function prepareBattalions(items, actor) {
  */
 function prepareSkill(item, system) {
   const skill = item.system;
+  const picking = picksOf(item);
   return {
     id: item.id,
     name: item.name,
@@ -513,14 +569,14 @@ function prepareSkill(item, system) {
     // A skill the system only announces is not marked as applied by it
     automated: (skill.automate !== false) && (skill.effects ?? []).some((effect) => !effect.remind),
     check: null,
+    // What the skill had its unit pick as it was learnt: still to be picked, and whether this user may
     choice: skill.choice ?? "",
-    needsChoice: (skill.automate !== false) && !skill.choice && (choicesOf(skill.effects).length > 0),
+    needsChoice: picking.open,
+    canPick: picking.can,
 
     // The Special Qualities an equipped skill lets the unit take on and put off, each with its switch
     forms: skill.equipped && (skill.automate !== false) ? formsOf(skill.effects, system.specialQualities) : [],
 
-    // A skill that raises growth rates of its unit's picking does nothing for those not picked yet
-    needsPicks: (skill.automate !== false) && (growthPicks(skill.choice).length < growthPickCount(skill.effects))
   };
 }
 
@@ -586,7 +642,14 @@ function prepareForecast(system, equipped, skills) {
     hasStaffHit: staff,
     staffExtras: extras ? { hit: shown(extras.hit), critical: shown(extras.critical), double: shown(extras.double), passive: extras.passive } : null,
     staffAvoid: combat.staffAvoid.value,
+
+    // What it blocks with, and how likely, with the sum behind the chance
+    block: system.block ? {
+      chance: system.block.chance,
+      tip: globalThis.game?.i18n ? blockTip(system.block, game.i18n) : system.block.name
+    } : null,
     endurance: system.endurance,
+
     haste: system.haste,
     activation: system.support?.activation
   };

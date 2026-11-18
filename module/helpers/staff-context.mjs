@@ -64,7 +64,7 @@ export function reachText(cast) {
 /**
  * The rows a staff's card gains: the rolls it made to succeed or to hit an enemy, for a Heal Critical and for
  * a second cast, the HP it restored and to whom, the HP its user regained, the skills that
- * took effect with what they granted, dealt or leave for the table, and a skill that spared the staff its use.
+ * took effect with what they granted, and a skill that spared the staff its use.
  * What could not be saved is marked `unsaved` beforehand, and is then said to be applied by hand.
  * @param {StaffCast} cast
  * @param {Localizer} i18n
@@ -98,9 +98,12 @@ export function staffRows(cast, i18n, { caster = "", target = "" } = {}) {
 
   // Each cast of the staff on its one target: whether it succeeded where it may miss, whether it was a Heal
   // Critical, and the HP it restored. A second cast follows the roll that brought it
-  const casts = cast.casts?.length ? cast.casts : cast.heal ? [{ restored: cast.heal.restored }] : [];
+  const casts = cast.casts?.length ? cast.casts : (cast.heal && !cast.heal.several) ? [{ restored: cast.heal.restored }] : [];
   casts.forEach((part, index) => {
     if ( (index === 1) && cast.double ) rolled("FEO.Staff.double", cast.double, i18n.localize("FEO.Staff.doubleYes"), "good");
+
+    // A second cast made as a follow-up attack is, by the skill that lets its unit follow up with staves
+    if ( part.follow ) rows.push({ label: cast.follow || i18n.localize("FEO.Exchange.followUp"), value: i18n.localize("FEO.Round.staffFollow"), cls: "good" });
     if ( part.hit && part.offensive ) struck(part.hit, target);
     else if ( part.hit ) aimed(part.hit, target || ((cast.patient === "self") ? caster : ""));
     if ( part.hit && !part.hit.success ) return;
@@ -125,6 +128,18 @@ export function staffRows(cast, i18n, { caster = "", target = "" } = {}) {
     if ( unit.roll === null ) continue;
     rolled("FEO.Staff.hit", unit, i18n.format(unit.success ? "FEO.Staff.reaches" : "FEO.Staff.misses", { name: unit.name }), unit.success ? "" : "bad");
   }
+  // And what each ally it reached regained, with the roll for a Heal Critical where one was made
+  (cast.units ?? []).filter((part) => part.landed).forEach((part, index) => {
+    if ( part.critical ) {
+      const key = part.critical.success ? "FEO.Staff.criticalYes" : "FEO.Staff.criticalNo";
+      rolled("FEO.Staff.critical", part.critical, i18n.format(key, { amount: part.amount }), part.critical.success ? "good" : "muted");
+    }
+    rows.push({
+      label: i18n.localize("FEO.Chat.restored"),
+      value: i18n.format(part.unsaved ? "FEO.Staff.healedUnsaved" : "FEO.Staff.healed", { name: part.name, amount: part.restored }) + (index ? "" : by(cast.heal?.skills)),
+      cls: "good"
+    });
+  });
   if ( cast.aim?.each && (cast.aim.rate < 100) ) rows.push({
     label: i18n.localize("FEO.Staff.hit"),
     value: i18n.format("FEO.Staff.rollEach", { rate: cast.aim.rate }),
@@ -147,14 +162,6 @@ export function staffRows(cast, i18n, { caster = "", target = "" } = {}) {
       const { what, lasts } = describeChange(granted.change, i18n);
       const key = (granted.to === "self") ? "FEO.SkillTurn.grantSelf" : granted.unsaved ? "FEO.SkillTurn.grantUnsaved" : "FEO.SkillTurn.grants";
       parts.push(i18n.format(key, { names: granted.name, what, lasts }));
-    }
-    const harm = moment.harm;
-    if ( harm && (harm.units.length === 1) && !harm.unsaved ) {
-      parts.push(i18n.format("FEO.Staff.harm", { name: harm.units[0].name, amount: harm.amount }));
-    }
-    else if ( harm ) {
-      const names = harm.units.map((unit) => unit.name).join(", ");
-      parts.push(i18n.format(names ? "FEO.Staff.harmNamed" : "FEO.Staff.harmByHand", { names, amount: harm.amount, within: harm.within, name: target }));
     }
     if ( parts.length ) rows.push({ label: moment.skill, value: parts.join(" · "), cls: failed ? "muted" : "" });
   }

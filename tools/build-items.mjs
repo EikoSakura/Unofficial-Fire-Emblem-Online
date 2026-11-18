@@ -17,10 +17,16 @@
  *   Uses "-", "N/A", "Infinite"   no limit, stored as 0 of 0
  *   Cost "600.0"           600; "N/A" is 0
  *
+ * A Shield (an item of the "Shields" section) has what its Effect says of blocking read into fields: its Block
+ * chance and what DEX adds to it, what it blocks and by how much, the Weight it adds as Attack Speed is worked
+ * out, the uses a block costs it, and its chance to parry (see module/rules/blocking.mjs). What else its Effect
+ * says stays in the text, and is listed in the report.
+ *
  * An item's image comes from assets/icons/items when a file there is named after it (see the README in
  * assets/icons), and otherwise from the icons that ship with Foundry.
  */
 
+import { readShield } from "../module/rules/blocking.mjs";
 import { readWorkbook } from "./lib/xlsx.mjs";
 import {
   REFERENCE_SHEET, Report, USAGE, findFoundry, flag, isBlank, loadFoundry, makeFolder, manifest, oneLine,
@@ -146,6 +152,27 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
     report.count("Left as text", "healing that is not a plain number of HP for the user", name);
   }
 
+  // A Shield: what its Effect says of blocking, read into fields. What it says beyond that stays text
+  let shield = null;
+  if ( /^shields$/i.test(section.name) ) {
+    shield = readShield(effect);
+    if ( !shield ) problems.push(`${where}: is listed among the Shields, but its Effect names no chance to block`);
+    else {
+      const summary = shield.blocks.map((rule) => {
+        const about = [rule.kind, rule.range, rule.element, rule.notElement ? `not ${rule.notElement}` : "", rule.from ? `from ${rule.from}` : "",
+          rule.weapon, rule.effective ? "effective" : ""].filter(Boolean).join(" ");
+        const amount = rule.negate ? "all" : (rule.to !== undefined) ? `to ${rule.to}` : (rule.percent !== undefined) ? `${rule.percent}%` : rule.reduce;
+        return `${about} ${amount}`;
+      }).join("; ");
+      report.add("Shields", `${name}: ${shield.chance}${shield.dexDiv ? ` + DEX/${shield.dexDiv}` : ""}; ${summary}; Weight ${shield.weight}`
+        + `${shield.wearPhysical > 1 ? `; ${shield.wearPhysical} uses for a physical block` : ""}${shield.parry ? `; parry ${shield.parry.chance} + DEX/${shield.parry.dexDiv}` : ""}`);
+
+      // What the Effect says beyond blocking, which the table still applies by hand
+      const extra = /(?:when blocking|grants |cannot be forcibly|reflects|negates effectivity|prevents the death|unit gains|chance to damage themselves|to enemy when blocking)[^.]*\./i.exec(effect);
+      if ( extra ) report.count("Left as text", "what a Shield does beyond blocking", name);
+    }
+  }
+
   section.count++;
   items.push({
     row, name, section,
@@ -155,9 +182,11 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
       cost: cost ?? 0,
       equip,
       restore,
+      ...(shield ? { shield: { ...shield, parry: shield.parry ?? { chance: 0, dexDiv: 0, uses: 0 } } } : {}),
       description: ""
     }
   });
+
 }
 
 /* -------------------------------------------- */

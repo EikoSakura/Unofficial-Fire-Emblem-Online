@@ -155,6 +155,17 @@ FEO.weaponCategories = {
  */
 FEO.animaProficiencies = ["fire", "thunder", "wind", "water", "earth"];
 
+/**
+ * The three weapon types Magic falls into for a skill that is for one weapon type, as Weapon Focus is: each
+ * with the words `weaponIs` knows it by. The Reference Sheet names kinds the system has no weapons for yet
+ * (Astral, Scrolls, Magicite, Arcanima, Chaos); they are listed so that they count once it has.
+ */
+FEO.magicTypes = {
+  anima: { label: "FEO.WeaponType.anima", kinds: ["anima"] },
+  darkLight: { label: "FEO.WeaponType.darkLight", kinds: ["dark", "light", "astral"] },
+  scrolls: { label: "FEO.WeaponType.scrolls", kinds: ["scroll", "magicite", "arcanima", "chaos"] }
+};
+
 /** The stat a weapon adds to its Might when dealing damage. */
 FEO.damageStats = {
   str: "FEO.Stat.str.abbr",
@@ -403,6 +414,11 @@ FEO.categoryIcons = {
   taguel: "claw", monster: "claw"
 };
 
+/**
+ * Map Affinity: what a unit adds to its Hit and Dodge on a map whose Affinity is the same as its own.
+ */
+FEO.mapAffinity = { hit: 5, dodge: 5 };
+
 /** The icon drawn for each affinity. */
 FEO.affinityIcons = {
   fire: "flame", thunder: "bolt", wind: "wind", water: "drop", dark: "moon", light: "sun",
@@ -449,23 +465,20 @@ FEO.skillSlots = 4;
 FEO.skillUse = { cooldownExtra: 1 };
 
 /**
- * Summoning, as the Summoner and Phantom of the Class Sheet give it (see `module/rules/summon.mjs`).
- *
- * A unit with `skill` puts a unit of `class` on a free tile next to it. It may have `limit` of them on the map
- * at once; `more.skill` adds one, and one more for each of `more.levels` its own level has reached.
- *
- * What is summoned is a unit of its own, which keeps to its summoner's level and hands it the experience of
- * its fights. It is made with no growth rates; `growth` is what its player then has to assign, and where none
- * of it may go. It fights with one of `categories`, and each time it is summoned it is handed one weapon of
- * that type, drawn with even odds from the `draws` of the last of `bands` its level has reached. `weapons` names
- * each draw by weapon type; a draw without a weapon of the Phantom's type is left out.
+ * Creatures that skills bring onto the map (see `module/rules/creatures.mjs`): how long whoever uses such a
+ * skill has for what it has picked first, in milliseconds; how long the flash lasts in which a creature
+ * appears, in milliseconds, 0 for none; and the step by which the growth rates of one that grows are assigned.
+ */
+FEO.creatures = { promptTime: 60000, flash: 450, growthStep: 5 };
+
+/**
+ * The weapon a summoned unit draws for its level, as the Phantom of the Class Sheet has it (see
+ * `module/rules/summon.mjs`). A creature whose skill has its weapon drawn by level (`weapon: { draw: "level" }`,
+ * see `module/rules/creatures.mjs`) fights with one of `categories`, and each time it is made it is handed one
+ * weapon of that type, drawn with even odds from the `draws` of the last of `bands` its level has reached.
+ * `weapons` names each draw by weapon type; a draw without a weapon of its type is left out.
  */
 FEO.summon = {
-  skill: "Summon",
-  class: "Phantom",
-  limit: 1,
-  more: { skill: "Multi-Phantom", levels: [26, 31] },
-  growth: { points: 200, barred: ["hp", "def", "res"] },
   categories: ["sword", "lance", "axe"],
   weapons: {
     bronze: { sword: "Bronze Sword", lance: "Bronze Lance", axe: "Bronze Axe" },
@@ -533,6 +546,195 @@ FEO.backfire = { base: 31, stat: "luk", condition: "bedevil" };
  */
 FEO.sacredWeapons = { blessed: "\\bbless(ed|ing)\\b", nonBeorc: ["laguz", "manakete", "taguel"] };
 
+/** Weapons that are told apart by their name alone: what a monster's Eye weapons are called. */
+FEO.namedWeapons = { eye: "\\beyes?\\b" };
+
+/**
+ * What a Special Quality builds into its unit: the skill of that name is given to a unit that has the quality,
+ * and taken off again when the quality goes. It is listed among the skills for reference and takes no slot.
+ */
+FEO.qualitySkills = {
+  Armored: "Rampart", Bandit: ["Greed", "Pillage"], Beast: "Rouse", Laguz: "Gregarious", Mounted: "Canto+", Flying: "Canto+", Ballistician: "Canto+"
+};
+
+/**
+ * Canto+, as the rulebook has it for Mounted, Flying and Ballistician units: the Actions after which the unit
+ * may move the rest of its movement (see `rules/canto.mjs`), and the skills used as an Action that it does not
+ * follow. What "gains the effect of Canto+" without being the skill of that name reads it from here.
+ */
+FEO.cantoPlus = {
+  after: ["attack", "item", "trade", "rescue", "refresh", "staff", "skill", "shift", "object", "visit", "arrive", "seize"],
+  except: ["Hold", "Bastion"]
+};
+
+/**
+ * Shove, the Action every unit has: it pushes a unit next to it `spaces` on, unless that unit's Weight is
+ * above its own by `margin` or more (see `module/rules/forced.mjs`).
+ */
+FEO.shove = { margin: 3, spaces: 1 };
+
+/**
+ * Rescue, the Action every unit has: it picks up an ally next to it whose Weight is no more than its own, and
+ * carries it (see `module/rules/rescue.mjs`). While it does, its stats are changed by the shares in `carry`;
+ * a unit that carries a captive is slowed in the same way. A unit with a Special Quality in `barred` is never
+ * picked up. `fade` is how long the token of a unit that is picked up takes to leave the map, in
+ * milliseconds, and `badge` how large the portrait of a unit that is carried is drawn on its carrier's token,
+ * as a share of a tile, with the colours of its ring for an ally and for a captive.
+ */
+FEO.rescue = {
+  carry: { spd: -50, dex: -50 },
+  barred: ["Ballistician"],
+  fade: 250,
+  badge: { size: 0.42, ally: 0x8FC7FF, captive: 0xE0705F }
+};
+
+/**
+ * Stealing and loot (see `module/rules/stealing.mjs`). `gold` is what a unit that steals gold from a foe
+ * takes where that foe carries none of its own; the world's setting of the same name stands in for it.
+ * `discountMost` is the most the discounts of a unit's skills and gear take off a price together, in percent.
+ * `bullion` is the item a skill that gives a Bullion gives, by its name on the Items tab. `ask` is how long,
+ * in milliseconds, the Game Master is given to pick the item a skill takes from a fallen foe, and `pickTime`
+ * how long the list of an enemy's pack stays open for a unit that Steals.
+ */
+FEO.stealing = { gold: 50, discountMost: 100, bullion: "Bullion", ask: 30000, pickTime: 60000 };
+
+/**
+ * Trading (see `module/rules/trading.mjs`). `pickTime` is how long, in milliseconds, the list of the two packs
+ * stays open for a unit that Trades before it closes by itself.
+ */
+FEO.trading = { pickTime: 120000 };
+
+/**
+ * The things that stand on a map and that a unit can act on (see `module/rules/objects.mjs`): doors, chests
+ * and Villages. `doors` are the kinds of door of the table in The Map, each with the HP it is broken down
+ * through. `shut` is the terrain a shut door makes of its tile, and `standing` the one a Village that stands
+ * does. `tints` are the colours each is drawn in.
+ */
+FEO.objects = {
+  kinds: {
+    door: { label: "FEO.Objects.kind.door", icon: "lock" },
+    chest: { label: "FEO.Objects.kind.chest", icon: "chest" },
+    village: { label: "FEO.Objects.kind.village", icon: "house" },
+
+    // A mine or a trap of the Items tab, which is no thing a unit acts on: it lies hidden on its tile until
+    // it is sprung, and is kept apart from the others (see rules/traps.mjs)
+    trap: { label: "FEO.Objects.kind.trap", icon: "burst" }
+  },
+  doors: {
+    wooden: { label: "FEO.Objects.door.wooden", hp: 25 },
+    reinforcedWooden: { label: "FEO.Objects.door.reinforcedWooden", hp: 40 },
+    iron: { label: "FEO.Objects.door.iron", hp: 50 },
+    reinforcedIron: { label: "FEO.Objects.door.reinforcedIron", hp: 65 },
+    portcullis: { label: "FEO.Objects.door.portcullis", hp: 80 },
+    castle: { label: "FEO.Objects.door.castle", hp: 100 }
+  },
+  shut: "wall",
+  standing: "house",
+  tints: { door: 0xC9A66B, chest: 0xF2C14E, village: 0xE08A5A, trap: 0xE05A5A, spent: 0x8B8F9C }
+};
+
+/**
+ * Moving a unit against its will: how long, in milliseconds, the map waits for the owner of a unit to pick a
+ * tile for a step a skill says it "may" take once a fight is over, before it passes.
+ */
+FEO.forced = { promptTime: 30000 };
+
+/**
+ * Parity, the skill that cancels what terrain, supports, weapons, equipment and skills do in a fight: the kinds
+ * of weapon whose effective damage comes with the kind and is not cancelled.
+ */
+FEO.parity = { inherent: ["bow", "crossbow", "bolt", "wind"] };
+
+/**
+ * What a unit chooses before a fight: how long, in milliseconds, the map waits for the owner of a unit that is
+ * attacked to pick another weapon, where a skill lets it, before the fight goes on with the one in hand.
+ */
+FEO.choices = { promptTime: 20000 };
+
+/**
+ * Answers in the middle of a fight (see `rules/answers.mjs`): how long, in milliseconds, a fight waits for the
+ * owner of a unit to take or leave what its skill offers, before it goes on as if it was left; whether the
+ * units no player owns answer by themselves (the world setting "gmAnswers" sets it); and the share of the HP it
+ * has left, in percent, that a hit must take for such a unit to keep it off or lessen it by itself.
+ */
+FEO.answers = { promptTime: 15000, alone: { enabled: true, share: 25 } };
+
+/**
+ * The rounds of a fight (see `rules/rounds.mjs`): the most a fight goes on for, whatever has it go on, and for
+ * how many of them the dice are rolled before the fight is worked out (the rest are rolled as they are needed).
+ */
+FEO.rounds = { most: 50, rolled: 5 };
+
+/**
+ * What a staff does to its target, as a change that lasts on it (see `rules/timed.mjs`): a skill that inflicts
+ * "the effect of" a staff grants that change, and so can the staff itself. Charm: its target becomes a neutral
+ * unit for 3 of its turns, which attacks neither allies nor foes.
+ */
+FEO.staffChanges = {
+  charm: { name: "Charm", effects: [{ rules: ["neutral", "noCombat"] }], ends: "turnEnd", turns: 3, next: true, now: true }
+};
+
+/**
+ * What the staves of the Reference Sheet do beyond what their Effect is read for word by word (healing, healing
+ * over turns, curing, conditions, damage, moving a unit: see `rules/staves.mjs`), by the name the sheet gives
+ * them. Each part is one the system applies by itself:
+ *
+ *   change     a change that lasts on the unit the staff is used on, in the notation of a skill's `grant`
+ *              (see `rules/timed.mjs`); a name of `FEO.staffChanges` for one that is written there
+ *   cure       "all": the unit is cured of every condition
+ *   clears     the changes that lower its stats, left on it by its enemies, are taken off it
+ *   halves     its HP are halved, rounded down; `killAt`: with no more HP than this it is killed
+ *   slays      it is killed outright if it has one of these Special Qualities, and nothing happens to any other
+ *   drain      the share of the damage dealt that heals the user, in percent
+ *   splash     the share of the damage taken that the user's enemies `within` so many tiles of the target take
+ *   steals     the user takes one weapon or item out of its pack
+ *   again      it is given another go this turn, with the movement named: at once if it has acted, and else
+ *              once it has
+ *   repairs    one weapon or Shield of its pack regains this share of its uses; "endless" takes its uses away
+ *   unlocks    it opens a door or a chest within the staff's reach, in place of being used on a unit
+ *   revives    it brings an ally that has fallen back, at full HP, next to its user, with its turn over
+ *   text       what it does has no mechanic yet: it stays on the staff's card. With `on: "nobody"` it is
+ *              used on no unit either
+ */
+FEO.staves = {
+  Speed: { change: { effects: [{ stats: { spd: 3 } }], ends: "turnStart", clock: "giver" } },
+  Strength: { change: { effects: [{ stats: { str: 3, mag: 3 } }], ends: "turnStart", clock: "giver" } },
+  Haste: { change: { effects: [{ stats: { spd: 8, mov: 2 } }], ends: "turnStart", clock: "giver" } },
+  Barrier: { change: { effects: [{ stats: { res: 1 } }], ends: "turnStart", stacks: 7, fades: true } },
+  Ensorcel: { change: { effects: [{ stats: { mag: 1 } }], ends: "turnStart", stacks: 7, fades: true } },
+  Defense: { change: { effects: [{ takenPercent: -50 }], ends: "turnStart", clock: "giver" } },
+  Crest: { change: { effects: [{ combat: { activation: 15 } }], ends: "turnEnd", turns: 2 } },
+  Empower: { change: { effects: [{ stats: { str: 3, mag: 3, dex: 3, spd: 3, luk: 3, def: 3, res: 3 } }], ends: "phaseEnd" } },
+  Enfeeble: { change: { effects: [{ stats: { str: -3, mag: -3, dex: -3, spd: -3, luk: -3, def: -3, res: -3 } }], ends: "phaseEnd" } },
+  Panic: { change: { effects: [{ bonuses: { times: -1 } }], ends: "phaseEnd" } },
+  Freeze: { change: { effects: [{ rules: ["held"], combat: { dodge: -20 } }], ends: "turnStart", clock: "giver" } },
+  Disarm: { change: { effects: [{ rules: ["noCounter"] }], ends: "turnEnd", turns: 3 } },
+  Blind: { change: { effects: [{ combatTimes: { hit: 0.5 } }], ends: "turnStart", clock: "giver" } },
+  Obscure: { change: { effects: [{ rules: ["untargetable"] }], ends: "turnStart", clock: "giver" } },
+  Aid: { text: true },
+  Charm: { change: "charm" },
+  Kia: { cure: "all", change: { effects: [{ nullify: 100 }], ends: "map" } },
+  "Ashera Staff": { change: { effects: [{ stats: { def: 5 } }], ends: "turnStart", clock: "giver" } },
+  Clear: { clears: true },
+  Hex: { halves: { killAt: 1 } },
+  Expel: { slays: ["Terror"] },
+  Absorb: { drain: 50 },
+  Agony: { splash: { within: 1, percent: 50 } },
+  Thief: { steals: true },
+  Again: { again: { mov: "none" } },
+  Anew: { again: { mov: "full" } },
+  Repair: { repairs: 0.5, spares: ["Repair", "Hammerne", "Helarn"] },
+  Hammerne: { repairs: 1, spares: ["Repair", "Hammerne", "Helarn"] },
+  Helarn: { repairs: "endless", spares: ["Repair", "Hammerne", "Helarn"] },
+  Unlock: { unlocks: ["door", "chest"] },
+  Valkyria: { revives: true },
+  Illume: { text: true, on: "nobody" },
+  Watch: { text: true, on: "nobody" }
+};
+
+/** Holding a unit, as Death Grip does: how near the two must stand for the hold to last, in tiles. */
+FEO.grip = { reach: 1 };
+
 /** A unit that dodges every hit that would be fatal to it: the most the Hit of such an attack can be. */
 FEO.fatalDodge = { hitCap: 99 };
 
@@ -598,6 +800,11 @@ FEO.activationStats = {
  *
  * `aliases` are other names a weapon's Effect may use for the condition, and `combatOnly` marks a condition
  * that only lasts for the exchange it is inflicted in and is never kept on the unit.
+ *
+ * `around` is what a condition does to the allies of the unit that suffers it while they stand within
+ * `within` spaces of it: `stats` they lose, and a `tick` of their own maximum HP they take once in each of
+ * their turns, as it starts where they stand that near, or else as it ends. `name` is what it goes by among
+ * their numbers.
  */
 FEO.conditions = {
   stun: { img: "icons/svg/unconscious.svg", turns: 1, noMove: true, noAct: true, noCounter: true, noDodge: true },
@@ -690,6 +897,13 @@ FEO.conditions = {
   },
   silence: { img: "icons/svg/silenced.svg", turns: 4, blocks: { magic: true, categories: ["staff"] } },
   berserk: { img: "icons/svg/explosion.svg", turns: 3, limits: true },
+  malaise: {
+    img: "icons/svg/aura.svg",
+    turns: 3,
+    stats: { dex: -4, spd: -4 },
+    tick: { percent: 10, round: "down" },
+    around: { name: "Malaise", within: 3, stats: { dex: -2, spd: -2 }, tick: { percent: 10, round: "down" } }
+  },
   petrification: {
     img: "icons/svg/statue.svg",
     turns: 5,
@@ -1005,9 +1219,10 @@ FEO.earnings = {
 /**
  * The Incapacitation system of the Death tab.
  *
- * `enabled` follows the world setting of the same name. With it off nothing happens at 0 HP by itself.
+ * `enabled` follows the world setting of the same name. With it off every unit is simply defeated at 0 HP.
  * `armies` lists the sides whose units go down and choose their fate; a unit of any other side is simply
- * defeated at 0 HP.
+ * defeated at 0 HP. A unit that is dead or has retreated leaves the map, its token fading over `fade`
+ * milliseconds.
  * A single hit of maximum HP ÷ `woundDivisor` or more causes a Wound.
  * A unit brought to 0 HP is Incapacitated for the higher of the `resilience.checks` ÷ `resilience.divisor`
  * turns, less `perGraveWound` for each Grave Wound. The same number is taken off damage past 0 HP.
@@ -1034,7 +1249,8 @@ FEO.defeat = {
     injuries: { dc: 70, perCount: 5, exp: 10 }
   },
   states: ["incapacitated", "retreated", "dead", "captured"],
-  status: { id: "incapacitated", img: "icons/svg/falling.svg" }
+  status: { id: "incapacitated", img: "icons/svg/falling.svg" },
+  fade: 600
 };
 
 /* -------------------------------------------- */
@@ -1042,7 +1258,48 @@ FEO.defeat = {
 /* -------------------------------------------- */
 
 /**
+ * Shield Block (see `rules/blocking.mjs`). `broken` is what a Shield turns into when it runs out of uses, as
+ * the Items tab of the Reference Sheet words the Broken Shield; it never wears out, and remembers what it was
+ * so that it can be repaired for its price. `sound` is played when a hit is blocked.
+ */
+FEO.blocking = {
+  broken: {
+    name: "Broken Shield",
+    effect: "Has a 15% chance to block physical attacks, reducing them by 1. Adds 5 Weight during Attack Speed calculation."
+  },
+  sound: "sounds/doors/metal/test.ogg"
+};
+
+/* -------------------------------------------- */
+
+/**
+ * Skill cut-ins (see `rules/cut-ins.mjs`): as a skill takes effect its icon and name flash over its unit.
+ * `speeds` is how long one stays, in milliseconds, by what a user asks for; `most` is how many may wait their
+ * turn before those waiting are shown together, and `names` how many skills one of them names before it only
+ * counts the rest. `sounds` are the sounds that come with Foundry which a world may pick from, `sound` the one
+ * it has unless it picks, and `volume` how loud it is played beside the interface's other sounds. `icon` is
+ * shown for a skill that has none.
+ */
+FEO.cutIns = {
+  speeds: { fast: 320, normal: 560 },
+  speed: "normal",
+  most: 3,
+  names: 3,
+  sounds: {
+    spark: "sounds/doors/futuristic/test-forcefield.ogg",
+    magic: "sounds/doors/magic/test.ogg",
+    chime: "sounds/notify.wav",
+    hit: "sounds/combat/epic-turn-1hit.ogg",
+    lock: "sounds/lock.wav"
+  },
+  sound: "spark",
+  volume: 0.6,
+  icon: "icons/svg/aura.svg"
+};
+
+/**
  * What becomes of a weapon that runs out of uses, and what repairs cost.
+
  *
  * `rankCheck` stops a unit from equipping a weapon above its proficiency rank outside Edit mode.
  * `unequipOnBreak` follows the note on the weapon reference sheet; the Book of Stipulations instead lets a
@@ -1267,8 +1524,26 @@ FEO.optionalGrowths = {
  * - Wind, Bone and Beast keep what a dodge gives them until their unit's next turn starts.
  * - What Dark and Light put on a foe lasts through the foe's next turn, and counts at once in the same fight.
  * - Thorn's 1d2 is 1 damage, and 1 more half of the time.
- * - Sinew and Staff are announced when they take place; Anima and Shield are listed in a fight as effects to
- *   check by hand.
+ * - Sinew counts the hits its unit takes in fights it did not start, and restores that much HP as its next
+ *   turn starts. Staff heals one ally next to its unit, picked by a die, for each hit that deals damage.
+ *   Shield adds to the Block chance of a Shield and to what its blocks take off (see `blocking.mjs`).
+ * - Avian is a move of one space after any Action, onto any tile next to its unit that it can stand on.
+ *
+ * `usage` holds the Affinities their unit chooses when to use, as a skill says how it is used (see
+ * `module/rules/skill-usage.mjs`). Each is switched on from the unit's sheet or the Battle HUD, and its state is
+ * kept on the unit. `spentBy` says what spends it: a "fight" its declared effect had a say in, as Anima; a
+ * "move" that made use of it, as Wood (a move over terrain that would have cost more, or a turn ended on a
+ * tile that takes something off its unit) and Breath (an attack from a tile only the extra space reached); or a
+ * "shove" that needed it, as Muscle. One that is switched on and not used by the end of its unit's turn is
+ * switched off again, and has no cooldown.
+ *
+ * `activationExp` is the experience an Affinity gives its unit each time one of that unit's own Skills rolls
+ * to activate and does, by what the Skill divides its stat by. `cooldown` is what an Affinity takes off the
+ * cooldown of one skill its unit chooses, kept on the unit as `affinitySkill`.
+
+ * `ranks` holds the Affinities that give a rank in a proficiency of their unit's choice: `steps` ranks in one
+ * of `options`. The choice is kept on the unit, and the rank is given like one a skill gives (see
+ * `module/rules/skill-ranks.mjs`): once, and taken back when the choice or the Affinity changes.
  *
  * `lives` (Additional Lives): the sides in `armies` start with `start` lives; a unit of any side has them when
  * a total is typed on its sheet. A unit that would die loses a life and leaves the battle instead, and is dead
@@ -1372,7 +1647,7 @@ FEO.optionalGrowths = {
  * `capturing` (Capturing): a unit may attempt to capture the unit it attacks instead of killing it (see
  * `module/rules/capturing.mjs`). It needs more Weight than its target, and fights the attempt with every stat
  * but those in `spared` changed by `percent`. A target brought to 0 HP from next to it is captured and carried,
- * which changes the stats of `carry` for its captor as Rescuing does; from further away it is subdued instead,
+ * which slows its captor as Rescuing does (`FEO.rescue.carry`); from further away it is subdued instead,
  * and comes to with the HP it had unless it is picked up before `subdued` turns of its captor have ended. A
  * unit with a Special Quality in `barred` is never captured, nor is one that rides or flies (`riders`), nor
  * one that changes form while it is transformed or has transformations left. A target under a condition in
@@ -1449,7 +1724,7 @@ FEO.optional = {
         { proc: { on: "hit", percent: 10, fixed: true }, inflicts: ["frostbite"] },
         { proc: { on: "hit", percent: 5, fixed: true }, inflicts: ["freeze"] }
       ],
-      anima: [{ remind: "check" }],
+      anima: [{ when: { declared: true }, against: "lower" }],
       heaven: [{ when: { terrain: true }, combat: { damage: 2 } }],
       earth: [{ when: { terrain: true }, endurance: 2 }],
       blade: [],
@@ -1460,8 +1735,8 @@ FEO.optional = {
         proc: { on: "dodged", sure: true },
         grant: { to: "self", effects: [{ endurance: 1 }], ends: "turnStart", max: 4 }
       }],
-      shield: [{ remind: "check" }],
-      wood: [],
+      shield: [{ block: { chance: 5, amount: 1, kind: "shield" } }],
+      wood: [{ when: { declared: true }, crossing: { free: "all", steady: true } }],
       metal: [{ proc: { on: "struck", percent: 25, fixed: true }, when: { foeWeapon: ["physical"] }, reduce: 2 }],
       jewel: [{ proc: { on: "struck", percent: 25, fixed: true }, when: { foeWeapon: ["magic"] }, reduce: 2 }],
       smoke: [{
@@ -1470,14 +1745,19 @@ FEO.optional = {
         foeCombat: { hit: -10 }
       }],
       glass: [{ mirrorCrit: 15 }],
-      breath: [],
-      muscle: [],
-      sinew: [{ proc: { on: "struck", sure: true }, when: { role: "defending" }, damaged: true, remind: true }],
+      breath: [{ when: { declared: true }, stats: { mov: 1 } }],
+      muscle: [{ when: { declared: true }, shove: { any: true, more: 1 } }],
+      sinew: [{
+        proc: { on: "struck", sure: true },
+        when: { role: "defending" },
+        damaged: 2,
+        grant: { to: "self", effects: [], mend: 1, max: 99, ends: "turnStart" }
+      }],
       beast: [{
         proc: { on: "dodged", sure: true },
         grant: { to: "self", effects: [{ combat: { damage: 1 } }], ends: "turnStart", max: 4 }
       }],
-      avian: [],
+      avian: [{ canto: { after: "any", spaces: 1 } }],
       venom: [{ proc: { on: "hit", percent: 10, fixed: true }, inflicts: ["disease"] }],
       serum: [{ nullify: { percent: 100, only: ["poison", "deepPoison"] } }],
       emblem: [],
@@ -1495,15 +1775,27 @@ FEO.optional = {
       tome: [],
       staff: [{
         proc: { on: "hit", sure: true },
-        when: { near: { who: "ally", within: 1 } },
         damaged: true,
-        remind: true
+        spread: { who: "ally", around: "self", within: 1, targets: 1, pick: "random", heal: 1 }
       }],
       coin: [{
         combat: { hit: { of: "gold", per: 300, times: 2 }, dodge: { of: "gold", per: 300, times: 2 } }
       }],
       universe: [{ proc: { on: "hit", percent: 10, fixed: true }, inflicts: ["dazzle"] }]
-    }
+    },
+    ranks: {
+      blade: { steps: 1, options: ["sword", "lance", "axe", "knife", "brawl"] },
+      tome: { steps: 1, options: ["fire", "thunder", "wind", "water", "earth", "light", "dark"] }
+    },
+    usage: {
+      anima: { kind: "declare", uses: 2, per: "map" },
+      wood: { kind: "declare", cooldown: 2, lasts: 1 },
+      breath: { kind: "declare", cooldown: 3 },
+      muscle: { kind: "declare", cooldown: 2 }
+    },
+    spentBy: { anima: "fight", wood: "move", breath: "move", muscle: "shove" },
+    activationExp: { emblem: [{ div: 1, exp: 5 }, { div: 1.5, exp: 7 }, { div: 2, exp: 10 }] },
+    cooldown: { key: -1 }
   },
   lives: {
     enabled: false,
@@ -1638,10 +1930,7 @@ FEO.optional = {
       etherealStrikes: { cost: 3, effects: [{ when: { role: "initiating" }, remind: "check" }] },
       gallivant: {
         cost: 3,
-        effects: [
-          { when: { role: "initiating" }, proc: { on: "after", sure: true }, remind: true },
-          { proc: { on: "staff", sure: true }, remind: true }
-        ]
+        effects: [{ canto: { after: [...FEO.cantoPlus.after], except: [...FEO.cantoPlus.except] } }]
       },
       skillSavant: { cost: 4, effects: [{ slots: 1, capacity: 20 }] },
       rangemaster: { cost: 4, effects: [{ rules: ["closeCounter", "distantCounter", "counterMidrange"] }] },
@@ -1806,7 +2095,6 @@ FEO.optional = {
     enabled: false,
     spared: ["luk"],
     percent: -50,
-    carry: { spd: -50, dex: -50 },
     subdued: 2,
     barred: ["Ballistician", "Terror"],
     riders: ["Mounted", "Flying"],
@@ -1888,6 +2176,13 @@ FEO.optional = {
   }
 };
 
+/**
+ * Optional Modules of the rulebook that the system does not have yet, by the key each will go by, which a
+ * skill may already ask for (`when: { module: "dismounting" }`). Such an effect holds for nobody until its
+ * module is built as an entry of `FEO.optional`, and its name is then taken off this list.
+ */
+FEO.optionalAwaited = ["dismounting"];
+
 /* -------------------------------------------- */
 /*  The Map                                     */
 /* -------------------------------------------- */
@@ -1897,9 +2192,15 @@ FEO.optional = {
  * - `def`, `res` and `dodge` are what a unit standing there gains.
  * - `cost` is how many spaces of movement each space of it takes.
  * - `heal` is the share of its total HP, in percent, a unit standing there gains each turn.
- * - `needs` lists the skills of which a unit needs one to cross it at all.
+ * - `needs` lists the skills of which a unit needs one to cross it at all. A skill whose effects open that
+ *   kind to its unit serves as well (see `crossing` in rules/terrain.mjs).
  * - `slow` raises the cost for units with any of the Special Qualities it lists; `free` names who crosses it
  *   as if it were open ground.
+ * - `impassable` marks what nobody crosses, whether on foot or flying: the walls, buildings and rock-faces a
+ *   map is fenced in with. It is no row of the table, which leaves such obstacles to the map.
+ * - `los` is what a unit standing there gains or loses of its Line of Sight, and `hides` marks ground on
+ *   which a unit is seen only by a unit next to it. What is `impassable` blocks Line of Sight (see
+ *   rules/sight.mjs).
  * `elevation` is what a ranged attack gains against a unit on lower ground and loses against one on higher
  * ground. `flying` is the Special Quality whose units ignore terrain, except for healing.
  */
@@ -1907,7 +2208,7 @@ FEO.terrain = {
   types: {
     plain: { label: "FEO.Terrain.plain", icon: "grass", cost: 1 },
     forest: { label: "FEO.Terrain.forest", icon: "tree", def: 1, dodge: 15, cost: 2 },
-    thicket: { label: "FEO.Terrain.thicket", icon: "tree", dodge: 30, cost: 3, note: "FEO.Terrain.note.thicket" },
+    thicket: { label: "FEO.Terrain.thicket", icon: "tree", dodge: 30, cost: 3, los: -1, hides: true, note: "FEO.Terrain.note.thicket" },
     hill: { label: "FEO.Terrain.hill", icon: "peak", def: 2, dodge: 20, cost: 3 },
     mountain: {
       label: "FEO.Terrain.mountain", icon: "peak", def: 3, dodge: 25, cost: 4, needs: ["Mountaineer", "Climber"]
@@ -1925,7 +2226,8 @@ FEO.terrain = {
     },
     healhedge: { label: "FEO.Terrain.healhedge", icon: "heart", dodge: 10, cost: 1, heal: 10 },
     wardwood: { label: "FEO.Terrain.wardwood", icon: "tree", res: 5, cost: 2 },
-    cover: { label: "FEO.Terrain.cover", icon: "shield", def: 5, cost: 2 }
+    cover: { label: "FEO.Terrain.cover", icon: "shield", def: 5, cost: 2 },
+    wall: { label: "FEO.Terrain.wall", icon: "lock", cost: 1, impassable: true, note: "FEO.Terrain.note.wall" }
   },
   default: "plain",
   elevation: { hit: 20, damage: 1 },
@@ -1936,8 +2238,51 @@ FEO.terrain = {
   tints: {
     plain: "#a9c27a", forest: "#2f8a46", thicket: "#1f5f3c", hill: "#b08a4a", mountain: "#8c6f5a", cliff: "#6e5a52",
     fort: "#9aa3b5", house: "#c97b4a", river: "#4aa3d8", water: "#2f6fc0", desert: "#e0c074", healhedge: "#6fd08a",
-    wardwood: "#7a5fc0", cover: "#a8a08a"
+    wardwood: "#7a5fc0", cover: "#a8a08a", wall: "#4b4f5c"
   }
+};
+
+/**
+ * Weather, as the Weather page of The Map gives it (see rules/weather.mjs). A map has the kinds its scene
+ * lists, which the Game Master switches on and off from the Phase banner. Of each kind:
+ * - `move` is what a tile costs more to cross: for `infantry` (a unit that neither flies nor is mounted), for
+ *   a `mounted` unit and for a `flying` one.
+ * - `stats` is what a unit's stats change by, and `harm` the damage it takes as its turn ends, which never
+ *   brings it below 1 HP.
+ * - `fatigue` is the Fatigue it gains as its turn ends, which waits for the Fatigue Optional Module.
+ * - `fog` marks a kind that causes Fog of War, which the system does not draw; `los` is the Line of Sight
+ *   every unit has at the least.
+ * - `strikes` names what strikes tiles picked by dice as a turn of the battle ends.
+ * `strikes` has those: `every` how many turns they come, `dice` the die of bolts (a coin where none is given,
+ * which strikes once on tails), `damage` what a bolt deals the unit on its tile, and `against` what it deals a
+ * unit with a Special Quality instead. `indoors` lists the kinds of terrain a bolt does nothing on, and
+ * `mounted` and `flying` are the Special Qualities weather tells units by.
+ */
+FEO.weather = {
+  kinds: {
+    rain: { label: "FEO.Weather.kind.rain", icon: "drop", move: { infantry: 1, mounted: 2 } },
+    snowstorm: { label: "FEO.Weather.kind.snowstorm", icon: "snow", move: { infantry: 1, mounted: 2 } },
+    thunderstorm: { label: "FEO.Weather.kind.thunderstorm", icon: "bolt", move: { infantry: 1, mounted: 2 }, strikes: "lightning" },
+    windstorm: { label: "FEO.Weather.kind.windstorm", icon: "wind", move: { flying: 1 } },
+    hail: { label: "FEO.Weather.kind.hail", icon: "gem", harm: 1 },
+    heatWave: { label: "FEO.Weather.kind.heatWave", icon: "sun", stats: { spd: -3 }, harm: 1, fatigue: 1 },
+    fog: { label: "FEO.Weather.kind.fog", icon: "smoke", fog: true },
+    sandstorm: { label: "FEO.Weather.kind.sandstorm", icon: "smoke", fog: true },
+    darkness: { label: "FEO.Weather.kind.darkness", icon: "moon", fog: true },
+    ashStorm: { label: "FEO.Weather.kind.ashStorm", icon: "smoke", fog: true },
+    mist: { label: "FEO.Weather.kind.mist", icon: "eye", fog: true, los: 4 },
+    ballista: { label: "FEO.Weather.kind.ballista", icon: "target", strikes: "ballista" }
+  },
+  strikes: {
+    lightning: { label: "FEO.Weather.strike.lightning", every: 1, damage: 10, against: { Dragon: 15 } },
+    ballista: { label: "FEO.Weather.strike.ballista", every: 2, dice: 5, damage: 10 }
+  },
+  indoors: ["house"],
+  mounted: "Mounted",
+  flying: "Flying",
+
+  // How long the flash of a bolt lasts on the map, in milliseconds
+  flash: 500
 };
 
 /** The order in which the sides of a battle take their Phases. */

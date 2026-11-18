@@ -5,8 +5,14 @@ import { applyConditionTo, isTracked } from "../helpers/conditions.mjs";
 import { setFate, spendRoundFor, treatUnit } from "../helpers/defeat.mjs";
 import { armyOf, measureDistance } from "../helpers/exchange.mjs";
 import { fightTarget } from "../helpers/fight.mjs";
-import { originOf, takeAction } from "../helpers/phases.mjs";
+import { isGripped, takeOutcome } from "../helpers/actions.mjs";
+import { growthBar, withoutTaken } from "../helpers/imitation.mjs";
+import { movingAgain } from "../helpers/canto.mjs";
+import { holdsToWaiting, onlyWaits } from "../helpers/movement.mjs";
+import { originOf, takeAction, turnState } from "../helpers/phases.mjs";
 import { levelUpSkills, rerollFailed } from "../helpers/earnings.mjs";
+import { askPicks, picksOf } from "../helpers/picks.mjs";
+import { afflictUnit, awardGold, changeHpByHand, grantUnit, healUnit, pop, selectedOther } from "../helpers/events.mjs";
 import { manualLevelUp } from "../helpers/manual-gains.mjs";
 import { addModeToggle, setModeToggle } from "../helpers/mode-toggle.mjs";
 import { buildSkillCard } from "../helpers/skill-card-context.mjs";
@@ -22,10 +28,12 @@ import {
 import { adjustGauge, resetGauge, toggleShift } from "../helpers/shifting.mjs";
 import { awardEvent, grantPoints, linkBond, queueRangesFor, reportGains } from "../helpers/supports.mjs";
 import { endTurnOf, startTurnOf } from "../helpers/turns.mjs";
-import { waitFor } from "../helpers/skill-turns.mjs";
-import { isSummon, summon } from "../helpers/summon.mjs";
-import { castStaffFor, healsMore } from "../helpers/staves.mjs";
+import { useSkillMoment, waitFor } from "../helpers/skill-turns.mjs";
+import { packBar } from "../helpers/creatures.mjs";
+import { castStaffFor, healsMore, staffAreaOf, staffPlanOf, staffTakesOf, staffWhy } from "../helpers/staves.mjs";
+import { staffRefreshes } from "../helpers/refresh.mjs";
 import { usageRows } from "../helpers/skill-usage-context.mjs";
+import { cooldownsFor, switchAffinity } from "../helpers/affinity.mjs";
 import { canUse, spendSkill, switchSkill } from "../rules/skill-usage.mjs";
 import { learnArt, toggleArt } from "../helpers/arts.mjs";
 import { assignBattalion, replenishBattalion, takeBattalion, useGambit } from "../helpers/battalions.mjs";
@@ -34,15 +42,23 @@ import { setStagger, staggerStops } from "../helpers/stagger.mjs";
 import { freeCaptured, pickUpCaptive, releaseCaptive, toggleCapture } from "../helpers/capturing.mjs";
 import { skillFits } from "../rules/optional.mjs";
 import { countsAsSkill, formsOf, switchForm } from "../rules/skills.mjs";
+import { actOf } from "../rules/actions.mjs";
+import { stanceGround, statesEntered } from "../rules/stances.mjs";
+import { groundUnder } from "../helpers/terrain.mjs";
 import { ACT_AFTER_WARP, warpOf } from "../rules/warp.mjs";
+import { trapOfItem } from "../rules/traps.mjs";
 import { castStaffWarp, staffWarpOf } from "../helpers/warp.mjs";
-import { repairItem, sellItem, wieldCheck } from "../helpers/weapons.mjs";
+import { isShield, repairItem, sellItem, wieldCheck } from "../helpers/weapons.mjs";
+import { guardStanceOf } from "../rules/blocking.mjs";
+import { buildChange } from "../rules/timed.mjs";
+
 import { promotesAt } from "../rules/classes.mjs";
 import { blocksWeapon } from "../rules/conditions.mjs";
 import { gainWexp, wexpProficiencies } from "../rules/combat.mjs";
 import { rollGrowths } from "../rules/progression.mjs";
 import { cycleRange, startingRank } from "../rules/supports.mjs";
 import { grantTimed, removeTimed } from "../helpers/timed.mjs";
+import { skillCount } from "../helpers/timed-context.mjs";
 import { buildUnitContext } from "./unit-context.mjs";
 import { CREATOR_ACTIONS, activateCreator, closeCreator, creatorButton, creatorView, prepareCreator } from "./unit-creator.mjs";
 
@@ -66,6 +82,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       toggleMode: UnitSheet.#onToggleMode,
       toggleMinimize: UnitSheet.#onToggleMinimize,
       adjustHp: UnitSheet.#onAdjustHp,
+      giveExp: UnitSheet.#onGiveExp,
       setWounds: UnitSheet.#onSetWounds,
       removeCondition: UnitSheet.#onRemoveCondition,
       toggleBreak: UnitSheet.#onToggleBreak,
@@ -74,6 +91,8 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       endTurn: UnitSheet.#onEndTurn,
       wait: UnitSheet.#onWait,
       switchSkill: UnitSheet.#onSwitchSkill,
+      switchAffinity: UnitSheet.#onSwitchAffinity,
+      guardStance: UnitSheet.#onGuardStance,
       readyArt: UnitSheet.#onReadyArt,
       assignBattalion: UnitSheet.#onAssignBattalion,
       replenishBattalion: UnitSheet.#onReplenishBattalion,
@@ -85,6 +104,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       editItem: UnitSheet.#onEditItem,
       deleteItem: UnitSheet.#onDeleteItem,
       toggleEquip: UnitSheet.#onToggleEquip,
+      pickSkill: UnitSheet.#onPickSkill,
       useItem: UnitSheet.#onUseItem,
       useStaff: UnitSheet.#onUseStaff,
       useSkill: UnitSheet.#onUseSkill,
@@ -293,7 +313,15 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
     // The cards of its skills lie as they were left
     const unit = buildUnitContext(actor, { promotions, optional: sheetOptions(actor, this.token) });
-    for ( const skill of unit.skills ?? [] ) skill.flipped = this.#flipped.has(skill.id);
+    // A pick still to be made can be made in either mode; one that is made is changed in Edit mode only
+    for ( const skill of unit.skills ?? [] ) {
+      skill.flipped = this.#flipped.has(skill.id);
+      skill.pickNow = skill.canPick && (skill.needsChoice || (this.mode === UnitSheet.MODES.EDIT));
+
+      // What an equipped skill keeps count of on its unit, as a small number on its card
+      const item = skill.equipped ? actor.items.get(skill.id) : null;
+      skill.count = item ? skillCount({ name: item.name, effects: item.system.effects }, system.skills?.counts, game.i18n) : null;
+    }
 
     // Heart Seals: the classes the unit can reclass into the lines of, and whether it can do so now. A player
     // spends the Heart Seal the unit carries; the Game Master needs none
@@ -360,7 +388,13 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     select?.addEventListener("change", (event) => {
       event.stopPropagation();
       const statusId = event.currentTarget.value;
-      if ( statusId ) applyConditionTo(this.actor, statusId);
+      if ( !statusId ) return;
+
+      // In Edit mode a unit is set up, and the condition is put on it as it is. In Play mode it happens to the
+      // unit: its skills may nullify it or hand it back, and it is inflicted by the unit selected on the map
+      if ( edit ) return applyConditionTo(this.actor, statusId);
+      const by = selectedOther(this.actor);
+      return afflictUnit(this.actor, statusId, { by: by?.actor ?? null, byToken: by?.token ?? null, down: true });
     });
 
     // So is giving a bond the points of something its partners did together
@@ -426,6 +460,57 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
+   * In Play mode, what is typed into the HP, EXP and gold fields happens to the unit rather than being set:
+   * HP that is taken off is damage and HP that is added is healing, EXP that is added is experience the unit
+   * is given, which its skills multiply, and gold is given or taken. In Edit mode the fields are saved as they
+   * are typed.
+   * @override
+   */
+  async _processSubmitData(event, form, submitData, options = {}) {
+    const played = (this.mode !== UnitSheet.MODES.EDIT) ? this.#takePlayed(submitData) : null;
+
+    // What a unit that imitates another has taken on is shown, and is none of its own to save
+    withoutTaken(this.actor, submitData);
+    const result = await super._processSubmitData(event, form, submitData, options);
+    if ( !played ) return result;
+    if ( played.hp ) await changeHpByHand(this.actor, played.hp);
+    if ( played.exp ) await awardExp(this.actor, played.exp);
+    if ( played.gold ) await awardGold(this.actor, played.gold);
+
+    // A field whose change came to nothing shows what the unit has again
+    await this.render();
+    return result;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Take what was typed into the fields that happen to a unit out of what the form is about to save.
+   * @param {object} submitData     What the form is about to save, which is changed in place
+   * @returns {{hp?: number, exp?: number, gold?: number}|null}     What each changes by; null when none does
+   */
+  #takePlayed(submitData) {
+    const system = this.actor.system;
+    const played = {};
+    const take = (key, path, current, { raise = false } = {}) => {
+      const typed = foundry.utils.getProperty(submitData, path);
+      if ( !Number.isFinite(typed) || (typed === current) || (raise && (typed < current)) ) return;
+      const parts = path.split(".");
+      const last = parts.pop();
+      delete foundry.utils.getProperty(submitData, parts.join("."))[last];
+      played[key] = typed - current;
+    };
+    take("hp", "system.hp.value", system.hp.value);
+
+    // EXP that is lowered is a correction, and is saved as it is typed
+    take("exp", "system.exp", system.exp, { raise: true });
+    take("gold", "system.gold", system.gold ?? 0);
+    return Object.keys(played).length ? played : null;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * Another unit dropped on the sheet becomes a support partner, linked to its Actor.
    * @override
    */
@@ -479,6 +564,15 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    * @override
    */
   async _onDropItem(event, item) {
+    // A weapon a creature was handed changes hands in no way, and nothing is traded with a pack that is locked
+    if ( ["weapon", "gear"].includes(item.type) && (item.parent !== this.actor) ) {
+      const from = (item.parent?.documentName === "Actor") ? item.parent : null;
+      const bar = (from ? packBar(from, item) : null) ?? (game.user.isGM ? null : packBar(this.actor));
+      if ( bar ) {
+        ui.notifications.warn(game.i18n.format(bar, { item: item.name, name: (from && packBar(from, item)) ? from.name : this.actor.name }));
+        return null;
+      }
+    }
     if ( item.type !== "class" ) return super._onDropItem(event, item);
     if ( !this.actor.isOwner ) return null;
     const change = await assignClass(this.actor, item);
@@ -529,7 +623,8 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
-   * Raise or lower current HP by a fixed amount.
+   * Raise or lower current HP by a fixed amount. In Play mode that is healing, or damage dealt by the unit
+   * selected on the map; in Edit mode the number is set as it is.
    * @this {UnitSheet}
    * @param {PointerEvent} event
    * @param {HTMLElement} target
@@ -537,7 +632,44 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   static async #onAdjustHp(event, target) {
     const { value, max } = this.actor.system.hp;
     const next = Math.min(Math.max(value + Number(target.dataset.delta), 0), max);
-    if ( next !== value ) await this.actor.update({ "system.hp.value": next });
+    if ( next === value ) return;
+    if ( this.mode === UnitSheet.MODES.EDIT ) await this.actor.update({ "system.hp.value": next });
+    else await changeHpByHand(this.actor, next - value);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Give the unit experience by hand: an amount, and whether it is Bonus EXP. Its skills, and those of the
+   * units around it, multiply what it is given.
+   * @this {UnitSheet}
+   */
+  static async #onGiveExp() {
+    const i18n = game.i18n;
+    const content = document.createElement("div");
+    content.innerHTML = `
+      <div class="form-group">
+        <label>${i18n.localize("FEO.Exp.giveAmount")}</label>
+        <input type="number" name="amount" value="10" min="1" step="1" autofocus>
+      </div>
+      <div class="form-group" data-tooltip="${i18n.localize("FEO.Exp.giveBonusHint")}">
+        <label>${i18n.localize("FEO.Exp.giveBonus")}</label>
+        <input type="checkbox" name="bonus">
+      </div>`;
+    const answer = await foundry.applications.api.DialogV2.wait({
+      window: { title: i18n.format("FEO.Exp.giveTitle", { name: this.actor.name }) },
+      position: { width: 340 },
+      content,
+      buttons: [
+        { action: "give", label: "FEO.Exp.give", icon: "fa-solid fa-star", default: true,
+          callback: (event, button) => new foundry.applications.ux.FormDataExtended(button.form).object },
+        { action: "cancel", label: "COMMON.Cancel" }
+      ],
+      rejectClose: false
+    });
+    const amount = Math.floor(Number(answer?.amount));
+    if ( !answer || (answer === "cancel") || !(amount > 0) ) return;
+    await awardExp(this.actor, amount, { bonus: !!answer.bonus });
   }
 
   /* -------------------------------------------- */
@@ -614,12 +746,39 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
+   * Is this unit left with nothing to do but Wait, as one that has Run is? It is told so.
+   * @returns {boolean}
+   */
+  #waitStops() {
+    // So is one that has taken its Action and is only moving again, as Canto lets it
+    if ( turnState(this.actor, this.activeToken) === "moving" ) {
+      ui.notifications.warn("FEO.Canto.only", { localize: true });
+      return true;
+    }
+    // And one that another unit has hold of, which may only try to break free
+    if ( isGripped(this.actor) ) {
+      ui.notifications.warn("FEO.Grip.cannotAct", { localize: true });
+      return true;
+    }
+    if ( !onlyWaits(this.actor, this.activeToken) ) return false;
+    ui.notifications.warn("FEO.Wait.only", { localize: true });
+    return true;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * This unit Waits: its skills that act on Waiting take effect, some until its next turn starts.
    * @this {UnitSheet}
    */
   static async #onWait() {
+    // A unit that has acted and could still move, as Canto lets it, only ends its turn: it has not Waited
+    if ( turnState(this.actor, this.activeToken) === "moving" ) {
+      await takeAction(this.actor, this.activeToken);
+      return;
+    }
     await waitFor(this.actor);
-    await takeAction(this.actor, this.activeToken);
+    await takeAction(this.actor, this.activeToken, { action: { kind: "wait" } });
   }
 
   /* -------------------------------------------- */
@@ -639,7 +798,70 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       ui.notifications.warn(game.i18n.format(`FEO.Usage.blocked.${result.reason}`, { skill: item.name }));
       return;
     }
+
+    // A skill that holds its unit to Waiting stays on once it has: the move it made possible is taken back first
+    if ( item.system.state?.active && !result.state.active && holdsToWaiting(item) && onlyWaits(this.actor, this.activeToken) ) {
+      ui.notifications.warn(game.i18n.format("FEO.Wait.held", { skill: item.name }));
+      return;
+    }
+
+    // A skill that casts a weapon it lends its unit has that weapon picked as it is switched on (see
+    // `rules/lending.mjs`): with none to pick, or none picked, it stays off
+    if ( !item.system.state?.active && result.state.active ) {
+      const { castsOf, pickCast } = await import("../helpers/lending.mjs");
+      const casts = castsOf(item);
+      if ( casts && !casts.arms.length ) {
+        ui.notifications.warn(game.i18n.format("FEO.Lend.noCast", { skill: item.name }));
+        return;
+      }
+      if ( casts ) {
+        const picked = await pickCast(item);
+        if ( !picked ) return;
+        pop(this.actor, [{ text: game.i18n.format("FEO.Lend.cast", { skill: item.name, weapon: picked }), tone: "skill" }]);
+      }
+    }
     await item.update({ "system.state": result.state });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Switch the unit's Affinity on or off, for one its unit chooses when to use: Anima for its next fight, Wood
+   * and Breath for its next move, Muscle for its next Shove.
+   * @this {UnitSheet}
+   */
+  static async #onSwitchAffinity() {
+    await switchAffinity(this.actor);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Take up a guard with the weapon in hand as the unit's Action, as Weapon Guard lets it: until its next turn
+   * starts the unit blocks at a higher chance, whether or not the skill is switched on, and makes no
+   * counter-attack.
+   * @this {UnitSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
+  static async #onGuardStance(event, target) {
+    const item = this.#getItem(target);
+    const guard = (item?.type === "skill") ? guardStanceOf(item.system) : null;
+    if ( !guard || (this.mode === UnitSheet.MODES.EDIT) ) return;
+    const actor = this.actor;
+    const token = this.activeToken;
+    if ( staggerStops(actor) || this.#waitStops() ) return;
+    if ( token && (turnState(actor, token) !== "ready") && (turnState(actor, token) !== "free") ) return;
+    const { stance, ...own } = guard;
+    const given = await grantUnit(actor, [buildChange({
+      name: item.name,
+      effects: [{ block: { guard: own, chance: stance, kind: "weapon" }, rules: ["noCounter"] }],
+
+      ends: "turnStart"
+    }, { skill: item.name, own: true })]);
+    if ( !given?.length ) return;
+    pop(actor, [{ text: item.name, tone: "skill" }]);
+    await takeAction(actor, token, { action: { kind: "skill", name: item.name } });
   }
 
   /* -------------------------------------------- */
@@ -772,7 +994,8 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    * @this {UnitSheet}
    */
   static async #onPickUpCaptive() {
-    if ( await pickUpCaptive(this.actor, this.activeToken) ) await takeAction(this.actor, this.activeToken);
+    if ( this.#waitStops() ) return;
+    if ( await pickUpCaptive(this.actor, this.activeToken) ) await takeAction(this.actor, this.activeToken, { action: { kind: "rescue" } });
   }
 
   /* -------------------------------------------- */
@@ -932,6 +1155,28 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       return;
     }
 
+    // A unit that is moving again after its Action keeps the weapon it holds, unless a skill lets it change
+    if ( (this.mode !== UnitSheet.MODES.EDIT) && (turnState(this.actor, this.activeToken) === "moving") && !movingAgain(this.actor)?.gear ) {
+      ui.notifications.warn("FEO.Canto.noGear", { localize: true });
+      return;
+    }
+
+    // A Shield: only one is equipped at a time, and nothing else among the items is
+    if ( item.type === "gear" ) {
+      if ( !item.system.isShield ) return;
+
+      // A unit that a lasting change keeps from equipping Shields equips none while it lasts
+      if ( equip && (this.mode !== UnitSheet.MODES.EDIT) && this.actor.system.shieldsBarred ) {
+        ui.notifications.warn(game.i18n.format("FEO.Block.barred", { name: this.actor.name }));
+        return;
+      }
+      const shields = this.actor.items
+        .filter((other) => (other.type === "gear") && ((other.id === item.id) || (equip && other.system.equipped)))
+        .map((other) => ({ _id: other.id, "system.equipped": equip && (other.id === item.id) }));
+      await this.actor.updateEmbeddedDocuments("Item", shields);
+      return;
+    }
+
     // A unit may only wield weapons of its rank or lower. Edit mode lets it through, with a warning
     if ( equip ) {
       const check = wieldCheck(this.actor, item);
@@ -968,22 +1213,31 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     if ( !item || item.system.spent ) return;
     const actor = this.actor;
 
-    // A Staggered unit cannot act
-    if ( staggerStops(actor) ) return;
+    // A Shield is equipped, not Used
+    if ( item.system.isShield ) return;
+
+    // A Staggered unit cannot act, nor one that can do nothing but Wait
+    if ( staggerStops(actor) || this.#waitStops() ) return;
+
+    // An item that traps a space is laid on a tile next to the unit, which the map asks for. Off a battle map
+    // it is only counted as used
+    if ( trapOfItem({ name: item.name, effect: item.system.effect }) ) {
+      const token = this.activeToken;
+      if ( token?.parent?.grid?.isSquare && game.feo.hud?.pickTrap?.(token, item) ) return;
+    }
     const ally = this.targetedUnit;
     const patient = ally?.actor ?? actor;
     if ( ally && !patient.isOwner ) {
       ui.notifications.warn("FEO.Item.notOwner", { localize: true });
       return;
     }
-    const { value, max } = patient.system.hp;
     const rows = [];
 
     if ( item.system.restore > 0 ) {
       // A skill may have the unit heal its allies for more
       const restore = ally ? healsMore(actor, item.system.restore) : item.system.restore;
-      const healed = Math.max(Math.min(value + restore, max) - value, 0);
-      if ( healed > 0 ) await patient.update({ "system.hp.value": value + healed });
+      // Healing an ally with it is healing by this unit, for the skills that ask
+      const healed = (await healUnit(patient, restore, { down: true, by: ally ? actor : null, byToken: this.activeToken, counted: true }))?.healed ?? 0;
       rows.push({
         label: game.i18n.localize("FEO.Chat.restored"),
         value: game.i18n.format("FEO.Chat.hpAmount", { amount: healed }),
@@ -1013,20 +1267,23 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     await postCard(actor, card);
 
     // Using an item is the unit's Action
-    await takeAction(actor, this.activeToken);
+    await takeAction(actor, this.activeToken, { action: { kind: "item" } });
   }
 
   /* -------------------------------------------- */
 
   /**
-   * Use a staff: spend one use, earn weapon experience and the experience the staff table gives. A staff that
-   * heals one unit restores its HP, and one that moves a unit sets it down on the map; what else the staff does
-   * is on its card for the table to apply. With one other unit targeted it is used on that unit.
+   * Use a staff: spend one use, earn weapon experience and the experience the staff table gives. The staff
+   * does what its Effect says to the unit it is used on, or to every unit it is for (see `helpers/staves.mjs`),
+   * and one that moves a unit sets it down on the map. With one other unit targeted it is used on that unit.
+   * For a unit that stands on a battle map the staff is used as the map has it: on a unit it reaches and may
+   * be used on, on every unit a staff for several catches, and with nothing pointed out the map asks.
    * @this {UnitSheet}
    * @param {PointerEvent} event
    * @param {HTMLElement} target      For a staff that moves a unit: `data-warp-i` and `data-warp-j` name the tile
    *                                  chosen on the map, and `data-warp-now` says that the map has no tile to
-   *                                  choose for it
+   *                                  choose for it. For one that opens a door or a chest: `data-object-i` and
+   *                                  `data-object-j` name the tile it stands on
    */
   static async #onUseStaff(event, target) {
     const item = this.#getItem(target);
@@ -1035,8 +1292,8 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const system = actor.system;
     const staff = item.system;
 
-    // A Staggered unit cannot act
-    if ( staggerStops(actor) ) return;
+    // A Staggered unit cannot act, nor one that can do nothing but Wait
+    if ( staggerStops(actor) || this.#waitStops() ) return;
     if ( staff.broken ) {
       ui.notifications.warn("FEO.Exchange.blocked.broken", { localize: true });
       return;
@@ -1058,7 +1315,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     }
 
     const token = this.activeToken;
-    const ally = this.targetedUnit;
+    let ally = this.targetedUnit;
     const staffName = item.name;
     const tableName = item.flags?.[FEO.id]?.sheetName ?? staffName;
     const rows = [];
@@ -1072,9 +1329,35 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const mapped = landing || (target?.dataset?.warpNow === "true");
     if ( warp && !mapped && game.feo.hud?.pickStaffWarp?.(token, item, ally) ) return;
 
-    // What the staff does that the system applies by itself: a staff that heals one unit restores its HP,
-    // and the skills of the two units have their say
-    const cast = await castStaffFor(actor, token, item, ally, this.targetedUnits);
+    // On a battle map a staff is used on a unit it reaches and may be used on, and on no other: whatever
+    // keeps it from that is said. One that needs something pointed out which was not is picked on the map
+    const plan = staffPlanOf(actor, item);
+    const door = { i: Number(target?.dataset?.objectI ?? NaN), j: Number(target?.dataset?.objectJ ?? NaN) };
+    const object = (Number.isInteger(door.i) && Number.isInteger(door.j)) ? door : null;
+    if ( token?.parent?.grid?.isSquare && !warp ) {
+      let refusal = null;
+      let asks = false;
+      if ( ["allies", "enemies"].includes(plan.on) ) {
+        const area = staffAreaOf(token, item);
+        if ( area && !area.units.length ) refusal = staffWhy(token, item, null, "nobody", area.reach);
+      }
+      else if ( plan.on === "object" ) asks = !object;
+      else if ( plan.on === "unit" ) {
+        const tried = staffTakesOf(token, item, ally?.document ?? token);
+        if ( !tried.ok ) refusal = staffWhy(token, item, ally?.document ?? token, tried.why, tried.reach);
+        asks = !tried.ok && !ally;
+      }
+      if ( asks && game.feo.hud?.pickStaff?.(token, item) ) return;
+      if ( refusal || asks ) {
+        ui.notifications.warn(refusal ?? staffWhy(token, item, null, "nobody"));
+        return;
+      }
+    }
+
+    // What the staff does: to the unit it is used on, or to every unit it is for, with the skills of the
+    // units having their say
+    const cast = await castStaffFor(actor, token, item, ally, this.targetedUnits, { object });
+    ally = cast.on ?? null;
     if ( ally && token ) {
       const distance = measureDistance(token, ally.document);
       if ( distance !== null ) rows.push({ label: game.i18n.localize("FEO.Weapon.range"), value: `${distance} (${cast.range ?? staff.range})` });
@@ -1091,7 +1374,8 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     // A use, unless a skill spares the staff, and weapon experience toward the next rank
     const update = {};
     const tracked = (staff.uses.max > 0) && !cast.freeUse;
-    const remaining = Math.max(staff.uses.value - 1, 0);
+    // A staff that was cast a second time as a follow-up attack is made lost a use for each cast
+    const remaining = Math.max(staff.uses.value - (cast.cast?.follow ? 2 : 1), 0);
     if ( tracked ) rows.push({ label: game.i18n.localize("FEO.Weapon.uses"), value: `${remaining} / ${staff.uses.max}` });
     for ( const key of wexpProficiencies(system.proficiencies, staff.category) ) {
       const { rank, wexp } = system.proficiencies[key];
@@ -1117,7 +1401,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     }
 
     // Experience from the staff table
-    const exp = useExp(actor, "staff", tableName);
+    const exp = useExp(actor, "staff", tableName, { terrors: cast.slain ?? 0 });
     if ( exp > 0 ) rows.push(expRow(await awardExp(actor, exp, { staff: staffExpBy(actor) })));
     const note = (exp === null) && earnsExp(actor, token) ? game.i18n.localize("FEO.Exp.notListed") : undefined;
 
@@ -1130,21 +1414,31 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       note
     }, { rolls: [...cast.rolls, ...(warped?.rolls ?? [])] });
 
-    // Using a staff on a partner brings the two closer
+    // Using a staff on a partner brings the two closer, each ally a staff for several units reached too
     if ( ally && token ) await awardEvent("assist", token, { only: ally.document });
+    for ( const other of (token ? (cast.allies ?? []) : []) ) await awardEvent("assist", token, { only: other });
+
+    // A skill that has a staff act as a Refresh has the ally it was used on, or one picked on the map, act again
+    try {
+      await staffRefreshes(token, cast.cast, ally?.document ?? null);
+    } catch(err) {
+      console.error(err);
+    }
 
     // Using a staff is the unit's Action
-    await takeAction(actor, token);
+    await takeAction(actor, token, { action: { kind: "staff" } });
   }
 
   /* -------------------------------------------- */
 
   /**
    * Use a skill that the skill experience table lists, and earn what it gives. A skill that warps its unit has
-   * the tile chosen on the map first, and is used once the unit stands there.
+   * the tile chosen on the map first, and is used once the unit stands there. So has a skill that is used on a
+   * unit picked on the map: it is used once it has done its part there.
    * @this {UnitSheet}
    * @param {PointerEvent} event
-   * @param {HTMLElement} target      `data-warped` says that the map has already warped the unit
+   * @param {HTMLElement} target      `data-warped` says that the map has already warped the unit, and
+   *                                  `data-acted` that the skill has done its part to the unit it was used on
    */
   static async #onUseSkill(event, target) {
     const item = this.#getItem(target);
@@ -1153,13 +1447,30 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     // A skill used as an action has to be ready, and using it starts its cooldown and counts a use
     const usage = item.system.usage;
     let spent = null;
+    let early = false;
+    if ( (usage?.kind === "action") && this.#waitStops() ) return;
     if ( usage?.kind === "action" ) {
       const able = canUse(usage, item.system.state);
       if ( !able.ok ) {
         ui.notifications.warn(game.i18n.format(`FEO.Usage.blocked.${able.reason}`, { skill: item.name }));
         return;
       }
-      spent = spendSkill(usage, item.system.state);
+
+      // A skill for before the unit moves is not used once it has
+      if ( usage.unmoved && originOf(this.activeToken) ) {
+        ui.notifications.warn(game.i18n.format("FEO.Usage.blocked.moved", { skill: item.name }));
+        return;
+      }
+      // A skill whose stance is entered on a kind of terrain is used by a unit that stands on one
+      const kinds = stanceGround(item.system.effects);
+      const under = kinds.length ? groundUnder(this.activeToken) : null;
+      if ( kinds.length && under && !kinds.includes(under.terrain) ) {
+        const names = kinds.map((kind) => game.i18n.localize(FEO.terrain.types[kind]?.label ?? kind)).join(", ");
+        ui.notifications.warn(game.i18n.format("FEO.Stance.needsGround", { skill: item.name, kinds: names }));
+        return;
+      }
+      early = !!able.early;
+      spent = spendSkill(usage, item.system.state, { early, cooldowns: cooldownsFor(this.actor, item) });
     }
     const actor = this.actor;
     const token = this.activeToken;
@@ -1168,19 +1479,28 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     // the map in view the skill is used as any other, and where it lands is left to the table
     const warp = warpOf(item.system);
     if ( warp && (target?.dataset?.warped !== "true") && game.feo.hud?.pickWarp?.(token, item) ) return;
-    const ally = this.targetedUnit;
-    const rows = [];
 
-    // Summon puts the unit's Phantom on the map. Nothing is spent or earned unless it appears
-    const summoned = isSummon(item) ? await summon(actor, token) : null;
-    if ( isSummon(item) && !summoned ) return;
-    if ( summoned ) rows.push(...summoned.rows);
+    // So is picking the unit a skill is used on, and what the skill does to it. Off the map in view the skill
+    // is only counted
+    const act = actOf(item.system);
+    const done = target?.dataset?.acted === "true";
+    if ( act && !done && game.feo.hud?.pickAct?.(token, item) ) return;
+    const acted = (act && done) ? takeOutcome(item) : null;
+    const ally = this.targetedUnit;
+    const rows = [...(acted?.rows ?? [])];
+
+    // A unit that took hold of another holds on: the cooldown of its skill starts once it lets go
+    if ( spent && acted?.holds ) spent = { ...spent, active: true, cooldown: item.system.state?.cooldown ?? 0 };
 
     const exp = useExp(actor, "skill", item.name);
     if ( exp > 0 ) rows.push(expRow(await awardExp(actor, exp)));
     if ( spent ) {
-      rows.push(...usageRows(usage, spent, game.i18n));
+      // The cooldown of a skill its unit holds another with has yet to start, and is not told of
+      rows.push(...usageRows(acted?.holds ? { ...usage, cooldown: 0 } : usage, spent, game.i18n));
       await item.update({ "system.state": spent });
+
+      // What the skill leaves on its unit as it is used: temporary HP, a boost that lasts
+      rows.push(...await useSkillMoment(actor, item));
     }
 
     // A unit whose skills let it act again after warping keeps its turn, and has not moved from where it landed
@@ -1195,13 +1515,20 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
         ? game.i18n.format("FEO.Chat.usesItemOn", { item: item.name, target: ally.document.name || ally.actor.name })
         : game.i18n.format("FEO.Chat.usesItem", { item: item.name }),
       subtitle: item.system.effect,
-      rows,
-      note: summoned?.note ?? undefined
-    }, { rolls: summoned?.rolls ?? [] });
+      outcome: acted?.outcome ?? undefined,
+      rows
+    }, { rolls: [...(acted?.rolls ?? [])] });
     if ( ally && token ) await awardEvent("assist", token, { only: ally.document });
 
-    // A skill used as an Action is the unit's Action, as summoning always is
-    if ( ((usage?.kind === "action") && !again) || summoned ) await takeAction(actor, token);
+    // A skill used before its cooldown was over leaves its unit the condition that is the price of it
+    if ( early && usage.early?.condition ) {
+      await afflictUnit(actor, usage.early.condition, { turns: usage.early.turns ?? undefined, token });
+    }
+
+    // A skill used as an Action is the unit's Action, unless using it is free
+    if ( (usage?.kind === "action") && !again && !usage.free ) {
+      await takeAction(actor, token, { action: { kind: "skill", name: item.name, states: statesEntered(item.system.effects) } });
+    }
   }
 
   /* -------------------------------------------- */
@@ -1255,7 +1582,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    */
   static async #onRepairItem(event, target) {
     const item = this.#getItem(target);
-    if ( item?.type === "weapon" ) await repairItem(this.actor, item);
+    if ( (item?.type === "weapon") || isShield(item) ) await repairItem(this.actor, item);
   }
 
   /* -------------------------------------------- */
@@ -1268,7 +1595,15 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    */
   static async #onSellItem(event, target) {
     const item = this.#getItem(target);
-    if ( item && ["weapon", "gear"].includes(item.type) ) await sellItem(this.actor, item);
+    if ( !item || !["weapon", "gear"].includes(item.type) ) return;
+
+    // A weapon a creature was handed is not sold, and nothing is out of a pack that is locked
+    const bar = packBar(this.actor, item);
+    if ( bar ) {
+      ui.notifications.warn(game.i18n.format(bar, { item: item.name, name: this.actor.name }));
+      return;
+    }
+    await sellItem(this.actor, item);
   }
 
   /* -------------------------------------------- */
@@ -1289,8 +1624,11 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     }
 
     // The token this unit fights from: the one the sheet was opened from, else one that is selected. In a
-    // battle the attack is the unit's Action
-    await fightTarget(this.actor, this.activeToken, targets[0]);
+    // battle the attack is the unit's Action. Where it stands on a battle map, the map forecasts the fight
+    // and has it confirmed there, so that the sheet and the map never tell of it differently
+    const token = this.activeToken;
+    if ( token?.parent?.grid?.isSquare && game.feo.hud?.pickAttack?.(token, targets[0]) ) return;
+    await fightTarget(this.actor, token, targets[0]);
   }
 
   /* -------------------------------------------- */
@@ -1372,6 +1710,13 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const system = actor.system;
     const source = actor._source.system;
     if ( (system.exp < FEO.expPerLevel) || system.atMaxLevel ) return;
+
+    // A unit that imitates another levels up once it is itself again
+    const waits = growthBar(actor);
+    if ( waits ) {
+      ui.notifications.warn(waits);
+      return;
+    }
 
     const cls = system.classItem;
     if ( promotesAt(system.level, cls) ) {
@@ -1459,6 +1804,14 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       rows.push(...skills.rows);
       lasting = skills.grants;
     }
+    else {
+      // A promotion that takes the place of a level up is one to the unit's skills. Its class is applied by
+      // hand, so nothing is known of the stats it raises
+      const skills = levelUpSkills(actor, [], update);
+      Object.assign(update, skills.update);
+      rows.push(...skills.rows);
+      lasting = skills.grants;
+    }
 
     // With Additional Lives, promoting grants one more life in total and restores one
     const lives = promote ? promotionLifeUpdate(actor) : {};
@@ -1485,10 +1838,30 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
+   * Pick what a skill has its unit pick as it is learnt, or change it where that is still allowed.
+   * @this {UnitSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
+  static async #onPickSkill(event, target) {
+    const item = this.#getItem(target);
+    if ( item?.type !== "skill" ) return;
+    if ( !picksOf(item).open && (this.mode !== UnitSheet.MODES.EDIT) ) return;
+    await askPicks(item);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * Promote without levelling up, as a promotion item allows before the usual level.
    * @this {UnitSheet}
    */
   static async #onPromote() {
+    const waits = growthBar(this.actor);
+    if ( waits ) {
+      ui.notifications.warn(waits);
+      return;
+    }
     await promoteUnit(this.actor);
   }
 
@@ -1499,6 +1872,11 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    * @this {UnitSheet}
    */
   static async #onReclass() {
+    const waits = growthBar(this.actor);
+    if ( waits ) {
+      ui.notifications.warn(waits);
+      return;
+    }
     await reclassUnit(this.actor);
   }
 

@@ -1,12 +1,14 @@
 import { FEO } from "../config.mjs";
 import { tileKey, tilesApart } from "../rules/reach.mjs";
-import { staffBends, staffReach, staffSide } from "../rules/staves.mjs";
+import { staffSide } from "../rules/staves.mjs";
+import { refuses } from "../rules/forced.mjs";
 import { moveCost } from "../rules/terrain.mjs";
 import { staffWarp, staffWarpReaches, staffWarpTiles } from "../rules/warp.mjs";
 import { standsTo, unitsOn } from "./battle-map.mjs";
 import { applyChanges, armyOf, tokenTile } from "./exchange.mjs";
+import { noteMove } from "./movement.mjs";
 import { battle, originOf, phaseOf } from "./phases.mjs";
-import { staffUnitOf } from "./staves.mjs";
+import { staffReachOf } from "./staves.mjs";
 import { moverOf, tileGround } from "./terrain.mjs";
 
 /**
@@ -106,22 +108,6 @@ export function staffWarpOf(item) {
 /* -------------------------------------------- */
 
 /**
- * How far a staff reaches in the hands of a unit, as its skills make it.
- * @param {Actor} actor
- * @param {TokenDocument|null} token
- * @param {Item} item
- * @returns {{min: number, max: number, changed: boolean}|null}   Null if its Range sets no limit
- */
-export function staffReachOf(actor, token, item) {
-  const unit = staffUnitOf(actor, token);
-  const self = { hp: unit.hp, hpMax: unit.hpMax, level: unit.level, stats: unit.stats, conditions: unit.conditions, near: unit.near,
-    weapon: { name: item.name, category: "staff" } };
-  return staffReach(item.system.range, unit.stats, staffBends(unit.skills, self).ranges);
-}
-
-/* -------------------------------------------- */
-
-/**
  * May a staff move a unit: one of the side it is for, standing where the staff reaches it?
  * @param {TokenDocument|null} user       The token of the unit that uses the staff
  * @param {Item} item                     The staff
@@ -135,6 +121,9 @@ export function staffWarpAllows(user, item, target) {
   if ( !warp || !here || !there || (user === target) || (user.parent !== target.parent) || !target.actor ) return false;
   if ( target.actor.system.defeat?.out ) return false;
   const relation = standsTo({ army: armyOf(user.actor, user) }, { army: armyOf(target.actor, target) });
+
+  // A unit that is not moved by others, as one that has made a Fortress of itself, is not warped by a staff
+  if ( refuses(target.actor.system.skills?.rules, relation) ) return false;
   return staffWarpReaches(warp, relation, tilesApart(here, there), staffReachOf(user.actor, user, item));
 }
 
@@ -264,6 +253,7 @@ async function place(token, tile) {
   });
   if ( arrived === false ) return false;
   if ( originOf(token) ) await token.unsetFlag(FEO.id, "origin");
+  await noteMove(token, null);
   return true;
 }
 

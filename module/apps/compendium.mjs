@@ -20,6 +20,7 @@ const VIEWS = {
 const CHOOSER_PARTS = {
   class: ["classSheet"],
   skill: ["skillList", "skillSheet"],
+  pick: ["skillList", "skillSheet"],
   equipment: ["equipmentList"]
 };
 
@@ -59,6 +60,8 @@ export default class Compendium extends HandlebarsApplicationMixin(ApplicationV2
       pan: Compendium.#onPan,
       chooseClass: Compendium.#onChooseClass,
       chooseSkill: Compendium.#onChooseSkill,
+      pickOption: Compendium.#onPickOption,
+      choosePick: Compendium.#onChoosePick,
       buy: Compendium.#onBuy,
       openItem: Compendium.#onOpenItem
     }
@@ -180,10 +183,13 @@ export default class Compendium extends HandlebarsApplicationMixin(ApplicationV2
    * @param {string} [options.type]       The type of weapon or item to show
    * @param {object} [options.chooser]    Someone who takes something from the Compendium for a unit, as the
    *   Character Creator does. `takes` says what: a `class` from the tree, a `skill` from the roll, or
-   *   `equipment` from the armoury. `describe(entry, library)` says how an entry stands with them: for a class
+   *   `equipment` from the armoury; or a `pick`, what a skill has its unit pick as it is learnt, which is made
+   *   on the skill's own page: `picks(entry)` lists what can be picked there, `toggle(index, value)` takes or
+   *   gives up an option, and `choose` confirms. `describe(entry, library)` says how an entry stands with them: for a class
    *   or a skill, what to show at the foot of its sheet, as `{can, chosen, barred, text, label}`; for
    *   equipment, what to show on its row, as `{sold, can, fit, unfit}`. `choose(entry)` takes it. `banner()`,
-   *   if there is one, says whom it is for, as `{text, tags, note}`, and `actor` is the address of the unit, so
+   *   if there is one, says whom it is for, as `{text, tags, note}` (with `button`, what the button beside each
+   *   piece of equipment says in place of Buy), and `actor` is the address of the unit, so
    *   that what is shown keeps up with it. Opening the window without a chooser puts the buttons away
    * @returns {Promise<Compendium>}
    */
@@ -373,12 +379,20 @@ export default class Compendium extends HandlebarsApplicationMixin(ApplicationV2
           selected: state.skill,
           describe: standing("skill")
         }, i18n));
-        context.banner = chooser("skill")?.banner?.() ?? null;
+        context.banner = (chooser("skill") ?? chooser("pick"))?.banner?.() ?? null;
         break;
 
       case "skillSheet":
         context.sheet = buildSkillSheet(library, state.skill, i18n);
         if ( context.sheet && chooser("skill") ) context.choose = standing("skill")(library.skillById.get(state.skill));
+
+        // What a skill has its unit pick is picked on the skill's own page
+        if ( context.sheet && chooser("pick") ) {
+          const shown = library.skillById.get(state.skill);
+          context.picking = true;
+          context.picks = this.#chooser.picks(shown);
+          context.choose = this.#chooser.describe(shown, library);
+        }
         break;
 
       case "equipmentHead":
@@ -925,6 +939,29 @@ export default class Compendium extends HandlebarsApplicationMixin(ApplicationV2
    */
   static #onChooseSkill() {
     return this.#take("skill", this.#library.skillById.get(this.#state.skill));
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Take or give up one of the options of what a skill has its unit pick.
+   * @this {Compendium}
+   */
+  static #onPickOption(event, target) {
+    const chooser = this.#chooser;
+    if ( (chooser?.takes !== "pick") || this.#taking ) return null;
+    chooser.toggle(Number(target.dataset.pick), target.dataset.value);
+    return this.render({ parts: ["skillSheet"] });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Confirm what was picked on a skill for whoever asked.
+   * @this {Compendium}
+   */
+  static #onChoosePick() {
+    return this.#take("pick", this.#library.skillById.get(this.#state.skill));
   }
 
   /* -------------------------------------------- */

@@ -110,6 +110,8 @@ export function columnName(index) {
  * @property {(row: number) => {column: number, text: string}[]} filled    The filled cells of a row, in order
  * @property {(row: number, column: number|string) => string} formula    A cell's formula, without its "=";
  *   "" when it has none. A formula shared by several cells is given as its first cell writes it
+ * @property {(row: number, column: number|string) => string} note    The note pinned to a cell; "" when it has
+ *   none. A thread of comments is a conversation about the cell, not a note, and is left out
  */
 
 /**
@@ -174,6 +176,21 @@ export function readWorkbook(path) {
         lastRow = Math.max(lastRow, number);
       }
     }
+    // The notes pinned to cells are kept in a part of their own, which the sheet names among its relations
+    const notes = new Map();
+    const relations = text(file.replace(/([^/]+)$/, "_rels/$1.rels"));
+    for ( const relation of relations.matchAll(/<Relationship\b[^>]*>/g) ) {
+      if ( !/\/comments$/.test(attribute(relation[0], "Type") ?? "") ) continue;
+      const part = `xl/${(attribute(relation[0], "Target") ?? "").replace(/^(\.\.\/)+/, "")}`;
+      for ( const comment of text(part).matchAll(/<comment\b([^>]*)>([\s\S]*?)<\/comment>/g) ) {
+        const reference = attribute(comment[1], "ref") ?? "";
+        const written = runs(comment[2]).trim();
+        const cell = reference.match(/^([A-Z]+)(\d+)$/);
+        if ( !cell || !written || /^\[Threaded comment\]/.test(written) ) continue;
+        notes.set(`${Number(cell[2])}:${columnIndex(cell[1])}`, written);
+      }
+    }
+
     const index = (column) => typeof column === "string" ? columnIndex(column) : column;
     sheets.push({
       name: decode(attribute(match[0], "name") ?? ""),
@@ -184,7 +201,8 @@ export function readWorkbook(path) {
       filled: (row) => [...(rows.get(row) ?? [])].sort((a, b) => a[0] - b[0]).map(([column, value]) => {
         return { column, text: value.trim() };
       }),
-      formula: (row, column) => formulas.get(`${row}:${index(column)}`) ?? ""
+      formula: (row, column) => formulas.get(`${row}:${index(column)}`) ?? "",
+      note: (row, column) => notes.get(`${row}:${index(column)}`) ?? ""
     });
   }
   return sheets;

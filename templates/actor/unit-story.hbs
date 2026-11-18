@@ -66,6 +66,18 @@
         <span>{{localize "FEO.Unit.affinity"}}</span>
         <select name="system.affinity">{{selectOptions config.affinities selected=system.affinity localize=true blank="–"}}</select>
       </label>
+      {{#if affinity.rank}}
+      <label class="field" data-tooltip="{{localize affinity.rank.text}} {{localize "FEO.Optional.affinityEffect.rank.hint"}}">
+        <span>{{localize "FEO.Optional.affinityEffect.rank.label"}}</span>
+        <select name="system.affinityRank">{{selectOptions affinity.rank.options selected=system.affinityRank localize=true blank="–"}}</select>
+      </label>
+      {{/if}}
+      {{#if affinity.skill}}
+      <label class="field" data-tooltip="{{localize affinity.skill.text}} {{localize "FEO.Optional.affinityEffect.skill.hint"}}">
+        <span>{{localize "FEO.Optional.affinityEffect.skill.label"}}</span>
+        <select name="system.affinitySkill">{{selectOptions affinity.skill.options selected=system.affinitySkill blank="–"}}</select>
+      </label>
+      {{/if}}
       <label class="field"><span>{{localize "FEO.Unit.specialQualities"}}</span><input type="text" name="system.specialQualities" value="{{system.specialQualities}}"></label>
       <label class="field" data-tooltip="{{localize "FEO.Army.hint"}}">
         <span>{{localize "FEO.Army.label"}}</span>

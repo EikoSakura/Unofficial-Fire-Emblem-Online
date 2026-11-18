@@ -120,6 +120,7 @@
           <label class="field">
             <span>{{localize "FEO.Optional.leadership.stars"}}</span>
             <input type="number" name="system.leadership.stars" value="{{optional.leadership.stars}}" min="0" step="1">
+            {{#if optional.leadership.fromSkills}}<small>{{localize "FEO.Optional.leadership.fromSkills" stars=optional.leadership.fromSkills}}</small>{{/if}}
           </label>
           <label class="field">
             <span>{{localize "FEO.Optional.leadership.authority"}}</span>

@@ -1,7 +1,10 @@
 import { FEO } from "../config.mjs";
 import { groundOf, terrainHealing, terrainMatters, terrainType } from "../rules/terrain.mjs";
 import { postCard } from "./chat.mjs";
+import { healUnit } from "./events.mjs";
 import { tokenTile } from "./exchange.mjs";
+import { forgetObjects, objectGround } from "./map-objects.mjs";
+import { weatherOf } from "./map-weather.mjs";
 
 /**
  * The ground of a scene in Foundry: reading the Regions a Game Master painted its terrain with, and telling a
@@ -54,11 +57,13 @@ function terrainRegions(scene) {
  * ground on the floor of the map.
  * @param {Scene} scene
  * @param {{i: number, j: number}} tile     Row and column of the tile
- * @returns {{terrain: string, elevation: number, named?: boolean}}
- *   `named` if a Region says what kind of terrain the tile is, rather than it being open ground for want of one
+ * @returns {{terrain: string, elevation: number, named?: boolean, painted: string}}
+ *   `named` if a Region says what kind of terrain the tile is, rather than it being open ground for want of one.
+ *   `painted` is the terrain as it was painted, where something that stands on the tile makes another kind of
+ *   it: a door that is shut is a wall to everyone, and a Village that stands is a House (see `rules/objects.mjs`)
  */
 export function tileGround(scene, tile) {
-  const blank = { terrain: FEO.terrain.default, elevation: 0 };
+  const blank = { terrain: FEO.terrain.default, elevation: 0, painted: FEO.terrain.default };
   if ( !scene?.grid?.isSquare ) return blank;
   let known = read.get(scene);
   if ( !known ) read.set(scene, known = { regions: null, tiles: new Map() });
@@ -79,8 +84,12 @@ export function tileGround(scene, tile) {
         if ( (elevation === null) && (entry.elevation !== null) ) elevation = entry.elevation;
       }
       // Whether a Region names the terrain is kept as well, for whoever draws the ground that was painted
-      ground = { terrain: terrain ?? blank.terrain, elevation: elevation ?? 0, named: terrain !== null };
+      ground = { terrain: terrain ?? blank.terrain, elevation: elevation ?? 0, named: terrain !== null, painted: terrain ?? blank.terrain };
     }
+
+    // What stands on the tile may make another kind of ground of it
+    const made = objectGround(scene, tile);
+    if ( made ) ground = { ...ground, terrain: made };
   } catch(err) {
     console.error(err);
   }
@@ -91,7 +100,8 @@ export function tileGround(scene, tile) {
 /* -------------------------------------------- */
 
 /**
- * Describe a unit for the terrain rules: what it is, and which of its skills let it cross what others cannot.
+ * Describe a unit for the terrain rules: what it is, which of its skills the terrain table names, and what its
+ * skills change about how it crosses terrain.
  * @param {Actor|null} actor
  * @returns {Mover}
  */
@@ -108,7 +118,13 @@ export function moverOf(actor) {
     skills,
     magic: !!FEO.weaponCategories[weapon?.system.category]?.magic,
     shifted: !!system.shift?.transformed,
-    className: system.className ?? ""
+    className: system.className ?? "",
+
+    // What its skills change about how it crosses terrain, as the unit worked it out
+    crossing: system.crossing ?? null,
+
+    // What the weather of its map has every tile cost it more
+    weather: weatherOf(actor).move
   };
 }
 
@@ -142,9 +158,8 @@ export async function healFromGround(actor, token) {
   const ground = groundUnder(token);
   if ( !ground || (actor?.type !== "unit") || actor.system.defeat?.state ) return 0;
   const { value, max } = actor.system.hp;
-  const healed = terrainHealing(ground.terrain, value, max);
+  const healed = (await healUnit(actor, terrainHealing(ground.terrain, value, max)))?.healed ?? 0;
   if ( !healed ) return 0;
-  await actor.update({ "system.hp.value": value + healed });
   await postCard(actor, {
     title: game.i18n.format("FEO.Terrain.heals", { terrain: game.i18n.localize(ground.type.label) }),
     rows: [{
@@ -172,6 +187,13 @@ export function registerGround(changed = () => {}) {
   ] ) Hooks.on(hook, forget);
   Hooks.on("updateScene", (scene, changes) => {
     if ( "grid" in changes ) forget(null);
+
+    // A door that opens, or a Village that falls, changes what its tile is
+    else if ( changes.flags?.[FEO.id] !== undefined ) {
+      forgetObjects(scene);
+      forgetGround(scene);
+      changed();
+    }
   });
   Hooks.on("canvasReady", () => forget(null));
 }

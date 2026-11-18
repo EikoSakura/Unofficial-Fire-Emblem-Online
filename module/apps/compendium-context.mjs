@@ -209,7 +209,12 @@ export function readSkill(doc, folders) {
     capacity: system.capacity ?? 0,
     chosen: !!system.chosen,
     scroll: system.scroll ?? "any",
-    nihil: !!system.nihil
+    nihil: !!system.nihil,
+    coverage: {
+      state: system.coverage?.state ?? "",
+      left: system.coverage?.left ?? "",
+      note: system.coverage?.note ?? ""
+    }
   };
 }
 
@@ -757,6 +762,30 @@ export function buildClassSheet(library, id, i18n) {
 /** Does an entry answer to what was typed in a search box? */
 const answers = (query, ...texts) => !query || texts.some((text) => fold(text).includes(query));
 
+/** What is said of each state a skill can be in, where its own lines say nothing. */
+const COVERAGE_TEXT = {
+  done: "FEO.Compendium.coverage.doneText",
+  part: "FEO.Compendium.coverage.partText",
+  text: "FEO.Compendium.coverage.textText"
+};
+
+/**
+ * How far the system applies a skill's Effect by itself, as a small mark: its state, the name of that state,
+ * and what is shown on hovering it: what the table still does by hand, then how the system reads the skill.
+ * @param {{coverage?: {state?: string, left?: string, note?: string}}} skill    A skill as read
+ * @param {Localizer} i18n
+ * @returns {{state: string, label: string, hint: string}|null}   Null for a skill no state is known of.
+ *          `hint` is HTML
+ */
+export function skillCoverage(skill, i18n) {
+  const { state = "", left = "", note = "" } = skill.coverage ?? {};
+  if ( !(state in COVERAGE_TEXT) ) return null;
+  const label = i18n.localize(`FEO.Compendium.coverage.${state}`);
+  const lines = [left, note].filter(Boolean);
+  if ( !lines.length ) lines.push(i18n.localize(COVERAGE_TEXT[state]));
+  return { state, label, hint: `<b>${escape(label)}</b>${lines.map((line) => `<br>${escape(line)}`).join("")}` };
+}
+
 /**
  * Build the display data of the roll of skills: the kinds to choose among, and the skills of the kind chosen
  * that answer to the search, under a heading for each kind.
@@ -797,6 +826,7 @@ export function buildSkillList(library, { kind = "all", query = "", selected = "
           name: skill.name,
           effect: skill.effect,
           capacity: skill.capacity || "",
+          coverage: skillCoverage(skill, i18n),
           pressed: skill.id === selected,
           taken: !!standing?.chosen,
           barred: !!standing?.barred
@@ -857,6 +887,7 @@ export function buildSkillSheet(library, id, i18n) {
       ? i18n.format("FEO.Compendium.skills.capacity", { cost: skill.capacity })
       : i18n.localize("FEO.Compendium.skills.noCapacity"),
     effect: skill.effect,
+    coverage: skillCoverage(skill, i18n),
     marks: skillMarks(skill, i18n),
     prerequisite: statedPrerequisite(skill.prerequisite),
     taught: (library.taughtBy.get(fold(skill.name)) ?? []).map((cls) => classChip(library, cls, tierOf(cls))),

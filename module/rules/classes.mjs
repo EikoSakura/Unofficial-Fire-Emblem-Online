@@ -55,6 +55,8 @@ import { FEO } from "../config.mjs";
  *                                                      one is still to be picked
  * @property {boolean} genericSkill                     A Generic Skill is taken: in place of the class's skill, or
  *                                                      of the skills in `forgets`
+ * @property {string|null} raised                       The skill the unit has that is raised in place of the
+ *                                                      class's skill, as Authority can be
  * @property {string[]} forgets                         Skills given up, by name
  */
 
@@ -193,6 +195,7 @@ function emptyChange(kind) {
     skills: [],
     choices: [],
     genericSkill: false,
+    raised: null,
     forgets: []
   };
 }
@@ -447,6 +450,8 @@ export function checkGrowths(current, planned, { rule = FEO.promotionGrowth, cap
  * @param {boolean} [options.generic]         Take a Generic Skill in place of the class's skill, where the tier
  *                                            allows it
  * @param {string|null} [options.pick]        The skill picked, when the class offers a choice
+ * @param {string|null} [options.raise]       A skill the unit has that is raised in place of the class's
+ *                                            Promotion or Mastery Skill
  * @param {((name: string) => boolean)|null} [options.known]    Is this the name of a skill? See `classSkills`
  * @param {object} [options.tiers]            FEO.classTiers
  * @param {string[]} [options.rankOrder]      Ranks from lowest to highest
@@ -459,6 +464,7 @@ export function planPromotion(unit, from, to, options = {}) {
     growths = null,
     generic = false,
     pick = null,
+    raise = null,
     known = null,
     tiers = FEO.classTiers,
     rankOrder = Object.keys(FEO.ranks),
@@ -505,8 +511,9 @@ export function planPromotion(unit, from, to, options = {}) {
     if ( (key in next) && (next[key] !== value) ) change.growths.push({ key, from: value, to: next[key] });
   }
 
-  // The skill of the new tier, or a Generic Skill in its place
-  if ( generic && tier.generic ) change.genericSkill = true;
+  // The skill of the new tier; or a skill the unit has raised in its place, or a Generic Skill
+  if ( raise && ["promotion", "mastery"].includes(tier.skill) ) change.raised = String(raise);
+  else if ( generic && tier.generic ) change.genericSkill = true;
   else {
     const kind = { starting: "class", promotion: "promotion", mastery: "mastery" }[tier.skill] ?? "class";
     learnSkills(change, system.skills?.[tier.skill], kind, { known, pick });

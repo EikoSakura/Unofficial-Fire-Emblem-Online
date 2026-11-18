@@ -10,6 +10,7 @@
  */
 import { FEO } from "../config.mjs";
 import { authorityNext, battalionBonuses, canAssign, fightBattalions } from "../rules/battalions.mjs";
+import { spareLines } from "./defeat-context.mjs";
 import { conditionKeys } from "./condition-context.mjs";
 
 /** Write a number with its sign. */
@@ -233,6 +234,7 @@ export function buildGambitCard(plan, result, i18n, { unapplied = [] } = {}) {
       value: i18n.format(hit.wounds === 1 ? "FEO.Defeat.wound" : "FEO.Defeat.wounds", { name: target.name, count: hit.wounds }),
       cls: "bad"
     });
+    for ( const line of spareLines(hit.spared ?? [], target.name, i18n) ) rows.push({ label: target.name, value: line.label, cls: line.cls });
     for ( const entry of hit.inflicted ) {
       const ward = entry.warded?.at(-1);
       rows.push({

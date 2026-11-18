@@ -85,7 +85,7 @@
           <span class="bs-n">{{row.range}}</span>
           {{/if}}
           <span class="bs-n">{{row.uses}}</span>
-          <span class="bs-price bs-cost bs-num">{{feoIcon "coin"}}{{row.price}}</span>
+          <span class="bs-price bs-cost bs-num{{#if row.cut}} bs-cut{{/if}}" {{#if row.cut}}data-tooltip="{{row.cut}}"{{/if}}>{{feoIcon "coin"}}{{row.price}}</span>
         </div>
         {{/each}}
         {{else}}
@@ -139,7 +139,7 @@
           </select>
         </div>
         <div class="bs-sum bs-num"><span>{{localize "FEO.Base.market.goldLeft"}}</span><b class="{{#if short}}bs-short{{/if}}">{{goldLeft}}</b></div>
-        <button type="button" class="bs-btn bs-gold bs-block" data-action="buy" data-name="{{name}}" {{#unless canBuy}}disabled{{/unless}}>{{feoIcon "coin"}}{{buyLabel}}</button>
+        <button type="button" class="bs-btn bs-gold bs-block" data-action="buy" data-name="{{name}}" {{#if cut}}data-tooltip="{{cut}}" {{/if}}{{#unless canBuy}}disabled{{/unless}}>{{feoIcon "coin"}}{{buyLabel}}</button>
         {{#if forge}}
         <button type="button" class="bs-forge-tip" data-action="view" data-view="forge">{{feoIcon "anvil"}}{{localize "FEO.Base.market.forgeTip"}}</button>
         {{/if}}

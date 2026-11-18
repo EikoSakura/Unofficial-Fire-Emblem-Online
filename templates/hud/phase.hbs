@@ -1,3 +1,25 @@
+{{#*inline "weatherIcons"}}
+{{#if shown}}
+<div class="ph-weather" role="group" aria-label="{{localize "FEO.Weather.title"}}">
+  {{#if affinity.shown}}
+  {{#if gm}}
+  <button type="button" class="wx aff{{#unless affinity.key}} none{{/unless}}" data-action="mapAffinity" data-tooltip="{{affinity.tip}}" aria-label="{{affinity.label}}">{{feoIcon affinity.icon}}</button>
+  {{else}}
+  <span class="wx aff" data-tooltip="{{affinity.tip}}" aria-label="{{affinity.label}}">{{feoIcon affinity.icon}}</span>
+  {{/if}}
+  {{/if}}
+  {{#each icons as |entry|}}
+  {{#if ../gm}}
+  <button type="button" class="wx" data-action="weather" data-tooltip="{{entry.tip}}" aria-label="{{entry.label}}">{{feoIcon entry.icon}}</button>
+  {{else}}
+  <span class="wx" data-tooltip="{{entry.tip}}" aria-label="{{entry.label}}">{{feoIcon entry.icon}}</span>
+  {{/if}}
+  {{else}}
+  {{#if gm}}<button type="button" class="wx none" data-action="weather" data-tooltip="{{clear}}" aria-label="{{clear}}">{{feoIcon "sun"}}</button>{{/if}}
+  {{/each}}
+</div>
+{{/if}}
+{{/inline}}
 <div class="hud-slot hud-phase">
   {{#with phase}}
   {{#if battle}}
@@ -12,6 +34,7 @@
       {{/each}}
     </div>
     <div class="ph-count"><b>{{left}}</b><span>{{localize "FEO.Phase.toAct"}}</span></div>
+    {{> weatherIcons weather}}
     {{#if canEnd}}
     <div class="ph-end">
       <button type="button" class="btn {{#if allActed}}primary{{/if}}" data-action="endPhase" data-tooltip="{{localize "FEO.Phase.endHint"}}">{{feoIcon "banner"}}{{localize "FEO.Phase.end"}}</button>
@@ -28,9 +51,14 @@
   <section class="hud-panel phase idle" aria-label="{{localize "FEO.Phase.label"}}">
     <div class="ph-flag cloth"><small>{{localize "FEO.Phase.battle"}}</small><b>{{localize "FEO.Phase.idle"}}</b></div>
     <div class="ph-count"><b>{{fielded}}</b><span>{{localize "FEO.Phase.fielded"}}</span></div>
+    {{> weatherIcons weather}}
     <div class="ph-end">
       <button type="button" class="btn primary" data-action="beginBattle" data-tooltip="{{localize "FEO.Phase.beginHint"}}">{{feoIcon "banner"}}{{localize "FEO.Phase.begin"}}</button>
     </div>
+  </section>
+  {{else if weather.ambient}}
+  <section class="hud-panel phase idle bare" aria-label="{{localize "FEO.Weather.title"}}">
+    {{> weatherIcons weather}}
   </section>
   {{/if}}
   {{/with}}

@@ -18,8 +18,10 @@
     {{#if side.active}}
     <dl>
       <div><dt>{{localize "FEO.Combat.hit"}}</dt><dd>{{side.hit}}%</dd></div>
-      <div><dt>{{localize "FEO.Combat.damage"}}</dt><dd>{{side.damage}}{{#if side.damageLater includeZero=true}} <span class="times">+ {{side.damageLater}}</span>{{else}}{{#if side.repeats}} <span class="times">× {{side.attacks}}</span>{{/if}}{{/if}}</dd></div>
+      <div><dt>{{localize "FEO.Combat.damage"}}</dt><dd>{{side.damage}}{{#if side.more}} <span class="times">{{side.more}}</span>{{/if}}</dd></div>
       <div><dt>{{localize "FEO.Combat.critAbbr"}}</dt><dd>{{side.crit}}%{{#if side.critFollow includeZero=true}} <span class="times">→ {{side.critFollow}}%</span>{{/if}}</dd></div>
+      {{#if side.blockWith}}<div data-tooltip="{{side.blockWith}}"><dt>{{localize "FEO.Block.label"}}</dt><dd>{{side.block}}%</dd></div>{{/if}}
+
     </dl>
     {{else}}
     <p class="blocked">{{side.blocked}}</p>

@@ -3,6 +3,7 @@ import {
   boutsLeft, canForge, forgePrice, forgeSteps, forgedStats, isMarching, normalizeBase, sparExp, wareKind
 } from "../rules/base.mjs";
 import { sellValue } from "../rules/progression.mjs";
+import { discounted } from "../rules/stealing.mjs";
 import { postCard } from "./chat.mjs";
 import { awardExp, earnsExp, expRow, useExp } from "./experience.mjs";
 import { linkBond } from "./supports.mjs";
@@ -246,6 +247,17 @@ function carried(actor, id) {
 }
 
 /**
+ * May a unit part with a weapon or an item, or is it refused: one a creature was handed is neither stored nor
+ * sold, and nothing leaves a pack that is locked (see `helpers/creatures.mjs`).
+ * @param {Actor} actor
+ * @param {Item} item
+ */
+async function parts(actor, item) {
+  const { packBar } = await import("./creatures.mjs");
+  if ( packBar(actor, item) ) refuse("bound", { item: item.name, name: actor.name });
+}
+
+/**
  * Take gold from a unit, or refuse if it has too little.
  * @param {Actor} actor
  * @param {number} amount
@@ -476,6 +488,7 @@ const ACTIONS = {
     post: "convoy",
     async run({ base, data, actor }) {
       const item = carried(actor, data.item);
+      await parts(actor, item);
       const kept = item.toObject();
       if ( "equipped" in kept.system ) kept.system.equipped = false;
       base.convoy.unshift({ id: newId(), data: kept });
@@ -528,7 +541,8 @@ const ACTIONS = {
       if ( ware.left === 0 ) refuse("soldOut", { item: source.name });
       const most = Math.min(ware.left ?? FEO.base.buyMost, FEO.base.buyMost);
       const quantity = Math.min(Math.max(Math.trunc(Number(data.quantity) || 1), 1), most);
-      const total = (ware.price ?? source.system.cost) * quantity;
+      // What the unit's skills and what it wears take off a price is taken off each ware (see `discounted`)
+      const total = discounted(ware.price ?? source.system.cost, actor.system.knacks?.discount ?? 0) * quantity;
       await pay(actor, total);
 
       const copies = Array.from({ length: quantity }, () => freshCopy(source));
@@ -550,6 +564,7 @@ const ACTIONS = {
     post: "market",
     async run({ data, actor }) {
       const item = carried(actor, data.item);
+      await parts(actor, item);
       const { value, max } = item.system.uses ?? { value: 0, max: 0 };
       const worth = originalOf(item) ? 0 : sellValue(item.system.cost, value, max);
       const name = item.name;

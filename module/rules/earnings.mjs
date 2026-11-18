@@ -24,6 +24,10 @@
  *     grant: { to: "self", gained: 1, ends: "turnEnd" }      // a change that lasts a while (see `timed.mjs`):
  *   }                                                        // this much more in every stat the level up raised
  *
+ * A level up is every moment a unit gains a level's worth: the growth rates rolled by the Level Up button, the
+ * promotion that takes the place of a level up, with the stats its new class gives (`classGains`), and the
+ * stats a class gives on reaching a level.
+ *
  * @import {GrowthResult} from "./progression.mjs"
  * @import {SkillEntry, SkillSelf} from "./skills.mjs"
  * @import {TimedChange} from "./timed.mjs"
@@ -86,6 +90,7 @@ export function earnerOf(unit) {
       hp: unit?.hp ?? 0,
       hpMax: unit?.hpMax ?? unit?.hp ?? 0,
       level: unit?.level ?? unit?.record?.level ?? 1,
+      tier: unit?.tier,
       stats: unit?.bare?.stats ?? unit?.stats ?? {},
       weapon: unit?.weapon ?? null,
       waiting: !!unit?.waiting,
@@ -103,10 +108,13 @@ export function earnerOf(unit) {
  * The skills that multiply the experience a unit earns.
  * @param {SkillEntry[]} skills     The unit's skills, with what it receives from the units around it
  * @param {SkillSelf} self
+ * @param {object} [options]
+ * @param {boolean} [options.bonus] Is it Bonus EXP that is given? A skill that says so does not multiply it
  * @returns {ExpSource[]}
  */
-export function expSources(skills, self) {
+export function expSources(skills, self, { bonus = false } = {}) {
   return carrying(skills, self, "expMultiplier")
+    .filter(({ effect }) => !bonus || (effect.bexp !== false))
     .map(({ skill, effect }) => ({ skill, times: Number(effect.expMultiplier) }))
     .filter((source) => Number.isFinite(source.times) && (source.times >= 0) && (source.times !== 1));
 }
@@ -306,6 +314,24 @@ export function rerollGrowths(results, d100, skill) {
 /* -------------------------------------------- */
 
 /**
+ * What a class gave a unit, as a level up counts it: one gain for each stat it raised, maximum HP among them.
+ * @param {import("./classes.mjs").ClassChange|null} change     A promotion, or what a class gives at a level
+ * @returns {{key: string, gain: number, roll: null, capped: false}[]}    In the shape of growth rolls
+ */
+export function classGains(change) {
+  const gains = [];
+  const note = (key, from, to) => {
+    const gain = (Number(to) || 0) - (Number(from) || 0);
+    if ( gain > 0 ) gains.push({ key, gain, roll: null, capped: false });
+  };
+  if ( change?.hpMax ) note("hp", change.hpMax.from, change.hpMax.to);
+  for ( const stat of change?.stats ?? [] ) note(stat.key, stat.from, stat.to);
+  return gains;
+}
+
+/* -------------------------------------------- */
+
+/**
  * @typedef LevelUpOutcome
  * @property {Record<string, number>} gains       Points gained, by stat
  * @property {number} increases                   Stat increases, as gold per increase counts them
@@ -353,20 +379,22 @@ export function levelUpOutcome(skills, self, results, { goldPerGain = FEO.earnin
       outcome.heal = { skill: outcome.heal?.skill ?? skill, hp, healed: (outcome.heal?.healed ?? 0) + healed };
     }
 
-    // A boost in every stat the level up raised, for a while. Maximum HP can be raised that way, Charm and
-    // Intelligence cannot, and are left to the table
+    // A boost in every stat the level up raised, for a while: maximum HP, Charm and Intelligence among them.
+    // What the system keeps no number for is left to the table
     for ( const grant of [].concat(effect.grant ?? []) ) {
       const amount = Number(grant?.gained);
       if ( !Number.isFinite(amount) || !amount || !raised.length ) continue;
-      const stats = raised.filter((key) => (key in FEO.stats) || (key === "hp"));
+      const stats = raised.filter((key) => (key in FEO.stats) || (key in FEO.abilities) || (key === "hp"));
       const left = raised.filter((key) => !stats.includes(key));
       if ( !stats.length ) {
         outcome.granted.push({ skill, change: null, amount, stats, left });
         continue;
       }
       const boost = {};
-      const plain = stats.filter((key) => key !== "hp");
+      const plain = stats.filter((key) => key in FEO.stats);
+      const abilities = stats.filter((key) => key in FEO.abilities);
       if ( plain.length ) boost.stats = Object.fromEntries(plain.map((key) => [key, amount]));
+      if ( abilities.length ) boost.abilities = Object.fromEntries(abilities.map((key) => [key, amount]));
       if ( stats.includes("hp") ) boost.hpMax = amount;
       const { gained, ...rest } = grant;
       outcome.granted.push({

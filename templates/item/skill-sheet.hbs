@@ -57,6 +57,12 @@
         <select name="system.choice">{{selectOptions choices selected=system.choice blank=(localize "FEO.Skill.choiceNone")}}</select>
       </label>
       {{/if}}
+      {{#if pickText}}
+      <label class="field">
+        <span>{{localize "FEO.Pick.label"}}</span>
+        <input type="text" name="system.choice" value="{{system.choice}}">
+      </label>
+      {{/if}}
       {{#each picks as |pick|}}
       <label class="field">
         <span>{{localize "FEO.Skill.pick" number=pick.number}}</span>

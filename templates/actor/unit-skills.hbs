@@ -20,13 +20,17 @@
             </div>
             <button type="button" class="badge" data-action="toggleEquip" aria-pressed="{{skill.equipped}}"
                     data-tooltip="{{#if skill.equipped}}{{localize "FEO.Skill.unequip"}}{{else}}{{localize "FEO.Skill.equip"}}{{/if}}">{{feoIcon skill.icon}}</button>
-            <span class="title">{{skill.name}}</span>
+            <span class="title">{{skill.name}}{{#if skill.count}} <b class="count" data-tooltip="{{skill.count.tip}}">{{skill.count.value}}{{#if skill.count.most}}<small>/{{skill.count.most}}</small>{{/if}}</b>{{/if}}</span>
             <div class="top">
               <span class="kind">{{localize skill.kindLabel}}</span>
               {{#if skill.capacity}}<span class="kind" data-tooltip="{{localize "FEO.Skill.capacity"}}">{{localize "FEO.Compendium.skills.cap"}} {{skill.capacity}}</span>{{/if}}
+              {{#if skill.pickNow}}
+              <button type="button" class="kind pick{{#if skill.needsChoice}} warn{{/if}}" data-action="pickSkill" data-tooltip="{{#if skill.needsChoice}}{{localize "FEO.Skill.needsChoice"}}{{else}}{{localize "FEO.Pick.change"}}{{/if}}">{{#if skill.choice}}{{skill.choice}}{{else}}{{localize "FEO.Skill.choiceNone"}}{{/if}}</button>
+              {{else}}
               {{#if skill.choice}}<span class="kind">{{skill.choice}}</span>{{/if}}
-              {{#if skill.needsChoice}}<span class="kind warn" data-tooltip="{{localize "FEO.Skill.needsChoice"}}">{{localize "FEO.Skill.choiceNone"}}</span>{{else}}{{#if skill.automated}}<span class="auto-mark" data-tooltip="{{localize "FEO.Skill.automated"}}">{{feoIcon "check"}}</span>{{/if}}{{/if}}
-              {{#if skill.needsPicks}}<span class="kind warn" data-tooltip="{{localize "FEO.Skill.needsPicks"}}">{{localize "FEO.Skill.choiceNone"}}</span>{{/if}}
+              {{#if skill.needsChoice}}<span class="kind warn" data-tooltip="{{localize "FEO.Skill.needsChoice"}}">{{localize "FEO.Skill.choiceNone"}}</span>{{/if}}
+              {{/if}}
+              {{#unless skill.needsChoice}}{{#if skill.automated}}<span class="auto-mark" data-tooltip="{{localize "FEO.Skill.automated"}}">{{feoIcon "check"}}</span>{{/if}}{{/unless}}
               {{#if skill.check}}<span class="kind warn" data-tooltip="{{localize skill.check.hint}}">{{localize skill.check.label}}</span>{{/if}}
             </div>
             <div class="acts">
@@ -45,7 +49,7 @@
           {{!-- The back: what the skill does --}}
           <div class="face back"{{#unless skill.flipped}} inert{{/unless}}>
             <div class="band">
-              <span class="title">{{skill.name}}</span>
+              <span class="title">{{skill.name}}{{#if skill.count}} <b class="count" data-tooltip="{{skill.count.tip}}">{{skill.count.value}}{{#if skill.count.most}}<small>/{{skill.count.most}}</small>{{/if}}</b>{{/if}}</span>
               <span class="row-controls">
                 <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "open"}}</button>
                 {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
@@ -66,8 +70,8 @@
       {{#each lasting as |change|}}
       <li data-timed="{{change.index}}">
         <span class="lbl">{{localize "FEO.Timed.title"}}</span>
-        <b>{{change.name}}</b>{{#if change.from}} <span class="from">{{change.from}}</span>{{/if}}
-        <span class="what">{{#each change.parts as |part|}}<span>{{part.value}} {{localize part.label}}</span>{{/each}}</span>
+        <b>{{change.name}}</b>{{#if change.count}} <b class="count">{{change.count}}</b>{{/if}}{{#if change.from}} <span class="from">{{change.from}}</span>{{/if}}
+        <span class="what">{{#each change.parts as |part|}}<span>{{part.value}} {{#if part.stat}}{{localize part.label stat=(localize part.stat)}}{{else}}{{localize part.label}}{{/if}}</span>{{/each}}</span>
         <span class="lasts">{{localize change.lasts.key turns=change.lasts.turns from=change.from}}</span>
         {{#if @root.editable}}<button type="button" class="remove" data-action="removeTimed" data-tooltip="{{localize "FEO.Timed.remove"}}" aria-label="{{localize "FEO.Timed.remove"}}">{{feoIcon "trash"}}</button>{{/if}}
       </li>

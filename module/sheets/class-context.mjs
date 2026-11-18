@@ -256,9 +256,11 @@ export function buildAssignDialog(unit, cls, { fresh = true, known = null } = {}
  * @param {ClassLike[]} targets       The classes on offer
  * @param {object} [options]
  * @param {((name: string) => boolean)|null} [options.known]    Is this the name of a skill? See `classSkills`
+ * @param {string[]} [options.raisable]     The skills the unit has that can be raised in place of the skill of
+ *                                          its new class
  * @returns {object}
  */
-export function buildPromotionDialog(unit, from, targets, { known = null } = {}) {
+export function buildPromotionDialog(unit, from, targets, { known = null, raisable = [] } = {}) {
   const lowest = Object.keys(FEO.ranks)[0];
   const classes = targets.map((cls, index) => {
     const system = cls.system;
@@ -311,6 +313,7 @@ export function buildPromotionDialog(unit, from, targets, { known = null } = {})
     level: unit.level,
     classes,
     anyGeneric: classes.some((cls) => cls.generic),
+    raisable,
     // A class that started the unit without a Generic Skill: it takes one now, in place of its starting skill
     genericFor: FEO.classTiers[from?.system.tier]?.noGeneric ? (classSkills(from.system.skills?.starting, known).names.join(", ") || "–") : "",
     growths,

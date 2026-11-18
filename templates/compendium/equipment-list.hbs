@@ -60,7 +60,7 @@
             {{/if}}
             {{#if @root.shop}}
             <span class="c buy" {{#unless row.can}}{{#if row.sold}}data-tooltip="{{localize "FEO.Compendium.equipment.tooDear"}}"{{/if}}{{/unless}}>
-              {{#if row.sold}}<button type="button" class="eq-buy" data-action="buy" data-id="{{row.id}}" {{#unless row.can}}disabled{{/unless}}>{{localize "FEO.Compendium.equipment.buy"}}</button>{{/if}}
+              {{#if row.sold}}<button type="button" class="eq-buy" data-action="buy" data-id="{{row.id}}" {{#unless row.can}}disabled{{/unless}}>{{#if @root.banner.button}}{{@root.banner.button}}{{else}}{{localize "FEO.Compendium.equipment.buy"}}{{/if}}</button>{{/if}}
             </span>
             {{/if}}
           </div>
@@ -83,7 +83,7 @@
             <span class="c n num gold" data-l="{{localize "FEO.Weapon.cost"}}">{{row.cost}}</span>
             {{#if @root.shop}}
             <span class="c buy" {{#unless row.can}}{{#if row.sold}}data-tooltip="{{localize "FEO.Compendium.equipment.tooDear"}}"{{/if}}{{/unless}}>
-              {{#if row.sold}}<button type="button" class="eq-buy" data-action="buy" data-id="{{row.id}}" {{#unless row.can}}disabled{{/unless}}>{{localize "FEO.Compendium.equipment.buy"}}</button>{{/if}}
+              {{#if row.sold}}<button type="button" class="eq-buy" data-action="buy" data-id="{{row.id}}" {{#unless row.can}}disabled{{/unless}}>{{#if @root.banner.button}}{{@root.banner.button}}{{else}}{{localize "FEO.Compendium.equipment.buy"}}{{/if}}</button>{{/if}}
             </span>
             {{/if}}
           </div>

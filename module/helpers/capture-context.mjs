@@ -32,6 +32,7 @@ export function captureTargetOf(actor, { foe = true } = {}) {
       broken: !!item.system.broken || isBroken(item.system)
     })),
     out: !!system.defeat?.state,
+    rules: system.skills?.rules ?? [],
     foe
   };
 }
@@ -41,10 +42,12 @@ export function captureTargetOf(actor, { foe = true } = {}) {
 /**
  * A unit as the rules of capturing read the one that would capture.
  * @param {{system: object}} actor
- * @returns {{weight: number, holds: boolean}}
+ * @returns {{weight: number, holds: boolean, carry: object|null}}
  */
 export function captorOf(actor) {
-  return { weight: actor.system.wt?.total ?? 0, holds: !!actor.system.captive?.uuid };
+  // A unit that carries an ally has its hands full, and what its skills make of carrying counts here too
+  const system = actor.system;
+  return { weight: system.wt?.total ?? 0, holds: !!system.captive?.uuid || !!system.rescuing?.uuid, carry: system.carry ?? null };
 }
 
 /* -------------------------------------------- */

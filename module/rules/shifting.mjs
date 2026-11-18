@@ -36,6 +36,7 @@ const PROFILE_KEYS = ["start", "turnHuman", "turnAnimal", "combatHuman", "combat
  * @property {boolean} endless          Does its stone transform it any number of times a turn?
  * @property {boolean} atWill           Can it Shift whatever its Shift Gauge holds?
  * @property {boolean} keep             Does its Shift Gauge start a map where the last one left it?
+ * @property {boolean} brief            Does a Shift it could only make at will end with what lets it?
  * @property {number|null} humanFight   Set for a unit that may start a fight in humanoid form: the share, in
  *                                      percent, of what such a fight usually does to its gauge
  * @property {string[]} skills          The skills that had a say
@@ -44,7 +45,7 @@ const PROFILE_KEYS = ["start", "turnHuman", "turnAnimal", "combatHuman", "combat
 /** The parts of a `shift` an effect can carry, by what each is. */
 export const SHIFT_PARTS = {
   numbers: ["percent", "add", "times", "transforms", "humanFight", ...PROFILE_KEYS],
-  flags: ["endless", "atWill", "keep"]
+  flags: ["endless", "atWill", "keep", "brief"]
 };
 
 /**
@@ -52,7 +53,7 @@ export const SHIFT_PARTS = {
  * @returns {ShiftBends}
  */
 export function emptyShiftBends() {
-  return { percent: null, add: 0, times: 1, gauge: {}, transforms: 0, endless: false, atWill: false, keep: false, humanFight: null, skills: [] };
+  return { percent: null, add: 0, times: 1, gauge: {}, transforms: 0, endless: false, atWill: false, keep: false, brief: false, humanFight: null, skills: [] };
 }
 
 /* -------------------------------------------- */
@@ -262,6 +263,34 @@ export function formBonuses(cls) {
     else if ( Number.isFinite(cls.base?.[key]) && (value !== cls.base[key]) ) stats[key] = value - cls.base[key];
   }
   return { stats, wt };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Does a Shift end with what let its unit make it? A unit that could only Shift at will, as a change that
+ * lasts on it for a turn lets it, is in humanoid form again once nothing lets it Shift at will any longer,
+ * unless its gauge has meanwhile come to hold enough for it to Shift by itself.
+ * @param {ShiftState} state
+ * @param {object} [options]
+ * @param {boolean} [options.lent]      Was the Shift made at will, with a gauge that did not hold enough?
+ * @param {boolean} [options.atWill]    May it still Shift at will?
+ * @returns {boolean}
+ */
+export function shiftLapses(state, { lent = false, atWill = false } = {}) {
+  return !!state?.active && !!lent && !atWill && !((state.value ?? 0) >= FEO.shift.gauge.shiftAt);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The weapon a unit in humanoid form starts a fight with, where a skill lets it start one: nothing but what a
+ * unit fights with in that form.
+ * @param {string} [name]       The weapon in its hand
+ * @returns {boolean}           Whether that is such a weapon
+ */
+export function isHumanWeapon(name) {
+  return String(name ?? "").trim().toLowerCase() === FEO.shift.humanWeapon.toLowerCase();
 }
 
 /* -------------------------------------------- */

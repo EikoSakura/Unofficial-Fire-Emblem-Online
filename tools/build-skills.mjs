@@ -3,7 +3,8 @@
  * Builds the skill compendium (packs/skills) from the "Skills" tab of the Reference Sheet.
  *
  * Usage:
- *   node tools/build-skills.mjs [--foundry <path>] [--json <file>] [--check] [--out <folder>] [--quiet]
+ *   node tools/build-skills.mjs [--foundry <path>] [--json <file>] [--check] [--status [file]] [--out <folder>]
+ *                               [--quiet]
  *
  * The tab is read as it is laid out: a row with only its first cell filled is a heading when it is short and a
  * note when it is long. Headings become folders and set the kind of the skills beneath them, a heading's words in
@@ -23,26 +24,56 @@
  * laid over the skills here, together with how a skill that is chosen when to activate is used (its `usage`,
  * which module/rules/skill-usage.mjs explains). Skills of different kinds that share a name are listed there as
  * "kind.Name", which is read before the name alone. A name in that file that no skill has, or an effect or
- * usage the rules do not know, stops the build.
+ * usage the rules do not know, stops the build. So does a skill with an Effect that has neither effects, nor a
+ * flat bonus read from its text, nor a usage, nor a `note` that says why it needs none.
+ *
+ * A listed skill can carry two lines of text beside its effects. `left` says what the table still does by hand,
+ * and `note` says how the system reads the skill where its Effect leaves room, or how it is used, with nothing
+ * left to do. From them each skill is given a state, which it carries as `system.coverage` together with both
+ * lines, and which the Compendium shows as a small mark:
+ *   done        the system applies the whole Effect: a listed skill without a `left`, a skill whose Effect is
+ *               nothing but a flat bonus, or a skill without an Effect;
+ *   part        a listed skill with a `left`;
+ *   text only   a skill with an Effect that is neither listed nor a flat bonus.
+ * --status prints the scoreboard: every skill with its state, folder by folder, with the totals of each folder
+ * and of them all (with --quiet, the totals alone). Given a file, it also writes there, as JSON, the totals, the
+ * folders, and the list of skills with their name, kind, folder, state, `left` and `note`. It goes together
+ * with --check.
  *
  * The animals listed under "Wildkin Animal Units" at the foot of the tab are not skills; they are added to the
  * description of the Wildkin skill, which points to them.
+ *
+ * A skill that lends its unit a weapon, or has it attack with one, names that weapon as the Weapons tab does
+ * (see module/rules/lending.mjs). The build looks each up on that tab and writes its numbers into the skill, so
+ * that no number of a weapon is written by hand. The weapons that skills name are also kept, with those
+ * numbers, in packs-src/skills/lent-weapons.json, which the tests read: the build writes that file anew
+ * whenever it has changed, with --check too. It is not edited by hand.
+ *
+ * A skill that brings a creature onto the map (see module/rules/creatures.mjs) names the weapon it hands it as
+ * the Weapons tab does, and the build stops where that tab has no such weapon. A creature that is picked from a
+ * table lists its options in effects.json; where the tab has a table under the skill's name, as Wildkin has,
+ * the build compares the two and stops where they differ.
  *
  * A skill's image comes from assets/icons/skills when a file there is named after it (see the README in
  * assets/icons), and otherwise from the icons that ship with Foundry.
  */
 
 import {
-  Report, USAGE, encode, findFoundry, flag, isBlank, loadFoundry, makeFolder, manifest, oneLine, paragraphs,
+  Report, USAGE, encode, findFoundry, flag, isBlank, loadFoundry, makeFolder, manifest, oneLine, option, paragraphs,
   slugify, stableId, stats, validate, wholeNumber, writeJson, writePack
 } from "./lib/pack.mjs";
 import { IconLibrary, IconPicker } from "./lib/icons.mjs";
 import { SKILLS_TAB, SKILL_COLUMNS, readSkillName, readSkillsTab } from "./lib/skills-sheet.mjs";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { TAB as WEAPONS_TAB, readWeaponsTab, weaponName } from "./lib/weapons-sheet.mjs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { ROOT } from "./lib/pack.mjs";
-import { checkEffects, choicesOf } from "../module/rules/skills.mjs";
+import { checkEffects, choicesOf, coverageOf, unaccounted } from "../module/rules/skills.mjs";
+import { checkPicks } from "../module/rules/picks.mjs";
 import { checkUsage } from "../module/rules/skill-usage.mjs";
+import { armData, withArms } from "../module/rules/lending.mjs";
+import { checkTable, makesIn, makesWeapons } from "../module/rules/creatures.mjs";
+import { parseRange } from "../module/rules/combat.mjs";
 
 if ( flag("--help") ) {
   console.log(`Builds packs/skills from the "Skills" tab of the Reference Sheet.\n${USAGE}`);
@@ -62,6 +93,54 @@ const { sheet, sections, preamble, rows, extras, problems } = readSkillsTab();
 const EFFECTS_FILE = join(ROOT, "packs-src", "skills", "effects.json");
 const automation = existsSync(EFFECTS_FILE) ? (JSON.parse(readFileSync(EFFECTS_FILE, "utf8")).skills ?? {}) : {};
 const automated = new Set();
+
+/**
+ * The weapons a skill may name, as the Weapons tab has them: read only once a skill names one. A weapon is
+ * known by the name it has in the compendium, which for one that shares its name is that name with its rank.
+ */
+const LENT_FILE = join(ROOT, "packs-src", "skills", "lent-weapons.json");
+let arsenal = null;
+const lent = { weapons: {}, tomes: {} };
+const weaponsOf = () => {
+  if ( arsenal ) return arsenal;
+  const read = readWeaponsTab({ FEO, parseRange });
+  arsenal = read.weapons.map((weapon) => armData(weaponName(weapon), weapon.system));
+  return arsenal;
+};
+const weaponLookup = {
+  named: (name) => {
+    const arm = weaponsOf().find((weapon) => weapon.name === name) ?? null;
+    if ( arm ) lent.weapons[name] = arm;
+    return arm;
+  },
+  tomes: ({ category, range }) => {
+    const arms = weaponsOf().filter((weapon) => (weapon.category === category) && ((range === undefined) || (weapon.range === range)));
+    lent.tomes[`${category}|${range ?? ""}`] = arms.map((arm) => arm.name);
+    for ( const arm of arms ) lent.weapons[arm.name] = arm;
+    return arms;
+  }
+};
+
+/** What an entry of that list may hold beside its effects. */
+const ENTRY_KEYS = ["effects", "usage", "picks", "left", "note"];
+
+/**
+ * Check the lines of text of an entry of that list, and that it holds nothing the build does not read.
+ * @param {object} entry
+ * @returns {string[]}      What is wrong, in plain words; empty when nothing is
+ */
+function checkEntry(entry) {
+  const wrong = [];
+  for ( const key of Object.keys(entry) ) {
+    if ( !ENTRY_KEYS.includes(key) ) wrong.push(`an entry cannot say "${key}"`);
+  }
+  for ( const key of ["left", "note"] ) {
+    if ( (entry[key] !== undefined) && ((typeof entry[key] !== "string") || !entry[key].trim()) ) {
+      wrong.push(`"${key}" is a line of text, and is left out when there is nothing to say`);
+    }
+  }
+  return wrong;
+}
 
 /* -------------------------------------------- */
 /*  Reading an Effect                           */
@@ -131,7 +210,11 @@ for ( const { row, section } of rows ) {
     problems.push(`${where}: has cells outside the Name, Effect, Prerequisite and Capacity Cost columns`);
   }
 
-  const effect = /^n\/?a$/i.test(cell("effect")) ? "" : cell("effect");
+  // A note pinned to the Effect is part of it: the lists an Effect says are "listed in notes"
+  const pinned = sheet.note(row, SKILL_COLUMNS.effect);
+  if ( pinned ) report.count("Values read with care", "a note pinned to an Effect, added to it", name);
+  const written = /^n\/?a$/i.test(cell("effect")) ? "" : cell("effect");
+  const effect = [written, pinned].filter(Boolean).join("\n\n");
   const prerequisite = isBlank(cell("prerequisite")) ? "" : oneLine(cell("prerequisite"));
 
   let capacity = wholeNumber(cell("capacity"));
@@ -155,7 +238,10 @@ for ( const { row, section } of rows ) {
     combat: Object.fromEntries(Object.keys(FEO.combatBoosts).map((key) => [key, 0])),
     effects: [],
     choice: "",
+    picks: [],
+    raises: 0,
     automate: true,
+    coverage: { state: "", left: "", note: "" },
     usage: { kind: "", cooldown: 0, lasts: 0, uses: 0, per: "" },
     state: { active: false, cooldown: 0, lasting: 0, used: 0 },
     description: ""
@@ -167,17 +253,42 @@ for ( const { row, section } of rows ) {
   const entry = listed ? automation[listed] : null;
   if ( entry ) {
     automated.add(listed);
-    const wrong = [...checkEffects(entry.effects), ...checkUsage(entry.usage)];
+    const wrong = [...checkEffects(entry.effects), ...checkUsage(entry.usage), ...checkPicks(entry.picks, entry.effects), ...checkEntry(entry)];
+
+    // The weapons its effects name are looked up on the Weapons tab, and their numbers written in
+    const names = JSON.stringify(entry.effects ?? []);
+    const armed = (!wrong.length && (names.includes('"lend"') || names.includes('"weapon":"') || names.includes('"weapon": "')))
+      ? withArms(entry.effects, weaponLookup) : { effects: entry.effects, problems: [] };
+    // The weapons a creature it makes is handed are on that tab as they are named
+    for ( const makes of wrong.length ? [] : makesIn(entry.effects) ) {
+      const { named, ranked } = makesWeapons(makes);
+      const listed = new Set(weaponsOf().map((weapon) => weapon.name.toLowerCase()));
+      for ( const weapon of named ) if ( !listed.has(weapon.toLowerCase()) ) wrong.push(`the ${WEAPONS_TAB} tab has no weapon named ${weapon}`);
+      for ( const weapon of ranked ) if ( !listed.has(`${weapon} (E)`.toLowerCase()) ) wrong.push(`the ${WEAPONS_TAB} tab has no weapon named ${weapon} (E)`);
+      if ( named.length || ranked.length ) report.count("Automation", `skills that hand a creature a weapon of the ${WEAPONS_TAB} tab`, name);
+
+      // And the picture it is given is one that ships with Foundry
+      for ( const img of [makes.img, ...(makes.options ?? []).map((option) => option.img)].filter(Boolean) ) {
+        if ( !existsSync(join(app, "public", img)) ) wrong.push(`found no picture ${img} among those that ship with Foundry`);
+      }
+    }
+    if ( armed.effects !== entry.effects ) report.count("Automation", `skills that name weapons of the ${WEAPONS_TAB} tab, with their numbers written in`, name);
+    wrong.push(...armed.problems);
     if ( wrong.length ) problems.push(...wrong.map((problem) => `${where}: effects.json, ${problem}`));
     else {
-      system.effects = entry.effects;
+      system.effects = armed.effects;
+      system.picks = entry.picks ?? [];
+      system.coverage.left = entry.left ?? "";
+      system.coverage.note = entry.note ?? "";
       if ( entry.usage ) {
         system.usage = { ...system.usage, ...entry.usage };
         report.count("Automation", `skills tracked as chosen when to activate: ${entry.usage.kind}`);
       }
       const variants = choicesOf(entry.effects).length;
+      if ( entry.picks ) report.count("Automation", "skills that say what their unit picks as they are learnt", name);
       if ( entry.effects.length ) report.count("Automation", variants ? "effects applied by the system, once a variant is chosen" : "effects applied by the system");
       if ( entry.left ) report.count("Automation", "effects applied by the system with a part left to the table", `${name}: ${entry.left}`);
+      if ( entry.note ) report.count("Automation", "skills with a note on how the system reads them", `${name}: ${entry.note}`);
     }
   }
 
@@ -198,6 +309,14 @@ for ( const { row, section } of rows ) {
     report.count("Left as text", "a leading chance the activation fields cannot hold", `${name}: ${chance.unread}`);
   } else if ( /\b(STR|MAG|DEF|RES|DEX|SPD|LUK)\s*(\/\s*[\d.]+)?\s*%/.test(effect) ) {
     report.count("Left as text", "a chance that is only part of what the skill does", name);
+  }
+
+  // How far the system applies the Effect by itself
+  system.coverage.state = coverageOf({ effect, listed: !!entry, left: system.coverage.left, boost: !!bonus });
+
+  // A skill with an Effect has something behind it, or says why not: nothing is done by being listed alone
+  if ( unaccounted({ effect, effects: system.effects, boost: !!bonus, usage: system.usage.kind, note: system.coverage.note, left: system.coverage.left }) ) {
+    problems.push(`${where}: has an Effect and neither effects, nor a flat bonus, nor a usage, nor a note in effects.json saying why`);
   }
 
   section.count++;
@@ -226,6 +345,12 @@ for ( const section of sections.filter((entry) => entry.kind === null) ) {
     return cells;
   });
   const [head, ...body] = lines;
+
+  // The options the skill lists for the creature it makes are those rows
+  for ( const makes of makesIn(target.system.effects).filter((entry) => entry.body === "table") ) {
+    for ( const problem of checkTable(makes.options, head, body) ) problems.push(`"${section.name}": effects.json, ${target.name}: ${problem}`);
+    report.count("Automation", `options of a creature checked against "${section.name}"`, target.name);
+  }
   const html = [
     `<h3>${encode(section.name)}</h3>`,
     "<table>",
@@ -388,6 +513,18 @@ for ( const entry of sections ) {
   report.count("Rows that are not skills", "section headings, made into folders");
 }
 report.count("Rows that are not skills", "the header row");
+
+// The weapons that skills name, kept with their numbers for the tests: written anew whenever it has changed
+const sorted = (table) => Object.fromEntries(Object.keys(table).sort().map((key) => [key, table[key]]));
+const lentText = `${JSON.stringify({
+  note: "Written by tools/build-skills.mjs from the Weapons tab of the Reference Sheet: the weapons that skills in effects.json name, with their numbers. Do not edit by hand.",
+  weapons: sorted(lent.weapons),
+  tomes: sorted(lent.tomes)
+}, null, 1)}\n`;
+if ( !problems.length && (!existsSync(LENT_FILE) || (readFileSync(LENT_FILE, "utf8") !== lentText)) ) {
+  writeFileSync(LENT_FILE, lentText);
+  report.add("Automation", `Wrote ${Object.keys(lent.weapons).length} weapons that skills name to packs-src/skills/lent-weapons.json.`);
+}
 const count = (test) => documents.filter(test).length;
 report.add("Name markers", `${count((d) => d.system.chosen)} skills are Choose when to activate, ${count((d) => d.system.nihil)} are cancelled by Nihil, `
   + `${count((d) => d.system.scroll === "none")} cannot be put on a scroll and ${count((d) => d.system.scroll === "sameClass")} only for the same base class.`);
@@ -397,6 +534,42 @@ for ( const line of picker.summary() ) report.add("Images", line);
 if ( problems.length ) for ( const problem of problems ) report.add(`Problems (${problems.length})`, problem);
 else report.add("Problems", "None. Every skill and folder passed Foundry's own validation.");
 report.print();
+
+/* -------------------------------------------- */
+/*  The scoreboard                              */
+/* -------------------------------------------- */
+
+if ( flag("--status") ) {
+  const WORDS = { done: "done", part: "part", text: "text only" };
+  const tally = (rows) => Object.fromEntries(Object.keys(WORDS).map((state) => [state, rows.filter((row) => row.state === state).length]));
+  const line = (counts) => Object.keys(WORDS).map((state) => `${counts[state]} ${WORDS[state]}`).join(", ");
+  const boards = sections.filter((entry) => entry.kind !== null).map((entry) => {
+    const rows = skills.filter((skill) => skill.section === entry).map(({ name, system }) => ({
+      name, kind: system.kind, folder: entry.name, state: system.coverage.state, left: system.coverage.left, note: system.coverage.note
+    }));
+    return { name: entry.name, kind: entry.kind, skills: rows.length, ...tally(rows), rows };
+  });
+  const all = boards.flatMap((board) => board.rows);
+  const totals = { skills: all.length, ...tally(all) };
+
+  console.log("Scoreboard\n==========");
+  for ( const board of boards ) {
+    console.log(`\n${board.name}: ${board.skills} skills, ${line(board)}`);
+    if ( !flag("--quiet") ) for ( const row of board.rows ) console.log(`  ${WORDS[row.state].padEnd(9)}  ${row.name}`);
+  }
+  console.log(`\nAll skills: ${totals.skills} skills, ${line(totals)}\n`);
+
+  const path = option("--status");
+  if ( path && !path.startsWith("--") ) {
+    mkdirSync(dirname(resolve(path)), { recursive: true });
+    writeFileSync(resolve(path), JSON.stringify({
+      totals,
+      folders: boards.map(({ rows, ...board }) => board),
+      skills: all
+    }, null, 1));
+    console.log(`Wrote ${resolve(path)}`);
+  }
+}
 
 writeJson(documents, folders);
 if ( problems.length ) {

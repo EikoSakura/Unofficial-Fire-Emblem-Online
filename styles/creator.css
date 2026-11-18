@@ -298,6 +298,7 @@
 .feo .cr-pick:hover, .feo .cr-pick:focus-visible { border-color: var(--feo-line); }
 .feo .cr-pick[aria-pressed="true"] { border-color: transparent; background: var(--feo-gold); color: var(--feo-gold-ink); }
 .feo .cr-pick[disabled] { cursor: default; opacity: .4; }
+.feo .cr-picked-text { align-self: center; margin-right: 4px; }
 .feo .cr-pick small { margin-left: 4px; font-weight: 500; opacity: .75; }
 
 .feo .cr-line {

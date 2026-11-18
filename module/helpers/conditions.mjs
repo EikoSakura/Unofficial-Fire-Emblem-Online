@@ -1,7 +1,10 @@
 import { FEO } from "../config.mjs";
-import { applyCondition, conditionConfig, endTurn, startTurn } from "../rules/conditions.mjs";
+import { applyCondition, aroundTicks, conditionConfig, endTurn, startTurn } from "../rules/conditions.mjs";
+import { damageShares } from "../rules/events.mjs";
 import { postCard } from "./chat.mjs";
 import { buildTurnCard } from "./condition-context.mjs";
+import { damageUnit, eventUnitOf, healUnit, pop } from "./events.mjs";
+import { standingOf, tokenInView } from "./positions.mjs";
 
 /**
  * Conditions on units in Foundry. A condition is an active effect carrying the condition's status; the turns
@@ -39,7 +42,8 @@ export function isTracked(actor) {
 /* -------------------------------------------- */
 
 /**
- * Save changes to a unit's conditions.
+ * Save changes to a unit's conditions, as they are: whether a condition is applied at all, and what follows
+ * from it, is settled before (see `afflictUnit` in `events.mjs`).
  * @param {Actor} actor
  * @param {Record<string, number|null>} changes   Turns left by condition id; null removes the condition
  * @returns {Promise<void>}
@@ -70,14 +74,14 @@ export async function setConditions(actor, changes) {
 
   if ( deleted.length ) await actor.deleteEmbeddedDocuments("ActiveEffect", deleted);
   if ( updated.length ) await actor.updateEmbeddedDocuments("ActiveEffect", updated);
-  if ( created.length ) await actor.createEmbeddedDocuments("ActiveEffect", created, { keepId: true });
+  if ( created.length ) await actor.createEmbeddedDocuments("ActiveEffect", created, { keepId: true, [FEO.id]: { settled: true } });
 }
 
 /* -------------------------------------------- */
 
 /**
- * Apply a condition to a unit. A condition it already has is reset to its full time, or added to if it is
- * one that stacks.
+ * Apply a condition to a unit as it is, without asking anybody's skills, as when a unit is set up in Edit
+ * mode. A condition it already has is reset to its full time, or added to if it is one that stacks.
  * @param {Actor} actor
  * @param {string} id                 A key of FEO.conditions
  * @param {object} [options]
@@ -104,9 +108,18 @@ export async function startTurnFor(actor) {
 
   const { value: hp, max: hpMax } = actor.system.hp;
   // The unit's skills may bend what its conditions deal, how fast they run out and whether they do
-  // A Staggered unit takes more from each of them
-  const result = startTurn({ hp, hpMax, conditions, bends: actor.system.skills?.bends ?? null, times: actor.system.stagger?.times ?? 1 });
-  if ( result.hp !== hp ) await actor.update({ "system.hp.value": result.hp });
+  // What it takes more or less of, as a Staggered unit takes more, counts for each of them
+  const share = damageShares(eventUnitOf(actor), { kind: "condition" });
+  const result = startTurn({ hp, hpMax, conditions, bends: actor.system.skills?.bends ?? null, times: share.times });
+  if ( result.ticks.length && share.shares.length ) pop(actor, share.shares.map(({ skill }) => ({ text: skill, tone: "skill" })));
+
+  // What the conditions restore and what they deal goes the way of all healing and all damage: a blow that
+  // would be fatal may be survived, and the card tells what came of it
+  if ( result.healed ) await healUnit(actor, result.healed, { down: true });
+  if ( result.damage > 0 ) {
+    const hurt = await damageUnit(actor, result.damage, { kind: "condition", settled: true });
+    if ( hurt ) Object.assign(result, { hp: hurt.hp, damage: hurt.dealt, defeated: hurt.defeated });
+  }
 
   const changes = {};
   for ( const id of result.ended ) changes[id] = null;
@@ -136,4 +149,49 @@ export async function endTurnFor(actor) {
   const { ended } = endTurn({ conditions: conditionsOf(actor) });
   if ( ended.length ) await setConditions(actor, Object.fromEntries(ended.map((id) => [id, null])));
   return ended;
+}
+
+/* -------------------------------------------- */
+
+/** The flag, on a unit, that lists the conditions of the allies around it which have dealt it their damage this turn. */
+const AROUND_FLAG = "aroundTick";
+
+/**
+ * A moment of a unit's turn comes: the conditions of the allies around it that reach it (see `around` in the
+ * conditions table) deal it their damage, each once a turn. It is dealt as the turn starts where the unit
+ * stands that near then, and otherwise as the turn ends where it stands that near by then.
+ * @param {Actor} actor
+ * @param {"start"|"end"} moment
+ * @returns {Promise<number>}     The HP it lost
+ */
+export async function aroundTickFor(actor, moment) {
+  if ( (actor?.type !== "unit") || actor.system.defeat?.state || !(actor.system.hp?.value > 0) ) return 0;
+  const before = actor.getFlag(FEO.id, AROUND_FLAG);
+  const taken = ((moment === "end") && Array.isArray(before)) ? before : [];
+  const token = actor.token ?? tokenInView(actor);
+  const place = token ? standingOf(token) : null;
+  const ticks = place ? aroundTicks(place.near, actor.system.hp.max, { taken }).filter((tick) => tick.damage > 0) : [];
+
+  // What was dealt as the turn started is remembered until it ends
+  if ( (moment === "start") && ticks.length ) await actor.setFlag(FEO.id, AROUND_FLAG, ticks.map((tick) => tick.id));
+  else if ( before !== undefined ) await actor.unsetFlag(FEO.id, AROUND_FLAG);
+  let lost = 0;
+  const rows = [];
+  for ( const tick of ticks ) {
+    if ( actor.system.defeat?.state || !(actor.system.hp.value > 0) ) break;
+    const label = game.i18n.has(`FEO.Condition.${tick.id}`) ? game.i18n.localize(`FEO.Condition.${tick.id}`) : tick.name;
+    pop(actor, [{ text: label, tone: "skill" }]);
+    const hurt = await damageUnit(actor, tick.damage, { kind: "condition", token });
+    const dealt = hurt?.dealt ?? 0;
+    lost += dealt;
+    rows.push({ label: `${label} (${tick.from})`, value: game.i18n.format("FEO.Act.harmed", { amount: dealt }) });
+  }
+  if ( rows.length ) {
+    await postCard(actor, {
+      title: game.i18n.format("FEO.Area.around", { name: actor.token?.name ?? actor.name }),
+      subtitle: game.i18n.localize(`FEO.Area.aroundAt.${moment}`),
+      rows
+    });
+  }
+  return lost;
 }

@@ -31,7 +31,8 @@ export function prepareUsage(skill) {
     turns = turnsToSitOut(state);
     note = turns > 0 ? "FEO.Usage.cooldownLeft" : "FEO.Usage.readyNext";
   }
-  else if ( usage.uses > 0 ) note = "FEO.Usage.usesLeft";
+  // A skill that may be used beyond its uses says so once they are spent
+  else if ( usage.uses > 0 ) note = able.over ? "FEO.Usage.overUses" : "FEO.Usage.usesLeft";
   else if ( state.lasting > 0 ) {
     turns = state.lasting;
     note = turns === 1 ? "FEO.Usage.lastingTurn" : "FEO.Usage.lastingTurns";
@@ -40,13 +41,13 @@ export function prepareUsage(skill) {
   const label = {
     declare: active ? "FEO.Usage.declared" : "FEO.Usage.declare",
     toggle: active ? "FEO.Usage.on" : "FEO.Usage.off",
-    action: "FEO.Usage.use"
+    action: able.early ? "FEO.Usage.useEarly" : "FEO.Usage.use"
   }[usage.kind];
   const auto = usage.kind === "auto";
   return {
     action: auto ? null : (usage.kind === "action") ? "useSkill" : "switchSkill",
     label: label ?? null,
-    hint: auto ? null : `FEO.Usage.hint.${usage.kind}`,
+    hint: auto ? null : able.early ? "FEO.Usage.hint.early" : `FEO.Usage.hint.${usage.kind}`,
     active: auto ? false : active,
     // Switching something off is always possible; switching on or using needs the skill to be ready
     blocked: !able.ok && (auto || (usage.kind === "action") || ((usage.kind === "declare") && !active)),
@@ -72,9 +73,11 @@ export function usageRows(usage, state, i18n) {
     label: i18n.localize("FEO.Usage.lastsRow"),
     value: usage.lasts === 1 ? i18n.localize("FEO.Usage.untilNextTurn") : i18n.format("FEO.Usage.turns", { turns: usage.lasts })
   });
-  if ( usage?.cooldown > 0 ) rows.push({
+  // The turns it now sits out, which the unit's skills may have made fewer than the skill says
+  const turns = (state?.cooldown > 0) ? turnsToSitOut(state) : (usage?.cooldown ?? 0);
+  if ( (usage?.cooldown > 0) && (turns > 0) ) rows.push({
     label: i18n.localize("FEO.Usage.cooldownRow"),
-    value: i18n.format("FEO.Usage.turns", { turns: usage.cooldown })
+    value: i18n.format("FEO.Usage.turns", { turns })
   });
   if ( usage?.uses > 0 ) rows.push({
     label: i18n.localize("FEO.Usage.usesRow"),

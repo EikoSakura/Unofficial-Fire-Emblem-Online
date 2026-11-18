@@ -9,7 +9,7 @@
       <div>
         <span class="cs-tier">{{kindLabel}}</span>
         <h3>{{name}}</h3>
-        <div class="sub">{{capacity}}</div>
+        <div class="sub">{{capacity}}{{#if coverage}}<span class="sk-covered" data-tooltip-html="{{coverage.hint}}"><i class="sk-cover" data-state="{{coverage.state}}"></i>{{coverage.label}}</span>{{/if}}</div>
       </div>
       <div class="cs-buttons">
         {{#if uuid}}
@@ -24,6 +24,25 @@
 
     <div class="cs-body">
       {{#if effect}}<p class="cs-desc effect">{{effect}}</p>{{/if}}
+
+      {{#if ../picks.length}}
+      <div class="cs-picks">
+        {{#each ../picks as |pick|}}
+        <section class="cs-pick{{#if pick.open}} open{{/if}}">
+          <h4>{{pick.label}}{{#if pick.tally}} <small>{{pick.tally}}</small>{{/if}}</h4>
+          <div class="cs-pick-options">
+            {{#each pick.options as |option|}}
+            <button type="button" class="cs-pick-option" data-action="pickOption" data-pick="{{pick.index}}" data-value="{{option.value}}"
+              aria-pressed="{{option.pressed}}" {{#if option.barred}}disabled{{/if}}>
+              <b>{{option.label}}</b>{{#if option.cost}}<i>{{option.cost}}</i>{{/if}}
+              {{#if option.hint}}<span>{{option.hint}}</span>{{/if}}
+            </button>
+            {{/each}}
+          </div>
+        </section>
+        {{/each}}
+      </div>
+      {{/if}}
 
       {{#if marks.length}}
       <section class="cs-sec">
@@ -76,7 +95,7 @@
     <footer class="cs-choose{{#if ../choose.chosen}} chosen{{/if}}{{#if ../choose.barred}} barred{{/if}}">
       <span class="txt">{{../choose.text}}</span>
       {{#if ../choose.can}}
-      <button type="button" class="cp-choose" data-action="chooseSkill">{{feoIcon "check"}}{{../choose.label}}</button>
+      <button type="button" class="cp-choose" data-action="{{#if ../picking}}choosePick{{else}}chooseSkill{{/if}}">{{feoIcon "check"}}{{../choose.label}}</button>
       {{else if ../choose.chosen}}
       <span class="cp-chosen">{{feoIcon "check"}}</span>
       {{/if}}

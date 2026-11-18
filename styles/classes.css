@@ -268,53 +268,61 @@
   background: color-mix(in srgb, var(--feo-accent) 10%, transparent);
 }
 
-/* ---------- Dialog: where a summoned unit appears ---------- */
+/* ---------- Dialog: what a skill has its unit pick as it is learnt ---------- */
 
-.feo-summon .pad {
+.feo-skill-picks { display: grid; gap: 12px; }
+.feo-skill-picks .pick-effect { margin: 0; font-size: .9em; opacity: .8; white-space: pre-line; }
+.feo-skill-picks .pick-group { display: grid; gap: 7px; }
+.feo-skill-picks .pick-group header { display: flex; align-items: baseline; gap: 8px; }
+.feo-skill-picks .pick-group header b { font-size: .78em; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.feo-skill-picks .pick-group.open header b { color: var(--feo-accent); opacity: 1; }
+.feo-skill-picks .pick-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
+
+.feo-skill-picks .pick-tile {
+  all: unset;
+  box-sizing: border-box;
   display: grid;
-  grid-template: "a north b" 52px "west self east" 52px "c south d" 52px / 52px 52px 52px;
-  gap: 5px;
-  justify-content: center;
-}
-
-.feo-summon .pad .north { grid-area: north; }
-.feo-summon .pad .east { grid-area: east; }
-.feo-summon .pad .south { grid-area: south; }
-.feo-summon .pad .west { grid-area: west; }
-
-.feo-summon .pad .self {
-  grid-area: self;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.feo-summon .spot, .feo-summon .type {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  padding: 9px 11px;
   border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, currentColor 4%, transparent);
   cursor: pointer;
 }
 
-.feo-summon .spot { font-size: 1.2em; }
-.feo-summon .spot input { position: absolute; opacity: 0; pointer-events: none; }
-.feo-summon .spot.taken { border-style: dashed; opacity: .35; cursor: not-allowed; }
-.feo-summon .spot:has(input:focus-visible) { outline: 2px solid var(--feo-accent); outline-offset: 1px; }
+.feo-skill-picks .pick-tile:hover, .feo-skill-picks .pick-tile:focus-visible { border-color: var(--feo-accent); }
+.feo-skill-picks .pick-tile[aria-pressed="true"] { border-color: var(--feo-accent); background: color-mix(in srgb, var(--feo-accent) 14%, transparent); }
+.feo-skill-picks .pick-tile[disabled] { cursor: default; opacity: .4; }
+.feo-skill-picks .pick-tile i { font-style: normal; font-weight: 700; opacity: .7; }
+.feo-skill-picks .pick-tile small { grid-column: 1 / -1; }
 
-.feo-summon .spot:has(input:checked), .feo-summon .type:has(input:checked) {
-  border-color: var(--feo-accent);
-  background: color-mix(in srgb, var(--feo-accent) 14%, transparent);
-  color: var(--feo-accent);
+/* ---------- Dialogs: a creature's growth rates, and the units that are called in ---------- */
+
+.feo-creature-growth, .feo-creature-prepared { display: grid; gap: 10px; }
+.feo-creature-growth .hint, .feo-creature-prepared .hint { margin: 0; font-size: .9em; opacity: .8; }
+.feo-creature-growth .growth-rows { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 14px; }
+
+.feo-creature-growth .growth-row, .feo-creature-prepared .prepared-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
 }
 
-.feo-summon .types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.feo-summon .type { padding: 7px 8px; }
+.feo-creature-growth .growth-row span { flex: 1; font-weight: 700; }
+.feo-creature-growth .growth-row.barred { border-style: dashed; opacity: .4; }
+.feo-creature-growth .growth-row input, .feo-creature-prepared .prepared-row input { width: 64px; text-align: center; }
+.feo-creature-growth .tally, .feo-creature-prepared .tally { margin: 0; text-align: right; font-weight: 700; color: var(--feo-accent); }
+.feo-creature-growth .tally.bad { color: var(--feo-bad, #c0392b); }
+.feo-creature-prepared .prepared-list { display: grid; gap: 5px; max-height: 360px; overflow-y: auto; }
+.feo-creature-prepared h4 { margin: 6px 0 0; font-size: .78em; letter-spacing: .08em; text-transform: uppercase; opacity: .7; border: 0; }
+.feo-creature-prepared .prepared-row img { border: 0; border-radius: 6px; object-fit: cover; }
+.feo-creature-prepared .prepared-row .who { flex: 1; display: grid; }
+.feo-creature-prepared .prepared-row .who small { opacity: .7; }
 
 .feo-promotion fieldset {
   display: grid;

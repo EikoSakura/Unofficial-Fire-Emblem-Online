@@ -291,13 +291,14 @@ function prepareLeadership(system, leaders) {
   const choices = Object.fromEntries(leaders.map((leader) => [leader.uuid, leader.name]));
   return {
     stars: leadership.stars ?? 0,
+    fromSkills: leadership.fromSkills ?? 0,
     max: config.max,
     authority,
     choices,
     linked: !!authority,
     missing: !!authority && !(authority in choices),
     received: leadership.received ?? 0,
-    own: parts(leadershipBonus(leadership.stars)),
+    own: parts(leadershipBonus(leadership.total ?? leadership.stars)),
     lent: parts(leadershipBonus(leadership.received))
   };
 }

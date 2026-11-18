@@ -1,5 +1,6 @@
 import { FEO } from "../config.mjs";
-import { chanceOf, rolledProc } from "../rules/skills.mjs";
+import { COVERAGE, chanceOf, rolledProc } from "../rules/skills.mjs";
+import { IMITATED_FLAG, IMITATION_FLAG, speaksOfImitation } from "../rules/imitation.mjs";
 import { USAGE_KINDS, USAGE_PERIODS } from "../rules/skill-usage.mjs";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
@@ -44,7 +45,22 @@ export default class SkillData extends foundry.abstract.TypeDataModel {
       // offers several, and `automate` switches the effects off for a skill the table would rather run by hand
       effects: new ArrayField(new ObjectField()),
       choice: new StringField({ required: true, blank: true }),
+
+      // What the skill has its unit pick as it is learnt, where its effects do not say so by themselves (see
+      // `module/rules/picks.mjs`); what is picked is kept as `choice`. `raises` counts the times the skill has
+      // been raised in place of another, as Authority is on promoting
+      picks: new ArrayField(new ObjectField()),
+      raises: integer(0, { min: 0 }),
       automate: new BooleanField({ initial: true }),
+
+      // How far the system applies the Effect by itself, as the skills build works it out: all of it ("done"),
+      // some of it ("part", with `left` saying what the table still does by hand) or none ("text"). `note`
+      // says how the system reads the skill. Blank on a skill that did not come from the skills compendium
+      coverage: new SchemaField({
+        state: new StringField({ required: true, blank: true, choices: COVERAGE }),
+        left: new StringField({ required: true, blank: true }),
+        note: new StringField({ required: true, blank: true })
+      }),
 
       // How a skill that is chosen when to activate is used, and where it stands, as `module/rules/
       // skill-usage.mjs` explains: declared for a fight, switched on and off, or used as an action; its
@@ -54,13 +70,27 @@ export default class SkillData extends foundry.abstract.TypeDataModel {
         cooldown: integer(0, { min: 0 }),
         lasts: integer(0, { min: 0 }),
         uses: integer(0, { min: 0 }),
-        per: new StringField({ required: true, blank: true, choices: USAGE_PERIODS })
+        per: new StringField({ required: true, blank: true, choices: USAGE_PERIODS }),
+
+        // For an action: using it is not the unit's Action; it is used before the unit moves; and it may be
+        // used while on cooldown, at the price of a condition
+        free: new BooleanField(),
+        unmoved: new BooleanField(),
+        early: new ObjectField({ required: false, nullable: true, initial: null }),
+
+        // It may be used beyond the uses it has, each such use starting a cooldown of its own
+        over: new ObjectField({ required: false, nullable: true, initial: null })
       }),
       state: new SchemaField({
         active: new BooleanField(),
         cooldown: integer(0, { min: 0 }),
         lasting: integer(0, { min: 0 }),
-        used: integer(0, { min: 0 })
+        used: integer(0, { min: 0 }),
+        early: new BooleanField(),
+
+        // What its unit picked for a fight: the steps of a trade or of something spent, and a stat (see
+        // `module/rules/choices.mjs`)
+        picked: new ObjectField()
       }),
 
       // Flat adjustments granted while the skill is equipped
@@ -69,6 +99,24 @@ export default class SkillData extends foundry.abstract.TypeDataModel {
 
       description: new HTMLField()
     };
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A unit that imitates another has that unit's skills in place of its own: its own are set aside for as long
+   * as it does, all but those that speak of imitation, which are what it imitates with. A skill that is set
+   * aside counts as not equipped while its unit is prepared; what is saved of it stays as it is.
+   * @override
+   */
+  prepareBaseData() {
+    const item = this.parent;
+    const actor = item?.actor ?? null;
+    this.setAside = false;
+    if ( !actor?.flags?.[FEO.id]?.[IMITATION_FLAG] || item.flags?.[FEO.id]?.[IMITATED_FLAG] ) return;
+    if ( speaksOfImitation(this.effects) ) return;
+    this.setAside = !!this.equipped;
+    this.equipped = false;
   }
 
   /* -------------------------------------------- */
@@ -87,7 +135,7 @@ export default class SkillData extends foundry.abstract.TypeDataModel {
       activation: owner.skills?.activation ?? 0,
       always: !!owner.skills?.rules?.includes("alwaysActivate")
     };
-    const self = { hp: owner.hp?.value ?? 0, hpMax: owner.hp?.max ?? 0, level: owner.level, stats: owner.statValues };
+    const self = { hp: owner.hp?.value ?? 0, hpMax: owner.hp?.max ?? 0, level: owner.level, tier: owner.classTier, stats: owner.statValues };
 
     const proc = rolledProc(this);
     if ( !proc ) return null;

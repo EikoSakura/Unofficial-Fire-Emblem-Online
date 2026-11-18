@@ -67,7 +67,10 @@
       {{#if extras.passive}}<span class="tag good" data-tooltip="{{localize "FEO.Optional.staffPassives.hint"}}">{{localize "FEO.Optional.staffPassives.tag"}} <b>{{#each extras.passive as |part|}}{{#unless @first}}, {{/unless}}{{#if part.value}}{{part.value}} {{/if}}{{#if part.condition}}{{localize part.label condition=(localize part.condition)}}{{else}}{{localize part.label}}{{/if}}{{#if part.note}} ({{part.note}}){{/if}}{{/each}}</b></span>{{/if}}
       {{/with}}
       <span class="tag" data-tooltip="{{localize "FEO.Combat.staffAvoidHint"}}">{{localize "FEO.Combat.staffAvoid"}} <b>{{forecast.staffAvoid}}</b></span>
+      {{#if forecast.block}}<span class="tag good" data-tooltip="{{forecast.block.tip}}">{{localize "FEO.Block.label"}} <b>{{forecast.block.chance}}%</b></span>{{/if}}
+
       {{#if affinity.effect}}<span class="tag" data-tooltip="{{localize affinity.effect.text}} {{localize affinity.effect.mode}}">{{feoIcon affinity.icon}}{{localize "FEO.Optional.affinityEffect.name" affinity=(localize affinity.label)}}</span>{{/if}}
+      {{#if affinity.use}}{{#if affinity.use.note}}<span class="kind usage{{#if affinity.use.blocked}} warn{{/if}}">{{localize affinity.use.note turns=affinity.use.turns left=affinity.use.left uses=affinity.use.uses}}</span>{{/if}}{{#if @root.editable}}<button type="button" class="btn small usage{{#if affinity.use.active}} on{{/if}}" data-action="switchAffinity" aria-pressed="{{#if affinity.use.active}}true{{else}}false{{/if}}"{{#if affinity.use.blocked}} disabled{{/if}} data-tooltip="{{localize affinity.use.hint}}">{{localize affinity.use.label}}</button>{{else}}{{#if affinity.use.active}}<span class="kind usage">{{localize affinity.use.label}}</span>{{/if}}{{/if}}{{/if}}
       {{#if forecast.endurance}}<span class="tag good" data-tooltip="{{localize "FEO.Combat.enduranceHint"}}">{{localize "FEO.Bond.end"}} <b>+{{forecast.endurance}}</b></span>{{/if}}
       {{#if forecast.haste}}<span class="tag good" data-tooltip="{{localize "FEO.Combat.hasteHint"}}">{{localize "FEO.Bond.hst"}} <b>+{{forecast.haste}}</b></span>{{/if}}
       {{#if forecast.activation}}<span class="tag good" data-tooltip="{{localize "FEO.Combat.activationHint"}}">{{localize "FEO.Bond.activation"}} <b>+{{forecast.activation}}</b></span>{{/if}}
@@ -163,6 +166,28 @@
         </h3>
         <div class="rows">
           {{#each gear as |item|}}
+          {{#if item.shield}}
+          <div class="row item draggable{{#if item.equipped}} equipped{{/if}}{{#if item.spent}} broken{{/if}}{{#if item.wasBroken}} broken{{/if}}" data-item-id="{{item.id}}">
+            <button type="button" class="row-main" data-action="toggleEquip" aria-pressed="{{item.equipped}}"
+                    data-tooltip="{{#if item.equipped}}{{localize "FEO.Block.unequip"}}{{else}}{{localize "FEO.Block.equip"}}{{/if}}{{#if item.wasBroken}} {{localize "FEO.Weapon.brokenWas" name=item.originalName}}{{/if}}">
+              <span class="ico">{{feoIcon "shield"}}</span>
+              <span class="txt">
+                <span class="nm">{{item.name}}</span>
+                <span class="sub">{{item.effect}}</span>
+              </span>
+              {{#if item.max}}<span class="count">{{item.uses}} / {{item.max}}</span>{{/if}}
+              <span class="state">{{#if item.equipped}}{{feoIcon "check"}}{{else}}{{feoIcon "ring"}}{{/if}}</span>
+            </button>
+            <span class="row-controls">
+              {{#if @root.editable}}
+              {{#if item.canRepair}}<button type="button" data-action="repairItem" data-tooltip="{{localize "FEO.Repair.hint" cost=item.repair}}" aria-label="{{localize "FEO.Repair.button"}}">{{feoIcon "hammer"}}</button>{{/if}}
+              <button type="button" data-action="sellItem" data-tooltip="{{localize "FEO.Sell.hint" gold=item.sell}}" aria-label="{{localize "FEO.Sell.button"}}">{{feoIcon "coin"}}</button>
+              {{/if}}
+              <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "spark"}}</button>
+              {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
+            </span>
+          </div>
+          {{else}}
           <div class="row item draggable{{#if item.spent}} broken{{/if}}" data-item-id="{{item.id}}">
             <button type="button" class="row-main" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}">
               <span class="ico">{{feoIcon "flask"}}</span>
@@ -184,8 +209,10 @@
               {{/if}}
             </span>
           </div>
+          {{/if}}
           {{else}}
           <p class="empty">{{localize "FEO.Item.none"}}</p>
+
           {{/each}}
         </div>
       </div>

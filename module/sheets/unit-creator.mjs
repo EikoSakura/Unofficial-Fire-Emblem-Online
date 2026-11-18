@@ -347,6 +347,7 @@ export const CREATOR_ACTIONS = {
         case "source": return creation.chooseSource(actor, ability, value);
         case "boon": case "bane": return creation.chooseBoon(actor, field, value);
         case "affinity": return creation.setField(actor, "system.affinity", value, "affinity");
+        case "affinityRank": return creation.setField(actor, "system.affinityRank", value, "affinity");
         case "classSkill": return creation.chooseSkill(actor, "class", value);
         case "genericSkill": return creation.chooseSkill(actor, "generic", value);
         case "first": return creation.chooseRanks(actor, creation.recordOf(actor).ranks.take, value);
@@ -360,7 +361,12 @@ export const CREATOR_ACTIONS = {
 
   /** Choose the variant of a starting skill, or take or give up a growth rate it raises. */
   creatorVariant(event, target) {
-    return run(this, () => creation.chooseVariant(this.actor, target.dataset.id, target.dataset.value));
+    return run(this, () => creation.chooseVariant(this.actor, target.dataset.id, target.dataset.value, Number(target.dataset.pick) || 0));
+  },
+
+  /** Open the picker for what a starting skill has its unit pick from a long list. */
+  creatorPickOpen(event, target) {
+    return run(this, () => creation.openVariant(this.actor, target.dataset.id));
   },
 
   /** Take or give up one of the proficiencies a class offers. The oldest makes room for a new one. */

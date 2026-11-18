@@ -11,15 +11,27 @@
   {{#if strikes.length}}
   <ol class="strikes">
     {{#each strikes as |strike|}}
+    {{#if strike.round}}
+    <li class="round"><span>{{strike.label}}</span></li>
+    {{else if strike.answer}}
+    <li class="{{strike.cls}}" data-side="{{strike.side}}" data-army="{{strike.army}}">
+      <i class="fa-solid {{strike.icon}}"></i>
+      <span class="who">{{strike.name}}</span>
+      <span class="said">{{strike.label}}</span>
+    </li>
+    {{else}}
     <li class="{{strike.cls}}" data-side="{{strike.side}}" data-army="{{strike.army}}">
       <i class="fa-solid {{strike.icon}}"></i>
       <span class="who">{{strike.name}}</span>
       {{#if strike.crit}}<span class="tag">{{localize "FEO.Combat.critical"}}</span>{{/if}}
+      {{#if strike.block}}<span class="tag blocked" data-tooltip="{{strike.blockTip}}"><i class="fa-solid fa-shield-halved"></i>{{strike.block}}</span>{{/if}}
+
       <span class="result">{{strike.result}}</span>
       {{#if strike.tags.length}}
       <span class="skills">{{#each strike.tags as |tag|}}<span class="tag skill {{tag.cls}}">{{tag.label}}</span>{{/each}}</span>
       {{/if}}
     </li>
+    {{/if}}
     {{/each}}
   </ol>
   {{/if}}

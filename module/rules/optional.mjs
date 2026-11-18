@@ -71,8 +71,136 @@ export function affinityEffectMode(affinity, options = {}) {
   const config = options.config ?? FEO.optional.affinityEffects;
   if ( !config.enabled || !affinity || !(affinity in (options.affinities ?? FEO.affinities)) ) return null;
   const effects = affinityEffects(affinity, options);
-  if ( !effects.length ) return "manual";
+  if ( !effects.length ) {
+    const built = affinityRankOf({ affinity }, options) || config.activationExp?.[affinity] || config.cooldown?.[affinity];
+    return built ? "auto" : "manual";
+  }
   return effects.every(onlyReminds) ? "announced" : "auto";
+}
+
+/* -------------------------------------------- */
+
+/** What the effect of an Affinity goes by among its unit's skills, in place of the id an Item has. */
+export const AFFINITY_ID = "affinity";
+
+/**
+ * How an Affinity its unit chooses when to use is used, as a skill says it (see `skill-usage.mjs`), and what
+ * spends it.
+ * @param {string} affinity
+ * @param {object} [options]        As for `affinityEffects`
+ * @returns {{usage: object, spentBy: "fight"|"move"|"shove"}|null}     Null for an Affinity that is always
+ *          there, for no Affinity, and while the world does not play with the module
+ */
+export function affinityUsage(affinity, { config = FEO.optional.affinityEffects, affinities = FEO.affinities } = {}) {
+  if ( !config.enabled || !affinity || !(affinity in affinities) ) return null;
+  const usage = config.usage?.[affinity];
+  if ( !usage?.kind ) return null;
+  return { usage: { ...usage }, spentBy: config.spentBy?.[affinity] ?? "fight" };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The experience an Affinity gives its unit for the Skills of that unit that rolled to activate and did, as
+ * Emblem does: so much for each, by what the Skill divides its stat by. A Skill that divides it by something
+ * the Affinity does not name gives nothing.
+ * @param {string} affinity
+ * @param {number[]} [grades]       What each Skill that activated divides its stat by; 1 for one that reads
+ *                                  the whole stat
+ * @param {object} [options]        As for `affinityEffects`
+ * @returns {number}
+ */
+export function activationExp(affinity, grades = [], { config = FEO.optional.affinityEffects, affinities = FEO.affinities } = {}) {
+  if ( !config.enabled || !affinity || !(affinity in affinities) ) return 0;
+  const table = config.activationExp?.[affinity];
+  if ( !table?.length ) return 0;
+  return (grades ?? []).reduce((sum, grade) => {
+    return sum + (table.find((row) => Math.abs(row.div - Number(grade)) < 0.01)?.exp ?? 0);
+  }, 0);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What a chance to activate divides its stat by, for what counts the Skills that activated: 1 for a chance
+ * that is the whole stat, 1.5 for one that is the stat by 1.5, and so on. Only a chance read from a stat of
+ * the unit has one: not a plain percent, not one that needs no roll, not an answer.
+ * @param {object} [proc]           The `proc` of a skill effect, as the skill words it
+ * @returns {number|null}
+ */
+export function activationGrade(proc) {
+  if ( !proc || proc.sure || proc.may || proc.fixed || (proc.percent != null) ) return null;
+  if ( (typeof proc.stat !== "string") || proc.stat.includes(":") ) return null;
+  const grade = (Number(proc.div) || 1) / (Number(proc.times) || 1);
+  return (grade > 0) ? Math.round(grade * 100) / 100 : null;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Does a skill have a cooldown: one of its own, one for a use beyond the uses it has, or one a part of its
+ * effects names?
+ * @param {object} skill            A skill's data: usage, effects
+ * @returns {boolean}
+ */
+export function hasCooldown(skill) {
+  const usage = skill?.usage;
+  if ( !usage?.kind ) return false;
+  if ( (usage.cooldown > 0) || (usage.over?.cooldown > 0) ) return true;
+  return (skill.effects ?? []).some((effect) => (effect?.refresh?.option?.cooldown > 0) || (effect?.step?.cooldown?.stay > 0));
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What an Affinity takes off the cooldown of the one skill its unit chose for it, as Key does.
+ * @param {object} unit
+ * @param {string} unit.affinity
+ * @param {string} [unit.affinitySkill]     The skill chosen, by the id of its Item
+ * @param {object} [options]        As for `affinityEffects`
+ * @returns {{skill: string, turns: number}|null}   Null for an Affinity that takes nothing off, and while no
+ *          skill is chosen
+ */
+export function affinityCooldown(unit, { config = FEO.optional.affinityEffects, affinities = FEO.affinities } = {}) {
+  const affinity = unit?.affinity;
+  const inUse = config.enabled || !!unit?.glory?.extras?.resonance;
+  if ( !inUse || !affinity || !(affinity in affinities) ) return null;
+  const turns = Math.trunc(Number(config.cooldown?.[affinity])) || 0;
+  return (turns && unit.affinitySkill) ? { skill: String(unit.affinitySkill), turns } : null;
+}
+
+/* -------------------------------------------- */
+
+/** What a unit keeps the rank of its Affinity under, among the ranks its skills have given. */
+export const AFFINITY_RANK = "affinity";
+
+/**
+ * The rank an Affinity gives in a proficiency of its unit's choice, as Tome's "+1 Rank in a magic Proficiency
+ * of their choice" does. Nothing is given until the choice is made.
+ *
+ * A unit whose Affinity counts at all times, as a Power of Glory has it, is given the rank whether or not the
+ * world plays with the Additional Affinity Effects.
+ * @param {object} unit
+ * @param {string} unit.affinity
+ * @param {string} [unit.affinityRank]      The proficiency chosen; blank while none is
+ * @param {object} [options]
+ * @param {object} [options.config]         FEO.optional.affinityEffects
+ * @param {object} [options.affinities]     The affinities in use: FEO.affinities
+ * @param {object} [options.proficiencies]  The proficiencies in use: FEO.proficiencies
+ * @returns {{options: string[], steps: number, choice: string, wanted: Record<string, number>}|null}
+ *   What can be chosen, the ranks it gives, what is chosen, and the ranks that gives by proficiency; null for
+ *   an Affinity that gives no rank, and while the world does not play with the module
+ */
+export function affinityRankOf(unit, { config = FEO.optional.affinityEffects, affinities = FEO.affinities, proficiencies = FEO.proficiencies } = {}) {
+  const affinity = unit?.affinity;
+  const inUse = config.enabled || !!unit?.glory?.extras?.resonance;
+  if ( !inUse || !affinity || !(affinity in affinities) ) return null;
+  const rule = config.ranks?.[affinity];
+  const options = (rule?.options ?? []).filter((key) => key in proficiencies);
+  const steps = Math.max(Math.trunc(Number(rule?.steps)) || 0, 0);
+  if ( !options.length || !steps ) return null;
+  const choice = options.includes(unit.affinityRank) ? unit.affinityRank : "";
+  return { options, steps, choice, wanted: choice ? { [choice]: steps } : {} };
 }
 
 /* -------------------------------------------- */
@@ -685,7 +813,7 @@ export function optionalSources(system, weapon = null, config = FEO.optional) {
   const veteran = killModifier(weapon, config.weaponKills);
   if ( veteran ) sources.push(veteran);
   if ( config.leadership.enabled ) {
-    const own = leadershipBonus(system.leadership?.stars, config.leadership);
+    const own = leadershipBonus(system.leadership?.total ?? system.leadership?.stars, config.leadership);
     if ( own ) sources.push({ label: "FEO.Optional.leadership.own", localize: true, combat: own });
     const lent = leadershipBonus(system.leadership?.received, config.leadership);
     if ( lent ) sources.push({ label: "FEO.Optional.leadership.fromAuthority", localize: true, combat: lent });

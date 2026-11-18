@@ -1,9 +1,10 @@
 import { FEO } from "../config.mjs";
 import { canAssign, gambitBudget, planGambit, replenished, resolveGambit } from "../rules/battalions.mjs";
+import { extraGo } from "./acting.mjs";
 import { battalionData, buildGambitCard, buildTakeChoices, gambitChanges, gambitForecast, gambitUnitOf } from "./battalion-context.mjs";
 import { postCard, rollD100, rollFromResults } from "./chat.mjs";
 import { applyChanges, incapacitates, measureDistance } from "./exchange.mjs";
-import { takeAction } from "./phases.mjs";
+import { takeAction, turnState } from "./phases.mjs";
 import { staggerStops } from "./stagger.mjs";
 
 /**
@@ -217,6 +218,12 @@ export async function useGambit(actor, token, targetTokens = [], { confirm = con
     if ( plan.blocked ) ui.notifications.warn(`FEO.Optional.battalions.blocked.${plan.blocked}`, { localize: true });
     return !!plan.blocked;
   };
+
+  // A Gambit is an attack, which a unit does not make on a go that leaves it every Action but that
+  if ( (turnState(actor, token) === "ready") && extraGo(actor)?.bars.includes("attack") ) {
+    ui.notifications.warn("FEO.Acting.noAttack", { localize: true });
+    return null;
+  }
   if ( blocked(makePlan()) ) return null;
   if ( !(await confirm(makePlan())) ) return null;
 
@@ -232,6 +239,20 @@ export async function useGambit(actor, token, targetTokens = [], { confirm = con
     return next;
   });
 
+  // A Wound the Gambit would cause may be spared by a skill of the unit that takes it
+  for ( const hit of result.hits ) {
+    const struck = targets[hit.index];
+    if ( !(hit.wounds > 0) || !struck ) continue;
+    try {
+      const { spareHarm } = await import("./events.mjs");
+      const saved = await spareHarm(struck.actor, "wound", hit.wounds, { token: struck.token ?? null });
+      hit.wounds = saved.left;
+      hit.spared = saved.rolls;
+      used.push(...saved.rolls.map((entry) => entry.roll).filter((roll) => Number.isFinite(roll)));
+    } catch(err) {
+      console.error(err);
+    }
+  }
   const changes = gambitChanges(plan, result);
   const unsaved = await applyChanges([
     { uuid: actor.uuid, ...changes.user },
@@ -245,7 +266,7 @@ export async function useGambit(actor, token, targetTokens = [], { confirm = con
     rolls: used.length ? [rollFromResults(used)] : []
   });
 
-  // Using a Gambit is the unit's Action
-  await takeAction(actor, token);
+  // Using a Gambit is the unit's Action, and counts as attacking for what follows an attack
+  await takeAction(actor, token, { action: { kind: "attack" } });
   return message;
 }

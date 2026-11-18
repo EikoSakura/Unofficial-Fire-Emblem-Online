@@ -11,7 +11,7 @@
  *                        next turn. Left where it is until that turn has ended, it comes to with the HP it had
  *
  * Some units are never captured: Ballisticians, Terrors, Mounted and Flying units, a Laguz in its animal form,
- * and a Manakete or Taguel with transformations left. Others are captured without a fight at all: a unit under
+ * a Manakete or Taguel with transformations left, and a unit whose skill says so (`rules: ["uncaptured"]`). Others are captured without a fight at all: a unit under
  * Sleep, Stun, Petrification, Freeze, Beckon, Seduce, Stop or Control, which may then even ride or fly, one
  * with no weapon, one with nothing but broken weapons and staves, and one with nothing but its Fists.
  *
@@ -19,6 +19,8 @@
  * returns with the HP it had before it was captured.
  */
 import { FEO } from "../config.mjs";
+import { carryEntry as burden, liftWeight } from "./rescue.mjs";
+import { UNCAPTURED } from "./stealing.mjs";
 
 /** Is a word found in a text, standing by itself? */
 function names(text, word) {
@@ -44,12 +46,13 @@ export function captureEntry(name = "Capture") {
 /* -------------------------------------------- */
 
 /**
- * What holding a captive does to its captor, as one more skill of its own: what Rescuing does.
+ * What holding a captive does to its captor, as one more skill of its own: what Rescuing does (see
+ * `rescue.mjs`).
  * @param {string} [name]     What it goes by among the unit's numbers
  * @returns {{name: string, innate: true, nihil: false, effects: object[]}}
  */
 export function carryEntry(name = "Captive") {
-  return { name, innate: true, nihil: false, effects: [{ statPercent: { ...FEO.optional.capturing.carry } }] };
+  return burden(name);
 }
 
 /* -------------------------------------------- */
@@ -68,6 +71,8 @@ export function carryEntry(name = "Captive") {
  * @property {{name: string, category: string, broken: boolean}[]} [weapons]
  *                                                The weapons it carries
  * @property {boolean} [out]                      Is it out of the fight already?
+ * @property {Iterable<string>|null} [rules]      The rules its skills give it: one of them may keep it from
+ *                                                being captured
  * @property {boolean} [foe]                      Is it an enemy of the unit that would capture it? Taken to
  *                                                be one unless said otherwise
  */
@@ -95,10 +100,13 @@ export function capturedOutright(target) {
  * Why a unit can never be captured as it is now, if it cannot. One that rides or flies can be while a
  * condition leaves it helpless.
  * @param {CaptureTarget} target
- * @returns {{why: "quality"|"rider"|"shifted"|"transforms", qualities?: string[]}|null}
+ * @returns {{why: "quality"|"rider"|"shifted"|"transforms"|"watchful", qualities?: string[]}|null}
  */
 export function barredFromCapture(target) {
   const config = FEO.optional.capturing;
+
+  // One whose skills keep it from being captured never is, whatever state it is in
+  if ( new Set(target?.rules ?? []).has(UNCAPTURED) ) return { why: "watchful" };
   const has = (list) => list.filter((quality) => names(target?.qualities, quality));
   const barred = has(config.barred);
   if ( barred.length ) return { why: "quality", qualities: barred };
@@ -124,8 +132,11 @@ export function barredFromCapture(target) {
 
 /**
  * Can a unit attempt to capture another?
- * @param {{weight: number, holds?: boolean}} captor      Its Weight, and whether it has a captive already or
- *                                                        one waiting to be picked up
+ * @param {{weight: number, holds?: boolean, carry?: import("./rescue.mjs").Carrying|null}} captor
+ *                                                        Its Weight, whether it has a captive already, one
+ *                                                        waiting to be picked up or an ally it carries, and
+ *                                                        what its skills make of carrying a unit: the Weight
+ *                                                        they add counts here as it does for Rescuing
  * @param {CaptureTarget} target
  * @returns {CaptureCheck}
  */
@@ -135,7 +146,7 @@ export function canCapture(captor, target) {
   if ( captor?.holds ) return no("holding");
   if ( target?.foe === false ) return no("side");
   if ( target?.out ) return no("out");
-  if ( !((captor?.weight ?? 0) > (target?.weight ?? 0)) ) return no("weight");
+  if ( !(liftWeight(captor?.weight, captor?.carry) > (target?.weight ?? 0)) ) return no("weight");
   const barred = barredFromCapture(target);
   if ( barred ) return no(barred.why, barred.qualities ? { qualities: barred.qualities } : {});
   return { ok: true, why: null, outright: capturedOutright(target) };
@@ -152,10 +163,13 @@ export function canCapture(captor, target) {
  * @param {import("./combat.mjs").Combatant} unit
  * @param {CaptureCheck} check
  * @param {string} [name]       What the halving goes by in the fight
+ * @param {object} [options]
+ * @param {boolean} [options.free]    Do its skills leave it no penalty from capturing? It then fights the
+ *                                    attempt with its stats as they are
  * @returns {import("./combat.mjs").Combatant}
  */
-export function readyCapture(unit, check, name) {
-  if ( !check.ok || !unit.skills ) return { ...unit, capture: check };
+export function readyCapture(unit, check, name, { free = false } = {}) {
+  if ( !check.ok || !unit.skills || free ) return { ...unit, capture: check };
   return { ...unit, capture: check, skills: [...unit.skills, captureEntry(name)] };
 }
 

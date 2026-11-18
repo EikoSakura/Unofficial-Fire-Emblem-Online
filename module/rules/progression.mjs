@@ -143,6 +143,21 @@ export function abilityBonus(stat, luk, points, extra = 0) {
 /* -------------------------------------------- */
 
 /**
+ * Map Affinity: what a unit gains on a map that has an Affinity of its own. A unit whose Affinity is the same
+ * as the map's receives the bonus; any other unit, and every unit on a map without an Affinity, receives none.
+ * @param {string} map                      The Affinity of the map; blank for a map without one
+ * @param {string} own                      The unit's Affinity
+ * @param {{hit: number, dodge: number}} bonus      What a match gives
+ * @returns {{hit: number, dodge: number}|null}     Null where the two are not the same
+ */
+export function mapAffinityBonus(map, own, bonus) {
+  if ( !map || !own || (map !== own) ) return null;
+  return { hit: bonus?.hit ?? 0, dodge: bonus?.dodge ?? 0 };
+}
+
+/* -------------------------------------------- */
+
+/**
  * The boosts an affinity can give through a support. ATK adds damage and END reduces damage taken; HST (Haste)
  * counts as Attack Speed for making a follow-up attack and for nothing else; `activation` is the Skill
  * Activation rate. The last four are only given by the Optional Affinities.

@@ -3,12 +3,14 @@ import {
   checkGrowths, chooseSkill, planAssignment, planLevelGains, planPromotion, planUpdate
 } from "../rules/classes.mjs";
 import { skillFits } from "../rules/optional.mjs";
-import { countsAsSkill } from "../rules/skills.mjs";
+import { countsAsSkill, readsRaises } from "../rules/skills.mjs";
 import {
   buildAssignDialog, buildChangeCard, buildPromotionDialog, buildSkillPickDialog
 } from "../sheets/class-context.mjs";
 import { postCard } from "./chat.mjs";
+import { classLevelUp } from "./earnings.mjs";
 import { promotionLifeUpdate } from "./optional.mjs";
+import { grantTimed } from "./timed.mjs";
 import { openGenericRoll } from "./skill-roll.mjs";
 
 /**
@@ -181,6 +183,13 @@ const readForm = (form) => new foundry.applications.ux.FormDataExtended(form).ob
  * @returns {Promise<ClassChange|null>}   Null if the player backed out
  */
 export async function assignClass(actor, cls) {
+  // A unit that imitates another has that unit's class for a while: its own is changed once it is itself again
+  const { growthBar } = await import("./imitation.mjs");
+  const bar = growthBar(actor);
+  if ( bar ) {
+    ui.notifications.warn(bar);
+    return null;
+  }
   const unit = actor._source.system;
   const current = actor.system.classItem;
   if ( current && (cls.parent === actor) && (cls.id === current.id) ) return null;
@@ -256,7 +265,9 @@ export async function promoteUnit(actor, { levelUp = false } = {}) {
   }
 
   const known = await knownSkills();
-  const dialog = buildPromotionDialog(unit, from, targets, { known });
+  // A skill that can be raised, as Authority can, may be in place of the skill of the new class
+  const raisable = actor.items.filter((item) => (item.type === "skill") && (item.system.automate !== false) && readsRaises(item.system.effects));
+  const dialog = buildPromotionDialog(unit, from, targets, { known, raisable: raisable.map((item) => item.name) });
   dialog.missing = missing.join(", ");
   const answer = await foundry.applications.api.DialogV2.wait({
     window: { title: game.i18n.format("FEO.Promotion.title", { name: actor.name }) },
@@ -288,17 +299,28 @@ export async function promoteUnit(actor, { levelUp = false } = {}) {
     growths,
     generic: answer.skill === "generic",
     pick: answer[`pick.${index}`] ?? null,
+    raise: raisable.some((item) => item.name === answer.raise) ? answer.raise : null,
     known
   });
 
   const owned = await embedClass(actor, to);
   const update = { ...planUpdate(change), "system.classId": owned.id };
   const notes = [];
+  const raised = change.raised ? raisable.find((item) => item.name === change.raised) : null;
+  if ( raised ) notes.push(game.i18n.format("FEO.Promotion.raised", { skill: raised.name }));
+  let lasting = [];
   if ( levelUp ) {
     const points = system.checkPointsPerLevel;
     update["system.exp"] = Math.max(system.exp - FEO.expPerLevel, 0);
     update["system.checkPoints"] = system.checkPoints + points;
     notes.push(game.i18n.format("FEO.Promotion.abilityPoints", { points }));
+
+    // A promotion that takes the place of a level up is one to the unit's skills, with the stats its new
+    // class gives as the stats it raised
+    const skills = classLevelUp(actor, change, update);
+    Object.assign(update, skills.update);
+    notes.push(...skills.notes);
+    lasting = skills.grants;
   }
 
   // With Additional Lives, promoting grants one more life in total and restores one
@@ -311,6 +333,8 @@ export async function promoteUnit(actor, { levelUp = false } = {}) {
     }));
   }
   await actor.update(update);
+  if ( lasting.length ) await grantTimed(actor, lasting);
+  if ( raised ) await raised.update({ "system.raises": (raised.system.raises ?? 0) + 1 });
 
   // Skills given up go first, so that those learned find their room
   const gone = new Set(change.forgets.map((name) => name.toLowerCase()));
@@ -419,12 +443,18 @@ export async function applyLevelGains(actor, level) {
   }
 
   const update = planUpdate(change);
+
+  // Stats a class gives at a level are a level up to the unit's skills, as the growth rates rolled were
+  const gained = (change.stats.length || change.hpMax) ? classLevelUp(actor, change, update) : null;
+  if ( gained ) Object.assign(update, gained.update);
   if ( Object.keys(update).length ) await actor.update(update);
+  if ( gained?.grants.length ) await grantTimed(actor, gained.grants);
   const { blank } = await grantSkills(actor, change.skills);
   await postCard(actor, buildChangeCard(change, game.i18n, {
     title: game.i18n.format("FEO.Class.card.milestone", { level }),
     subtitle: actor.system.className,
-    blank
+    blank,
+    notes: gained?.notes ?? []
   }), { template: "class-change" });
   return change;
 }

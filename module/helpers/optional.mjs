@@ -211,9 +211,10 @@ export function leaderChoices(actor) {
   const leaders = [];
   const add = (candidate, name) => {
     if ( !candidate || (candidate.type !== "unit") || seen.has(candidate.uuid) ) return;
-    if ( !(candidate.system.leadership?.stars > 0) && (candidate.uuid !== actor.system.leadership?.authority) ) return;
+    const stars = candidate.system.leadership?.total ?? candidate.system.leadership?.stars ?? 0;
+    if ( !(stars > 0) && (candidate.uuid !== actor.system.leadership?.authority) ) return;
     seen.add(candidate.uuid);
-    leaders.push({ uuid: candidate.uuid, name: `${name} (${"★".repeat(Math.min(candidate.system.leadership?.stars ?? 0, 9))})` });
+    leaders.push({ uuid: candidate.uuid, name: `${name} (${"★".repeat(Math.min(stars, 9))})` });
   };
   for ( const token of canvas?.scene?.tokens ?? [] ) add(token.actor, token.name);
   for ( const candidate of game.actors ?? [] ) add(candidate, candidate.name);
@@ -264,7 +265,7 @@ export async function refreshLeadership(scene) {
         if ( (leader.actor.uuid !== authority) || (leader.actor.uuid === actor.uuid) ) continue;
         if ( leader.actor.system.defeat?.out ) continue;
         if ( !leaderReaches(measureDistance(follower, leader)) ) continue;
-        stars = Math.max(stars, leader.actor.system.leadership?.stars ?? 0);
+        stars = Math.max(stars, leader.actor.system.leadership?.total ?? leader.actor.system.leadership?.stars ?? 0);
       }
     }
     if ( stars !== actor.system.leadership.received ) {

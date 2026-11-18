@@ -1,6 +1,7 @@
 import { FEO } from "../config.mjs";
 import { sellValue } from "../rules/progression.mjs";
-import { breakWeapon, canWield, repairWeapon, wieldLevel } from "../rules/weapons.mjs";
+import { readShield } from "../rules/blocking.mjs";
+import { breakWeapon, canWield, repairCost, repairWeapon, wieldLevel } from "../rules/weapons.mjs";
 import { postCard } from "./chat.mjs";
 
 /**
@@ -71,23 +72,85 @@ export async function breakItem(item) {
 /* -------------------------------------------- */
 
 /**
- * What repairing and selling an owned weapon or item are worth.
+ * Set the uses of a weapon or a Shield, as a staff that repairs it does: a broken one is what it was again,
+ * with those uses. Uses of 0 out of 0 are uses without end.
+ * @param {Item} item
+ * @param {{value: number, max: number}} uses
+ * @returns {Promise<string>}     The name it goes by now
+ */
+export async function mendItem(item, uses) {
+  const original = originalOf(item);
+  if ( !original ) {
+    await item.update({ "system.uses": { value: uses.value, max: uses.max } });
+    return item.name;
+  }
+  const system = (item.type === "weapon")
+    ? { ...foundry.utils.deepClone(original.system), uses: { value: uses.value, max: uses.max } }
+    : { ...foundry.utils.deepClone(original.system), uses: { value: uses.value, max: uses.max } };
+  await item.update({ name: original.name, system });
+  await item.unsetFlag(FEO.id, ORIGINAL_FLAG);
+  return original.name;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Is an item a Shield, whole or broken?
+ * @param {Item|null} item
+ * @returns {boolean}
+ */
+export function isShield(item) {
+  return (item?.type === "gear") && !!item.system.isShield;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Turn a Shield that has run out of uses into a Broken Shield, which is put away and remembers what it was.
+ * @param {Item} item
+ * @returns {Promise<boolean>}    Whether the Shield changed
+ */
+export async function breakShield(item) {
+  if ( !isShield(item) || originalOf(item) ) return false;
+  const form = FEO.blocking.broken;
+  const read = readShield(form.effect);
+  const was = item.system.toObject();
+  await item.update({
+    name: form.name,
+    system: {
+      effect: form.effect,
+      uses: { value: 0, max: 0 },
+      equipped: false,
+      shield: { ...read, parry: { chance: 0, dexDiv: 0, uses: 0 } }
+    },
+    [`flags.${FEO.id}.${ORIGINAL_FLAG}`]: { name: item.name, system: { effect: was.effect, uses: was.uses, shield: was.shield } }
+  });
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What repairing and selling an owned weapon or item are worth. A Shield is repaired as a weapon is: for what
+ * its missing uses come to, or for its price once it is broken.
  * @param {Item} item
  * @returns {{repair: number, sell: number, damaged: boolean, broken: boolean}}
  */
 export function quote(item) {
   const system = item.system;
-  const original = item.type === "weapon" ? originalOf(item) : null;
+  const mends = (item.type === "weapon") || isShield(item);
+  const original = mends ? originalOf(item) : null;
   const { value, max } = system.uses ?? { value: 0, max: 0 };
   if ( original ) return { repair: Math.max(system.cost ?? 0, 0), sell: 0, damaged: true, broken: true };
-  const repair = item.type === "weapon" ? repairWeapon({ name: item.name, system }).cost : 0;
+  const repair = (item.type === "weapon") ? repairWeapon({ name: item.name, system }).cost : mends ? repairCost(system.cost, value, max) : 0;
   return {
     repair,
     sell: sellValue(system.cost, value, max),
-    damaged: (item.type === "weapon") && (max > 0) && (value < max),
+    damaged: mends && (max > 0) && (value < max),
     broken: false
   };
 }
+
 
 /* -------------------------------------------- */
 

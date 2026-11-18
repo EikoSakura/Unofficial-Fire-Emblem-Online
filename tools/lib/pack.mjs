@@ -48,6 +48,8 @@ export const USAGE = `
                      then to the standard install location.
   --json <file>      Also write the built documents as one JSON file, for inspection.
   --check            Build, validate and report, but do not write the compendium.
+  --status [file]    Skills only: also print the scoreboard, every skill as done, part or text only, folder by
+                     folder with totals (with --quiet, the totals alone), and write it to the file as JSON.
   --out <folder>     Write the compendium to this folder instead of packs/<name>.
   --quiet            Print only the totals and the problems.
   --all              List every example in the report instead of the first few.

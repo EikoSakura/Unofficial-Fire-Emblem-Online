@@ -8,14 +8,17 @@
  * @import {SkillEntry, SkillSelf} from "./skills.mjs"
  */
 import { FEO } from "../config.mjs";
+import { conditionsAround } from "./conditions.mjs";
 import { surroundings } from "./positions.mjs";
-import { chanceOf, holds, readNumber, skillTotals } from "./skills.mjs";
+import { chanceOf, holds, multiplyStats, readNumber, skillTotals } from "./skills.mjs";
+import { usedName } from "./timed.mjs";
 
 /**
  * @typedef {SkillEntry & {skill: string, from: string, giver: string, aura: true, sourceNihil: boolean,
- *   inverted: boolean}} AuraEntry
+ *   inverted: boolean, limit?: "turn"}} AuraEntry
  * What a unit receives from the skill of a unit near it. `sourceNihil` marks one that Nihil cancels when its
- * giver is the unit fought.
+ * giver is the unit fought, and `limit` one that is given once a turn: its giver carries a mark once it has
+ * been (see `usedName` in `timed.mjs`), and gives it no more until the mark is gone.
  */
 
 /** The parts of an effect that are plain amounts, which a unit that gives its auras turned around inverts. */
@@ -32,6 +35,9 @@ export function selfOf(unit, near = null) {
     hp: unit.hp ?? 0,
     hpMax: unit.hpMax ?? unit.hp ?? 0,
     level: unit.level ?? 1,
+    tier: unit.tier,
+    gender: unit.gender ?? "",
+    bestRank: unit.bestRank ?? "",
     stats: unit.stats ?? {},
     base: unit.base ?? {},
     accuracy: unit.accuracy ?? 0,
@@ -39,6 +45,9 @@ export function selfOf(unit, near = null) {
     weapon: unit.weapon ?? null,
     qualities: unit.qualities ?? "",
     shifted: !!unit.shifted,
+
+    // The skills it has equipped, for an aura that asks whether its giver has another skill
+    skills: (unit.skills ?? []).filter((skill) => !skill.aura && !skill.timed).map((skill) => skill.name),
     near
   };
 }
@@ -105,10 +114,12 @@ function give(effect, giver, inverted) {
  * @param {PlacedUnit[]} units                                      The units with a token on the map
  * @param {string} id                                               The unit asked about
  * @param {(a: PlacedUnit, b: PlacedUnit) => number|null} measure   Tiles between two units
+ * @param {((a: PlacedUnit, b: PlacedUnit) => boolean)|null} [sight]    Does one unit have another in its Line of
+ *                                                                  Sight? (see `surroundings`)
  * @returns {{near: Surroundings, auras: AuraEntry[]}|null}         Null for a unit that is not on the map
  */
-export function standing(units, id, measure) {
-  const near = surroundings(units, id, measure);
+export function standing(units, id, measure, sight = null) {
+  const near = surroundings(units, id, measure, sight);
   if ( !near ) return null;
 
   // A giver's stats with its own skills, which may themselves ask what the giver has around it
@@ -119,6 +130,7 @@ export function standing(units, id, measure) {
       const totals = skillTotals(unit.skills ?? [], self);
       const stats = { ...self.stats };
       for ( const [key, amount] of Object.entries(totals.stats) ) stats[key] = Math.max((stats[key] ?? 0) + amount, 0);
+      Object.assign(stats, multiplyStats(stats, totals.statTimes, totals.bends?.debuffs).stats);
 
       // Its Skill Activation rate, for the chances of its auras that it rolls itself
       const activation = (totals.combat.activation ?? 0) + (unit.activation ?? 0);
@@ -127,26 +139,56 @@ export function standing(units, id, measure) {
     return views.get(unit.id);
   };
 
+  // The unit itself, for what an aura asks of the unit that receives it
+  const self = (units ?? []).find((unit) => unit.id === id) ?? null;
   const auras = [];
   for ( const other of near.others ) {
-    if ( !other.relation || !((other.hp ?? 1) > 0) ) continue;
+    if ( !((other.hp ?? 1) > 0) ) continue;
+
+    // A unit that no enemy can target receives nothing from an enemy's aura
+    if ( self?.untargetable && (other.relation === "enemy") ) continue;
     const inverted = !!FEO.auras.inverted && !!other.conditions?.includes(FEO.auras.inverted);
-    for ( const skill of other.skills ?? [] ) {
+
+    // What a unit gives: the auras of its own skills, and for a summoned unit those its summoner's skills give
+    // through what it summons (`through: "summon"`), while that summoner stands on the map
+    const summoner = other.summoner ? ((units ?? []).find((unit) => (unit.actor === other.summoner) && !unit.out && ((unit.hp ?? 1) > 0)) ?? null) : null;
+    const giving = [
+      ...(other.skills ?? []).map((skill) => ({ skill, owner: other, through: false })),
+      ...(summoner?.skills ?? []).map((skill) => ({ skill, owner: summoner, through: true }))
+    ];
+    for ( const { skill, owner, through } of giving ) {
       const effects = [];
+      let limit = null;
+      let alone = false;
       for ( const effect of skill.effects ?? [] ) {
+        // An aura is for allies or for enemies of its giver, or with "any" for every unit, whatever its side
         const aura = effect.aura;
-        if ( !aura || (aura.who !== other.relation) ) continue;
+        if ( !aura || ((aura.who !== "any") && (!other.relation || (aura.who !== other.relation))) ) continue;
+
+        // One that its unit gives through the units it has summoned comes from each of them, not from itself;
+        // and one that is not for summoned units passes them over
+        if ( (aura.through === "summon") !== through ) continue;
+        if ( aura.unsummoned && self?.summoner ) continue;
         if ( (aura.within != null) && (other.distance > aura.within) ) continue;
         if ( (aura.from != null) && (other.distance < aura.from) ) continue;
+
+        // One that is only for certain units, as what a unit that has hold of another gives the unit it holds
+        if ( Array.isArray(aura.only) && !aura.only.includes(id) ) continue;
+
+        // One that is given once a turn, and has been
+        if ( (aura.once === "turn") && (other.marks ?? []).includes(usedName(skill.name)) ) continue;
         if ( effect.when?.declared && !skill.active ) continue;
-        if ( !holds(effect.when, selfOf(other), null) ) continue;
-        const given = give(effect, () => viewOf(other), inverted);
+        if ( !holds(effect.when, selfOf(owner), null) ) continue;
+        const given = give(effect, () => viewOf(owner), inverted);
         if ( given ) effects.push(given);
+        if ( given && aura.once ) limit = aura.once;
+        if ( given && (aura.stack === false) ) alone = true;
       }
       if ( !effects.length ) continue;
 
-      // Where the same skill of two units does not add up, the nearest one gives it
-      if ( !FEO.auras.stack && auras.some((entry) => entry.skill === skill.name) ) continue;
+      // Where the same skill of two units does not add up, the nearest one gives it: everywhere where the world
+      // has it so, and for a skill that says it does not stack with itself
+      if ( (!FEO.auras.stack || alone) && auras.some((entry) => entry.skill === skill.name) ) continue;
       auras.push({
         name: `${skill.name} (${other.name})`,
         skill: skill.name,
@@ -156,9 +198,19 @@ export function standing(units, id, measure) {
         nihil: false,
         sourceNihil: !!skill.nihil,
         inverted,
+        ...(limit ? { limit } : {}),
         effects
       });
     }
+  }
+
+  // What a condition an ally nearby suffers from takes off the unit's stats, while it stands that near
+  for ( const found of conditionsAround(near) ) {
+    if ( !found.stats ) continue;
+    auras.push({
+      name: `${found.name} (${found.from})`, skill: found.name, from: found.unit, giver: found.from, aura: true,
+      nihil: false, sourceNihil: false, inverted: false, effects: [{ stats: found.stats }]
+    });
   }
   return { near, auras };
 }

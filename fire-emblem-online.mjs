@@ -12,17 +12,39 @@ import * as conditionHelpers from "./module/helpers/conditions.mjs";
 import * as creationHelpers from "./module/helpers/creation.mjs";
 import * as defeatHelpers from "./module/helpers/defeat.mjs";
 import { registerDiscord } from "./module/helpers/discord.mjs";
+import * as eventHelpers from "./module/helpers/events.mjs";
+import * as cutInHelpers from "./module/helpers/cut-ins.mjs";
 import { APPLY_QUERY, applyExchangeQuery } from "./module/helpers/exchange.mjs";
 import * as experienceHelpers from "./module/helpers/experience.mjs";
 import * as optionalHelpers from "./module/helpers/optional.mjs";
+import * as pickHelpers from "./module/helpers/picks.mjs";
 import * as reclassHelpers from "./module/helpers/reclass.mjs";
 import * as positionHelpers from "./module/helpers/positions.mjs";
+import * as clockHelpers from "./module/helpers/clock.mjs";
+import * as movementHelpers from "./module/helpers/movement.mjs";
+import * as cantoHelpers from "./module/helpers/canto.mjs";
+import * as actingHelpers from "./module/helpers/acting.mjs";
+import * as actionHelpers from "./module/helpers/actions.mjs";
+import * as forcedHelpers from "./module/helpers/forced.mjs";
 import * as optionalRules from "./module/rules/optional.mjs";
 import { registerRulesSearch } from "./module/helpers/rules-search.mjs";
 import { iconHtml } from "./module/helpers/icons.mjs";
+import * as rescueHelpers from "./module/helpers/rescue.mjs";
+import * as reactionHelpers from "./module/helpers/reactions.mjs";
+import * as stanceHelpers from "./module/helpers/stances.mjs";
+import * as lendingHelpers from "./module/helpers/lending.mjs";
+import * as stealingHelpers from "./module/helpers/stealing.mjs";
+import * as tradingHelpers from "./module/helpers/trading.mjs";
+import * as objectHelpers from "./module/helpers/objects.mjs";
+import * as trapHelpers from "./module/helpers/traps.mjs";
+import * as weatherHelpers from "./module/helpers/weather.mjs";
+import * as choiceHelpers from "./module/helpers/choices.mjs";
+import * as answerHelpers from "./module/helpers/answers.mjs";
+import * as refreshHelpers from "./module/helpers/refresh.mjs";
 import * as shiftHelpers from "./module/helpers/shifting.mjs";
 import * as skillRankHelpers from "./module/helpers/skill-ranks.mjs";
-import * as summonHelpers from "./module/helpers/summon.mjs";
+import * as creatureHelpers from "./module/helpers/creatures.mjs";
+import * as imitationHelpers from "./module/helpers/imitation.mjs";
 import * as staggerHelpers from "./module/helpers/stagger.mjs";
 import * as supportHelpers from "./module/helpers/supports.mjs";
 import * as turnHelpers from "./module/helpers/turns.mjs";
@@ -36,6 +58,7 @@ import * as conditions from "./module/rules/conditions.mjs";
 import * as creation from "./module/rules/creation.mjs";
 import * as exchange from "./module/rules/combat.mjs";
 import * as defeat from "./module/rules/defeat.mjs";
+import * as events from "./module/rules/events.mjs";
 import * as experience from "./module/rules/experience.mjs";
 import * as progression from "./module/rules/progression.mjs";
 import * as shifting from "./module/rules/shifting.mjs";
@@ -64,9 +87,14 @@ Hooks.once("init", () => {
     optional: optionalHelpers,
     reclass: reclassHelpers,
     positions: positionHelpers,
+    movement: movementHelpers,
+    canto: cantoHelpers,
+    acting: actingHelpers,
     creation: creationHelpers
   };
-  Object.assign(game.feo.rules, optionalRules, creation, breaking, capturing, stagger);
+  Object.assign(game.feo.rules, optionalRules, creation, breaking, capturing, stagger, events);
+  game.feo.events = eventHelpers;
+  game.feo.picks = pickHelpers;
   game.feo.capturing = captureHelpers;
   game.feo.stagger = staggerHelpers;
 
@@ -195,16 +223,98 @@ Hooks.once("init", () => {
   // Lets a player's attack save its results to units only a Game Master may change
   CONFIG.queries[APPLY_QUERY] = applyExchangeQuery;
 
+  // Damage, healing, conditions and kills from any source go one way each, where the unit's skills are asked
+  // what they make of them; a player's staff or skill reaches a unit only a Game Master may change through it
+  CONFIG.queries[eventHelpers.EVENT_QUERY] = eventHelpers.unitEventQuery;
+  eventHelpers.registerHooks();
+
+  // Skill cut-ins: as a skill takes effect its icon and name flash over its unit, for each user as fast as
+  // they ask, or not at all
+  cutInHelpers.registerSettings();
+  cutInHelpers.registerHooks();
+  game.feo.cutIns = cutInHelpers;
+
+  // A skill that picks something as it is learnt asks for it once, wherever it is gained, and keeps it
+  pickHelpers.registerHooks();
+
   // Lets a player's staff warp a unit whose token only a Game Master may move, and has a unit that joins a
   // battle under way remember where it took the field
   CONFIG.queries[WARP_QUERY] = warpQuery;
+
+  // Moving a unit against its will, and ending the hold one unit has on another, for a player who does not
+  // own that unit
+  CONFIG.queries[forcedHelpers.FORCED_QUERY] = forcedHelpers.forcedQuery;
+  CONFIG.queries[actionHelpers.GRIP_QUERY] = actionHelpers.endGripQuery;
+  game.feo.forced = forcedHelpers;
+  game.feo.actions = actionHelpers;
+
+  // Rescue: picking up, handing over and setting down a unit this user does not own, offering something on
+  // the map of whoever acts for a unit, and what follows a carrier wherever it goes
+  CONFIG.queries[rescueHelpers.CARRY_QUERY] = rescueHelpers.carryQuery;
+  CONFIG.queries[rescueHelpers.OFFER_QUERY] = rescueHelpers.offerQuery;
+  rescueHelpers.registerHooks();
+  game.feo.rescue = rescueHelpers;
+
+  // Standing guard and stepping in: a stance ends with what it names, as units move and fall; and a unit that
+  // is dragged in its own turn is watched like one that is moved by a click
+  stanceHelpers.registerHooks();
+  reactionHelpers.registerHooks();
+  game.feo.stances = stanceHelpers;
+  game.feo.reactions = reactionHelpers;
+
+  // Weapons a skill lends its unit: one that was taken up is put down as a weapon of its own is taken in hand
+  lendingHelpers.registerHooks();
+
+  // Stealing and loot, and the doors, chests and Villages of a map: a player whose unit takes from a unit
+  // that is not theirs, or acts on something that stands on the scene, asks a Game Master to do it
+  CONFIG.queries[stealingHelpers.STEAL_QUERY] = stealingHelpers.stealQuery;
+  CONFIG.queries[stealingHelpers.CRAFT_QUERY] = stealingHelpers.craftQuery;
+  CONFIG.queries[objectHelpers.OBJECT_QUERY] = objectHelpers.objectQuery;
+
+  // Mines and Traps: a player's unit that lays one, springs one or takes one away asks a Game Master to
+  CONFIG.queries[trapHelpers.TRAP_QUERY] = trapHelpers.trapQuery;
+  game.feo.traps = trapHelpers;
+  game.feo.weather = weatherHelpers;
+  stealingHelpers.registerSettings();
+  game.feo.stealing = stealingHelpers;
+  game.feo.trading = tradingHelpers;
+  game.feo.objects = objectHelpers;
+  game.feo.lending = lendingHelpers;
+
+  // What a unit chooses before a fight: offering a unit that is attacked another weapon is done on the client
+  // of whoever acts for it
+  CONFIG.queries[choiceHelpers.REARM_QUERY] = choiceHelpers.rearmQuery;
+  game.feo.choices = choiceHelpers;
+
+  // Answers in the middle of a fight: a unit's answers are offered on the client of whoever acts for it. The
+  // units no player owns answer by themselves, unless the world has its Game Master asked for them
+  CONFIG.queries[answerHelpers.ANSWER_QUERY] = answerHelpers.answerQuery;
+  game.feo.answers = answerHelpers;
+  game.settings.register(FEO.id, answerHelpers.ALONE_SETTING, {
+    name: "FEO.Setting.gmAnswers.name",
+    hint: "FEO.Setting.gmAnswers.hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: FEO.answers.alone.enabled,
+    onChange: (value) => (FEO.answers.alone.enabled = !!value)
+  });
+  FEO.answers.alone.enabled = !!game.settings.get(FEO.id, answerHelpers.ALONE_SETTING);
+
+  // Refresh: giving its Action back to a unit this user does not own is done by a Game Master
+  CONFIG.queries[refreshHelpers.REFRESH_QUERY] = refreshHelpers.refreshQuery;
+  game.feo.refresh = refreshHelpers;
   Hooks.on("createCombatant", onCombatantCreated);
 
   // Lets a player's Summon make its Phantom and place its token, which only a Game Master may do; a Phantom
   // keeps to the level of its summoner
-  CONFIG.queries[summonHelpers.SUMMON_QUERY] = summonHelpers.placeSummon;
-  summonHelpers.registerHooks();
-  game.feo.summon = summonHelpers;
+  CONFIG.queries[creatureHelpers.CREATURE_QUERY] = creatureHelpers.placeCreature;
+  creatureHelpers.registerHooks();
+  game.feo.creatures = creatureHelpers;
+
+  // Imitation: a unit that took on another's attributes is itself again when its turns run out
+  imitationHelpers.registerHooks();
+  game.feo.imitation = imitationHelpers;
 
   // Data models
   CONFIG.Actor.dataModels.unit = models.UnitData;
@@ -282,6 +392,12 @@ Hooks.once("init", () => {
 
   // Skills that ask where units stand, and auras, follow the tokens of the scene in view
   positionHelpers.registerHooks(models.UnitData);
+
+  // Skills that ask how their unit moved this turn follow what its token has noted of it
+  movementHelpers.registerHooks(models.UnitData);
+
+  // Skills that ask the turn of the battle follow its encounter
+  clockHelpers.registerHooks(models.UnitData);
 
   // Template helpers
   Handlebars.registerHelper("feoIcon", (name) => new Handlebars.SafeString(iconHtml(name)));

@@ -1,6 +1,6 @@
 import { checkEffects } from "../rules/skills.mjs";
-import { cleanChange, grantChange, tickChanges, timedName } from "../rules/timed.mjs";
-import { tokenInView } from "./positions.mjs";
+import { PHASE_END, boostChange, cleanChange, grantChange, keptBetweenMaps, spendTemp, tickChanges, timedName } from "../rules/timed.mjs";
+import { standingOf, tokenInView } from "./positions.mjs";
 
 /**
  * Changes that last a while on units in Foundry: saving the ones skills grant, counting the turns they last,
@@ -25,19 +25,55 @@ export function timedOf(actor) {
  * is dropped.
  * @param {Actor} actor
  * @param {TimedChange[]} changes
+ * @param {object} [options]
+ * @param {number|null} [options.times] What the bonuses of the changes the unit gives itself are multiplied by,
+ *                                      as for a unit whose buffs are doubled (see `boostChange`); worked out
+ *                                      from what the unit has and receives unless given
  * @returns {Promise<TimedChange[]>}    The changes that were given
  */
-export async function grantTimed(actor, changes) {
+export async function grantTimed(actor, changes, { times = null } = {}) {
   let list = timedOf(actor);
   const given = [];
+  let own = times;
   for ( const change of changes ?? [] ) {
-    const clean = cleanChange(change, checkEffects);
+    const mine = !!change && !change.from && !change.mark && !change.drop;
+    if ( mine && (own === null) ) own = buffTimesOf(actor);
+    const clean = cleanChange((mine && (own !== 1)) ? boostChange(change, own) : change, checkEffects);
     if ( !clean ) continue;
+
+    // A mark that a skill has had its turn for this Phase is kept only where a battle counts Phases
+    if ( clean.mark && (clean.ends === PHASE_END) && !game.combat?.started ) continue;
     list = grantChange(list, clean).list;
     given.push(clean);
   }
   if ( given.length ) await actor.update({ "system.timed": list });
   return given;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What the bonuses in the lasting changes a unit gives are multiplied by: what its skills, the changes it
+ * carries and the auras it receives say, multiplied together.
+ * @param {Actor|null} actor
+ * @returns {number}      1 for a unit that gives them as they are
+ */
+export function buffTimesOf(actor) {
+  if ( actor?.type !== "unit" ) return 1;
+  let place = null;
+  try {
+    place = standingOf(actor.token ?? tokenInView(actor));
+  } catch(err) {
+    console.error(err);
+  }
+  const skills = [...(actor.system.skills?.entries ?? []), ...(actor.system.skills?.timed ?? []), ...(place?.auras ?? [])];
+  let times = 1;
+  for ( const skill of skills ) {
+    for ( const effect of skill.effects ?? [] ) {
+      if ( !effect.proc && !effect.aura && Number.isFinite(effect.buffs?.times) && (effect.buffs.times > 0) ) times *= effect.buffs.times;
+    }
+  }
+  return times;
 }
 
 /* -------------------------------------------- */
@@ -51,6 +87,21 @@ export async function grantTimed(actor, changes) {
 export async function setTimed(actor, list) {
   const clean = (list ?? []).map((change) => cleanChange(change, checkEffects)).filter(Boolean);
   await actor.update({ "system.timed": clean });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A unit loses temporary HP: they are taken from the changes that hold them for it.
+ * @param {Actor} actor
+ * @param {number} amount
+ * @returns {Promise<number>}     The temporary HP it lost
+ */
+export async function loseTemp(actor, amount) {
+  if ( !(amount > 0) || !(actor?.system?.hp?.temp > 0) ) return 0;
+  const { list, spent } = spendTemp(timedOf(actor), amount);
+  if ( spent > 0 ) await actor.update({ "system.timed": list });
+  return spent;
 }
 
 /* -------------------------------------------- */
@@ -99,8 +150,49 @@ export async function tickTimedFor(actor, moment) {
 /* -------------------------------------------- */
 
 /**
+ * A Phase ends, or a battle does: what lasted until the end of the Phase is over for every unit in the
+ * battle, whichever side it is on. Runs for a Game Master.
+ * @param {Combat} combat
+ * @returns {Promise<number>}     How many units had something end
+ */
+export async function endPhaseTimed(combat) {
+  const seen = new Set();
+  let ended = 0;
+  for ( const combatant of combat?.combatants ?? [] ) {
+    const actor = combatant.actor;
+    if ( (actor?.type !== "unit") || seen.has(actor) || !actor.isOwner ) continue;
+    seen.add(actor);
+    if ( !(actor.system.timed ?? []).some((change) => change.ends === PHASE_END) ) continue;
+    const { list, changed } = tickChanges(timedOf(actor), PHASE_END);
+    if ( !changed ) continue;
+    await actor.update({ "system.timed": list });
+    ended += 1;
+  }
+  return ended;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A battle is over: what lasted for the rest of its map is over for a unit that fought in it. Runs for the
+ * designated Game Master.
+ * @param {Actor} actor
+ * @returns {Promise<boolean>}    Whether anything ended
+ */
+export async function endMapTimed(actor) {
+  if ( (actor?.type !== "unit") || !actor.isOwner ) return false;
+  const list = timedOf(actor);
+  const kept = list.filter((change) => change.ends !== "map");
+  if ( kept.length === list.length ) return false;
+  await actor.update({ "system.timed": kept });
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
  * A battle begins: what lasted until the end of the last map, or was still running, is over for the units
- * in it.
+ * in it. What lasts between maps stays.
  * @param {Combat} combat
  * @returns {Promise<void>}
  */
@@ -110,6 +202,7 @@ export async function startBattleTimed(combat) {
     const actor = combatant.actor;
     if ( (actor?.type !== "unit") || seen.has(actor) || !actor.isOwner ) continue;
     seen.add(actor);
-    if ( actor.system.timed?.length ) await actor.update({ "system.timed": [] });
+    const kept = keptBetweenMaps(timedOf(actor));
+    if ( (actor.system.timed?.length ?? 0) !== kept.length ) await actor.update({ "system.timed": kept });
   }
 }

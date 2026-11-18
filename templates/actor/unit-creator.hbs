@@ -14,11 +14,18 @@
   {{#each variants as |variant|}}
   <div class="cr-variant{{#if variant.open}} open{{/if}}">
     <small>{{variant.title}}</small>
+    {{#if variant.long}}
+    <div class="cr-pills">
+      {{#if variant.picked}}<b class="cr-picked-text">{{variant.picked}}</b>{{/if}}
+      <button type="button" class="btn{{#if variant.open}} primary{{/if}}" data-action="creatorPickOpen" data-id="{{variant.id}}">{{feoIcon "spark"}}{{#if variant.picked}}{{localize "FEO.Creator.skills.pickChange"}}{{else}}{{localize "FEO.Creator.skills.pickOpen"}}{{/if}}</button>
+    </div>
+    {{else}}
     <div class="cr-pills">
       {{#each variant.options as |option|}}
-      <button type="button" class="cr-pick" data-action="creatorVariant" data-id="{{variant.id}}" data-value="{{option.value}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
+      <button type="button" class="cr-pick" data-action="creatorVariant" data-id="{{variant.id}}" data-pick="{{variant.index}}" data-value="{{option.value}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
       {{/each}}
     </div>
+    {{/if}}
   </div>
   {{/each}}
   {{/inline}}
@@ -350,6 +357,16 @@
       {{/if}}
       {{#if panel.chosen}}
       <p class="cr-hint"><b>{{panel.chosen.label}}:</b> {{panel.chosen.effect}}</p>
+      {{/if}}
+      {{#if panel.rank}}
+      <div class="cr-variant{{#if panel.rank.open}} open{{/if}}" data-fl="affinityRank">
+        <small>{{panel.rank.title}}</small>
+        <div class="cr-pills">
+          {{#each panel.rank.options as |option|}}
+          <button type="button" class="cr-pick" data-action="creatorPick" data-field="affinityRank" data-value="{{option.value}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
+          {{/each}}
+        </div>
+      </div>
       {{/if}}
       {{/if}}
 
