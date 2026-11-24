@@ -4417,7 +4417,9 @@
       "title": "Fire Emblem",
       "survey": "Survey the ground",
       "paint": "Terrain brush",
-      "mapgen": "Map generator"
+      "mapgen": "Map generator",
+      "encounter": "Encounter builder",
+      "npc": "NPC builder"
     },
     "Paint": {
       "label": "Terrain brush",
@@ -4496,6 +4498,353 @@
           "label": "Desert",
           "hint": "Sand and dunes with bare rock, an oasis, ruins and a village."
         }
+      }
+    },
+    "Npc": {
+      "title": "NPC Builder",
+      "folder": "NPCs",
+      "summary": "The unit as it stands",
+      "lv": "LV",
+      "noClass": "Choose a class and the unit takes shape here.",
+      "name": "Name",
+      "unnamed": "The new unit",
+      "wt": "WT",
+      "with": "With {weapon}",
+      "unarmed": "Unarmed",
+      "boss": "Boss",
+      "bossHint": "A Boss has General: no Conditions, no Lethality or Bane, and no negative or forced movement.",
+      "recruit": "Recruitable",
+      "recruitHint": "Marks a unit the party may win over. How is yours to rule.",
+      "stats": "Stats",
+      "vary": "Vary each copy",
+      "varyHint": "Each copy placed on a map rolls its own Level ups. The numbers here show where they land.",
+      "lower": "Lower",
+      "raise": "Raise",
+      "conOpen": "CON varies for this class",
+      "arms": "Weapons & Items",
+      "rankHint": "Click to raise the rank. Past the highest it starts again at E.",
+      "skills": "Skills",
+      "step": {
+        "class": "Class",
+        "level": "Level",
+        "side": "Side"
+      },
+      "side": {
+        "player": "Player",
+        "enemy": "Enemy",
+        "ally": "Ally",
+        "other": "Other"
+      },
+      "class": {
+        "none": "No class yet",
+        "noneHint": "Any class of the tree, at any tier.",
+        "change": "Change class",
+        "choose": "Choose a class",
+        "from": "Came up from",
+        "cameFrom": "Was {from}",
+        "promotesAt": "Promotes at Level {level}",
+        "levelsOn": "Does not promote",
+        "promoteTo": "Level {level} is its last. Promote to",
+        "noPromotion": "Level {level} is its last: no class to promote to was found."
+      },
+      "level": {
+        "down5": "Five Levels lower",
+        "down": "One Level lower",
+        "up": "One Level higher",
+        "up5": "Five Levels higher",
+        "match": "Match the party",
+        "matchHint": "Sets the Level to the average of the party that is going."
+      },
+      "mode": {
+        "average": "Average",
+        "averageHint": "Each Level gives what the growth rates give on average, rounded down. The same unit every time.",
+        "rolled": "Rolled",
+        "rolledHint": "Each Level rolls a D100 against every growth rate, as the rules have it.",
+        "reroll": "Reroll"
+      },
+      "part": {
+        "base": "Class {value}",
+        "levels": "Levels {value}",
+        "promotion": "Promotion {value}",
+        "adjust": "By hand {value}",
+        "growth": "Growth {value}%"
+      },
+      "growth": {
+        "levels": "{levels} Levels of growth",
+        "levelsPromoted": "{levels} Levels of growth, {promotions} promoted",
+        "none": "Level 1: the class as it stands",
+        "rates": "Growths"
+      },
+      "combat": {
+        "damage": "Damage",
+        "accuracy": "Accuracy",
+        "critical": "Critical",
+        "attackSpeed": "Atk Spd",
+        "dodge": "Dodge",
+        "critAvoid": "Crit Avo"
+      },
+      "pack": {
+        "unknown": "Not in the Compendium",
+        "weapon": "Mt {might} · Hit {hit} · Crit {crit} · Wt {weight} · Rng {range} · Rank {rank}",
+        "equip": "Take in hand",
+        "unfit": "rank too low",
+        "remove": "Remove",
+        "none": "Carries nothing yet.",
+        "add": "Add from the Compendium",
+        "kit": "Suggest a kit",
+        "kitHint": "The best plain weapon its rank allows, and a Vulnerary.",
+        "noKit": "Nothing in the Compendium suits this unit's ranks."
+      },
+      "drop": {
+        "keeps": "Keeps",
+        "players": "Drops for players",
+        "any": "Drops for anyone",
+        "hint": "Click to change who this is left for when the unit is defeated."
+      },
+      "drops": {
+        "players": "{item} (for the players)",
+        "any": "{item} (for any unit)",
+        "card": "{name} leaves behind: {items}."
+      },
+      "source": {
+        "boss": "Boss",
+        "builtIn": "Innate",
+        "extra": "Given"
+      },
+      "skill": {
+        "unknown": "Not in the Compendium: it is added with its name alone.",
+        "next": "change",
+        "nextHint": "The class offers a choice. Click for the next.",
+        "none": "This unit has no skills.",
+        "addGeneric": "Add the Generic Skill",
+        "changeGeneric": "Change the Generic Skill",
+        "addExtra": "Give another skill"
+      },
+      "tree": {
+        "heaven": "A Heaven Seal class is reached on the unit's own sheet.",
+        "chosen": "This is the unit's class.",
+        "change": "Changes the unit's class. Its Level moves into the Levels this class holds.",
+        "take": "Takes this class for the unit.",
+        "choose": "Choose {name}"
+      },
+      "roll": {
+        "notGeneric": "Only a Generic Skill can be taken here. Other skills are given with Give another skill.",
+        "chosen": "This is the unit's Generic Skill.",
+        "owned": "The unit has this skill already.",
+        "unmet": "The unit does not meet this: {what}. It can be given all the same.",
+        "change": "Takes the place of the unit's Generic Skill.",
+        "take": "Gives this skill to the unit.",
+        "choose": "Give {name}",
+        "bannerGeneric": "Choosing a Generic Skill for {unit}",
+        "bannerExtra": "Giving {unit} a skill",
+        "has": "Has",
+        "noteGeneric": "A unit starts with one Generic Skill beside the skill of its class.",
+        "noteExtra": "Any skill may be given, the Enemy-Exclusive ones included. One the unit could not come by is marked, not refused."
+      },
+      "armoury": {
+        "wields": "Wields",
+        "carries": "Carries",
+        "banner": "Arming {unit}",
+        "note": "Nothing is paid for. A weapon the unit lacks the rank for can be added, and is marked.",
+        "button": "Add"
+      },
+      "foot": {
+        "inEncounter": "In {encounter}. Save to bring the change there.",
+        "forEncounter": "Joins {encounter} once it is created.",
+        "saved": "A unit of this world. Save to make it over.",
+        "fresh": "Nothing is made until you create the unit.",
+        "sheet": "Open its sheet",
+        "update": "Save changes",
+        "create": "Create unit",
+        "created": "{name} was created, in the NPCs folder.",
+        "updated": "{name} was made over."
+      }
+    },
+    "Encounter": {
+      "title": "Encounter Builder",
+      "eyebrow": "Battle in preparation",
+      "name": "Name of the encounter",
+      "unnamed": "Unnamed battle",
+      "fresh": "New battle",
+      "saved": "Encounter",
+      "new": "New",
+      "delete": "Delete the encounter",
+      "deleteHint": "Deletes this encounter. Its units stay in the world.",
+      "deleteAsk": "Delete {name}? Its units stay in the world, and what it put on a map stays there.",
+      "gone": "A unit that is gone",
+      "goneHint": "The unit of this row was deleted from the world.",
+      "lv": "Lv {level}",
+      "none": "None",
+      "clear": "Clear",
+      "objectives": "Objectives",
+      "turns": "turns",
+      "fewerTurns": "One turn fewer",
+      "moreTurns": "One turn more",
+      "affinity": "Map Affinity",
+      "weather": "Weather",
+      "phases": "Phases",
+      "forces": "Forces",
+      "forcesHint": "stat blocks and how many",
+      "single": "A named unit: one of a kind.",
+      "fewer": "One fewer",
+      "more": "One more",
+      "noForces": "Nobody yet. Make an NPC, or add a unit of the world.",
+      "newNpc": "New NPC",
+      "addUnit": "Add a unit of the world…",
+      "turnShort": "T",
+      "arrivesOn": "Arrives as turn {turn} begins.",
+      "briefing": "Objectives",
+      "arrived": "Turn {turn}: reinforcements arrive. {names} ({count}).",
+      "map": {
+        "label": "Map",
+        "none": "No scene",
+        "size": "{columns} × {rows}",
+        "generate": "Generate",
+        "generateHint": "Opens the Map Generator. Pick the scene it makes here afterwards.",
+        "hint": "Select a row under Forces, then click a tile.",
+        "hintGroup": "Click a tile to have {name} stand there.",
+        "hintGoal": "Click the space the Objective is about.",
+        "mark": "Mark the space",
+        "markHint": "The space a Seize, Defend or Escape Objective is about.",
+        "goalAt": "Column {column}, row {row}",
+        "scatter": "Scatter",
+        "scatterHint": "Puts every group that stands nowhere yet somewhere open, clear of the deployment zone.",
+        "later": "Arrives later",
+        "there": "On the map already",
+        "pick": "Choose a scene with a square grid above, or generate a map, to place units.",
+        "blocked": "That unit cannot stand on that tile.",
+        "allPlaced": "Every group stands somewhere already."
+      },
+      "objective": {
+        "seize": {
+          "label": "Seize or Arrive",
+          "hint": "A player character takes the Seize or Arrive action on a certain space."
+        },
+        "rout": {
+          "label": "Rout",
+          "hint": "Defeat all enemies on the map."
+        },
+        "boss": {
+          "label": "Defeat the Boss",
+          "hint": "Defeat the unit designated as the Boss."
+        },
+        "survive": {
+          "label": "Survive",
+          "hint": "Survive a certain number of turns.",
+          "turns": "{turns} turns"
+        },
+        "defend": {
+          "label": "Defend",
+          "hint": "Prevent enemies from ending their turn on a certain space."
+        },
+        "protect": {
+          "label": "Protect",
+          "hint": "Prevent enemies from defeating a certain unit."
+        },
+        "escape": {
+          "label": "Escape",
+          "hint": "All players take the Escape action on a certain space."
+        }
+      },
+      "party": {
+        "label": "Party",
+        "nobody": "nobody yet",
+        "same": "{count} going · Lv {level}",
+        "spread": "{count} going · Lv {low} to {high}, average {level}",
+        "who": "Who is going",
+        "done": "Done",
+        "empty": "No unit of this world belongs to a player yet.",
+        "online": "Players online",
+        "onlineHint": "The units of the players who are logged in now.",
+        "onMap": "From the map",
+        "onMapHint": "The player units that stand on this encounter's map already.",
+        "clear": "Clear"
+      },
+      "read": {
+        "tab": "Against the party",
+        "nobody": "Nobody is going yet. Tick the units that are, under Party, and the battle is read against them.",
+        "hits": "Hits to fell",
+        "in": "Foe hits party",
+        "out": "Party hits foe",
+        "foes": "{foes} foes against {party}.",
+        "foesLater": "{foes} foes against {party}, {later} arriving later.",
+        "risk": "Most at risk: {name}, whom {many} foes fell in {hits} hits.",
+        "riskOne": "Most at risk: {name}, whom one foe fells in {hits} hits.",
+        "noRisk": "No foe fells anyone in {hits} hits.",
+        "turns": "turns to clear the map",
+        "turnsHint": "How many turns of attacks this party needs to fell every foe.",
+        "share": "of the party's HP lost",
+        "shareHint": "The share of the party's HP the foes take in that time, after healing.",
+        "exp": "Kill EXP, {levels} Levels each",
+        "expHint": "Kill EXP for every foe, at the party's average Level of {level}.",
+        "even": "even",
+        "against": "{attacker} against {target}",
+        "cell": "{who}: Dmg {damage} · Hit {hit}% · Crit {crit}%",
+        "attacks": "{attacks} attacks",
+        "noAttack": "{who}: does not attack",
+        "killExp": "Kill EXP {exp}",
+        "expShort": "EXP",
+        "rowHint": "Its Level against the party's average, and the Kill EXP that earns.",
+        "one": "1 hit",
+        "four": "4 or more",
+        "noDamage": "no damage"
+      },
+      "difficulty": {
+        "label": "For this party",
+        "hint": "A rough read, not a rule of the game. It strings the forecast together: the turns this party needs to fell every foe, and the HP the foes take from it in that time, less what its staves heal. Terrain and good play are not counted.",
+        "none": "No read yet: it takes a foe, and someone in the party who can attack.",
+        "easy": "Easy",
+        "normal": "Normal",
+        "hard": "Hard",
+        "lunatic": "Lunatic"
+      },
+      "check": {
+        "none": "No Objective is set: the map has no end.",
+        "boss": "Defeat the Boss: {name}.",
+        "bossMissing": "Defeat the Boss needs an enemy marked Boss.",
+        "rout": "Rout: {count} enemies to defeat.",
+        "routMissing": "Rout needs an enemy.",
+        "survive": "Survive {turns} turns.",
+        "protect": "Protect: {name} must not be defeated.",
+        "protectMissing": "Protect needs a unit to keep alive. Pick it on its card.",
+        "marked": "{objective}: the space at column {column}, row {row}.",
+        "unmarked": "{objective} needs a space marked on the map.",
+        "gone": "{name} was deleted from the world.",
+        "unfit": "{name} lacks the rank for {weapons}.",
+        "unarmed": "{name} has no weapon in hand.",
+        "recruit": "{name} is recruitable: how is yours to rule.",
+        "unplaced": "{count} still to place: {names}.",
+        "noGrid": "This scene has no square grid, so nothing can be placed on it.",
+        "noScene": "No scene is chosen yet."
+      },
+      "unit": {
+        "tab": "Unit",
+        "kept": "The unit to protect",
+        "varies": "Each copy varies",
+        "carries": "Carries",
+        "nothing": "Nothing",
+        "arrives": "Arrives",
+        "atStart": "At the start",
+        "onTurn": "On a turn",
+        "protect": "This is the unit to protect",
+        "loose": "Stands nowhere yet. Click a tile on the map, or use Scatter.",
+        "short": "Not every copy finds a tile round where it was put. Move it, or lower the count.",
+        "edit": "Edit in the NPC Builder",
+        "sheet": "Open its sheet",
+        "duplicate": "Duplicate",
+        "duplicateHint": "The same unit again as a row of its own: to stand elsewhere, or to arrive later.",
+        "remove": "Remove"
+      },
+      "foot": {
+        "onMap": "{count} of its units are on the map.",
+        "kept": "Kept with the world as you go. Nothing is on a map yet.",
+        "place": "Place on map",
+        "placeAgain": "Place again",
+        "placeAsk": "The {count} units this encounter put on the map are taken off first, with whatever happened to them. Place it again?",
+        "placed": "{count} units were placed.",
+        "placedLater": "{count} units were placed. Still to arrive on a later turn: {later}.",
+        "begin": "Begin battle",
+        "beginAsk": "Begin {name}? Its units are placed if they are not yet, the map takes its Affinity and weather, and the Player Phase starts."
       }
     }
   }

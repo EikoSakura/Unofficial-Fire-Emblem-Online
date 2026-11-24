@@ -1,7 +1,9 @@
 import Base from "./module/apps/base.mjs";
 import BattleHud from "./module/apps/battle-hud.mjs";
 import ChatInspector from "./module/apps/chat-inspector.mjs";
+import EncounterBuilder from "./module/apps/encounter-builder.mjs";
 import MapGenerator from "./module/apps/map-generator.mjs";
+import NpcBuilder from "./module/apps/npc-builder.mjs";
 import Compendium from "./module/apps/compendium.mjs";
 import OptionalRulesConfig from "./module/apps/optional-rules-config.mjs";
 import { FEO } from "./module/config.mjs";
@@ -18,6 +20,7 @@ import * as eventHelpers from "./module/helpers/events.mjs";
 import * as cutInHelpers from "./module/helpers/cut-ins.mjs";
 import * as levelUpHelpers from "./module/helpers/level-up.mjs";
 import * as migrationHelpers from "./module/helpers/migration.mjs";
+import * as npcHelpers from "./module/helpers/npc.mjs";
 import { APPLY_QUERY, applyExchangeQuery } from "./module/helpers/exchange.mjs";
 import * as experienceHelpers from "./module/helpers/experience.mjs";
 import * as optionalHelpers from "./module/helpers/optional.mjs";
@@ -221,6 +224,15 @@ Hooks.once("init", () => {
   // and then made into a scene of its own, opened from the Fire Emblem controls or with
   // game.feo.mapGenerator.open()
   MapGenerator.register();
+
+  // The NPC Builder and the Encounter Builder: a unit for the Game Master to play, made from a class, a Level
+  // and a side; and a battle prepared ahead of the session, with who is in it, where they stand, what the party
+  // has to do and how hard that reads for the party that goes. Both open from the Fire Emblem controls, or with
+  // game.feo.npcBuilder.open() and game.feo.encounterBuilder.open()
+  NpcBuilder.register();
+  EncounterBuilder.register();
+  npcHelpers.registerHooks();
+  game.feo.npcs = npcHelpers;
 
   // The Character Creator: who is looking at which step of a unit, and calls for help
   Hooks.once("ready", () => creationHelpers.registerCreation());

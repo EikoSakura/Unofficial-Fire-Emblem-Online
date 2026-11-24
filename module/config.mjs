@@ -2333,3 +2333,66 @@ FEO.phases = ["player", "enemy", "ally", "other"];
 
 /** Which sides fight together. Units of a side in neither list stand apart from everyone. */
 FEO.alliances = [["player", "ally"], ["enemy"]];
+
+/* -------------------------------------------- */
+/*  NPCs and Encounters                         */
+/* -------------------------------------------- */
+
+/**
+ * The NPC Builder: a unit the Game Master plays, made from a class, a Level and a side.
+ *
+ * `sides` are the sides such a unit may fight for. `limit` is the highest Level the builder makes. `con` is the
+ * CON of a unit whose class leaves it open, until it is set. `spread` is how wide the span shown for a unit
+ * that varies from copy to copy is, in deviations either side of what its growth rates give on average.
+ * `boss` names what makes a unit a Boss: the skill every Boss has. `silent` is the skill of a unit that does
+ * not fight, and gives no EXP. `drops` are the ways something a unit carries is left behind: for
+ * nobody, for the players, or for any unit. `kit` is what a suggested kit is made of: the `families` of weapons
+ * that go with a starting class, a promoted one and one promoted twice; the highest of the `ranks` that go with
+ * the first of those tiers where a type of weapon has no such families; the `staff` a unit that uses staves
+ * carries; and the `item` every kit has.
+ * `folder` is what the Actors folder its units are kept in is called.
+ */
+FEO.npc = {
+  flag: "npc",
+  sides: ["enemy", "ally", "other"],
+  limit: 60,
+  con: 7,
+  spread: 1.28,
+  boss: { skill: "General" },
+  silent: "Noncombatant",
+  drops: ["", "players", "any"],
+  kit: { families: ["Iron", "Steel", "Silver"], ranks: ["E", "D"], staff: "Heal", item: "Vulnerary" },
+  folder: "FEO.Npc.folder"
+};
+
+/**
+ * The Encounter Builder: a battle prepared ahead of the session.
+ *
+ * `objectives` are the Objectives of "On the Map", of which `marked` need a space on the map and `survive`
+ * counts turns. `count` is the most copies one stat block may have. `arrivals` is the flag of a scene that
+ * keeps the units still to arrive.
+ *
+ * `difficulty` is how hard a battle reads for the party that is going. The rulebook has no such measure: this
+ * one counts the turns the party needs to fell every foe and the share of its HP the foes take from it in that
+ * time. `bands` name a battle by that share, each up to but not including `under`; `fellIn` is how few hits
+ * fell a unit that is said to be at risk; `least` is the least one attack is counted as dealing, so that a foe
+ * nobody can hurt does not make the count endless.
+ */
+FEO.encounter = {
+  setting: "encounters",
+  arrivals: "arrivals",
+  objectives: ["seize", "rout", "boss", "survive", "defend", "protect", "escape"],
+  marked: ["seize", "defend", "escape"],
+  survive: 8,
+  count: 30,
+  difficulty: {
+    bands: [
+      { key: "easy", under: 0.3 },
+      { key: "normal", under: 0.6 },
+      { key: "hard", under: 1 },
+      { key: "lunatic", under: Infinity }
+    ],
+    fellIn: 2,
+    least: 0.5
+  }
+};

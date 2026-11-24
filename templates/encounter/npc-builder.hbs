@@ -1,0 +1,164 @@
+<div class="nb" data-army="{{army}}">
+  <aside class="nb-rail" aria-label="{{localize "FEO.Npc.summary"}}">
+    {{#if hasClass}}
+    <div class="nb-medal"><small>{{localize "FEO.Npc.lv"}}</small><b>{{rail.level}}</b></div>
+    <div class="nb-who">
+      <div class="nb-name {{rail.tone}}">{{rail.name}}</div>
+      <div class="nb-class">{{rail.className}} · {{rail.race}}</div>
+    </div>
+    <div class="nb-hp"><span>{{localize "FEO.Stat.hp.abbr"}}</span><b>{{rail.hp}} <i>/ {{rail.hp}}</i></b></div>
+    <div class="nb-bar"><i></i></div>
+    <div class="nb-quick">{{#each rail.quick as |cell|}}<div><b>{{cell.value}}</b><span>{{cell.label}}</span></div>{{/each}}</div>
+    <div class="nb-label">{{rail.held}}</div>
+    <div class="nb-six">{{#each rail.combat as |cell|}}<div><b>{{cell.value}}</b><span>{{cell.label}}</span></div>{{/each}}</div>
+    {{#if rail.chips.length}}
+    <div class="nb-chips">{{#each rail.chips as |chip|}}<span class="nb-chip">{{feoIcon chip.icon}}{{chip.label}}</span>{{/each}}</div>
+    {{/if}}
+    {{else}}
+    <p class="nb-empty">{{localize "FEO.Npc.noClass"}}</p>
+    {{/if}}
+  </aside>
+
+  <div class="nb-main">
+    <input type="text" class="nb-name-in" name="name" value="{{name}}" placeholder="{{#if placeholder}}{{placeholder}}{{else}}{{localize "FEO.Npc.name"}}{{/if}}"
+           aria-label="{{localize "FEO.Npc.name"}}" autocomplete="off" spellcheck="false">
+
+    <div class="nb-quickbuild">
+      <div class="nb-qb">
+        <span class="eyebrow"><b>1</b>{{localize "FEO.Npc.step.class"}}</span>
+        {{#if hasClass}}
+        <div class="nb-big"><span class="nb-crest">{{feoIcon cls.icon}}</span><div><b>{{cls.name}}</b><small>{{cls.note}}</small></div></div>
+        {{else}}
+        <div class="nb-big"><div><b>{{localize "FEO.Npc.class.none"}}</b><small>{{localize "FEO.Npc.class.noneHint"}}</small></div></div>
+        {{/if}}
+        <div class="nb-row">
+          <button type="button" class="btn small {{#unless hasClass}}primary{{/unless}}" data-action="chooseClass">{{feoIcon "scroll"}}{{#if hasClass}}{{localize "FEO.Npc.class.change"}}{{else}}{{localize "FEO.Npc.class.choose"}}{{/if}}</button>
+        </div>
+        {{#if cls.parents.length}}
+        <div class="nb-tiles"><span>{{localize "FEO.Npc.class.from"}}</span>
+          {{#each cls.parents as |parent|}}<button type="button" class="nb-pick {{#if parent.on}}on{{/if}}" data-action="parent" data-class-id="{{parent.id}}" aria-pressed="{{parent.on}}">{{parent.name}}</button>{{/each}}
+        </div>
+        {{/if}}
+        {{#if cls.promoteHint}}
+        <div class="nb-tiles"><span>{{cls.promoteHint}}</span>
+          {{#each cls.promotions as |target|}}<button type="button" class="nb-pick" data-action="promote" data-class-id="{{target.id}}">{{target.name}}</button>{{/each}}
+        </div>
+        {{/if}}
+      </div>
+
+      <div class="nb-qb">
+        <span class="eyebrow"><b>2</b>{{localize "FEO.Npc.step.level"}}</span>
+        <div class="nb-level">
+          <button type="button" class="nb-round wide" data-action="level" data-by="-5" {{#if level.atFloor}}disabled{{/if}} aria-label="{{localize "FEO.Npc.level.down5"}}">−5</button>
+          <button type="button" class="nb-round" data-action="level" data-by="-1" {{#if level.atFloor}}disabled{{/if}} aria-label="{{localize "FEO.Npc.level.down"}}">−</button>
+          <b>{{#if hasClass}}{{level.value}}{{else}}–{{/if}}</b>
+          <button type="button" class="nb-round" data-action="level" data-by="1" {{#if level.atTop}}disabled{{/if}} aria-label="{{localize "FEO.Npc.level.up"}}">+</button>
+          <button type="button" class="nb-round wide" data-action="level" data-by="5" {{#if level.atTop}}disabled{{/if}} aria-label="{{localize "FEO.Npc.level.up5"}}">+5</button>
+        </div>
+        {{#if level.party}}
+        <div class="nb-row"><button type="button" class="btn small quiet" data-action="matchParty" data-tooltip="{{localize "FEO.Npc.level.matchHint"}}">{{localize "FEO.Npc.level.match"}} · {{level.party}}</button></div>
+        {{/if}}
+      </div>
+
+      <div class="nb-qb">
+        <span class="eyebrow"><b>3</b>{{localize "FEO.Npc.step.side"}}</span>
+        <div class="nb-seg">
+          {{#each sides as |side|}}<button type="button" class="{{#if side.on}}on{{/if}}" data-action="side" data-side="{{side.key}}" aria-pressed="{{side.on}}">{{side.label}}</button>{{/each}}
+        </div>
+        <div class="nb-row wide">
+          <button type="button" class="nb-switch {{#if boss}}on{{/if}}" role="switch" aria-checked="{{boss}}" data-action="flag" data-flag="boss" data-tooltip="{{localize "FEO.Npc.bossHint"}}"><span class="track"></span>{{localize "FEO.Npc.boss"}}</button>
+          <button type="button" class="nb-switch {{#if recruit}}on{{/if}}" role="switch" aria-checked="{{recruit}}" data-action="flag" data-flag="recruit" data-tooltip="{{localize "FEO.Npc.recruitHint"}}"><span class="track"></span>{{localize "FEO.Npc.recruit"}}</button>
+        </div>
+      </div>
+    </div>
+
+    {{#if hasClass}}
+    <section class="nb-card">
+      <h4><span>{{localize "FEO.Npc.stats"}}</span>
+        <span class="nb-tools">
+          <button type="button" class="nb-switch {{#if vary}}on{{/if}}" role="switch" aria-checked="{{vary}}" data-action="vary" data-tooltip="{{localize "FEO.Npc.varyHint"}}"><span class="track"></span>{{localize "FEO.Npc.vary"}}</button>
+          <span class="nb-seg small">
+            <button type="button" class="{{#if mode.average}}on{{/if}}" data-action="mode" data-mode="average" aria-pressed="{{mode.average}}" data-tooltip="{{localize "FEO.Npc.mode.averageHint"}}">{{localize "FEO.Npc.mode.average"}}</button>
+            <button type="button" class="{{#if mode.rolled}}on{{/if}}" data-action="mode" data-mode="rolled" aria-pressed="{{mode.rolled}}" data-tooltip="{{localize "FEO.Npc.mode.rolledHint"}}">{{localize "FEO.Npc.mode.rolled"}}</button>
+          </span>
+          {{#if mode.rolled}}<button type="button" class="btn small" data-action="reroll">{{feoIcon "dice"}}{{localize "FEO.Npc.mode.reroll"}}</button>{{/if}}
+        </span>
+      </h4>
+      <div class="nb-stats">
+        {{#each stats as |stat|}}
+        <div class="nb-stat" data-tooltip="{{stat.title}}">
+          <span class="k">{{stat.label}}</span>
+          <b class="v {{#if stat.spans}}span{{/if}}">{{stat.value}}{{#if stat.adjust}}<small class="{{#if stat.up}}up{{else}}down{{/if}}">{{stat.adjust}}</small>{{/if}}</b>
+          <span class="nb-step">
+            <button type="button" class="nb-round tiny" data-action="adjust" data-stat="{{stat.key}}" data-by="-1" aria-label="{{localize "FEO.Npc.lower"}} {{stat.label}}">−</button>
+            <button type="button" class="nb-round tiny" data-action="adjust" data-stat="{{stat.key}}" data-by="1" aria-label="{{localize "FEO.Npc.raise"}} {{stat.label}}">+</button>
+          </span>
+        </div>
+        {{/each}}
+      </div>
+      <div class="nb-growth">
+        <span>{{growth.levels}}</span>
+        <span>{{localize "FEO.Npc.growth.rates"}} {{#each growth.rates as |rate|}}{{rate.label}} <b>{{rate.value}}</b>{{#unless @last}} · {{/unless}}{{/each}}</span>
+        {{#if growth.conOpen}}
+        <span class="tag warn">{{localize "FEO.Npc.conOpen"}}
+          <button type="button" class="nb-round tiny" data-action="con" data-by="-1" aria-label="{{localize "FEO.Npc.lower"}} {{localize "FEO.Stat.con.abbr"}}">−</button>
+          <b>{{growth.con}}</b>
+          <button type="button" class="nb-round tiny" data-action="con" data-by="1" aria-label="{{localize "FEO.Npc.raise"}} {{localize "FEO.Stat.con.abbr"}}">+</button>
+        </span>
+        {{/if}}
+      </div>
+    </section>
+
+    <div class="nb-two">
+      <section class="nb-card">
+        <h4><span>{{localize "FEO.Npc.arms"}}</span></h4>
+        {{#if ranks.length}}
+        <div class="nb-row">
+          {{#each ranks as |rank|}}<button type="button" class="nb-pick" data-action="rank" data-proficiency="{{rank.key}}" data-tooltip="{{localize "FEO.Npc.rankHint"}}">{{feoIcon rank.icon}}{{rank.label}} <small>{{rank.rank}}</small></button>{{/each}}
+        </div>
+        {{/if}}
+        {{#each pack as |item|}}
+        <div class="nb-item">
+          {{#if item.weapon}}<button type="button" class="nb-eq {{#if item.hand}}on{{/if}}" data-action="equip" data-index="{{item.index}}" aria-pressed="{{item.hand}}" aria-label="{{localize "FEO.Npc.pack.equip"}} {{item.name}}" data-tooltip="{{localize "FEO.Npc.pack.equip"}}"></button>{{else}}<span></span>{{/if}}
+          <div><b>{{item.name}}</b><small>{{item.detail}}{{#if item.unfit}} · <em>{{localize "FEO.Npc.pack.unfit"}}</em>{{/if}}</small></div>
+          <button type="button" class="nb-drop {{item.drop}}" data-action="drop" data-index="{{item.index}}" data-tooltip="{{localize "FEO.Npc.drop.hint"}}">{{feoIcon "chest"}}{{item.dropLabel}}</button>
+          <button type="button" class="nb-x" data-action="unpack" data-index="{{item.index}}" aria-label="{{localize "FEO.Npc.pack.remove"}} {{item.name}}">{{feoIcon "x"}}</button>
+        </div>
+        {{else}}
+        <p class="nb-none">{{localize "FEO.Npc.pack.none"}}</p>
+        {{/each}}
+        <div class="nb-row end">
+          <button type="button" class="btn small" data-action="chooseGear">{{feoIcon "scroll"}}{{localize "FEO.Npc.pack.add"}}</button>
+          <button type="button" class="btn small quiet" data-action="kit" data-tooltip="{{localize "FEO.Npc.pack.kitHint"}}">{{localize "FEO.Npc.pack.kit"}}</button>
+        </div>
+      </section>
+
+      <section class="nb-card">
+        <h4><span>{{localize "FEO.Npc.skills"}}</span></h4>
+        {{#each skills as |skill|}}
+        <div class="nb-skill">
+          <b>{{skill.name}}{{#if skill.options}}<button type="button" class="nb-cycle" data-action="nextSkill" data-choice="{{skill.choice}}" data-tooltip="{{localize "FEO.Npc.skill.nextHint"}}">{{localize "FEO.Npc.skill.next"}}</button>{{/if}}</b>
+          <span class="nb-row">
+            <span class="nb-src {{skill.source}}">{{skill.label}}</span>
+            {{#if skill.removable}}<button type="button" class="nb-x" data-action="unskill" data-kind="{{skill.removable}}" data-name="{{skill.name}}" aria-label="{{localize "FEO.Npc.pack.remove"}} {{skill.name}}">{{feoIcon "x"}}</button>{{/if}}
+          </span>
+          <p>{{skill.text}}</p>
+        </div>
+        {{else}}
+        <p class="nb-none">{{localize "FEO.Npc.skill.none"}}</p>
+        {{/each}}
+        <div class="nb-row end">
+          {{#if generic.allowed}}<button type="button" class="btn small" data-action="chooseGeneric">{{feoIcon "scroll"}}{{#if generic.has}}{{localize "FEO.Npc.skill.changeGeneric"}}{{else}}{{localize "FEO.Npc.skill.addGeneric"}}{{/if}}</button>{{/if}}
+          <button type="button" class="btn small" data-action="chooseExtra">{{feoIcon "scroll"}}{{localize "FEO.Npc.skill.addExtra"}}</button>
+        </div>
+      </section>
+    </div>
+    {{/if}}
+  </div>
+
+  <footer class="nb-foot">
+    <span class="nb-say {{#if say}}told{{/if}}">{{#if say}}{{say}}{{else}}{{where}}{{/if}}</span>
+    {{#if saved}}<button type="button" class="btn quiet" data-action="openSheet">{{localize "FEO.Npc.foot.sheet"}}</button>{{/if}}
+    <button type="button" class="btn primary" data-action="save" {{#unless hasClass}}disabled{{/unless}}>{{feoIcon "check"}}{{#if saved}}{{localize "FEO.Npc.foot.update"}}{{else}}{{localize "FEO.Npc.foot.create"}}{{/if}}</button>
+  </footer>
+</div>

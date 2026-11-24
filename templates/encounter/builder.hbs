@@ -1,0 +1,242 @@
+<div class="eb">
+  <header class="eb-mast">
+    <span class="eb-emblem">{{feoIcon "banner"}}</span>
+    <div class="eb-title">
+      <span class="eyebrow">{{localize "FEO.Encounter.eyebrow"}}</span>
+      <input type="text" class="eb-name" name="name" value="{{name}}" placeholder="{{localize "FEO.Encounter.unnamed"}}" aria-label="{{localize "FEO.Encounter.name"}}" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="eb-plate">
+      <label><small>{{localize "FEO.Encounter.saved"}}</small>
+        <select name="encounter" aria-label="{{localize "FEO.Encounter.saved"}}">
+          {{#each encounters as |other|}}<option value="{{other.id}}" {{#if other.selected}}selected{{/if}}>{{other.name}}</option>{{/each}}
+        </select>
+      </label>
+      <button type="button" class="btn small" data-action="newEncounter">{{feoIcon "plus"}}{{localize "FEO.Encounter.new"}}</button>
+      <button type="button" class="btn small quiet" data-action="deleteEncounter" data-tooltip="{{localize "FEO.Encounter.deleteHint"}}" aria-label="{{localize "FEO.Encounter.delete"}}">{{feoIcon "trash"}}</button>
+    </div>
+    <div class="eb-plate">
+      <label><small>{{localize "FEO.Encounter.map.label"}}{{#if mapSize}} · {{mapSize}}{{/if}}</small>
+        <select name="scene" aria-label="{{localize "FEO.Encounter.map.label"}}">
+          {{#each scenes as |scene|}}<option value="{{scene.id}}" {{#if scene.selected}}selected{{/if}}>{{scene.name}}</option>{{/each}}
+        </select>
+      </label>
+      <button type="button" class="btn small" data-action="generate" data-tooltip="{{localize "FEO.Encounter.map.generateHint"}}">{{feoIcon "peak"}}{{localize "FEO.Encounter.map.generate"}}</button>
+    </div>
+  </header>
+
+  <div class="eb-setup">
+    <div class="eb-field">
+      <span class="eyebrow">{{localize "FEO.Encounter.objectives"}}</span>
+      <div class="eb-row">
+        {{#each objectives as |objective|}}
+        <button type="button" class="eb-pick {{#if objective.on}}on{{/if}}" data-action="objective" data-objective="{{objective.key}}" aria-pressed="{{objective.on}}" data-tooltip="{{objective.hint}}">{{objective.label}}</button>
+        {{/each}}
+        {{#if surviveOn}}
+        <span class="eb-step">
+          <button type="button" class="eb-round" data-action="survive" data-by="-1" {{#if surviveLeast}}disabled{{/if}} aria-label="{{localize "FEO.Encounter.fewerTurns"}}">−</button>
+          <b>{{survive}}</b>
+          <button type="button" class="eb-round" data-action="survive" data-by="1" aria-label="{{localize "FEO.Encounter.moreTurns"}}">+</button>
+          <small>{{localize "FEO.Encounter.turns"}}</small>
+        </span>
+        {{/if}}
+      </div>
+    </div>
+    <label class="eb-field"><span class="eyebrow">{{localize "FEO.Encounter.affinity"}}</span>
+      <select name="affinity">{{#each affinities as |affinity|}}<option value="{{affinity.key}}" {{#if affinity.selected}}selected{{/if}}>{{affinity.label}}</option>{{/each}}</select>
+    </label>
+    <label class="eb-field"><span class="eyebrow">{{localize "FEO.Encounter.weather"}}</span>
+      <select name="weather">{{#each weathers as |weather|}}<option value="{{weather.key}}" {{#if weather.selected}}selected{{/if}}>{{weather.label}}</option>{{/each}}</select>
+    </label>
+    <div class="eb-field">
+      <span class="eyebrow">{{localize "FEO.Encounter.phases"}}</span>
+      <div class="eb-phases">{{#each phases as |phase|}}<span data-army="{{phase.key}}"><i></i>{{phase.label}}</span>{{#unless @last}}{{feoIcon "right"}}{{/unless}}{{/each}}</div>
+    </div>
+  </div>
+
+  <div class="eb-body">
+    <section class="eb-forces">
+      <h3 class="eb-h">{{localize "FEO.Encounter.forces"}} <small>{{localize "FEO.Encounter.forcesHint"}}</small></h3>
+      {{#each sides as |side|}}
+      <div class="eb-side" data-army="{{side.key}}">{{side.label}} <b>{{side.total}}</b></div>
+      {{#each side.rows as |row|}}
+      <div class="eb-force {{#if row.selected}}selected{{/if}}" data-army="{{side.key}}" data-action="select" data-group="{{row.id}}" role="button" tabindex="0" aria-pressed="{{row.selected}}">
+        <span class="eb-tok {{#if row.boss}}boss{{/if}} {{#if row.recruit}}recruit{{/if}}">{{feoIcon row.icon}}</span>
+        <div class="eb-who"><b class="{{row.tone}}">{{row.name}}</b><small>{{row.sub}}</small></div>
+        <span class="eb-marks">
+          {{#if row.kept}}<span class="kept" data-tooltip="{{localize "FEO.Encounter.unit.kept"}}">{{feoIcon "shield"}}</span>{{/if}}
+          {{#if row.recruit}}<span class="recruit" data-tooltip="{{localize "FEO.Npc.recruit"}}">{{feoIcon "hand"}}</span>{{/if}}
+          {{#each row.drops as |drop|}}<span class="drop {{drop.drop}}" data-tooltip="{{drop.title}}">{{feoIcon "chest"}}</span>{{/each}}
+          {{#if row.turn}}<span class="eb-turn" data-tooltip="{{row.turnTitle}}">{{localize "FEO.Encounter.turnShort"}}{{row.turn}}</span>{{/if}}
+        </span>
+        {{#if row.missing}}
+        <button type="button" class="eb-x" data-action="remove" data-group="{{row.id}}" aria-label="{{localize "FEO.Encounter.unit.remove"}}">{{feoIcon "x"}}</button>
+        {{else if row.single}}
+        <span class="eb-one" data-tooltip="{{localize "FEO.Encounter.single"}}">×1</span>
+        {{else}}
+        <span class="eb-step">
+          <button type="button" class="eb-round" data-action="count" data-group="{{row.id}}" data-by="-1" {{#if row.atLeast}}disabled{{/if}} aria-label="{{localize "FEO.Encounter.fewer"}}">−</button>
+          <b>{{row.count}}</b>
+          <button type="button" class="eb-round" data-action="count" data-group="{{row.id}}" data-by="1" {{#if row.atMost}}disabled{{/if}} aria-label="{{localize "FEO.Encounter.more"}}">+</button>
+        </span>
+        {{/if}}
+      </div>
+      {{/each}}
+      {{/each}}
+      {{#if noForces}}<p class="eb-none">{{localize "FEO.Encounter.noForces"}}</p>{{/if}}
+      <div class="eb-add">
+        <button type="button" class="btn small primary" data-action="newNpc">{{feoIcon "plus"}}{{localize "FEO.Encounter.newNpc"}}</button>
+        <select name="addUnit" aria-label="{{localize "FEO.Encounter.addUnit"}}">
+          <option value="">{{localize "FEO.Encounter.addUnit"}}</option>
+          {{#each npcs as |unit|}}<option value="{{unit.id}}">{{unit.label}}</option>{{/each}}
+        </select>
+      </div>
+    </section>
+
+    <section class="eb-map">
+      <h3 class="eb-h">{{localize "FEO.Encounter.map.label"}} <small>{{mapHint}}</small>
+        <span class="eb-right">
+          {{#if canMark}}<button type="button" class="btn small {{#if placingGoal}}primary{{/if}}" data-action="markGoal" aria-pressed="{{placingGoal}}" data-tooltip="{{localize "FEO.Encounter.map.markHint"}}">{{feoIcon "target"}}{{#if goal}}{{goal}}{{else}}{{localize "FEO.Encounter.map.mark"}}{{/if}}</button>{{/if}}
+          {{#if hasMap}}<button type="button" class="btn small" data-action="scatter" data-tooltip="{{localize "FEO.Encounter.map.scatterHint"}}">{{feoIcon "dice"}}{{localize "FEO.Encounter.map.scatter"}}</button>{{/if}}
+        </span>
+      </h3>
+      {{#if hasMap}}
+      <div class="eb-frame"><canvas class="eb-canvas" role="img" aria-label="{{localize "FEO.Encounter.map.label"}}"></canvas></div>
+      <div class="eb-keys">
+        <span><i class="deploy"></i>{{localize "FEO.Zone.deploy.label"}}</span>
+        <span><i class="later"></i>{{localize "FEO.Encounter.map.later"}}</span>
+        <span><i class="there"></i>{{localize "FEO.Encounter.map.there"}}</span>
+      </div>
+      {{else}}
+      <p class="eb-none">{{localize "FEO.Encounter.map.pick"}}</p>
+      {{/if}}
+    </section>
+
+    <section class="eb-read">
+      <div class="eb-party">
+        <div class="eb-party-head"><b>{{localize "FEO.Encounter.party.label"}}</b><small>{{party.summary}}</small>
+          <button type="button" class="btn small" data-action="partyOpen" aria-expanded="{{party.open}}">{{#if party.open}}{{localize "FEO.Encounter.party.done"}}{{else}}{{localize "FEO.Encounter.party.who"}}{{/if}}</button>
+        </div>
+        {{#if party.chips.length}}
+        <div class="eb-going">{{#each party.chips as |chip|}}<span class="tag" data-tooltip="{{chip.title}}"><b>{{chip.name}}</b> {{chip.level}}</span>{{/each}}</div>
+        {{/if}}
+        {{#if party.open}}
+        <div class="eb-pool">
+          {{#each party.pool as |unit|}}
+          <button type="button" class="eb-pool-row {{#if unit.going}}on{{/if}}" role="checkbox" aria-checked="{{unit.going}}" data-action="going" data-actor="{{unit.id}}">
+            <span class="box">{{#if unit.going}}{{feoIcon "check"}}{{/if}}</span>
+            <span><b>{{unit.name}}</b> <small>{{unit.sub}}</small></span>
+            <span class="pl {{#if unit.online}}online{{/if}}">{{unit.player}}</span>
+          </button>
+          {{/each}}
+          {{#if party.empty}}<p class="eb-none">{{localize "FEO.Encounter.party.empty"}}</p>{{/if}}
+          <div class="eb-row">
+            <button type="button" class="btn small" data-action="partyOnline" data-tooltip="{{localize "FEO.Encounter.party.onlineHint"}}">{{localize "FEO.Encounter.party.online"}}</button>
+            <button type="button" class="btn small" data-action="partyOnMap" data-tooltip="{{localize "FEO.Encounter.party.onMapHint"}}">{{localize "FEO.Encounter.party.onMap"}}</button>
+            <button type="button" class="btn small quiet" data-action="partyClear">{{localize "FEO.Encounter.party.clear"}}</button>
+          </div>
+        </div>
+        {{/if}}
+      </div>
+
+      <div class="eb-tabs" role="tablist">
+        <button type="button" role="tab" class="{{#if tabRead}}on{{/if}}" aria-selected="{{tabRead}}" data-action="show" data-show="read">{{localize "FEO.Encounter.read.tab"}}</button>
+        <button type="button" role="tab" class="{{#if tabUnit}}on{{/if}}" aria-selected="{{tabUnit}}" data-action="show" data-show="unit">{{unitTab}}</button>
+      </div>
+
+      {{#if tabUnit}}
+        {{#if card.missing}}
+        <p class="eb-none">{{localize "FEO.Encounter.goneHint"}}</p>
+        <div class="eb-row"><button type="button" class="btn small" data-action="remove" data-group="{{card.id}}">{{feoIcon "trash"}}{{localize "FEO.Encounter.unit.remove"}}</button></div>
+        {{else}}
+        <div class="eb-card" data-army="{{card.army}}">
+          <div class="eb-card-head">
+            <span class="eb-tok {{#if card.boss}}boss{{/if}}">{{feoIcon card.icon}}</span>
+            <div><b class="{{card.tone}}">{{card.name}}</b><small>{{card.sub}}</small></div>
+            <span class="eb-lv"><small>{{localize "FEO.Npc.lv"}}</small> {{card.level}}</span>
+          </div>
+          <div class="eb-card-body">
+            <div class="eb-grid">{{#each card.stats as |stat|}}<div><b>{{stat.value}}</b><span>{{stat.label}}</span></div>{{/each}}</div>
+            <div class="eb-kv">{{#each card.small as |stat|}}<span>{{stat.label}} <b>{{stat.value}}</b></span>{{/each}}{{#if card.vary}}<span class="tag">{{localize "FEO.Encounter.unit.varies"}}</span>{{/if}}</div>
+            <div class="eb-grid six">{{#each card.combat as |stat|}}<div><b>{{stat.value}}</b><span>{{stat.label}}</span></div>{{/each}}</div>
+            <div class="eb-kv"><b>{{localize "FEO.Encounter.unit.carries"}}</b>
+              {{#each card.carried as |item|}}<span class="{{#if item.drop}}drop {{item.drop}}{{/if}}" {{#if item.title}}data-tooltip="{{item.title}}"{{/if}}>{{item.name}}{{#if item.drop}}{{feoIcon "chest"}}{{/if}}{{#unless @last}} ·{{/unless}}</span>{{else}}<span>{{localize "FEO.Encounter.unit.nothing"}}</span>{{/each}}
+            </div>
+            <div class="eb-kv"><b>{{localize "FEO.Npc.skills"}}</b> <span>{{#if card.skills}}{{card.skills}}{{else}}{{localize "FEO.Encounter.unit.nothing"}}{{/if}}</span></div>
+            <div class="eb-kv"><b>{{localize "FEO.Encounter.unit.arrives"}}</b>
+              <span class="eb-seg">
+                <button type="button" class="{{#unless card.later}}on{{/unless}}" data-action="arrive" data-when="start" aria-pressed="{{#if card.later}}false{{else}}true{{/if}}">{{localize "FEO.Encounter.unit.atStart"}}</button>
+                <button type="button" class="{{#if card.later}}on{{/if}}" data-action="arrive" data-when="later" aria-pressed="{{card.later}}">{{localize "FEO.Encounter.unit.onTurn"}}</button>
+              </span>
+              {{#if card.later}}
+              <span class="eb-step">
+                <button type="button" class="eb-round" data-action="turn" data-by="-1" {{#if card.atFirstTurn}}disabled{{/if}} aria-label="{{localize "FEO.Encounter.fewerTurns"}}">−</button>
+                <b>{{card.turn}}</b>
+                <button type="button" class="eb-round" data-action="turn" data-by="1" aria-label="{{localize "FEO.Encounter.moreTurns"}}">+</button>
+              </span>
+              {{/if}}
+            </div>
+            {{#if card.canProtect}}
+            <div class="eb-kv"><button type="button" class="eb-switch {{#if card.kept}}on{{/if}}" role="switch" aria-checked="{{card.kept}}" data-action="protect" data-group="{{card.id}}"><span class="track"></span>{{localize "FEO.Encounter.unit.protect"}}</button></div>
+            {{/if}}
+            {{#if card.loose}}<div class="eb-kv warn">{{feoIcon "eye"}}<span>{{localize "FEO.Encounter.unit.loose"}}</span></div>{{/if}}
+            {{#if card.short}}<div class="eb-kv warn">{{feoIcon "eye"}}<span>{{localize "FEO.Encounter.unit.short"}}</span></div>{{/if}}
+            <div class="eb-acts">
+              <button type="button" class="btn small primary" data-action="edit" data-group="{{card.id}}">{{feoIcon "quill"}}{{#if card.made}}{{localize "FEO.Encounter.unit.edit"}}{{else}}{{localize "FEO.Encounter.unit.sheet"}}{{/if}}</button>
+              <button type="button" class="btn small" data-action="duplicate" data-group="{{card.id}}" data-tooltip="{{localize "FEO.Encounter.unit.duplicateHint"}}">{{localize "FEO.Encounter.unit.duplicate"}}</button>
+              <button type="button" class="btn small quiet" data-action="remove" data-group="{{card.id}}">{{feoIcon "trash"}}{{localize "FEO.Encounter.unit.remove"}}</button>
+            </div>
+          </div>
+        </div>
+        {{/if}}
+      {{else}}
+        {{#if read.nobody}}
+        <p class="eb-none">{{localize "FEO.Encounter.read.nobody"}}</p>
+        {{else}}
+        {{#if read.difficulty}}
+        <div class="eb-diff {{read.difficulty.key}}" data-tooltip="{{localize "FEO.Encounter.difficulty.hint"}}">
+          <div class="lab"><span class="eyebrow">{{localize "FEO.Encounter.difficulty.label"}}</span><b>{{read.difficulty.label}}</b></div>
+          <div>
+            <div class="eb-meter">{{#each read.difficulty.steps as |step|}}<i class="{{#if step.on}}on{{/if}}"></i>{{/each}}</div>
+            <div class="eb-meter-names">{{#each read.difficulty.steps as |step|}}<span class="{{#if step.now}}on{{/if}}">{{step.label}}</span>{{/each}}</div>
+          </div>
+          <p>{{read.difficulty.line}}</p>
+        </div>
+        {{else}}
+        <div class="eb-diff"><p>{{localize "FEO.Encounter.difficulty.none"}}</p></div>
+        {{/if}}
+        <div class="eb-glance">{{#each read.tiles as |tile|}}<div data-tooltip="{{tile.title}}"><b>{{tile.value}}</b><span>{{tile.label}}</span></div>{{/each}}</div>
+        <div class="eb-way">
+          <span class="eyebrow">{{localize "FEO.Encounter.read.hits"}}</span>
+          <span class="eb-seg">
+            <button type="button" class="{{#if read.inward}}on{{/if}}" data-action="way" data-way="in" aria-pressed="{{read.inward}}">{{localize "FEO.Encounter.read.in"}}</button>
+            <button type="button" class="{{#unless read.inward}}on{{/unless}}" data-action="way" data-way="out" aria-pressed="{{#if read.inward}}false{{else}}true{{/if}}">{{localize "FEO.Encounter.read.out"}}</button>
+          </span>
+        </div>
+        <div class="eb-reads" style="--eb-cell: {{read.cell}}px">
+          <div class="eb-heads">{{#each read.heads as |head|}}<span data-tooltip="{{head.title}}">{{head.short}}</span>{{/each}}</div>
+          {{#each read.rows as |row|}}
+          <div class="eb-read-row" data-action="select" data-group="{{row.id}}">
+            <div class="l"><b class="{{row.tone}}">{{row.name}}{{#if row.count}} ×{{row.count}}{{/if}}</b>
+              <small data-tooltip="{{localize "FEO.Encounter.read.rowHint"}}">{{localize "FEO.Npc.lv"}} {{row.level}} <span class="gap {{row.gapTone}}">{{row.gap}}</span> · {{localize "FEO.Encounter.read.expShort"}} <b>{{row.exp}}</b></small></div>
+            <div class="eb-strip">{{#each row.cells as |cell|}}<i class="{{cell.tier}}" data-tooltip="{{cell.title}}">{{cell.text}}</i>{{/each}}</div>
+          </div>
+          {{/each}}
+        </div>
+        <div class="eb-legend">
+          <span><i class="d1"></i>{{localize "FEO.Encounter.read.one"}}</span><span><i class="d2"></i>2</span><span><i class="d3"></i>3</span>
+          <span><i class="d4"></i>{{localize "FEO.Encounter.read.four"}}</span><span><i></i>{{localize "FEO.Encounter.read.noDamage"}}</span>
+        </div>
+        {{/if}}
+        <div class="eb-checks">
+          {{#each checks as |check|}}<div class="eb-check {{#unless check.ok}}warn{{/unless}}">{{#if check.ok}}{{feoIcon "check"}}{{else}}{{feoIcon "eye"}}{{/if}}<span>{{check.text}}</span></div>{{/each}}
+        </div>
+      {{/if}}
+    </section>
+  </div>
+
+  <footer class="eb-foot">
+    <span class="eb-say {{#if say}}told{{/if}}">{{#if say}}{{say}}{{else}}{{footNote}}{{/if}}</span>
+    <button type="button" class="btn" data-action="place" {{#unless hasMap}}disabled{{/unless}}>{{feoIcon "peak"}}{{placeLabel}}</button>
+    <button type="button" class="btn primary" data-action="begin" {{#unless hasMap}}disabled{{/unless}}>{{feoIcon "banner"}}{{localize "FEO.Encounter.foot.begin"}}</button>
+  </footer>
+</div>

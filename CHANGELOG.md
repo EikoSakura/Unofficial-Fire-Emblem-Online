@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+- NPC Builder: the Game Master makes an enemy, an ally or a bystander from a class, a Level and a side. Its base stats, Level ups, promotions, skills and weapon ranks are filled in as the rules give them, and anything can be changed by hand. A unit can be marked as a Boss or as recruitable, what it carries can be set to drop for the players or for anyone, and a unit set to vary gives each copy its own Level ups when it is placed.
+- Encounter Builder: a battle is prepared ahead of the session and kept with the world: its map, Objectives, Map Affinity and weather, which units are in it and how many, where they stand, and the turn they arrive on. One button places it on the map, and another begins the battle and tells the players their Objectives.
+- The Encounter Builder reads a battle against the party that is going, picked from every player unit in the world: how hard it looks, from Easy to Lunatic, the turns it takes to clear, the Kill EXP on the map, and how many hits each foe and each unit needs to fell the other. The difficulty is a rough guide of this system's own, not a rule of the game.
+- Units that arrive on a later turn appear on the map and join the battle as that turn begins, and what a defeated unit leaves behind is told in chat.
+- Both builders open from the Fire Emblem controls, beside the Map Generator.
+
 ## 0.5.0
 
 - Skills on units made under an older version are brought up to date by themselves. When a Game Master opens the world after an update, every skill takes its Effect, its numbers, what the system does with it and its icon from the skills compendium, and keeps what is the unit's own: whether it is equipped, what was picked on it, and where its cooldown and uses stand. The Game Master is told in chat which skills changed, which now ask for a pick, and which weapon ranks to check by hand. Skills from a compendium of your own are left alone.
