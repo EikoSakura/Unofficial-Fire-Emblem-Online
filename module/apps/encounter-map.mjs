@@ -1,4 +1,4 @@
-import { drawGround } from "../canvas/ground-art.mjs";
+import { drawGround, drawTracks } from "../canvas/ground-art.mjs";
 
 /**
  * The picture of an encounter's map in the Encounter Builder: the scene's own picture or its painted ground,
@@ -24,6 +24,7 @@ const OPEN = "plain";
  * @property {(i: number, j: number) => string|null} terrainAt
  * @property {(i: number, j: number) => number} elevationAt
  * @property {(i: number, j: number) => string|null} zoneAt
+ * @property {import("../rules/mapgen.mjs").Track[]} [tracks]   The roads drawn across its ground
  * @property {HTMLImageElement|null} [image]      The scene's picture, once it has loaded
  * @property {{i: number, j: number, army: string}[]} [others]   Tokens that are on the scene already
  * @property {{id: string, army: string, boss: boolean, recruit: boolean, turn: number, tiles: {i: number, j: number}[]}[]} [groups]
@@ -67,6 +68,7 @@ export function drawEncounterMap(canvas, map, { tints, zone, zones = {}, width =
       return terrain ? { terrain, elevation: map.elevationAt(i, j) } : null;
     }
   });
+  drawTracks(pen, map.tracks, { rows: map.rows, columns: map.columns, cell: side });
 
   // The tiles the players set up on, and those of any other zone in its own colour
   for ( let i = 0; i < map.rows; i++ ) {

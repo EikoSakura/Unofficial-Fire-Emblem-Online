@@ -4570,6 +4570,54 @@
       "reroll": "Reroll",
       "create": "Create scene",
       "created": "The scene {name} was made.",
+      "createdKept": "The scene {name} was made, and is kept with {place}.",
+      "createdFought": "The scene {name} was made, and is kept with {place}. {encounter} is fought there.",
+      "from": "Made from",
+      "source": {
+        "world": "The World Map",
+        "kind": "A kind of field",
+        "noWorld": "This world has no World Map yet."
+      },
+      "worldNote": "North is at the top, as on the World Map. A unit on foot can always get from the company's side to where the battle leads.",
+      "cut": "The ground of the World Map this battlefield is made from",
+      "lay": "Lay the World Map over it",
+      "ends": {
+        "company": "The company comes in",
+        "joined": "The battle is joined",
+        "leads": "The battle leads here"
+      },
+      "lie": {
+        "mountains": "Mountains",
+        "coast": "Coast",
+        "desert": "Desert",
+        "woods": "Woods",
+        "hills": "Hills",
+        "open": "Open country"
+      },
+      "chip": {
+        "seaTo": "Sea to the {wind}",
+        "seaAround": "Sea all around",
+        "mountains": "Mountains",
+        "hills": "Hills",
+        "deepWoods": "Deep woods",
+        "woods": "Woods",
+        "dry": "Dry land",
+        "cold": "Cold",
+        "road": "1 road",
+        "roads": "{count} roads",
+        "lane": "Sea lane",
+        "lanes": "{count} sea lanes"
+      },
+      "wind": {
+        "east": "east",
+        "southEast": "south-east",
+        "south": "south",
+        "southWest": "south-west",
+        "west": "west",
+        "northWest": "north-west",
+        "north": "north",
+        "northEast": "north-east"
+      },
       "size": {
         "small": "Small",
         "medium": "Medium",
@@ -4785,6 +4833,7 @@
       "stop": "stop away",
       "stops": "stops away",
       "noWay": "No way there",
+      "openSea": "Open sea: there is nothing here to fight over.",
       "placesHeld": "{count} places",
       "pointed": "{user} points at {place}.",
       "pointing": "Everyone sees {place} flash on their map.",
@@ -4810,10 +4859,13 @@
         "base": "The Base",
         "market": "Market",
         "battle": "A battle waits",
-        "hidden": "Hidden from players"
+        "hidden": "Hidden from players",
+        "field": "Battlefield ready"
       },
       "act": {
         "march": "March here",
+        "field": "Battlefield",
+        "fieldHint": "Make a battle map of the land here, in the Map Generator.",
         "home": "Return to the Base",
         "hide": "Hide",
         "show": "Show to players",

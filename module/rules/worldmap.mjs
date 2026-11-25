@@ -22,6 +22,8 @@ import { seededRandom } from "./mapgen.mjs";
  * @property {Uint8Array} land        1 where there is land, 0 where there is sea
  * @property {Uint8Array} high        1 for hills, 2 for mountains
  * @property {Uint8Array} wood        1 where woods stand
+ * @property {Uint8Array} arid        1 where the land is dry
+ * @property {Uint8Array} frost       1 where it is cold
  * @property {Uint8ClampedArray} paint    The colour of each point with nobody holding it: red, green, blue
  * @property {{kind: "peak"|"hill"|"tree", x: number, y: number, size: number}[]} marks   What is inked over it
  *
@@ -41,6 +43,7 @@ import { seededRandom } from "./mapgen.mjs";
  * @property {boolean} visited        Has the company been there?
  * @property {boolean} battle         Is a battle waiting there?
  * @property {string} encounter       The saved encounter of that battle, if it has one
+ * @property {string} scene           The scene that was made of it as a battlefield, if one was
  * @property {boolean} market
  *
  * @typedef Route
@@ -239,6 +242,8 @@ export function makeLand({ seed, shape }, config = FEO.worldMap) {
   // The colour of every point: the ground by what grows on it, lit from the north-west, and the sea by its depth
   const high = new Uint8Array(W * H);
   const wood = new Uint8Array(W * H);
+  const arid = new Uint8Array(W * H);
+  const frost = new Uint8Array(W * H);
   const paint = new Uint8ClampedArray(W * H * 3);
   const blend = (into, colour, share) => {
     into[0] += (colour[0] - into[0]) * share;
@@ -256,6 +261,8 @@ export function makeLand({ seed, shape }, config = FEO.worldMap) {
         const cold = ease(0.2, 0.1, ny + ((wet[i] - 0.5) * 0.3));
         high[i] = rise[i] > mountAt ? 2 : rise[i] > hillAt ? 1 : 0;
         wood[i] = (wooded > 0.6) && !high[i] && (cold < 0.5) && (dry < 0.5) ? 1 : 0;
+        arid[i] = dry > 0.5 ? 1 : 0;
+        frost[i] = cold > 0.5 ? 1 : 0;
         ink[0] = PAINT.grass[0];
         ink[1] = PAINT.grass[1];
         ink[2] = PAINT.grass[2];
@@ -320,7 +327,7 @@ export function makeLand({ seed, shape }, config = FEO.worldMap) {
   }
   marks.sort((a, b) => a.y - b.y);
 
-  return { key, width: W, height: H, picture: false, land, high, wood, paint, marks };
+  return { key, width: W, height: H, picture: false, land, high, wood, arid, frost, paint, marks };
 }
 
 /* -------------------------------------------- */
@@ -343,7 +350,7 @@ export function pictureLand(key, pixels, config = FEO.worldMap) {
   }
   return {
     key, width: W, height: H, picture: true, land: new Uint8Array(W * H).fill(1), high: new Uint8Array(W * H),
-    wood: new Uint8Array(W * H), paint, marks: []
+    wood: new Uint8Array(W * H), arid: new Uint8Array(W * H), frost: new Uint8Array(W * H), paint, marks: []
   };
 }
 
@@ -835,7 +842,7 @@ export function makeWorld(land, { seed, shape, count, density, turn = 0 }, { phr
   // Places: the capitals, then dots kept apart from one another, each of a kind that suits where it stands
   const places = [];
   const add = (x, y, kind) => places.push({
-    id: `p${places.length + 1}`, x, y, kind, name: "", seen: false, visited: false, battle: false, encounter: "", market: false
+    id: `p${places.length + 1}`, x, y, kind, name: "", seen: false, visited: false, battle: false, encounter: "", scene: "", market: false
   });
   capitals.forEach((capital, n) => {
     claims[(capital.y * W) + capital.x] = n + 1;
@@ -917,6 +924,7 @@ export function cleanWorldMap(raw = {}, config = FEO.worldMap) {
       visited: !!place.visited,
       battle: !!place.battle,
       encounter: text(place.encounter),
+      scene: text(place.scene),
       market: !!place.market
     });
   }

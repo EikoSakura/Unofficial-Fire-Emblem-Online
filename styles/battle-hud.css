@@ -432,6 +432,36 @@
 .feo-mapgen .mg-foot { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--feo-line-soft); }
 .feo-mapgen .mg-foot span { margin-right: auto; font-size: 13px; color: var(--feo-muted); }
 .feo-mapgen .mg-foot .btn { flex: none; width: auto; cursor: pointer; }
+.feo-mapgen .mg-type[disabled] { opacity: .45; cursor: default; }
+
+/* A map made from the World Map: the ground it was made from, and the roads that leave it named in its margin */
+.feo-mapgen .mg-from { display: grid; gap: 8px; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid var(--feo-line); background: var(--feo-panel); }
+.feo-mapgen .mg-cut { display: block; max-width: 100%; border-radius: 4px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .5); }
+.feo-mapgen .mg-from h3 { margin: 1px 0 0; padding: 0; border: 0; font-family: var(--feo-font-display); font-weight: 400; font-size: 19px; line-height: 1.15; color: var(--feo-ink); overflow-wrap: anywhere; }
+.feo-mapgen .mg-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.feo-mapgen .mg-chips .tag { padding: 1px 8px; font-size: 12px; }
+.feo-mapgen .mg-frame { position: relative; }
+.feo-mapgen .mg-frame.mg-margins { padding: 22px; }
+.feo-mapgen .mg-laid { position: absolute; left: 22px; top: 22px; border-radius: 3px; opacity: 0; transition: opacity .25s; pointer-events: none; }
+.feo-mapgen .mg-frame.mg-laid-on .mg-laid { opacity: .78; }
+.feo-mapgen .mg-tag { position: absolute; display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; line-height: 1; color: var(--feo-muted); white-space: nowrap; }
+.feo-mapgen .mg-tag .feo-icon { font-size: 12px; }
+.feo-mapgen .mg-tag.mg-co { color: var(--feo-boon); }
+.feo-mapgen .mg-tag[data-side="top"] { top: 5px; transform: translateX(-50%); }
+.feo-mapgen .mg-tag[data-side="bottom"] { bottom: 5px; transform: translateX(-50%); }
+.feo-mapgen .mg-tag[data-side="left"] { left: 5px; writing-mode: vertical-rl; transform: translateY(-50%) rotate(180deg); }
+.feo-mapgen .mg-tag[data-side="right"] { right: 5px; writing-mode: vertical-rl; transform: translateY(-50%); }
+.feo-mapgen .mg-under { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 16px; font-size: 12.5px; color: var(--feo-muted); }
+.feo-mapgen .mg-ring { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.feo-mapgen .mg-ring i { width: 11px; height: 11px; border-radius: 50%; border: 2.5px solid #ffd24d; box-shadow: 0 0 0 1px rgba(0, 0, 0, .5); }
+.feo-mapgen .mg-ring-from i { border-color: #6fb0ff; }
+.feo-mapgen .mg-switch { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; font-size: 12.5px; color: var(--feo-muted); }
+.feo-mapgen .mg-switch .mg-track { position: relative; flex: none; width: 30px; height: 16px; border-radius: 999px; background: var(--feo-track); box-shadow: inset 0 0 0 1px var(--feo-line-soft); }
+.feo-mapgen .mg-switch .mg-track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--feo-muted); transition: transform .15s; }
+.feo-mapgen .mg-switch[aria-checked="true"] { color: var(--feo-ink); }
+.feo-mapgen .mg-switch[aria-checked="true"] .mg-track { background: var(--feo-gold); }
+.feo-mapgen .mg-switch[aria-checked="true"] .mg-track::after { transform: translateX(14px); background: #fff; }
+.feo-mapgen .mg-switch:focus-visible .mg-track { outline: 2px solid var(--feo-gold); outline-offset: 2px; }
 
 /* ---------- The Fire Emblem scene controls wear the system's emblem ---------- */
 

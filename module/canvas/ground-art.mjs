@@ -444,6 +444,43 @@ function edges({ pen, x, y, c }, here, around) {
 }
 
 /* -------------------------------------------- */
+/*  Roads                                       */
+/* -------------------------------------------- */
+
+/**
+ * Draw the roads of a map over its ground: each a track that bows from one point to another, and each sea lane
+ * a wake over the water. They are a picture only, and say nothing of the ground they cross. The drawing is cut
+ * to the map, as a road runs on beyond its edge.
+ * @param {CanvasRenderingContext2D} pen
+ * @param {import("../rules/mapgen.mjs").Track[]} tracks
+ * @param {object} map
+ * @param {number} map.rows
+ * @param {number} map.columns
+ * @param {number} map.cell       The side of a tile, in pixels
+ */
+export function drawTracks(pen, tracks, { rows, columns, cell }) {
+  if ( !tracks?.length ) return;
+  pen.save();
+  pen.beginPath();
+  pen.rect(0, 0, columns * cell, rows * cell);
+  pen.clip();
+  pen.lineCap = "round";
+  for ( const { a, c, b, sea } of tracks ) {
+    const strokes = sea ? [["rgba(255, 255, 255, .55)", 0.07, [0.3, 0.3]]] : [["rgba(92, 70, 34, .8)", 0.36, []], ["#dfcd9e", 0.25, []]];
+    for ( const [color, width, dash] of strokes ) {
+      pen.strokeStyle = color;
+      pen.lineWidth = Math.max(cell * width, 1);
+      pen.setLineDash(dash.map((part) => part * cell));
+      pen.beginPath();
+      pen.moveTo(a[0] * cell, a[1] * cell);
+      pen.quadraticCurveTo(c[0] * cell, c[1] * cell, b[0] * cell, b[1] * cell);
+      pen.stroke();
+    }
+  }
+  pen.restore();
+}
+
+/* -------------------------------------------- */
 /*  The Whole Picture                           */
 /* -------------------------------------------- */
 

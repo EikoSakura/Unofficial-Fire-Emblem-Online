@@ -1,11 +1,11 @@
 import { FEO } from "../config.mjs";
-import { paintScene, paintShown, terrainTint, veilPaint } from "../helpers/paint.mjs";
+import { paintScene, paintShown, readTracks, terrainTint, veilPaint } from "../helpers/paint.mjs";
 import { DEPLOY_ZONE, RETREAT_ZONE, hasZone, tileGround } from "../helpers/terrain.mjs";
 import { objectOn } from "../helpers/map-objects.mjs";
 import { battle } from "../helpers/phases.mjs";
 import { boxTiles, brushHolds, lineTiles } from "../rules/paint.mjs";
 import { tileKey } from "../rules/reach.mjs";
-import { drawGround } from "./ground-art.mjs";
+import { drawGround, drawTracks } from "./ground-art.mjs";
 
 /**
  * The Fire Emblem controls: a set of scene controls of the system's own, with a canvas layer behind it as
@@ -193,6 +193,7 @@ export const groundArt = {
         }
       });
       if ( !drawn ) return;
+      drawTracks(picture.getContext("2d"), readTracks(scene), { rows, columns, cell });
 
       // Above the scene's own background and below everything that stands on it
       const sprite = new PIXI.Sprite(PIXI.Texture.from(picture));

@@ -1,5 +1,28 @@
 <div class="mg">
   <div class="mg-side">
+    <div class="mg-field" role="group" aria-label="{{localize "FEO.MapGen.from"}}">
+      <span class="eyebrow">{{localize "FEO.MapGen.from"}}</span>
+      <div class="mg-types">
+        {{#each sources as |source|}}
+        <button type="button" class="mg-type {{#if source.on}}on{{/if}}" data-action="pickSource" data-source="{{source.key}}"
+                aria-pressed="{{source.on}}" {{#if source.off}}disabled{{/if}} {{#if source.hint}}data-tooltip="{{source.hint}}"{{/if}}>{{source.label}}</button>
+        {{/each}}
+      </div>
+    </div>
+    {{#if world}}
+    <div class="mg-from">
+      <canvas class="mg-cut" role="img" aria-label="{{localize "FEO.MapGen.cut"}}"></canvas>
+      <div>
+        <div class="eyebrow">{{world.over}}</div>
+        <h3>{{world.name}}</h3>
+      </div>
+      {{#if world.chips.length}}
+      <div class="mg-chips">
+        {{#each world.chips as |chip|}}<span class="tag">{{feoIcon chip.icon}}{{chip.label}}</span>{{/each}}
+      </div>
+      {{/if}}
+    </div>
+    {{else}}
     <div class="mg-field" role="group" aria-label="{{localize "FEO.MapGen.kind"}}">
       <span class="eyebrow">{{localize "FEO.MapGen.kind"}}</span>
       <div class="mg-types">
@@ -9,6 +32,7 @@
         {{/each}}
       </div>
     </div>
+    {{/if}}
     <div class="mg-field">
       <label class="eyebrow" for="feo-mapgen-size">{{localize "FEO.MapGen.sizeLabel"}}</label>
       <select id="feo-mapgen-size" name="size">
@@ -30,10 +54,25 @@
       <label class="eyebrow" for="feo-mapgen-name">{{localize "FEO.MapGen.name"}}</label>
       <input type="text" id="feo-mapgen-name" name="name" value="{{name}}" placeholder="{{placeholder}}" autocomplete="off">
     </div>
-    <p class="mg-note">{{localize "FEO.MapGen.note"}}</p>
+    <p class="mg-note">{{note}}</p>
   </div>
   <div class="mg-main">
-    <div class="mg-frame"><canvas class="mg-map" role="img" aria-label="{{placeholder}}, {{summary}}"></canvas></div>
+    <div class="mg-frame{{#if world}} mg-margins{{/if}}{{#if laid}} mg-laid-on{{/if}}">
+      <canvas class="mg-map" role="img" aria-label="{{placeholder}}, {{summary}}"></canvas>
+      {{#if world}}
+      <canvas class="mg-laid" aria-hidden="true"></canvas>
+      {{#each world.exits as |exit|}}
+      <span class="mg-tag{{#if exit.company}} mg-co{{/if}}" data-side="{{exit.side}}" data-at="{{exit.at}}">{{feoIcon exit.icon}}{{exit.to}}</span>
+      {{/each}}
+      {{/if}}
+    </div>
+    <div class="mg-under">
+      <span class="mg-ring mg-ring-from"><i></i>{{ends.from}}</span>
+      <span class="mg-ring mg-ring-to"><i></i>{{ends.to}}</span>
+      {{#if world}}
+      <button type="button" class="mg-switch" role="switch" data-action="lay" aria-checked="{{laid}}"><span class="mg-track"></span>{{localize "FEO.MapGen.lay"}}</button>
+      {{/if}}
+    </div>
     <div class="mg-legend">
       {{#each legend as |entry|}}<span class="mg-key"><i style="background: {{entry.tint}}"></i>{{entry.label}} <b>{{entry.count}}</b></span>{{/each}}
     </div>

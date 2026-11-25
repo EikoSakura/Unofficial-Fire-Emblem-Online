@@ -1,5 +1,6 @@
 import { FEO } from "../config.mjs";
 import { nationAt, nationFacts, pathBetween } from "../rules/worldmap.mjs";
+import { lieTitle } from "./map-generator-context.mjs";
 import { glyphSvg } from "./world-map-draw.mjs";
 
 /**
@@ -56,10 +57,13 @@ export function phraser(i18n) {
  * @param {boolean} [known.marching]      Is the company on its way?
  * @param {boolean} [known.arrived]       Has the company just come to where it is?
  * @param {(place: Place) => {name: string, objectives: Record<string, boolean>}|null} [known.encounterOf]
+ * @param {(place: Place) => boolean} [known.fieldOf]     Has a battlefield been made of a place, which is still kept?
+ * @param {{x: number, y: number, lie: import("../rules/mapgen-land.mjs").Lie|null}|null} [known.ground]
+ *   The point of bare ground a Game Master picked out to make a battlefield of, and the lie of the land there
  * @param {Localizer} i18n
  * @returns {object}
  */
-export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0, isGM, marching = false, arrived = false, encounterOf = () => null }, i18n) {
+export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0, isGM, marching = false, arrived = false, encounterOf = () => null, fieldOf = () => false, ground = null }, i18n) {
   const loc = words(i18n);
   if ( !map.made ) return { made: false, isGM, none: loc(isGM ? "none.gm" : "none.player") };
   const shown = (place) => isGM || place.seen;
@@ -72,6 +76,22 @@ export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0,
     plate: null,
     splash: arrived ? buildArrival({ map, land, claims, isGM, encounterOf }, i18n) : null
   };
+  // Bare ground a Game Master picked out, to make a battlefield of
+  if ( isGM && ground ) {
+    const holder = map.nations.find((other) => other.id === nationAt(land, claims, ground.x, ground.y));
+    context.plate = {
+      id: "",
+      name: ground.lie ? lieTitle(ground.lie, i18n) : i18n.localize("FEO.MapGen.lie.open"),
+      over: holder ? nationTitle(holder, i18n) : loc("unclaimed"),
+      color: colorOf(holder),
+      glyph: glyphSvg("ground"),
+      chips: [],
+      actions: [{ action: "field", icon: "map", label: loc("act.field"), cls: "small", hint: loc("act.fieldHint") }],
+      away: null
+    };
+    return context;
+  }
+
   const party = map.places.find((place) => place.id === map.party);
   const place = map.places.find((other) => (other.id === selected) && shown(other)) ?? party;
   if ( !place ) return context;
@@ -94,9 +114,11 @@ export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0,
     });
   }
   if ( isGM && !place.seen ) chips.push({ icon: "eyeOff", label: loc("chip.hidden"), cls: "wm-veil" });
+  if ( isGM && fieldOf(place) ) chips.push({ icon: "map", label: loc("chip.field"), cls: "wm-field" });
 
   const actions = [];
   if ( isGM ) {
+    actions.push({ action: "field", icon: "map", label: loc("act.field"), cls: "small", hint: loc("act.fieldHint") });
     if ( !here ) {
       actions.push({ action: "veil", icon: place.seen ? "eyeOff" : "eye", label: loc(place.seen ? "act.hide" : "act.show"), cls: "small quiet" });
       actions.push({ action: "march", icon: "right", label: loc("act.march"), cls: "primary", disabled: !way || marching });

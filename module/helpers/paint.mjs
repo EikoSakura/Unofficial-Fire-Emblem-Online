@@ -25,11 +25,28 @@ export const PAINTED_FLAG = "painted";
 /** The flag of a scene that says its painted ground is drawn on the map for everyone. */
 export const SHOWN_FLAG = "paintShown";
 
+/** The flag of a scene that holds the roads drawn across its ground, which are a picture only. */
+export const TRACKS_FLAG = "tracks";
+
 /** The type of the Region shape that is made of grid spaces. */
 const GRID_SHAPE = "grid";
 
 /** The colour of a Region that carries a painted height. */
 const ELEVATION_TINT = "#d9b662";
+
+/* -------------------------------------------- */
+
+/**
+ * The roads drawn across the ground of a scene, as the map generator left them (see rules/mapgen-land.mjs).
+ * @param {Scene|null} scene
+ * @returns {import("../rules/mapgen.mjs").Track[]}
+ */
+export function readTracks(scene) {
+  const kept = scene?.getFlag(FEO.id, TRACKS_FLAG);
+  const point = (value) => Array.isArray(value) && (value.length === 2) && value.every((part) => Number.isFinite(part));
+  return (Array.isArray(kept) ? kept : []).filter((track) => point(track?.a) && point(track?.c) && point(track?.b))
+    .map((track) => ({ a: track.a, c: track.c, b: track.b, sea: !!track.sea }));
+}
 
 /* -------------------------------------------- */
 

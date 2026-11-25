@@ -4,9 +4,10 @@ import {
   registerWorldMap, showToAll
 } from "../helpers/worldmap.mjs";
 import { alongRoute, nationFacts, pathBetween } from "../rules/worldmap.mjs";
+import MapGenerator from "./map-generator.mjs";
 import { buildWorldMap } from "./world-map-context.mjs";
 import WorldMapCreator from "./world-map-creator.mjs";
-import { overlayMarkup } from "./world-map-draw.mjs";
+import { lensMarkup, overlayMarkup } from "./world-map-draw.mjs";
 import MapStage from "./world-map-stage.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
@@ -19,6 +20,10 @@ const TEMPLATES = `systems/${FEO.id}/templates/worldmap`;
  * Game Master sends the company from place to place along the routes, and every open map watches it march; a
  * player can pick a place out and point at it. When the company arrives, the name of the place is shown across
  * the map, with what may be done there at once.
+ *
+ * A Game Master can have a battle map made of a place, in the Map Generator. While that is open and making its
+ * map from the World Map, it follows what is picked here, a click on bare ground picks that ground out, and the
+ * frame of ground the battle map is made from is drawn on the map.
  *
  * The map is shown in a window, or as the travel view: over the whole screen with no frame, under Foundry's own
  * interface as a scene would be. Each user's choice of the two is remembered.
@@ -51,6 +56,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       home: WorldMap.#onHome,
       veil: WorldMap.#onVeil,
       won: WorldMap.#onWon,
+      field: WorldMap.#onField,
       begin: WorldMap.#onBegin,
       point: WorldMap.#onPoint,
       base: WorldMap.#onBase,
@@ -109,6 +115,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       changed: () => {
         WorldMap.#instance?.#follow();
         WorldMapCreator.changed();
+        MapGenerator.changed();
       },
       pointed: (place, user) => WorldMap.#pointed(place, user),
       shown: (travel) => WorldMap.open(travel ? { travel: true } : {})
@@ -117,6 +124,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       open: WorldMap.open, toggle: WorldMap.toggle, app: WorldMap, read: readWorldMap, marchTo, creator: WorldMapCreator
     };
     WorldMapCreator.register();
+    MapGenerator.watch(() => WorldMap.#instance?.#surveyed());
 
     // A button of the Fire Emblem controls, after the Base's, opens the window, and closes it again
     Hooks.on("getSceneControlButtons", (controls) => {
@@ -139,6 +147,9 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
 
   /** The place that is picked out. */
   #selected = "";
+
+  /** The point of bare ground a Game Master picked out to make a battlefield of. @type {{x: number, y: number}|null} */
+  #ground = null;
 
   /** The nation that is picked out, 0 for none. */
   #spotlight = 0;
@@ -191,6 +202,8 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
     const picked = map.places.find((place) => place.id === this.#selected);
     if ( !picked || !WorldMap.#shown(picked) ) this.#selected = "";
     if ( !map.nations.some((nation) => nation.id === this.#spotlight) ) this.#spotlight = 0;
+    const survey = game.user.isGM && this.#ground ? MapGenerator.survey() : null;
+    if ( !survey || survey.place ) this.#ground = null;
     return buildWorldMap({
       map,
       land: this.#land,
@@ -200,7 +213,9 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       isGM: game.user.isGM,
       marching: this.#marching,
       arrived: this.#arrived,
-      encounterOf: encounterAt
+      encounterOf: encounterAt,
+      fieldOf: (place) => !!place.scene && game.scenes.has(place.scene),
+      ground: this.#ground ? { ...this.#ground, lie: survey.lie } : null
     }, game.i18n);
   }
 
@@ -232,7 +247,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       this.#stage = new MapStage(viewport, {
         mode: () => "pan",
         place: (id) => this.#pick(id),
-        ground: () => this.#pick("")
+        ground: (point) => this.#pickGround(point)
       });
     }
     this.#draw();
@@ -247,6 +262,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
     this.#stage = null;
     this.#marching = false;
     this.#selected = "";
+    this.#ground = null;
     this.#arrived = false;
     clearTimeout(this.#lingering);
   }
@@ -292,18 +308,62 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       lit: way?.legs ?? [],
       spotlight: this.#spotlight
     }));
+
+    // The frame of ground the Map Generator is making a battlefield from
+    const survey = game.user.isGM ? MapGenerator.survey() : null;
+    this.#stage.overlay({ lens: survey && (survey.lens.w < land.width) ? lensMarkup(survey.lens, survey.place ? null : survey.point) : "" });
   }
 
   /* -------------------------------------------- */
 
   /**
-   * Pick a place out, or none.
+   * Pick a place out, or none. A Map Generator that follows the World Map makes its map of the place.
    * @param {string} id
    */
   #pick(id) {
-    if ( this.#marching || (id === this.#selected) ) return;
+    if ( this.#marching ) return;
+    if ( id && game.user.isGM ) MapGenerator.follow({ place: id });
+    if ( (id === this.#selected) && !this.#ground ) return;
     this.#selected = id;
+    this.#ground = null;
     this.render({ parts: ["plate"] });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The map was clicked where no place is. A Map Generator that follows the World Map makes its map of the
+   * ground there, which is picked out; otherwise nothing is picked out any more.
+   * @param {{x: number, y: number}} point
+   */
+  #pickGround(point) {
+    if ( this.#marching ) return;
+    const followed = game.user.isGM ? MapGenerator.follow(point) : null;
+    if ( followed === null ) return this.#pick("");
+    if ( !followed ) return this.#say(game.i18n.localize("FEO.WorldMap.openSea"));
+    this.#selected = "";
+    this.#ground = { x: point.x, y: point.y };
+    this.render({ parts: ["plate"] });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * What the Map Generator is making a map of has changed, or it was opened or closed: the frame of ground is
+   * drawn again, and the plate with it where it tells of ground that was picked out.
+   */
+  #surveyed() {
+    if ( !this.rendered || !game.user.isGM ) return;
+
+    // Ground the generator took up again by itself is picked out here as well
+    const survey = MapGenerator.survey();
+    const taken = !this.#ground && !this.#marching && !!survey && !survey.place;
+    if ( taken ) {
+      this.#selected = "";
+      this.#ground = { ...survey.point };
+    }
+    if ( this.#ground ) this.render({ parts: ["plate"] });
+    else this.#draw();
   }
 
   /* -------------------------------------------- */
@@ -528,6 +588,19 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       kept.battle = false;
       kept.visited = true;
     });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Open the Map Generator on the place the plate is about, or on the ground that is picked out, to make a
+   * battle map of the land there.
+   * @this {WorldMap}
+   */
+  static #onField() {
+    const place = this.#ground ? null : this.#place();
+    if ( this.#ground ) MapGenerator.open({ pick: this.#ground });
+    else if ( place ) MapGenerator.open({ pick: { place: place.id } });
   }
 
   /* -------------------------------------------- */

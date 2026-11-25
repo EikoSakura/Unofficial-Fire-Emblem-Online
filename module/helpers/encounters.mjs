@@ -11,7 +11,7 @@ import { armyOf, tokenTile } from "./exchange.mjs";
 import { setMapAffinity } from "./map-affinity.mjs";
 import { beginSync, endSyncOn, forgetViews } from "./level-sync.mjs";
 import { DROP_FLAG, copyDelta, specOf } from "./npc.mjs";
-import { readPaint } from "./paint.mjs";
+import { readPaint, readTracks } from "./paint.mjs";
 import { beginBattle } from "./phases.mjs";
 import { characterOf, isPlayerUnit } from "./players.mjs";
 import { setWeather } from "./weather.mjs";
@@ -255,6 +255,7 @@ export function blowBetween(attacker, target) {
  * @property {(i: number, j: number) => string|null} terrainAt     The kind of terrain painted on a tile
  * @property {(i: number, j: number) => number} elevationAt
  * @property {(i: number, j: number) => string|null} zoneAt        The zone a tile belongs to
+ * @property {import("../rules/mapgen.mjs").Track[]} tracks        The roads drawn across its ground
  * @property {{id: string, i: number, j: number, army: string, encounter: string}[]} tokens
  */
 
@@ -301,6 +302,7 @@ export function mapOf(scene) {
     terrainAt: (i, j) => terrain.get(key(i, j)) ?? null,
     elevationAt: (i, j) => elevation.get(key(i, j)) ?? 0,
     zoneAt: (i, j) => zone.get(key(i, j)) ?? null,
+    tracks: readTracks(scene),
     tokens
   };
 }

@@ -2426,7 +2426,8 @@ FEO.levelSync = { min: 1, max: 10, most: 99 };
  * places within `known` routes of the Base. `brushes` are the widths the ground of a nation is painted at.
  * `zoom` is how closely the map can be looked at, and `speed` how far the company marches in a second.
  * `travel` is the client setting that remembers whether a user has the map over the whole screen, and `splash`
- * how long, in milliseconds, an arrival that asks nothing stays up.
+ * how long, in milliseconds, an arrival that asks nothing stays up. `lens` is how many points of the map a tile
+ * of a battle map made from it covers (see rules/mapgen-land.mjs).
  */
 FEO.worldMap = {
   setting: "worldMap",
@@ -2456,5 +2457,6 @@ FEO.worldMap = {
   brushes: { fine: 14, medium: 26, broad: 48 },
   zoom: 3.2,
   speed: 300,
-  splash: 3600
+  splash: 3600,
+  lens: 3
 };

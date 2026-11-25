@@ -25,6 +25,17 @@ import { tileKey } from "./reach.mjs";
  * @property {string[][]} tiles       The kind of terrain of each tile, a key of FEO.terrain.types, row by row
  * @property {number[][]} heights     How high each tile lies
  * @property {{from: Tile, to: Tile}} ends    Where the battle is joined from, and where it leads
+ * @property {Track[]} [tracks]      The roads drawn across it, on a map made from the World Map
+ */
+
+/**
+ * @typedef Track
+ * A road or a sea lane as it is drawn across a map: a line that bows from one point through another to a third,
+ * each counted in tiles from the corner of the map, and any of them may lie off it.
+ * @property {number[]} a
+ * @property {number[]} c            The point it bows through
+ * @property {number[]} b
+ * @property {boolean} sea           Is it a sea lane?
  */
 
 /**
@@ -65,7 +76,7 @@ export const MAP_LIMITS = { min: 10, max: 60 };
 const SEED_SIGNS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 /** The four ways from a tile to its neighbours. */
-const STEPS = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+export const STEPS = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 
 /* -------------------------------------------- */
 /*  Chance                                      */
@@ -107,7 +118,7 @@ export function newSeed(random = Math.random) {
  * @param {number} high
  * @returns {number}
  */
-function between(random, low, high) {
+export function between(random, low, high) {
   return low + Math.floor(random() * (Math.max(high, low) - low + 1));
 }
 
@@ -123,7 +134,7 @@ function between(random, low, high) {
  * @param {(i: number, j: number) => T} value
  * @returns {T[][]}
  */
-function grid(rows, columns, value) {
+export function grid(rows, columns, value) {
   return Array.from({ length: rows }, (_, i) => Array.from({ length: columns }, (__, j) => value(i, j)));
 }
 
@@ -137,7 +148,7 @@ function grid(rows, columns, value) {
  * @param {number} spread     How many tiles apart the random values lie
  * @returns {number[][]}      The rank of each tile, from 0 for the lowest up to 1
  */
-function ranked(draft, spread) {
+export function ranked(draft, spread) {
   const { rows, columns, random } = draft;
   const layer = (cell) => {
     const lattice = grid(Math.ceil(rows / cell) + 2, Math.ceil(columns / cell) + 2, () => random());
@@ -172,7 +183,7 @@ function ranked(draft, spread) {
  * @param {number} j
  * @returns {boolean}
  */
-function onMap(draft, i, j) {
+export function onMap(draft, i, j) {
   return (i >= 0) && (j >= 0) && (i < draft.rows) && (j < draft.columns);
 }
 
@@ -186,7 +197,7 @@ function onMap(draft, i, j) {
  * @param {string} kind         A key of FEO.terrain.types
  * @param {number} [height]
  */
-function lay(draft, i, j, kind, height) {
+export function lay(draft, i, j, kind, height) {
   if ( !onMap(draft, i, j) ) return;
   draft.tiles[i][j] = kind;
   if ( height !== undefined ) draft.heights[i][j] = height;
@@ -227,7 +238,7 @@ function wash(draft, field, share, kind, { height, over = "plain", where = () =>
  * @param {(i: number, j: number) => boolean} [options.where]
  * @returns {Tile[]}                        Where they were put
  */
-function dot(draft, count, kind, { over = "plain", where = () => true } = {}) {
+export function dot(draft, count, kind, { over = "plain", where = () => true } = {}) {
   const put = [];
   for ( let tries = count * 40; (tries > 0) && (put.length < count); tries-- ) {
     const i = between(draft.random, 0, draft.rows - 1);
@@ -351,7 +362,7 @@ export function walksTo(map, from, to) {
  * @param {Tile} from
  * @param {Tile} to
  */
-function openWay(draft, from, to) {
+export function openWay(draft, from, to) {
   if ( walksTo(draft, from, to) ) return;
   for ( const { i, j } of wayBetween(draft, from, to, 0.15) ) {
     if ( !walkable(draft.tiles[i][j]) ) lay(draft, i, j, "plain", 0);

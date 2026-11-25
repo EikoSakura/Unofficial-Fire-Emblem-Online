@@ -68,6 +68,13 @@
 .feo-worldmap .wm-ping { fill: none; stroke: #fff; stroke-width: 3; transform-box: fill-box; transform-origin: center; animation: wm-pulse .9s ease-out 2; pointer-events: none; }
 .feo-worldmap .wm-brush { fill: rgba(255, 255, 255, .12); stroke: #fff; stroke-width: 1.5; stroke-dasharray: 5 4; pointer-events: none; }
 
+/* The frame of ground the Map Generator is making a battlefield from */
+.feo-worldmap .wm-lens { pointer-events: none; }
+.feo-worldmap .wm-lens .wm-lens-shade { fill: rgba(255, 255, 255, .13); }
+.feo-worldmap .wm-lens .wm-lens-under { fill: none; stroke: rgba(30, 18, 4, .85); stroke-width: 4.5; vector-effect: non-scaling-stroke; }
+.feo-worldmap .wm-lens .wm-lens-over { fill: none; stroke: #ffe9a8; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.feo-worldmap .wm-lens .wm-lens-pin { fill: #ffe9a8; stroke: #2c1e0f; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+
 /* ---------- What lies over the map ---------- */
 
 .feo-worldmap .wm-heads { position: absolute; left: 0; right: 0; top: 0; height: 0; z-index: 2; }
@@ -128,6 +135,7 @@
 .feo-worldmap .tag.wm-battle b { color: inherit; }
 .feo-worldmap .tag.wm-home { border-color: color-mix(in srgb, var(--feo-boon) 60%, transparent); color: var(--feo-boon); }
 .feo-worldmap .tag.wm-veil { border-color: color-mix(in srgb, #c08be6 55%, transparent); color: #c08be6; }
+.feo-worldmap .tag.wm-field { border-color: color-mix(in srgb, var(--feo-good) 60%, transparent); color: var(--feo-good); }
 .theme-light .feo-worldmap:not(.theme-dark) .tag.wm-veil, .feo-worldmap.theme-light .tag.wm-veil { border-color: color-mix(in srgb, #8a4bb8 55%, transparent); color: #8a4bb8; }
 .feo-worldmap .wm-plate-acts { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 8px; max-width: 50%; }
 .feo-worldmap .wm-plate-acts .btn { flex: none; width: auto; cursor: pointer; }

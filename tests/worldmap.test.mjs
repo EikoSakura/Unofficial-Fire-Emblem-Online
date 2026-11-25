@@ -232,15 +232,15 @@ test("what a world keeps is put right", () => {
     nations: [{ id: 2, name: " Two ", style: "republic" }, { id: 2, name: "Again" }, { id: 12, name: "Far" }, { id: 1, name: "One", color: 99 }],
     places: [
       { id: "a", x: -5, y: 9000, kind: "castle", name: " A ", seen: 1 }, { id: "a", x: 1, y: 1 }, { x: 2, y: 2 },
-      { id: "b", x: 10.6, y: 20.2, kind: "port", battle: true, encounter: " e1 ", market: true }
+      { id: "b", x: 10.6, y: 20.2, kind: "port", battle: true, encounter: " e1 ", scene: " s1 ", market: true }
     ],
     routes: [{ a: "a", b: "b", kind: "sea", bend: 4 }, { a: "b", b: "a" }, { a: "a", b: "a" }, { a: "a", b: "c" }],
     base: "zzz", party: "b"
   });
   assert.deepEqual(odd.nations, [{ id: 1, name: "One", style: "kingdom", color: 7 }, { id: 2, name: "Two", style: "kingdom", color: 1 }]);
   assert.deepEqual(odd.places, [
-    { id: "a", x: 0, y: H - 1, kind: "village", name: "A", seen: true, visited: false, battle: false, encounter: "", market: false },
-    { id: "b", x: 11, y: 20, kind: "port", name: "", seen: false, visited: false, battle: true, encounter: "e1", market: true }
+    { id: "a", x: 0, y: H - 1, kind: "village", name: "A", seen: true, visited: false, battle: false, encounter: "", scene: "", market: false },
+    { id: "b", x: 11, y: 20, kind: "port", name: "", seen: false, visited: false, battle: true, encounter: "e1", scene: "s1", market: true }
   ]);
   assert.deepEqual(odd.routes, [{ a: "a", b: "b", kind: "sea", bend: 0.3 }]);
   assert.equal(odd.made, true);
@@ -283,22 +283,23 @@ test("the plate tells of the place picked out, and offers what the reader may do
   const hidden = map.places.find((place) => !place.seen);
   const acts = (context) => context.plate.actions.map((act) => act.action);
   const chips = (context) => context.plate.chips.map((chip) => chip.label);
+  const act = (context, action) => context.plate.actions.find((other) => other.action === action);
 
   // Nothing picked: the place the company is at, which is the Base
   const home = buildWorldMap({ map, land, claims, isGM: true }, i18n);
   assert.equal(home.plate.id, map.party);
   assert.deepEqual(chips(home), ["WorldMap.chip.here", "WorldMap.chip.base"]);
-  assert.deepEqual(acts(home), ["base"]);
+  assert.deepEqual(acts(home), ["field", "base"]);
   assert.equal(home.plate.away, null);
   assert.equal(home.legend.length, 5);
   assert.equal(home.summary, `WorldMap.summary(5,${map.places.length})`);
 
   // The Game Master sends the company; a player can only point
   const gm = buildWorldMap({ map, land, claims, selected: seen.id, isGM: true }, i18n);
-  assert.deepEqual(acts(gm), ["veil", "march"]);
+  assert.deepEqual(acts(gm), ["field", "veil", "march"]);
   assert.ok(gm.plate.away.count >= 1);
-  assert.ok(!gm.plate.actions[1].disabled);
-  assert.ok(buildWorldMap({ map, land, claims, selected: seen.id, isGM: true, marching: true }, i18n).plate.actions[1].disabled);
+  assert.ok(!act(gm, "march").disabled);
+  assert.ok(act(buildWorldMap({ map, land, claims, selected: seen.id, isGM: true, marching: true }, i18n), "march").disabled);
   const player = buildWorldMap({ map, land, claims, selected: seen.id, isGM: false }, i18n);
   assert.deepEqual(acts(player), ["point"]);
   assert.equal(player.summary, `WorldMap.summary(5,${map.places.filter((place) => place.seen).length})`);
@@ -312,12 +313,23 @@ test("the plate tells of the place picked out, and offers what the reader may do
   Object.assign(there, { battle: true, encounter: "e1" });
   const encounterOf = () => ({ name: "Bandits on the road", objectives: { seize: false, rout: true } });
   const battle = buildWorldMap({ map, land, claims, isGM: true, encounterOf }, i18n);
-  assert.deepEqual(acts(battle), ["won", "begin", "base"]);
-  assert.ok(!battle.plate.actions[1].disabled);
+  assert.deepEqual(acts(battle), ["field", "won", "begin", "base"]);
+  assert.ok(!act(battle, "begin").disabled);
   assert.deepEqual(battle.plate.chips.at(-1), { icon: "crossed", cls: "wm-battle", label: "Bandits on the road", strong: "Encounter.objective.rout.label" });
   const byHand = buildWorldMap({ map, land, claims, isGM: true }, i18n);
-  assert.ok(byHand.plate.actions[1].disabled, "a battle with no encounter is run by hand");
+  assert.ok(act(byHand, "begin").disabled, "a battle with no encounter is run by hand");
   assert.deepEqual(acts(buildWorldMap({ map, land, claims, isGM: false, encounterOf }, i18n)), ["base"]);
+
+  // A battlefield made of a place is told to the Game Master, who can pick bare ground out to make one of
+  const fieldOf = (place) => place.id === seen.id;
+  assert.ok(chips(buildWorldMap({ map, land, claims, selected: seen.id, isGM: true, fieldOf }, i18n)).includes("WorldMap.chip.field"));
+  assert.ok(!chips(buildWorldMap({ map, land, claims, selected: seen.id, isGM: false, fieldOf }, i18n)).includes("WorldMap.chip.field"));
+  const lie = { sea: 0.3, seaSide: "south", wood: 0, hills: 0, peaks: 0, arid: 0, frost: 0 };
+  const bare = buildWorldMap({ map, land, claims, selected: seen.id, isGM: true, ground: { x: seen.x + 9, y: seen.y, lie } }, i18n);
+  assert.equal(bare.plate.id, "");
+  assert.equal(bare.plate.name, "MapGen.lie.coast");
+  assert.deepEqual(acts(bare), ["field"]);
+  assert.equal(buildWorldMap({ map, land, claims, selected: seen.id, isGM: false, ground: { x: 5, y: 5, lie } }, i18n).plate.id, seen.id);
 
   // A world with no map yet
   assert.deepEqual(buildWorldMap({ map: cleanWorldMap(), isGM: false }, i18n), { made: false, isGM: false, none: "WorldMap.none.player" });

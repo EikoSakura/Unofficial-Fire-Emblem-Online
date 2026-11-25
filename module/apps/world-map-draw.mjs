@@ -9,7 +9,7 @@ import { routeBow } from "../rules/worldmap.mjs";
  * @import {Land, Nation, Place, Route} from "../rules/worldmap.mjs"
  */
 
-/** The picture of each kind of place, drawn standing on a line through 0, and of the Base. */
+/** The picture of each kind of place, drawn standing on a line through 0, of the Base, and of bare ground. */
 export const PLACE_GLYPHS = {
   capital: '<path d="M-8 0V-8h2v1.500h2V-8h1v-4h1.500v1.500h3V-12H3v4h1v1.500h2V-8h2V0z"/><path d="M-1.500 0v-3.500a1.500 1.500 0 0 1 3 0V0"/>',
   fort: '<path d="M-5 0V-9h1.800v1.600h2V-9h2.400v1.600h2V-9H5V0z"/><path d="M-1.300 0v-3h2.600v3"/>',
@@ -17,7 +17,8 @@ export const PLACE_GLYPHS = {
   village: '<path d="M-4.500 0v-4.500L0-8.500l4.500 4V0z"/>',
   port: '<circle cx="0" cy="-11" r="1.700"/><path class="wm-open" d="M0-9.300V-1M-3-6.500h6M-5.500-5c0 5.500 11 5.500 11 0"/>',
   ruins: '<path d="M-7 0v-8h2.600V0z"/><path d="M-1.500 0v-4.500l2.600-1.200V0z"/><path d="M4.400 0v-9.500H7V0z"/><path class="wm-open" d="M-9 0H9"/>',
-  base: '<path d="M-7.500 0L0-10l7.500 10z"/><path class="wm-open" d="M0-10V0M0-10v-3.500l4 1.500-4 1.500"/>'
+  base: '<path d="M-7.500 0L0-10l7.500 10z"/><path class="wm-open" d="M0-10V0M0-10v-3.500l4 1.500-4 1.500"/>',
+  ground: '<circle class="wm-open" cx="0" cy="-6" r="5.500"/><circle cx="0" cy="-6" r="1.600"/>'
 };
 
 const escape = (text) => String(text ?? "").replace(/[&<>"]/g, (sign) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[sign]));
@@ -228,6 +229,21 @@ export function bannerMarkup(x, y) {
     <path d="M1.200-31l20 6-20 6z" fill="#4a86e4" stroke="#0f2146" stroke-width="1.700" stroke-linejoin="round"/>
     <path d="M1.200-28.500l11 3.500" stroke="#bcd6ff" stroke-width="1.300" stroke-linecap="round"/>
     <circle cy="-32" r="2.200" fill="#f0d48a" stroke="#2a1c0d" stroke-width="1.200"/></g></g>`;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The frame of ground a battle map is being made from (see rules/mapgen-land.mjs), with a pin on the point it
+ * is made of where that is no place.
+ * @param {import("../rules/mapgen-land.mjs").Lens} lens
+ * @param {{x: number, y: number}|null} [pin]
+ * @returns {string}
+ */
+export function lensMarkup(lens, pin = null) {
+  const box = `x="${lens.x0}" y="${lens.y0}" width="${lens.w}" height="${lens.h}"`;
+  return `<g class="wm-lens"><rect class="wm-lens-shade" ${box}/><rect class="wm-lens-under" ${box}/><rect class="wm-lens-over" ${box}/>${
+    pin ? `<circle class="wm-lens-pin" cx="${pin.x.toFixed(1)}" cy="${pin.y.toFixed(1)}" r="3.400"/>` : ""}</g>`;
 }
 
 /* -------------------------------------------- */

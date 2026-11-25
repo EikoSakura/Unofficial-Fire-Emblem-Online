@@ -103,7 +103,8 @@ export const ICONS = {
   route: '<circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><path d="M7 18h5a3 3 0 0 0 0-6h-1a3 3 0 0 1 0-6h6"/>',
   picture: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.500"/>',
   expand: '<path d="M4 9.500V4h5.500M20 9.500V4h-5.500M4 14.500V20h5.500M20 14.500V20h-5.500"/>',
-  shrink: '<path d="M9.500 4v5.500H4M14.500 4v5.500H20M9.500 20v-5.500H4M14.500 20v-5.500H20"/>'
+  shrink: '<path d="M9.500 4v5.500H4M14.500 4v5.500H20M9.500 20v-5.500H4M14.500 20v-5.500H20"/>',
+  map: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'
 };
 
 /**
