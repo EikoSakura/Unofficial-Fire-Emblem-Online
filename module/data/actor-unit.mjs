@@ -20,6 +20,7 @@ import { burdened } from "../rules/rescue.mjs";
 import { staggerInUse, staggerOf, staggerTimes } from "../rules/stagger.mjs";
 import { formBonuses, gaugeProfile, shiftBends, shiftMode, shiftPercent, shiftedBonuses, transformsLeft } from "../rules/shifting.mjs";
 import { IMITATION_FLAG, overlay, readImitation } from "../rules/imitation.mjs";
+import { SYNC_FLAG, readSync } from "../rules/level-sync.mjs";
 import { gripEntry } from "../rules/actions.mjs";
 import {
   bestRankOf, countsAsSkill, effectsOf, multiplyStats, skillCanto, skillCarry, skillCrossing, skillKnacks, skillPassing, skillRule, skillShove, skillStanding, skillStars, skillTotals, unitTier
@@ -478,7 +479,11 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       }),
 
       // The Character Creator's record of what was chosen for the unit, read by `module/rules/creation.mjs`
-      creation: new ObjectField()
+      creation: new ObjectField(),
+
+      // The Level record: what the unit was at each Level it has left, by that Level, which a Level Sync reads
+      // (see `module/rules/level-sync.mjs`)
+      levels: new ObjectField()
     };
   }
 
@@ -491,9 +496,23 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
    * prepared and before its Items are: its own is what is saved, and is never written over (see
    * `rules/imitation.mjs`). `imitating` says whom it imitates and with which skill; null for a unit that is
    * itself.
+   *
+   * A unit under a Level Sync has what it was at the Level it is synced to laid over its own data in the same
+   * way, and ahead of any imitation (see `rules/level-sync.mjs`). `synced` says to which Level, what its own is,
+   * and for which encounter; null for a unit that is not synced.
    * @override
    */
   prepareBaseData() {
+    const sync = readSync(this.parent?.flags?.[FEO.id]?.[SYNC_FLAG]);
+    this.synced = null;
+    if ( sync ) {
+      // The class it had then is still an Item of its own; one that is gone leaves it the class it has
+      const was = sync.classId ? (this.parent?.items?.get?.(sync.classId) ?? null) : null;
+      this.synced = { level: sync.level, own: this.level, exact: sync.exact, from: sync.from, encounter: sync.encounter, name: sync.name };
+      overlay(this, sync.taken, { classId: (was?.type === "class") ? sync.classId : this.classId });
+      this.level = sync.level;
+    }
+
     const note = readImitation(this.parent?.flags?.[FEO.id]?.[IMITATION_FLAG]);
     this.imitating = null;
     if ( !note ) return;
@@ -515,8 +534,9 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     // a Grave Wound. A world that does not play with it keeps what a unit was given but counts none of it
     const health = FEO.defeat.enabled;
     this.graveWounds = health ? Math.floor(this.wounds / FEO.woundsPerGraveWound) : 0;
-    // A unit that imitates another has that unit's maximum HP for as long as it does
-    this.hp.base = this.imitating ? this.hp.max : this._source.hp.max;
+    // A unit that imitates another has that unit's maximum HP for as long as it does, and one under a Level
+    // Sync the maximum it had at that Level
+    this.hp.base = (this.imitating || this.synced) ? this.hp.max : this._source.hp.max;
     this.hp.lost = health ? (this.wounds * FEO.woundPenalty) + (this.injuries * FEO.injuryPenalty) : 0;
     this.hp.max = Math.max(this.hp.base - this.hp.lost, 0);
     this.hp.woundThreshold = health ? woundThreshold(this.hp.base) : 0;

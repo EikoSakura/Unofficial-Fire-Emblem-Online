@@ -313,5 +313,56 @@
 .feo-encounter .eb-kv.warn { color: var(--feo-warn); }
 .feo-encounter .eb-acts { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 9px; border-top: 1px solid var(--feo-line-soft); }
 
+/* ---------- Level Sync: the Levels an encounter is for, and the party as it would be synced ---------- */
+
+.feo-encounter .eb-sync { padding: 7px 12px 8px; margin: -3px 0; border-radius: 10px; border: 1px dashed var(--feo-line); }
+.feo-encounter .eb-sync.on { border: 1px solid color-mix(in srgb, var(--feo-sync) 55%, transparent); background: color-mix(in srgb, var(--feo-sync) 7%, transparent); }
+.feo-encounter .eb-sync .eyebrow { display: flex; align-items: center; gap: 6px; }
+.feo-encounter .eb-sync.on .eyebrow { color: var(--feo-sync); }
+.feo-encounter .eb-sync .eyebrow .feo-icon { font-size: 14px; }
+.feo-encounter .eb-sync .eb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.feo-encounter .eb-sync .eb-switch { font-weight: 700; }
+.feo-encounter .eb-sync .eb-switch.on .track { background: var(--feo-sync); }
+.feo-encounter .eb-band { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--feo-muted); }
+.feo-encounter .eb-band .eb-step b { min-width: 28px; font-size: 20px; }
+.feo-encounter .eb-sync:not(.on) .eb-band { opacity: .4; pointer-events: none; }
+.feo-encounter .eb-sync-hint { max-width: 46ch; font-size: 12.5px; color: var(--feo-muted); }
+
+.feo-encounter .eb-going button.tag.sync {
+  height: auto; min-height: 0; line-height: inherit; gap: 4px; cursor: pointer; box-shadow: none;
+  border-color: color-mix(in srgb, var(--feo-sync) 60%, transparent); background: color-mix(in srgb, var(--feo-sync) 12%, var(--feo-raised)); color: var(--feo-sync);
+}
+.feo-encounter .eb-going button.tag.sync b { color: inherit; }
+.feo-encounter .eb-going button.tag.sync s { text-decoration: none; opacity: .7; }
+.feo-encounter .eb-going button.tag.sync i { font-style: normal; font-weight: 800; color: var(--feo-warn); }
+.feo-encounter .eb-going button.tag.sync .feo-icon { font-size: 11px; }
+.feo-encounter .eb-going button.tag.sync:is(:hover, :focus-visible) { border-color: var(--feo-sync); outline: none; }
+.feo-encounter .eb-going button.tag.sync.on { background: var(--feo-sync); border-color: var(--feo-sync); color: var(--feo-sync-ink); }
+.feo-encounter .eb-going button.tag.sync.on i { color: inherit; }
+.feo-encounter .eb-sync-line { display: flex; align-items: center; gap: 6px; margin: 7px 0 0; font-size: 12.5px; color: var(--feo-sync); }
+.feo-encounter .eb-sync-line .feo-icon { font-size: 13px; }
+.feo-encounter .eb-to { font-style: normal; font-weight: 700; font-size: 12px; white-space: nowrap; color: var(--feo-sync); }
+.feo-encounter .eb-to .feo-icon { margin-right: 2px; font-size: 11px; vertical-align: -1px; }
+.feo-encounter .eb-to.under { color: var(--feo-warn); }
+
+.feo-encounter .eb-sync-card { display: grid; gap: 8px; margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--feo-line-soft); }
+.feo-encounter .eb-sync-head { display: flex; align-items: center; gap: 10px; }
+.feo-encounter .eb-sync-head > div { min-width: 0; }
+.feo-encounter .eb-sync-head b { display: block; font-family: var(--feo-font-display); font-weight: 400; font-size: 17px; line-height: 1.15; }
+.feo-encounter .eb-sync-head small { font-size: 12.5px; color: var(--feo-muted); }
+.feo-encounter .eb-sync-head small s { opacity: .7; }
+.feo-encounter .eb-sync-head small .feo-icon { font-size: 11px; vertical-align: -1px; }
+.feo-encounter .eb-lv.sync { background: linear-gradient(180deg, #a9f0f1, #46b9bd); color: #05282b; box-shadow: 0 0 0 2px rgba(95, 211, 214, .35); }
+.feo-encounter .eb-sync-src { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12.5px; color: var(--feo-muted); }
+.feo-encounter .eb-est { padding: 0 6px; border-radius: 999px; white-space: nowrap; font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--feo-warn); color: var(--feo-warn); }
+.feo-encounter .eb-est.exact { border-color: color-mix(in srgb, var(--feo-good) 60%, transparent); color: var(--feo-good); }
+.feo-encounter .eb-grid.five { grid-template-columns: repeat(5, 1fr); }
+.feo-encounter .eb-grid b small { margin-left: 2px; font-family: var(--feo-font-ui); font-size: 11px; font-weight: 800; color: var(--feo-bane); }
+.feo-encounter .eb-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 9px; border-radius: 999px; white-space: nowrap; font-size: 12.5px; font-weight: 700; border: 1px solid var(--feo-line-soft); background: var(--feo-raised); color: var(--feo-ink); }
+.feo-encounter .eb-chip.off { background: none; border-style: dashed; color: var(--feo-faint); }
+.feo-encounter .eb-chip .feo-icon { font-size: 11px; }
+.feo-encounter .eb-sync-note { display: flex; align-items: flex-start; gap: 7px; margin: 0; font-size: 12.5px; color: var(--feo-muted); }
+.feo-encounter .eb-sync-note .feo-icon { margin-top: 2px; font-size: 13px; color: var(--feo-sync); }
+
 /* Each window is one part that fills its frame and scrolls inside itself */
 .feo-npc .window-content > .nb, .feo-encounter .window-content > .eb { flex: 1 1 auto; min-height: 0; }

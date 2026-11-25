@@ -358,7 +358,7 @@ async function applyChange(actor, change) {
     trained = ownProficiencies(actor, trained) ?? trained;
   } catch(err) {
     console.error(err);
-    trained = actor.getFlag(FEO.id, "imitation") ? {} : trained;
+    trained = (actor.getFlag(FEO.id, "imitation") || actor.getFlag(FEO.id, "levelSync")) ? {} : trained;
   }
   for ( const [key, proficiency] of Object.entries(trained) ) {
     const { rank, wexp } = proficiency ?? {};

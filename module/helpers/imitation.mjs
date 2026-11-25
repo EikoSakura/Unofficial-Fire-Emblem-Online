@@ -6,6 +6,7 @@ import {
   IMITATED_FLAG, IMITATION_FLAG, givenBack, handFor, heldBack, imitateBar, imitatesOf, imitationBends, imitationGrant, imitationOver, keptGrant, ownWexp,
   readImitation, speaksOfImitation, takenFrom
 } from "../rules/imitation.mjs";
+import { SYNC_FLAG, readSync } from "../rules/level-sync.mjs";
 import { effectsOf } from "../rules/skills.mjs";
 import { buildChange, grantChange } from "../rules/timed.mjs";
 import { pop } from "./events.mjs";
@@ -138,7 +139,7 @@ function itemsOf(ally) {
  * @param {string} [prefer]     The weapon to take up before any other
  * @returns {Promise<{equip: string|null, unequip: string[]}>}
  */
-async function settleHand(actor, prefer = "") {
+export async function settleHand(actor, prefer = "") {
   const weapons = actor.items.filter((item) => item.type === "weapon").map((item) => ({
     id: item.id,
     equipped: !!item.system.equipped,
@@ -178,7 +179,8 @@ export async function imitateUnit(token, item, imitates, target) {
   const cls = ally.system.classItem;
   const taken = theirs
     ? foundry.utils.deepClone(theirs.taken)
-    : takenFrom(ally._source.system, { className: cls?.name ?? ally._source.system.className });
+    // Of a unit under a Level Sync, what it is for as long as it is synced
+    : takenFrom(ally.system.synced ? ally.system : ally._source.system, { className: cls?.name ?? ally._source.system.className });
   if ( cls ) taken.className = cls.name;
 
   // The class and the skills, as Items of the unit's own
@@ -415,9 +417,12 @@ export async function sweepImitations() {
  * @param {Record<string, {rank: string, wexp: number}>} [counted]     Each proficiency as the fight left it
  * @returns {Record<string, {rank: string, wexp: number}>|null}        Its own proficiencies to save in their
  *          place; null for a unit that is itself, whose proficiencies are saved as the fight left them
+ *
+ * A unit under a Level Sync fights with the ranks it had at that Level, which are no more its own to raise: what
+ * it earns goes to its own proficiencies in the same way.
  */
 export function ownProficiencies(actor, counted) {
-  if ( !imitationOf(actor) ) return null;
+  if ( !imitationOf(actor) && !readSync(actor?.flags?.[FEO.id]?.[SYNC_FLAG]) ) return null;
   const mine = actor._source.system.proficiencies ?? {};
   const theirs = actor.system.proficiencies ?? {};
   const gains = [];
@@ -446,21 +451,28 @@ export function ownProficiencies(actor, counted) {
  */
 export function growthBar(actor) {
   const note = imitationOf(actor);
-  return note ? game.i18n.format("FEO.Imitate.blocked.growth", { name: nameOf(actor), ally: note.ally }) : null;
+  if ( note ) return game.i18n.format("FEO.Imitate.blocked.growth", { name: nameOf(actor), ally: note.ally });
+
+  // Nor does a unit under a Level Sync: its Level and its class are those it had, until the battle is over
+  const sync = readSync(actor?.flags?.[FEO.id]?.[SYNC_FLAG]);
+  return sync ? game.i18n.format("FEO.LevelSync.blocked.growth", { name: nameOf(actor), level: sync.own }) : null;
 }
 
 /* -------------------------------------------- */
 
 /**
  * Take from what a sheet is about to save everything that a unit which imitates another has taken on: the
- * sheet shows it, and none of it is the unit's own to save.
+ * sheet shows it, and none of it is the unit's own to save. The same goes for what a unit under a Level Sync
+ * was at the Level it is synced to, and for that Level.
  * @param {Actor} actor
  * @param {object} data       What the sheet submits, as nested data
  * @returns {object}          The same data
  */
 export function withoutTaken(actor, data) {
-  if ( !imitationOf(actor) || !data?.system ) return data;
+  const synced = !!readSync(actor?.flags?.[FEO.id]?.[SYNC_FLAG]);
+  if ( (!imitationOf(actor) && !synced) || !data?.system ) return data;
   const system = data.system;
+  if ( synced ) delete system.level;
   for ( const key of ["stats", "abilities", "combatBoosts", "calc", "proficiencies", "specialQualities", "className", "classId", "boon", "bane", "fcm", "movementStars", "weaponLevel", "wt"] ) {
     delete system[key];
   }

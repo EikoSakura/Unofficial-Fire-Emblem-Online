@@ -81,6 +81,7 @@
           {{feoIcon "up"}}{{#if level.promotes}}{{localize "FEO.LevelUp.promote"}}{{else}}{{#if level.promotion}}{{localize "FEO.LevelUp.promoteOrLevel"}}{{else}}{{localize "FEO.LevelUp.button"}}{{/if}}{{/if}}
         </button>
         {{/if}}
+        {{#if synced}}<p class="hint">{{localize "FEO.LevelSync.sheet.waits" own=synced.own}}</p>{{/if}}
         {{#if level.capped}}<p class="hint">{{localize "FEO.LevelUp.atLimitHint"}}</p>{{else}}{{#if level.promotes}}<p class="hint">{{localize "FEO.LevelUp.promoteHint"}}</p>{{/if}}{{/if}}
       </div>
 

@@ -23,6 +23,9 @@ const COMBAT = [
   ["attackSpeed", "FEO.Npc.combat.attackSpeed"], ["dodge", "FEO.Npc.combat.dodge"], ["critAvoid", "FEO.Npc.combat.critAvoid"]
 ];
 
+/** The numbers a Level Sync is told by: two rows of five. */
+const SYNCED = ["hp", "str", "mag", "def", "res", "dex", "spd", "luk", "mov", "con"];
+
 /** The sides a Game Master plays, in the order their rows are listed. */
 const SIDES = ["enemy", "ally", "other"];
 
@@ -81,6 +84,9 @@ function strip(blows, hp, who, more, narrow, i18n) {
  * @param {"read"|"unit"} state.tab
  * @param {"in"|"out"} state.way          Which way the read looks
  * @param {boolean} state.partyOpen
+ * @param {string} state.partyUnit        The unit of the party whose Level Sync is on show, by its id
+ * @param {object|null} state.preview     That unit as the encounter would sync it, as `previewSync` reads it
+ * @param {boolean} state.syncRunning     Is the Level Sync of this encounter running on its map?
  * @param {"group"|"goal"} state.placing  What a click on the map places
  * @param {number} state.onMap            How many tokens the encounter has on its scene
  * @param {string} state.say
@@ -89,7 +95,8 @@ function strip(blows, hp, who, more, narrow, i18n) {
  */
 export function buildEncounterBuilder({
   encounter, encounters = [], scenes = [], map = null, groups = [], pool = [], npcs = [], blows = { dealt: [], taken: [] },
-  selected = "", tab = "read", way = "in", partyOpen = false, placing = "group", onMap = 0, say = ""
+  selected = "", tab = "read", way = "in", partyOpen = false, partyUnit = "", preview = null, syncRunning = false,
+  placing = "group", onMap = 0, say = ""
 }, i18n) {
   const loc = (key) => i18n.localize(key);
   const config = FEO.encounter;
@@ -147,21 +154,85 @@ export function buildEncounterBuilder({
   const level = partyLevel(levels);
   const low = Math.min(...levels);
   const high = Math.max(...levels);
+  // The Levels the encounter is for, and how the party stands to them
+  const band = encounter.sync ?? { on: false, min: 1, max: 1 };
+  const down = going.filter((unit) => unit.stand === "sync").length;
+  const under = going.filter((unit) => unit.stand === "under").length;
+  const sync = {
+    on: band.on,
+    state: loc(band.on ? "FEO.LevelSync.on" : "FEO.LevelSync.off"),
+    min: band.min,
+    max: band.max,
+    minLeast: band.min <= 1,
+    minMost: band.min >= band.max,
+    maxLeast: band.max <= band.min,
+    maxMost: band.max >= FEO.levelSync.most,
+    hint: !band.on ? loc("FEO.LevelSync.hintOff")
+      : i18n.format((band.min > 1) ? "FEO.LevelSync.hintOn" : "FEO.LevelSync.hintOnTop", { min: band.min, max: band.max }),
+    running: syncRunning
+  };
+  const stood = (unit) => {
+    if ( unit.stand === "sync" ) return i18n.format("FEO.LevelSync.chip.synced", { own: unit.own ?? unit.level, level: unit.syncLevel ?? unit.level });
+    if ( unit.stand === "under" ) return i18n.format("FEO.LevelSync.chip.under", { own: unit.own ?? unit.level, min: band.min });
+    return "";
+  };
   const party = {
     open: partyOpen,
     summary: !going.length ? loc("FEO.Encounter.party.nobody")
       : i18n.format((low === high) ? "FEO.Encounter.party.same" : "FEO.Encounter.party.spread", { count: going.length, low, high, level }),
-    chips: going.map((unit) => ({ name: unit.name, level: unit.level, title: [unit.className, unit.player].filter(Boolean).join(" · ") })),
+    syncLine: [
+      down ? i18n.format("FEO.LevelSync.party.synced", { count: down, max: band.max }) : "",
+      under ? i18n.format("FEO.LevelSync.party.under", { count: under, min: band.min }) : ""
+    ].filter(Boolean).join(" · "),
+    chips: going.map((unit) => ({
+      id: unit.id,
+      name: unit.name,
+      level: unit.level,
+      own: unit.own ?? unit.level,
+      synced: unit.stand === "sync",
+      under: unit.stand === "under",
+      estimated: (unit.stand === "sync") && (unit.exact === false),
+      selected: unit.id === partyUnit,
+      title: [unit.className, unit.player, stood(unit), ((unit.stand === "sync") && (unit.exact === false)) ? loc("FEO.LevelSync.estimated") : ""].filter(Boolean).join(" · ")
+    })),
     pool: pool.map((unit) => ({
       id: unit.id,
       name: unit.name,
-      sub: [unit.className, i18n.format("FEO.Encounter.lv", { level: unit.level })].filter(Boolean).join(" · "),
+      sub: [unit.className, i18n.format("FEO.Encounter.lv", { level: unit.own ?? unit.level })].filter(Boolean).join(" · "),
+      synced: (unit.stand === "sync") ? (unit.syncLevel ?? unit.level) : 0,
+      under: unit.stand === "under",
+      title: stood(unit),
       player: unit.player ?? "",
       online: !!unit.online,
       going: !!unit.going
     })),
-    empty: !pool.length
+    empty: !pool.length,
+    preview: null
   };
+
+  // The unit of the party that is shown as the encounter would sync it
+  const previewed = preview ? going.find((unit) => unit.id === partyUnit) : null;
+  if ( preview && previewed ) {
+    party.preview = {
+      name: previewed.name,
+      level: preview.level,
+      className: preview.className,
+      was: (preview.ownClassName && (preview.ownClassName !== preview.className)) ? preview.ownClassName : "",
+      exact: preview.exact,
+      source: loc(preview.exact ? "FEO.LevelSync.exact" : "FEO.LevelSync.estimated"),
+      sourceHint: preview.exact ? i18n.format("FEO.LevelSync.exactHint", { name: previewed.name })
+        : i18n.format("FEO.LevelSync.estimatedHint", { level: preview.level, from: preview.from }),
+      stats: SYNCED.map((key) => {
+        const stat = preview.stats.find((other) => other.key === key) ?? { value: 0, cut: 0 };
+        return { label: loc(`FEO.Stat.${key}.abbr`), value: stat.value, cut: stat.cut };
+      }),
+      skills: preview.skills,
+      weapons: preview.weapons.map((weapon) => ({
+        ...weapon, title: weapon.off ? i18n.format("FEO.LevelSync.preview.needs", { rank: weapon.needs }) : ""
+      })),
+      note: i18n.format("FEO.LevelSync.preview.note", { level: preview.level, own: preview.own, name: previewed.name })
+    };
+  }
 
   // How it reads against that party
   const foes = groups.filter(({ unit }) => unit && (unit.side === "enemy"));
@@ -322,6 +393,7 @@ export function buildEncounterBuilder({
     placingGoal: placing === "goal",
     canMark: marked,
     goal: encounter.goal ? i18n.format("FEO.Encounter.map.goalAt", { column: encounter.goal.j + 1, row: encounter.goal.i + 1 }) : "",
+    sync,
     mapHint: !map ? "" : (placing === "goal") ? loc("FEO.Encounter.map.hintGoal")
       : picked?.unit ? i18n.format("FEO.Encounter.map.hintGroup", { name: picked.unit.name }) : loc("FEO.Encounter.map.hint"),
     party,

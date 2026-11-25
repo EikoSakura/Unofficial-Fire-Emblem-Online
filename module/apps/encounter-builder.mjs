@@ -3,8 +3,10 @@ import {
   beginEncounter, blowBetween, describeUnit, mapOf, npcPool, partyPool, placeEncounter, placedTokens, readEncounters,
   registerEncounters, removeEncounter, standsOf, tileBlocked, writeEncounter
 } from "../helpers/encounters.mjs";
+import { bandOf, endSyncOn, previewSync, syncedView } from "../helpers/level-sync.mjs";
 import { specOf } from "../helpers/npc.mjs";
 import { cleanEncounter, newEncounter, partyLevel, scatterTiles } from "../rules/encounters.mjs";
+import { standingOf } from "../rules/level-sync.mjs";
 import { buildEncounterBuilder } from "./encounter-builder-context.mjs";
 import { drawEncounterMap, tileAt } from "./encounter-map.mjs";
 import MapGenerator from "./map-generator.mjs";
@@ -51,6 +53,10 @@ export default class EncounterBuilder extends HandlebarsApplicationMixin(Applica
       partyOnline: EncounterBuilder.#onPartyOnline,
       partyOnMap: EncounterBuilder.#onPartyOnMap,
       partyClear: EncounterBuilder.#onPartyClear,
+      syncToggle: EncounterBuilder.#onSyncToggle,
+      syncStep: EncounterBuilder.#onSyncStep,
+      syncShow: EncounterBuilder.#onSyncShow,
+      syncEnd: EncounterBuilder.#onSyncEnd,
       show: EncounterBuilder.#onShow,
       way: EncounterBuilder.#onWay,
       place: EncounterBuilder.#onPlace,
@@ -82,6 +88,9 @@ export default class EncounterBuilder extends HandlebarsApplicationMixin(Applica
 
   /** Is the list of who may go open? Until it was opened or closed by hand, it is while nobody is going. */
   #partyOpen = null;
+
+  /** The unit of the party whose Level Sync is on show, by its id; blank for none. */
+  #partyUnit = "";
 
   /** What a click on the map places: the group in hand, or the space the Objectives are about. */
   #placing = "group";
@@ -261,14 +270,27 @@ export default class EncounterBuilder extends HandlebarsApplicationMixin(Applica
     const stands = standsOf(encounter, map, units);
     if ( !groups.some((entry) => entry.group.id === this.#selected) ) this.#selected = "";
 
-    const pool = partyPool().map(({ actor, user }) => ({
-      ...describeUnit(actor),
-      actor,
-      player: user?.name ?? "",
-      online: !!user?.active,
-      going: encounter.party.includes(actor.id)
-    }));
+    // A unit that goes and is above the Levels the encounter is for is read as it would be synced
+    const pool = partyPool().map(({ actor, user }) => {
+      const isGoing = encounter.party.includes(actor.id);
+      const own = actor.system.synced?.own ?? actor.system.level ?? 1;
+      const stand = standingOf(own, encounter.sync);
+      const view = (isGoing && (stand.kind === "sync")) ? syncedView(actor, stand.level) : actor;
+      return {
+        ...describeUnit(view),
+        actor: view,
+        own,
+        stand: stand.kind,
+        syncLevel: stand.level,
+        exact: view.system.synced?.exact ?? true,
+        player: user?.name ?? "",
+        online: !!user?.active,
+        going: isGoing
+      };
+    });
     const going = pool.filter((unit) => unit.going);
+    const shown = going.find((unit) => (unit.id === this.#partyUnit) && (unit.stand === "sync")) ?? null;
+    if ( !shown ) this.#partyUnit = "";
     const foes = groups.filter((entry) => entry.unit?.side === "enemy");
     const blows = {
       dealt: going.map((unit) => foes.map((foe) => blowBetween(unit.actor, foe.actor))),
@@ -288,6 +310,9 @@ export default class EncounterBuilder extends HandlebarsApplicationMixin(Applica
       tab: this.#tab,
       way: this.#way,
       partyOpen: this.#partyOpen ?? !going.length,
+      partyUnit: this.#partyUnit,
+      preview: shown ? previewSync(game.actors.get(shown.id) ?? shown.actor, shown.syncLevel) : null,
+      syncRunning: bandOf(scene)?.encounter === encounter.id,
       placing: this.#placing,
       onMap: placedTokens(encounter, scene).length,
       say: this.#say
@@ -584,8 +609,10 @@ export default class EncounterBuilder extends HandlebarsApplicationMixin(Applica
 
   /** The Level of the party that goes with the encounter on show, or null while nobody does. */
   #partyLevel() {
-    const going = new Set(this.#encounter().party);
-    const levels = partyPool().filter(({ actor }) => going.has(actor.id)).map(({ actor }) => actor.system.level ?? 1);
+    const encounter = this.#encounter();
+    const going = new Set(encounter.party);
+    const levels = partyPool().filter(({ actor }) => going.has(actor.id))
+      .map(({ actor }) => standingOf(actor.system.synced?.own ?? actor.system.level ?? 1, encounter.sync).level);
     return levels.length ? partyLevel(levels) : null;
   }
 
@@ -688,6 +715,60 @@ export default class EncounterBuilder extends HandlebarsApplicationMixin(Applica
   static #onPartyClear() {
     this.#partyOpen = true;
     return this.#keep({ party: [] });
+  }
+
+  /* -------------------------------------------- */
+  /*  Level Sync                                  */
+  /* -------------------------------------------- */
+
+  /**
+   * The encounter is for a band of Levels, or for any.
+   * @this {EncounterBuilder}
+   */
+  static #onSyncToggle() {
+    const sync = this.#encounter().sync;
+    return this.#keep({ sync: { ...sync, on: !sync.on } });
+  }
+
+  /**
+   * An end of the band goes up or down: by one, or by five with Shift held.
+   * @this {EncounterBuilder}
+   */
+  static #onSyncStep(event, target) {
+    const sync = this.#encounter().sync;
+    const by = (Number(target.dataset.by) || 0) * (event.shiftKey ? 5 : 1);
+    if ( target.dataset.end === "min" ) return this.#keep({ sync: { ...sync, min: Math.min(Math.max(sync.min + by, 1), sync.max) } });
+    return this.#keep({ sync: { ...sync, max: Math.min(Math.max(sync.max + by, sync.min), FEO.levelSync.most) } });
+  }
+
+  /**
+   * A unit of the party is shown as the encounter would sync it, or put away again.
+   * @this {EncounterBuilder}
+   */
+  static #onSyncShow(event, target) {
+    const id = target.dataset.actor ?? "";
+    this.#partyUnit = (this.#partyUnit === id) ? "" : id;
+    this.#tab = "read";
+    return this.render();
+  }
+
+  /**
+   * The Level Sync that runs on the encounter's map is ended ahead of its battle.
+   * @this {EncounterBuilder}
+   */
+  static async #onSyncEnd() {
+    if ( this.#busy ) return;
+    this.#busy = true;
+    try {
+      await endSyncOn(game.scenes.get(this.#encounter().scene) ?? null);
+      this.#say = game.i18n.localize("FEO.LevelSync.endedSay");
+    } catch(err) {
+      console.error(err);
+      ui.notifications.error("FEO.Hud.failed", { localize: true });
+    } finally {
+      this.#busy = false;
+    }
+    this.render();
   }
 
   /* -------------------------------------------- */

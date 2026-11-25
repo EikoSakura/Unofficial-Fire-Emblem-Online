@@ -621,6 +621,14 @@ export async function clearBattle(combat) {
     console.error(err);
   }
 
+  // And a unit that was synced down to the Levels of the battle has its own again (see `helpers/level-sync.mjs`)
+  try {
+    const { endSyncOn } = await import("./level-sync.mjs");
+    cleared += await endSyncOn(combat.scene ?? null);
+  } catch(err) {
+    console.error(err);
+  }
+
   // The mines and traps its units laid are gone with it (see `helpers/traps.mjs`)
   try {
     const { clearLaid } = await import("./traps.mjs");

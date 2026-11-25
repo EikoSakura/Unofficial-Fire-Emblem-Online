@@ -9,6 +9,7 @@ import { company } from "./base.mjs";
 import { combatantOf } from "./exchange-context.mjs";
 import { armyOf, tokenTile } from "./exchange.mjs";
 import { setMapAffinity } from "./map-affinity.mjs";
+import { beginSync, endSyncOn, forgetViews } from "./level-sync.mjs";
 import { DROP_FLAG, copyDelta, specOf } from "./npc.mjs";
 import { readPaint } from "./paint.mjs";
 import { beginBattle } from "./phases.mjs";
@@ -206,7 +207,9 @@ function plainBlow(attacker, target) {
  * @returns {Blow|null}
  */
 export function blowBetween(attacker, target) {
-  const key = `${attacker.uuid}>${target.uuid}`;
+  // A unit read as an encounter would sync it is another unit to this than the unit itself
+  const tag = (actor) => `${actor.uuid}@${actor.system.synced?.level ?? ""}`;
+  const key = `${tag(attacker)}>${tag(target)}`;
   if ( BLOWS.has(key) ) return BLOWS.get(key);
   let blow = null;
   const weapon = attacker.system.equippedWeapon;
@@ -432,7 +435,8 @@ export function objectiveLines(encounter, groups) {
 
 /**
  * Begin the battle of an encounter: it is put on its map if it is not there yet, the map is given its Affinity
- * and its weather, the scene is brought into view, the party is told its Objectives, and the battle begins.
+ * and its weather, the scene is brought into view, the player units above its Levels are synced down to them,
+ * the party is told its Objectives, and the battle begins.
  * Runs for a Game Master.
  * @param {Encounter} encounter
  * @returns {Promise<Combat|null>}
@@ -444,6 +448,13 @@ export async function beginEncounter(encounter) {
   await setMapAffinity(scene, encounter.affinity);
   await setWeather(scene, encounter.weather ? [encounter.weather] : []);
   if ( !scene.isView ) await scene.view();
+
+  // An encounter that is for a band of Levels syncs the player units above it, and says so
+  try {
+    await beginSync(encounter, scene);
+  } catch(err) {
+    console.error(err);
+  }
 
   const groups = encounter.groups.map((group) => {
     const actor = game.actors.get(group.actor);
@@ -458,7 +469,11 @@ export async function beginEncounter(encounter) {
       content: `<h3>${title}</h3><ul>${lines.map((line) => `<li>${line}</li>`).join("")}</ul>`
     });
   }
-  return beginBattle(scene);
+  const combat = await beginBattle(scene);
+
+  // A battle that did not begin leaves nobody synced
+  if ( !combat ) await endSyncOn(scene, { quiet: true }).catch((err) => console.error(err));
+  return combat;
 }
 
 /* -------------------------------------------- */
@@ -520,6 +535,7 @@ export function registerEncounters(changed = () => {}) {
     const actor = (document?.documentName === "Actor") ? document : document?.parent;
     if ( actor?.documentName !== "Actor" ) return;
     BLOWS.clear();
+    forgetViews();
     changed();
   };
   for ( const hook of ["updateActor", "createItem", "updateItem", "deleteItem", "createActor", "deleteActor"] ) Hooks.on(hook, forget);

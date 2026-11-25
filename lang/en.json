@@ -1622,6 +1622,63 @@
         "no": "Let it end"
       }
     },
+    "LevelSync": {
+      "title": "Level Sync",
+      "ended": "Level Sync ended",
+      "endedSay": "The Level Sync on this map is ended: everyone is themselves again.",
+      "on": "On",
+      "off": "Off",
+      "lv": "Lv",
+      "to": "to",
+      "band": "Lv {min} to {max}",
+      "bandOne": "Lv {max}",
+      "under": "under",
+      "estimated": "Estimated",
+      "exact": "Exact",
+      "exactHint": "from {name}'s Level record",
+      "estimatedHint": "no record at Lv {level}: worked back from Lv {from} by its growth rates. Skills and weapon ranks are those of Lv {from}.",
+      "hintOn": "Above Lv {max} fights as it was at Lv {max}. Under Lv {min} is marked.",
+      "hintOnTop": "Above Lv {max} fights as it was at Lv {max}.",
+      "hintOff": "Every unit goes at its own Level.",
+      "stepHint": "Hold Shift to step by five.",
+      "lowerMin": "Lower the lowest Level",
+      "raiseMin": "Raise the lowest Level",
+      "lowerMax": "Lower the highest Level",
+      "raiseMax": "Raise the highest Level",
+      "running": "Running on this map.",
+      "end": "End now",
+      "endHint": "Every unit synced for this battle is itself again at once. The battle goes on.",
+      "hud": "Level Sync. Own Level {own}.",
+      "party": {
+        "synced": "{count} synced to Lv {max}",
+        "under": "{count} under Lv {min}"
+      },
+      "chip": {
+        "synced": "Lv {own}, synced to Lv {level}",
+        "under": "Lv {own}, under Lv {min}"
+      },
+      "preview": {
+        "weapons": "Weapons",
+        "needs": "Needs rank {rank}",
+        "note": "Earns EXP as Lv {level}. Level ups wait until the battle is over, when {name} is Lv {own} again."
+      },
+      "card": {
+        "down": "Lv {own} → {level}",
+        "back": "Lv {level} again",
+        "backOne": "Lv {level} again · 1 Level up waiting",
+        "backMany": "Lv {level} again · {count} Level ups waiting"
+      },
+      "sheet": {
+        "strip": "Level Sync · own Lv {own}",
+        "tip": "Synced to Lv {level}. Own Level {own}.",
+        "exact": "What this unit was at Lv {level}, from its Level record. Its own numbers are back when the battle is over.",
+        "estimated": "What this unit was at Lv {level}, worked back from Lv {from} by its growth rates. Its own numbers are back when the battle is over.",
+        "waits": "Under a Level Sync. Level ups wait until the battle is over, from Lv {own}."
+      },
+      "blocked": {
+        "growth": "{name} is under a Level Sync, and levels up or changes class once the battle is over, as Lv {level}."
+      }
+    },
     "Imitate": {
       "float": "Imitates {name}",
       "reverts": "Reverts",

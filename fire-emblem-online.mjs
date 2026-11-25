@@ -19,6 +19,7 @@ import * as helpListHelpers from "./module/helpers/help-list.mjs";
 import { registerDiscord } from "./module/helpers/discord.mjs";
 import * as eventHelpers from "./module/helpers/events.mjs";
 import * as cutInHelpers from "./module/helpers/cut-ins.mjs";
+import * as levelSyncHelpers from "./module/helpers/level-sync.mjs";
 import * as levelUpHelpers from "./module/helpers/level-up.mjs";
 import * as linkingHelpers from "./module/helpers/linking.mjs";
 import * as migrationHelpers from "./module/helpers/migration.mjs";
@@ -371,6 +372,11 @@ Hooks.once("init", () => {
   // Imitation: a unit that took on another's attributes is itself again when its turns run out
   imitationHelpers.registerHooks();
   game.feo.imitation = imitationHelpers;
+
+  // Level Sync: a unit keeps a record of what it was at each Level, and one above the Levels an encounter is
+  // for fights in it as it was at the top of them
+  levelSyncHelpers.registerHooks();
+  game.feo.levelSync = levelSyncHelpers;
 
   // Data models
   CONFIG.Actor.dataModels.unit = models.UnitData;

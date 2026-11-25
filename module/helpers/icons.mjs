@@ -80,6 +80,7 @@ export const ICONS = {
   minus: '<path d="M5 12h14"/>',
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
   up: '<path d="M12 19V6M6 11.500L12 5.500l6 6"/>',
+  sync: '<path d="M12 3.500v11.500M7 10l5 5 5-5M5 20h14"/>',
   trash: '<path d="M4.500 7h15M9.500 7V4.500h5V7M6.500 7l1 13h9l1-13M10 11v5.500M14 11v5.500"/>',
   chat: '<path d="M4.500 5h15v11h-8l-4.500 4v-4H4.500z"/><path d="M8.500 9h7M8.500 12.500h4.500"/>',
 

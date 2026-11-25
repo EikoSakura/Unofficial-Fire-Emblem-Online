@@ -2407,6 +2407,13 @@ FEO.encounter = {
 };
 
 /**
+ * Level Sync: an encounter may be for a band of Levels, and a unit above it fights as it was at the band's top
+ * Level (see `rules/level-sync.mjs`). `min` and `max` are the band a new encounter starts with, and `most` the
+ * highest Level a band can name.
+ */
+FEO.levelSync = { min: 1, max: 10, most: 99 };
+
+/**
  * The World Map: the land a campaign is set in, with a dot for each place, routes between them and the ground
  * of each nation.
  *

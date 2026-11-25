@@ -1,7 +1,7 @@
 <div class="hud-slot hud-hover">
   {{#with hover}}
   <section class="hud-panel hc" style="{{style}}" aria-label="{{localize "FEO.Hud.hovered"}}">
-    <div class="hc-head cloth" data-army="{{army}}"><b>{{name}}</b><span>{{className}} · {{localize "FEO.Hud.level"}} {{level}}</span></div>
+    <div class="hc-head cloth" data-army="{{army}}"><b>{{name}}</b><span>{{className}} · <em class="{{#if synced}}sync{{/if}}"{{#if synced}} data-tooltip="{{synced}}"{{/if}}>{{#if synced}}{{feoIcon "sync"}}{{/if}}{{localize "FEO.Hud.level"}} {{level}}</em></span></div>
     <div class="hc-body">
       <div class="hc-hp{{#if hp.temp}} lent{{/if}}" data-tone="{{hp.tone}}"{{#if hp.tip}} data-tooltip="{{hp.tip}}"{{/if}}><span>{{localize "FEO.Stat.hp.abbr"}}</span><div class="bar"><i style="width:{{hp.percent}}%"></i>{{#if hp.temp}}<em style="left:{{hp.percent}}%;width:{{hp.tempPercent}}%"></em>{{/if}}</div><b>{{hp.value}} / {{hp.max}}</b></div>
       {{#if stagger}}<div class="hc-hp hc-stagger"><span>{{localize "FEO.Optional.stagger.abbr"}}</span><div class="bar stagger{{#if stagger.staggered}} staggered{{/if}}"><i style="width:{{stagger.percent}}%"></i></div><b>{{stagger.value}} / {{stagger.max}}</b></div>{{/if}}

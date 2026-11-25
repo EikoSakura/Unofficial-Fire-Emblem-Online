@@ -11,6 +11,7 @@
 
 import { FEO } from "../config.mjs";
 import { killExp } from "./experience.mjs";
+import { cleanBand } from "./level-sync.mjs";
 
 /**
  * @typedef Blow
@@ -43,6 +44,7 @@ import { killExp } from "./experience.mjs";
  * @property {string} affinity        The Affinity of the map; blank for none
  * @property {string} weather         The weather of the map; blank for none
  * @property {string[]} party         The ids of the player units that are going
+ * @property {import("./level-sync.mjs").LevelBand} sync     The Levels it is for, where it is synced
  * @property {EncounterGroup[]} groups
  */
 
@@ -377,6 +379,7 @@ export function cleanEncounter(raw = {}, config = FEO.encounter) {
     affinity: text(raw.affinity),
     weather: text(raw.weather),
     party: [...new Set((Array.isArray(raw.party) ? raw.party : []).map(text).filter(Boolean))],
+    sync: cleanBand(raw.sync),
     groups
   };
 }

@@ -47,6 +47,30 @@
     <label class="eb-field"><span class="eyebrow">{{localize "FEO.Encounter.weather"}}</span>
       <select name="weather">{{#each weathers as |weather|}}<option value="{{weather.key}}" {{#if weather.selected}}selected{{/if}}>{{weather.label}}</option>{{/each}}</select>
     </label>
+    <div class="eb-field eb-sync {{#if sync.on}}on{{/if}}">
+      <span class="eyebrow">{{feoIcon "sync"}}{{localize "FEO.LevelSync.title"}}</span>
+      <div class="eb-row">
+        <button type="button" class="eb-switch {{#if sync.on}}on{{/if}}" role="switch" aria-checked="{{sync.on}}" data-action="syncToggle">
+          <span class="track"></span>{{sync.state}}
+        </button>
+        <span class="eb-band" data-tooltip="{{localize "FEO.LevelSync.stepHint"}}">
+          <small>{{localize "FEO.LevelSync.lv"}}</small>
+          <span class="eb-step">
+            <button type="button" class="eb-round" data-action="syncStep" data-end="min" data-by="-1" {{#if sync.minLeast}}disabled{{/if}} aria-label="{{localize "FEO.LevelSync.lowerMin"}}">−</button>
+            <b>{{sync.min}}</b>
+            <button type="button" class="eb-round" data-action="syncStep" data-end="min" data-by="1" {{#if sync.minMost}}disabled{{/if}} aria-label="{{localize "FEO.LevelSync.raiseMin"}}">+</button>
+          </span>
+          <small>{{localize "FEO.LevelSync.to"}}</small>
+          <span class="eb-step">
+            <button type="button" class="eb-round" data-action="syncStep" data-end="max" data-by="-1" {{#if sync.maxLeast}}disabled{{/if}} aria-label="{{localize "FEO.LevelSync.lowerMax"}}">−</button>
+            <b>{{sync.max}}</b>
+            <button type="button" class="eb-round" data-action="syncStep" data-end="max" data-by="1" {{#if sync.maxMost}}disabled{{/if}} aria-label="{{localize "FEO.LevelSync.raiseMax"}}">+</button>
+          </span>
+        </span>
+        {{#if sync.running}}<button type="button" class="btn small" data-action="syncEnd" data-tooltip="{{localize "FEO.LevelSync.endHint"}}">{{localize "FEO.LevelSync.end"}}</button>{{/if}}
+      </div>
+      <small class="eb-sync-hint">{{#if sync.running}}{{localize "FEO.LevelSync.running"}} {{/if}}{{sync.hint}}</small>
+    </div>
     <div class="eb-field">
       <span class="eyebrow">{{localize "FEO.Encounter.phases"}}</span>
       <div class="eb-phases">{{#each phases as |phase|}}<span data-army="{{phase.key}}"><i></i>{{phase.label}}</span>{{#unless @last}}{{feoIcon "right"}}{{/unless}}{{/each}}</div>
@@ -118,14 +142,40 @@
           <button type="button" class="btn small" data-action="partyOpen" aria-expanded="{{party.open}}">{{#if party.open}}{{localize "FEO.Encounter.party.done"}}{{else}}{{localize "FEO.Encounter.party.who"}}{{/if}}</button>
         </div>
         {{#if party.chips.length}}
-        <div class="eb-going">{{#each party.chips as |chip|}}<span class="tag" data-tooltip="{{chip.title}}"><b>{{chip.name}}</b> {{chip.level}}</span>{{/each}}</div>
+        <div class="eb-going">
+          {{#each party.chips as |chip|}}
+          {{#if chip.synced}}
+          <button type="button" class="tag sync {{#if chip.selected}}on{{/if}}" data-action="syncShow" data-actor="{{chip.id}}" aria-pressed="{{chip.selected}}" data-tooltip="{{chip.title}}">{{feoIcon "sync"}}<b>{{chip.name}}</b> <s>{{chip.own}}</s>{{feoIcon "right"}}<b>{{chip.level}}</b>{{#if chip.estimated}}<i>~</i>{{/if}}</button>
+          {{else}}
+          <span class="tag {{#if chip.under}}warn{{/if}}" data-tooltip="{{chip.title}}"><b>{{chip.name}}</b> {{chip.level}}</span>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{#if party.syncLine}}<p class="eb-sync-line">{{feoIcon "sync"}}{{party.syncLine}}</p>{{/if}}
         {{/if}}
+        {{#with party.preview as |card|}}
+        <div class="eb-sync-card">
+          <div class="eb-sync-head">
+            <div><b>{{card.name}}</b><small>{{#if card.was}}<s>{{card.was}}</s> {{feoIcon "right"}} {{/if}}{{card.className}}</small></div>
+            <span class="eb-lv sync"><small>{{localize "FEO.Npc.lv"}}</small> {{card.level}}</span>
+          </div>
+          <div class="eb-sync-src"><span class="eb-est {{#if card.exact}}exact{{/if}}">{{card.source}}</span><span>{{card.sourceHint}}</span></div>
+          <div class="eb-grid five">{{#each card.stats as |stat|}}<div><b>{{stat.value}}{{#if stat.cut}}<small>−{{stat.cut}}</small>{{/if}}</b><span>{{stat.label}}</span></div>{{/each}}</div>
+          {{#if card.skills.length}}
+          <div class="eb-kv"><b>{{localize "FEO.Npc.skills"}}</b>{{#each card.skills as |skill|}}<span class="eb-chip {{#if skill.off}}off{{/if}}">{{#if skill.off}}{{feoIcon "lock"}}{{/if}}{{skill.name}}</span>{{/each}}</div>
+          {{/if}}
+          {{#if card.weapons.length}}
+          <div class="eb-kv"><b>{{localize "FEO.LevelSync.preview.weapons"}}</b>{{#each card.weapons as |weapon|}}<span class="eb-chip {{#if weapon.off}}off{{/if}}" {{#if weapon.off}}data-tooltip="{{weapon.title}}"{{/if}}>{{#if weapon.off}}{{feoIcon "lock"}}{{/if}}{{weapon.name}}</span>{{/each}}</div>
+          {{/if}}
+          <p class="eb-sync-note">{{feoIcon "sync"}}<span>{{card.note}}</span></p>
+        </div>
+        {{/with}}
         {{#if party.open}}
         <div class="eb-pool">
           {{#each party.pool as |unit|}}
           <button type="button" class="eb-pool-row {{#if unit.going}}on{{/if}}" role="checkbox" aria-checked="{{unit.going}}" data-action="going" data-actor="{{unit.id}}">
             <span class="box">{{#if unit.going}}{{feoIcon "check"}}{{/if}}</span>
-            <span><b>{{unit.name}}</b> <small>{{unit.sub}}</small></span>
+            <span><b>{{unit.name}}</b> <small>{{unit.sub}}</small>{{#if unit.synced}} <em class="eb-to" data-tooltip="{{unit.title}}">{{feoIcon "sync"}}{{unit.synced}}</em>{{/if}}{{#if unit.under}} <em class="eb-to under" data-tooltip="{{unit.title}}">{{localize "FEO.LevelSync.under"}}</em>{{/if}}</span>
             <span class="pl {{#if unit.online}}online{{/if}}">{{unit.player}}</span>
           </button>
           {{/each}}

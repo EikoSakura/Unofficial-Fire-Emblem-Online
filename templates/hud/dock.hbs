@@ -2,7 +2,7 @@
   {{#with dock}}
   <section class="hud-panel dock" aria-label="{{localize "FEO.Hud.selected"}}">
     <div class="dk-banner cloth" data-army="{{army}}">
-      <div class="dk-portrait"><img src="{{img}}" alt=""><span class="lv">{{localize "FEO.Hud.level"}} {{level}}</span></div>
+      <div class="dk-portrait"><img src="{{img}}" alt=""><span class="lv{{#if synced}} sync{{/if}}"{{#if synced}} data-tooltip="{{synced}}"{{/if}}>{{#if synced}}{{feoIcon "sync"}}{{/if}}{{localize "FEO.Hud.level"}} {{level}}</span></div>
       <div class="dk-id"><div class="dk-name">{{name}}</div><div class="dk-class">{{className}}</div></div>
       <div class="dk-hp{{#if hp.temp}} lent{{/if}}" data-tone="{{hp.tone}}"{{#if hp.tip}} data-tooltip="{{hp.tip}}"{{/if}}>
         <div>{{localize "FEO.Stat.hp.abbr"}}<b>{{hp.value}} <span>/ {{hp.max}}</span></b></div>

@@ -31,6 +31,8 @@
   --feo-boon: #70b2f7;
   --feo-bane: #f07a7a;
   --feo-warn: #e8a640;
+  --feo-sync: #5fd3d6;
+  --feo-sync-ink: #06272a;
   --feo-track: rgba(255, 255, 255, .09);
 
   /* Army colours: player by default */
@@ -56,6 +58,8 @@
   --feo-boon: #2a6dc4;
   --feo-bane: #c14040;
   --feo-warn: #b16f12;
+  --feo-sync: #127a84;
+  --feo-sync-ink: #f2fdfd;
   --feo-track: rgba(58, 44, 20, .13);
 }
 
@@ -377,6 +381,31 @@
 }
 
 .feo .medal small { font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+
+/* A unit under a Level Sync wears its Level in teal, and says what its own is */
+.feo .medal.sync {
+  border-color: #dffcfc;
+  background: linear-gradient(180deg, #a9f0f1, #46b9bd);
+  box-shadow: 0 0 0 3px rgba(95, 211, 214, .3), 0 3px 8px rgba(0, 0, 0, .45);
+  color: #05282b;
+}
+.feo .medal.sync .feo-icon { font-size: 14px; }
+.feo .rail .medal.sync input { color: #05282b; opacity: 1; }
+.feo .sync-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border: 1px solid rgba(95, 211, 214, .55);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, .32);
+  color: #8fe7e9;
+  font-size: 12px;
+  font-weight: 700;
+}
+.feo .sync-strip .feo-icon { font-size: 13px; }
 
 .feo .rail .medal input {
   width: 34px;
@@ -1587,6 +1616,9 @@
 }
 
 .feo-card > header:last-child { border-bottom: 0; }
+/* A Level Sync is told on teal cloth: it is nobody's side */
+.feo-card.level-sync > header { background: repeating-linear-gradient(45deg, rgba(255,255,255,.03) 0 2px, transparent 2px 14px), linear-gradient(120deg, #114a50, #0a2c30 75%); color: #f4eedd; }
+.feo-card.level-sync dd { color: #8fe7e9; }
 .feo-card > header > :is(h3, p) { grid-column: 1; }
 .feo-card > header > .inspect { grid-column: 2; grid-row: 1; }
 .feo-card :is(h3, h4, dt, dd) { color: inherit; }

@@ -5,9 +5,10 @@
     {{#if affinity}}
     <div class="crest" data-tooltip="{{localize "FEO.Unit.affinity"}}: {{localize affinity.label}}{{#if affinity.effect}}. {{localize affinity.effect.text}} {{localize affinity.effect.mode}}{{/if}}">{{feoIcon affinity.icon}}</div>
     {{/if}}
-    <label class="medal">
+    <label class="medal{{#if synced}} sync{{/if}}"{{#if synced}} data-tooltip="{{localize "FEO.LevelSync.sheet.tip" own=synced.own level=synced.level}}"{{/if}}>
+      {{#if synced}}{{feoIcon "sync"}}{{/if}}
       <small>{{localize "FEO.Unit.levelAbbr"}}</small>
-      <input type="number" name="system.level" value="{{system.level}}" min="1" step="1"
+      <input type="number" name="system.level" value="{{system.level}}" min="1" step="1"{{#if synced}} disabled{{/if}}
              aria-label="{{localize "FEO.Unit.level"}}">
     </label>
   </div>
@@ -23,6 +24,9 @@
            placeholder="{{localize "FEO.Unit.class"}}" aria-label="{{localize "FEO.Unit.class"}}">
     {{/if}}
     {{#if system.specialQualities}}<div class="qualities">{{system.specialQualities}}</div>{{/if}}
+    {{#if synced}}
+    <div class="sync-strip" data-tooltip="{{synced.tip}}">{{feoIcon "sync"}}{{localize "FEO.LevelSync.sheet.strip" own=synced.own}}</div>
+    {{/if}}
   </div>
 
   <div class="vital">

@@ -1,6 +1,7 @@
 import { FEO } from "../config.mjs";
 import { COVERAGE, chanceOf, rolledProc } from "../rules/skills.mjs";
 import { IMITATED_FLAG, IMITATION_FLAG, speaksOfImitation } from "../rules/imitation.mjs";
+import { SYNC_FLAG, syncedOff } from "../rules/level-sync.mjs";
 import { USAGE_KINDS, USAGE_PERIODS } from "../rules/skill-usage.mjs";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
@@ -113,6 +114,14 @@ export default class SkillData extends foundry.abstract.TypeDataModel {
     const item = this.parent;
     const actor = item?.actor ?? null;
     this.setAside = false;
+
+    // So is a skill its unit did not have yet at the Level it is synced to (see `rules/level-sync.mjs`)
+    this.syncedOff = syncedOff(actor?.flags?.[FEO.id]?.[SYNC_FLAG], item?.id);
+    if ( this.syncedOff ) {
+      this.setAside = !!this.equipped;
+      this.equipped = false;
+      return;
+    }
     if ( !actor?.flags?.[FEO.id]?.[IMITATION_FLAG] || item.flags?.[FEO.id]?.[IMITATED_FLAG] ) return;
     if ( speaksOfImitation(this.effects) ) return;
     this.setAside = !!this.equipped;

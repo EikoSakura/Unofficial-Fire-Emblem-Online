@@ -273,6 +273,11 @@
 
 .feo-hud .hc { position: fixed; width: 250px; overflow: hidden; pointer-events: none; }
 .feo-hud .hc-head { display: flex; align-items: baseline; gap: 8px; padding: 7px 11px; }
+.feo-hud .hc-head em { font-style: normal; }
+.feo-hud .hc-head em.sync { color: #8fe7e9; }
+.feo-hud .hc-head em.sync .feo-icon { margin-right: 3px; font-size: 10px; vertical-align: -1px; }
+.feo-hud .dk-portrait .lv.sync { display: inline-flex; align-items: center; gap: 3px; border-color: #dffcfc; background: linear-gradient(180deg, #a9f0f1, #46b9bd); color: #05282b; box-shadow: 0 0 0 2px rgba(95, 211, 214, .3); }
+.feo-hud .dk-portrait .lv.sync .feo-icon { font-size: 10px; }
 .feo-hud .hc-head b { font-family: var(--feo-font-display); font-weight: 400; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .feo-hud .hc-head span { margin-left: auto; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--feo-cloth-muted); white-space: nowrap; }
 .feo-hud .hc-body { display: grid; gap: 6px; padding: 8px 11px 9px; font-size: 12.5px; color: var(--feo-muted); }

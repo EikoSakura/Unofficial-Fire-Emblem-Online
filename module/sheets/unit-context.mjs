@@ -153,6 +153,15 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
 
     growth: prepareGrowth(system),
     level,
+
+    // A unit under a Level Sync: the Level it is synced to, its own, and what to say of where that comes from
+    synced: system.synced ? {
+      level: system.synced.level,
+      own: system.synced.own,
+      tip: globalThis.game?.i18n ? game.i18n.format(system.synced.exact ? "FEO.LevelSync.sheet.exact" : "FEO.LevelSync.sheet.estimated", {
+        level: system.synced.level, from: system.synced.from, name: system.synced.name
+      }) : ""
+    } : null,
     classPath,
     boonChoices: Object.fromEntries(FEO.boonStats.map((key) => [key, `FEO.Stat.${key}.abbr`])),
     boosts: Object.entries(FEO.combatBoosts).map(([key, label]) => ({ key, label, value: system.combatBoosts[key] })),
@@ -876,12 +885,13 @@ function prepareLevel(system) {
   const needed = FEO.expPerLevel;
 
   // With the Level Cap, a unit at its level limit has no next level to reach
+  // A unit under a Level Sync levels up once it is over, from its own Level
   const capped = system.atMaxLevel === true;
   return {
     expPct: Math.min(system.exp / needed, 1) * 100,
     toNext: Math.max(needed - system.exp, 0),
-    next: system.level + 1,
-    ready: !capped && (system.exp >= needed),
+    next: (system.synced?.own ?? system.level) + 1,
+    ready: !capped && !system.synced && (system.exp >= needed),
     capped,
     limit: system.maxLevel ?? null,
     promotion: !system.classItem && FEO.promotionLevels.includes(system.level),

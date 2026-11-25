@@ -284,6 +284,9 @@ function unitSummary({ actor, name, img, army, range, ground, rider = null, lent
     img,
     className: system.className ?? "",
     level: system.level,
+
+    // A unit under a Level Sync says what its own Level is, on hover
+    synced: system.synced ? i18n.format("FEO.LevelSync.hud", { own: system.synced.own }) : "",
     // Temporary HP are counted with its own, and told apart on hover
     hp: {
       value: system.hp.value + (system.hp.temp ?? 0),
