@@ -166,11 +166,11 @@
         </h3>
         <div class="rows">
           {{#each gear as |item|}}
-          {{#if item.shield}}
+          {{#if item.worn}}
           <div class="row item draggable{{#if item.equipped}} equipped{{/if}}{{#if item.spent}} broken{{/if}}{{#if item.wasBroken}} broken{{/if}}" data-item-id="{{item.id}}">
             <button type="button" class="row-main" data-action="toggleEquip" aria-pressed="{{item.equipped}}"
-                    data-tooltip="{{#if item.equipped}}{{localize "FEO.Block.unequip"}}{{else}}{{localize "FEO.Block.equip"}}{{/if}}{{#if item.wasBroken}} {{localize "FEO.Weapon.brokenWas" name=item.originalName}}{{/if}}">
-              <span class="ico">{{feoIcon "shield"}}</span>
+                    data-tooltip="{{#if item.accessory}}{{#if item.equipped}}{{localize "FEO.Gear.takeOff"}}{{else}}{{localize "FEO.Gear.wear"}}{{/if}}{{else}}{{#if item.equipped}}{{localize "FEO.Block.unequip"}}{{else}}{{localize "FEO.Block.equip"}}{{/if}}{{/if}}{{#if item.wasBroken}} {{localize "FEO.Weapon.brokenWas" name=item.originalName}}{{/if}}">
+              <span class="ico">{{#if item.accessory}}{{feoIcon "gem"}}{{else}}{{feoIcon "shield"}}{{/if}}</span>
               <span class="txt">
                 <span class="nm">{{item.name}}</span>
                 <span class="sub">{{item.effect}}</span>
@@ -180,6 +180,7 @@
             </button>
             <span class="row-controls">
               {{#if @root.editable}}
+              {{#if item.usable}}<button type="button" class="btn small" data-action="useItem" data-tooltip="{{localize "FEO.Gear.useHint"}}">{{localize "FEO.Item.use"}}</button>{{/if}}
               {{#if item.canRepair}}<button type="button" data-action="repairItem" data-tooltip="{{localize "FEO.Repair.hint" cost=item.repair}}" aria-label="{{localize "FEO.Repair.button"}}">{{feoIcon "hammer"}}</button>{{/if}}
               <button type="button" data-action="sellItem" data-tooltip="{{localize "FEO.Sell.hint" gold=item.sell}}" aria-label="{{localize "FEO.Sell.button"}}">{{feoIcon "coin"}}</button>
               {{/if}}

@@ -139,7 +139,7 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
     lasting: timedRows(system.timed),
     // What its Effect says is not a skill takes no slot
     skillSlots: {
-      used: skills.filter((skill) => skill.equipped && countsAsSkill(skill.effect)).length,
+      used: skills.filter((skill) => skill.equipped && !skill.granted && countsAsSkill(skill.effect)).length,
       total: system.skillSlots ?? FEO.skillSlots,
 
       // With Skill Capacity: the Capacity Points spent and had, and the tier they are those of
@@ -405,6 +405,7 @@ function prepareGear(item, system = null) {
 
   // A Shield is equipped like a weapon, wears out like one, and is repaired like one
   const shield = !!item.system.isShield;
+  const accessory = !!item.system.isAccessory;
   const original = shield ? (item.flags?.[FEO.id]?.original ?? null) : null;
   return {
     id: item.id,
@@ -417,7 +418,13 @@ function prepareGear(item, system = null) {
     sell: original ? 0 : resold(sellValue(item.system.cost, value, max), system?.knacks?.resale ?? 0),
     spent: item.system.spent,
     shield,
-    equipped: shield && !!item.system.equipped,
+
+    // An accessory is worn, one at a time, and what it gives counts while it is. One that restores HP when
+    // it is Used, as a Goddess Ring does, has its button while it is worn
+    accessory,
+    worn: shield || accessory,
+    usable: accessory && (item.system.restore > 0) && !!item.system.equipped,
+    equipped: (shield || accessory) && !!item.system.equipped,
     wasBroken: !!original,
     originalName: original?.name ?? null,
     repair: original ? item.system.cost : repairCost(item.system.cost, value, max),
@@ -562,7 +569,10 @@ function prepareSkill(item, system) {
     icon: KIND_ICONS[skill.kind] ?? "spark",
     kindLabel: FEO.skillKinds[skill.kind],
     equipped: skill.equipped,
-    capacity: FEO.optional.skillCapacity.enabled ? (skill.capacity ?? 0) : null,
+
+    // The piece of gear that grants it, for a skill its unit has only while that gear is equipped
+    granted: item.flags?.[FEO.id]?.grantedBy?.name ?? null,
+    capacity: (FEO.optional.skillCapacity.enabled && !item.flags?.[FEO.id]?.grantedBy) ? (skill.capacity ?? 0) : null,
     effect: skill.effect,
     chance: skill.chance,
     // A skill used as an action has its own button, which also earns what the skill experience table gives

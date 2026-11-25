@@ -31,6 +31,7 @@ import {
 } from "./lib/pack.mjs";
 import { IconLibrary, IconPicker } from "./lib/icons.mjs";
 import { TAB, readWeaponsTab, weaponName } from "./lib/weapons-sheet.mjs";
+import { gearCoverage } from "../module/rules/gear.mjs";
 
 if ( flag("--help") ) {
   console.log(`Builds packs/weapons from the "Weapons" tab of the Reference Sheet.\n${USAGE}`);
@@ -272,6 +273,17 @@ for ( const entry of sections ) {
 report.count("Rows that are not weapons", "the header row");
 const withEffect = documents.filter((document) => document.system.effect).length;
 report.add("Automation", `Effect text kept word for word on ${withEffect} weapons; ${documents.length - withEffect} have none ("N/A" on the sheet).`);
+
+// How far the system applies each weapon's Effect by itself (see module/rules/gear.mjs). A staff's Effect is
+// read by the rules of staves, and is not counted here
+const applied = { done: 0, part: 0, text: 0 };
+for ( const document of documents ) {
+  if ( !document.system.effect || (document.system.category === "staff") ) continue;
+  const coverage = gearCoverage(document.system.effect, { kind: "weapon" });
+  applied[coverage.state]++;
+  if ( coverage.left.length ) report.add("Left to the table", `${document.name}: ${coverage.left.join("; ")}`);
+}
+report.add("Automation", `Of the weapons with an Effect that are no staves, the system applies all of it for ${applied.done}, a part of it for ${applied.part} and none of it for ${applied.text}.`);
 for ( const line of picker.summary() ) report.add("Images", line);
 if ( problems.length ) for ( const problem of problems ) report.add(`Problems (${problems.length})`, problem);
 else report.add("Problems", "None. Every weapon and folder passed Foundry's own validation.");

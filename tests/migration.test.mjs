@@ -3,7 +3,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { KEPT, planRefresh, same, shelve, sourceOf } from "../module/rules/migration.mjs";
+import { ACCESSORY_TAKES, KEPT, accessoryToWear, planRefresh, same, shelve, sourceOf } from "../module/rules/migration.mjs";
 
 const PREFIX = "Compendium.fire-emblem-online.";
 const uuid = (id) => `${PREFIX}skills.Item.${id}`;
@@ -103,4 +103,28 @@ test("a skill matched by its name is a copy of its entry from then on", () => {
   assert.equal(plan.link, vantage.uuid);
   assert.equal(plan.system.effect, vantage.system.effect);
   assert.deepEqual(plan.system.effects, vantage.system.effects);
+});
+
+test("an accessory takes what it is from its entry, and keeps its icon, its uses and whether it is worn", () => {
+  const ring = {
+    uuid: `${PREFIX}items.Item.speed-ring`, name: "Speed Ring", img: "icons/ring.webp",
+    system: { effect: "Unit gains +5 SPD.", uses: { value: 0, max: 0 }, cost: 8000, equip: true, restore: 0, equipped: false, description: "" }
+  };
+  const old = {
+    name: "Speed Ring", img: "icons/my-own.webp", _stats: { compendiumSource: ring.uuid },
+    system: { effect: "Unit gains +4 SPD.", uses: { value: 3, max: 5 }, cost: 100, equip: true, restore: 0, equipped: true, description: "Mine." }
+  };
+  const plan = planRefresh(old, ring, { only: ACCESSORY_TAKES });
+  assert.deepEqual(plan.system, { effect: "Unit gains +5 SPD.", cost: 8000 });
+  assert.equal("img" in plan, false);
+  assert.deepEqual(plan.fields, ["effect", "cost"]);
+  assert.equal(planRefresh({ ...old, system: { ...old.system, effect: ring.system.effect, cost: 8000 } }, ring, { only: ACCESSORY_TAKES }), null);
+});
+
+test("a unit that carries accessories and wears none puts on the first of its sheet, once", () => {
+  assert.equal(accessoryToWear([]), null);
+  assert.equal(accessoryToWear([{ id: "a", equipped: false, sort: 200 }]), "a");
+  assert.equal(accessoryToWear([{ id: "a", equipped: false, sort: 200 }, { id: "b", equipped: false, sort: 100 }]), "b");
+  assert.equal(accessoryToWear([{ id: "a", equipped: false, sort: 0 }, { id: "b", equipped: false, sort: 0 }]), "a");
+  assert.equal(accessoryToWear([{ id: "a", equipped: false, sort: 200 }, { id: "b", equipped: true, sort: 300 }]), null, "one is worn already");
 });

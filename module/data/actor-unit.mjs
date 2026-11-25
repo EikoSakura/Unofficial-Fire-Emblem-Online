@@ -6,10 +6,11 @@ import { cantoPlusEntry } from "../rules/canto.mjs";
 import { carryEntry } from "../rules/capturing.mjs";
 import { resolveCaps } from "../rules/classes.mjs";
 import { parseRange } from "../rules/combat.mjs";
-import { canWield, countedRank, levelRank, weaponEntry, wieldLevel } from "../rules/weapons.mjs";
+import { canWield, countedRank, levelRank, weaponCarried, weaponEntry, wieldLevel } from "../rules/weapons.mjs";
 import { conditionModifiers, readConditions } from "../rules/conditions.mjs";
 import { deathThreshold, fateReasons, leavesMap, outOfFight, resilience, woundThreshold } from "../rules/defeat.mjs";
 import { skillGrowths } from "../rules/earnings.mjs";
+import { GRANTED_FLAG, gearEntry, readGear } from "../rules/gear.mjs";
 import {
   AFFINITY_ID, affinityCooldown, affinityEntry, affinityUsage, hasCooldown, atLevelLimit, bloodGrowths, bloodProficiencies, effectiveGrowths, levelLimit, moduleCap, optionalSources,
   powerEntries, powerExtras, skillRoom
@@ -23,7 +24,6 @@ import { gripEntry } from "../rules/actions.mjs";
 import {
   bestRankOf, countsAsSkill, effectsOf, multiplyStats, skillCanto, skillCarry, skillCrossing, skillKnacks, skillPassing, skillRule, skillShove, skillStanding, skillStars, skillTotals, unitTier
 } from "../rules/skills.mjs";
-import { addKnacks, gearKnacks } from "../rules/stealing.mjs";
 import { staffPassiveEntry } from "../rules/staves.mjs";
 import { usedUp } from "../rules/skill-usage.mjs";
 import { kinBonus } from "../rules/supports.mjs";
@@ -574,7 +574,10 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       ...items.filter((item) => (item.type === "skill") && item.system.equipped && (item.system.automate !== false)).map((item) => {
         return { name: item.name, active: !!item.system.usage?.kind && !!item.system.state?.active, effects: effectsOf(item.system) };
       }),
-      ...timedEntries(this.timed).map((entry) => ({ name: entry.name, active: true, effects: entry.effects }))
+      ...timedEntries(this.timed).map((entry) => ({ name: entry.name, active: true, effects: entry.effects })),
+
+      // And what the stone in its hand and the accessory it wears say of changing form (see `rules/gear.mjs`)
+      ...this.#gearEntries(items).map((entry) => ({ name: entry.name, active: true, effects: entry.effects }))
     ]);
     shift.profile = gaugeProfile(cls?.system.notes, shift, shift.bends.gauge);
     shift.limit = shift.usesMax ?? (FEO.shift.stone.uses + shift.bends.transforms);
@@ -781,13 +784,11 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       if ( held ) entries.push({ ...held, active: false, spends: false, usage: null, state: null });
     }
 
-    // What the weapon in hand gives its unit for as long as it is equipped (the Dodge its Effect adds, and
-    // what every weapon of its kind does, as Katanas do) is read as one more skill of the same kind, named
-    // after the weapon
-    if ( weapon ) {
-      const given = weaponEntry({ category: weapon.system.category, effect: weapon.system.effect, broken: weapon.system.broken }, weapon.name);
-      if ( given ) entries.push({ ...given, active: false, spends: false, usage: null, state: null });
-    }
+    // What the weapon in hand gives its unit for as long as it is equipped (what its Effect says that is for
+    // its unit, and what every weapon of its kind does, as Katanas do) is read as one more skill of the same
+    // kind, named after the weapon. So is what the accessory it wears gives it, what its Shield does beyond
+    // blocking, and the little a weapon gives while it is only carried (see `rules/gear.mjs`)
+    for ( const given of this.#gearEntries(items) ) entries.push({ ...given, active: false, spends: false, usage: null, state: null });
 
     // How the unit crosses terrain, as its skills and the changes that last on it have it. It is worked out
     // ahead of where the unit stands, since what its tile is to it hangs on this
@@ -906,7 +907,7 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     }
     // The room it has for skills: its slots, and with Skill Capacity its Capacity Points
     this.skillRoom = skillRoom({
-      costs: items.filter((item) => (item.type === "skill") && item.system.equipped && countsAsSkill(item.system.effect))
+      costs: items.filter((item) => (item.type === "skill") && item.system.equipped && countsAsSkill(item.system.effect) && !item.flags?.[FEO.id]?.[GRANTED_FLAG])
         .map((item) => item.system.capacity ?? 0),
       slots: skills.slots ?? 0,
       capacity: skills.capacity ?? 0,
@@ -1032,8 +1033,8 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     });
 
     // What its skills let it do with gear and with the things on a map: steal, open doors and chests without
-    // a key, disarm traps, destroy Villages, buy for less, make items as a map starts. What it wears adds to
-    // them: an accessory is worn while it is carried (see `rules/stealing.mjs`)
+    // a key, disarm traps, destroy Villages, buy for less, make items as a map starts. The accessory it has
+    // equipped adds to them through the entry it is read as (see `rules/gear.mjs`)
     this.knacks = skillKnacks([...(this.skills?.entries ?? []), ...(this.skills?.timed ?? [])], {
       hp: this.hp.value,
       hpMax: this.hp.max,
@@ -1048,11 +1049,6 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
       shifted: !!this.shift?.transformed,
       waiting: this.waiting
     });
-    for ( const item of this.parent?.items ?? [] ) {
-      if ( (item.type !== "gear") || !item.system.equip || item.system.isShield ) continue;
-      const gives = gearKnacks(item.system.effect);
-      if ( gives ) addKnacks(this.knacks, gives, { skill: item.name });
-    }
 
     // What its skills make of its Shove: how far it pushes, and whether shoving an enemy takes movement in
     // place of its Action. Read by the map as the unit shoves
@@ -1220,6 +1216,45 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
     const items = this.parent?.items;
     if ( !items ) return null;
     return items.find((item) => (item.type === "weapon") && item.system.equipped) ?? null;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The accessory this unit currently has equipped, if any: one at a time is worn.
+   * @type {Item|null}
+   */
+  get equippedAccessory() {
+    const items = this.parent?.items;
+    if ( !items ) return null;
+    return items.find((item) => (item.type === "gear") && item.system.equipped && item.system.isAccessory) ?? null;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * What the gear of this unit gives it, each piece as one more skill of the unit named after it (see
+   * `rules/gear.mjs`): the weapon in its hand, the weapons it carries that say what they do "in inventory",
+   * the accessory it wears, and what its Shield does beyond blocking.
+   * @param {Item[]} items
+   * @returns {{name: string, innate: true, gear: true, nihil: false, effects: object[]}[]}
+   */
+  #gearEntries(items) {
+    const found = [];
+    for ( const item of items ) {
+      if ( item.type === "weapon" ) {
+        const weapon = { category: item.system.category, effect: item.system.effect, broken: item.system.broken };
+        const given = item.system.equipped ? weaponEntry(weapon, item.name) : gearEntry(item.name, weaponCarried(weapon));
+        if ( given ) found.push(given);
+      }
+      else if ( (item.type === "gear") && item.system.equipped && !item.system.spent ) {
+        const kind = item.system.isShield ? "shield" : item.system.isAccessory ? "accessory" : null;
+        if ( !kind || ((kind === "shield") && this.shieldsBarred) ) continue;
+        const given = gearEntry(item.name, structuredClone(readGear(item.system.effect, { kind }).effects));
+        if ( given ) found.push(given);
+      }
+    }
+    return found;
   }
 
   /* -------------------------------------------- */

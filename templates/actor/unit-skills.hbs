@@ -24,6 +24,7 @@
             <div class="top">
               <span class="kind">{{localize skill.kindLabel}}</span>
               {{#if skill.capacity}}<span class="kind" data-tooltip="{{localize "FEO.Skill.capacity"}}">{{localize "FEO.Compendium.skills.cap"}} {{skill.capacity}}</span>{{/if}}
+              {{#if skill.granted}}<span class="kind" data-tooltip="{{localize "FEO.Gear.grantedHint" item=skill.granted}}">{{skill.granted}}</span>{{/if}}
               {{#if skill.pickNow}}
               <button type="button" class="kind pick{{#if skill.needsChoice}} warn{{/if}}" data-action="pickSkill" data-tooltip="{{#if skill.needsChoice}}{{localize "FEO.Skill.needsChoice"}}{{else}}{{localize "FEO.Pick.change"}}{{/if}}">{{#if skill.choice}}{{skill.choice}}{{else}}{{localize "FEO.Skill.choiceNone"}}{{/if}}</button>
               {{else}}

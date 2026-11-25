@@ -94,7 +94,9 @@ export function packOf(actor) {
       type: item.type,
       weight: (item.type === "weapon") ? (system.weight ?? 0) : 0,
       equipped: (item.type === "weapon") ? !!system.equipped : (shield && !!system.equipped),
-      worn: (item.type === "gear") && !!system.equip && !shield,
+
+      // An accessory is worn while it is equipped, one at a time; one that is only carried can be taken
+      worn: (item.type === "gear") && !!system.equip && !shield && (!system.isAccessory || !!system.equipped),
       bound: !!item.getFlag(FEO.id, SUMMONED_FLAG),
       cost: system.cost ?? 0,
       uses: (uses.max > 0) ? `${uses.value}/${uses.max}` : ""

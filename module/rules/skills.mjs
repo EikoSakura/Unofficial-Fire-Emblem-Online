@@ -1090,6 +1090,7 @@ import { WEATHERPROOF } from "./weather.mjs";
 import { checkGuards, checkShelters, checkStance, checkWards, guardOf, shelterOf, wardOf } from "./stances.mjs";
 import { NO_SONG, addRefresh, checkRefresh, checkRefreshes, emptyRefresh } from "./refresh.mjs";
 import { FOE_FIRST, ORDERS, ROUND_MOMENT, STRIKES_ALWAYS, checkRounds } from "./rounds.mjs";
+import { plainEffect } from "./gear.mjs";
 import { ITEM_MOMENT, checkConsumes, checkItemMoment } from "./items.mjs";
 import { OUTSIDE, addTriangle, checkHandover, checkTriangle, outsideTriangle } from "./triangle.mjs";
 import { attackWith, castArm, checkLend } from "./lending.mjs";
@@ -1593,7 +1594,7 @@ export function holds(when, self, fight = null) {
   if ( when.hp && !hpHolds(when.hp, self.hp, self.hpMax) ) return false;
   if ( when.weapon?.length && !weaponIs(self.weapon, when.weapon) ) return false;
   if ( when.weaponNot?.length && weaponIs(self.weapon, when.weaponNot) ) return false;
-  if ( when.weaponSlays?.length && !when.weaponSlays.some((quality) => hasQuality(self.weapon?.effect, quality)) ) return false;
+  if ( when.weaponSlays?.length && !when.weaponSlays.some((quality) => hasQuality(plainEffect(self.weapon), quality)) ) return false;
   if ( when.quality?.length && !when.quality.some((quality) => hasQuality(self.qualities, quality)) ) return false;
   if ( when.lacks?.length && when.lacks.some((quality) => hasQuality(self.qualities, quality)) ) return false;
   if ( when.skill && !(self.skills ?? []).includes(when.skill) ) return false;
@@ -2468,7 +2469,7 @@ export function skillTotals(skills, self, { fight = null, foeNihil = false, phas
   // needed as the rest is read. What they make of the penalties of the unit's own conditions is added to its
   // numbers like any other skill effect
   if ( !into ) {
-    totals.bends = conditionBends(parity ? (skills ?? []).filter((skill) => skill.innate || skill.art) : skills, self, { fight, foeNihil });
+    totals.bends = conditionBends(parity ? (skills ?? []).filter((skill) => (skill.innate && !skill.gear) || skill.art) : skills, self, { fight, foeNihil });
     for ( const { skills: names, ...source } of sufferedSources(totals.bends, self.conditions) ) {
       for ( const [key, amount] of Object.entries(source.stats) ) add(totals.stats, key, amount);
       for ( const [key, amount] of Object.entries(source.combat) ) add(totals.combat, key, amount);
@@ -2508,7 +2509,8 @@ export function skillTotals(skills, self, { fight = null, foeNihil = false, phas
     };
 
     // Where skills are cancelled in the fight, only what is no skill, aura or lasting change is read whole
-    const cancelled = parity && !skill.innate && !skill.art;
+    // What gear gives is cancelled with them: Parity cancels weapons and equipment as it does skills
+    const cancelled = parity && (!skill.innate || skill.gear) && !skill.art;
     for ( const effect of skill.effects ?? [] ) {
       const late = isLate(effect.when);
       if ( (phase === "early") && late ) continue;

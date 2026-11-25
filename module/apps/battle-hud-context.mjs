@@ -495,7 +495,11 @@ export function buildDock(unit, i18n) {
 
   // Shields are equipped with the weapons; everything else among the items is Used
   const shields = actor.items.filter((item) => (item.type === "gear") && item.system.isShield);
-  const gear = actor.items.filter((item) => (item.type === "gear") && !item.system.isShield);
+  const accessories = actor.items.filter((item) => (item.type === "gear") && item.system.isAccessory);
+  const gear = actor.items.filter((item) => {
+    if ( (item.type !== "gear") || item.system.isShield ) return false;
+    return !item.system.isAccessory || ((item.system.restore > 0) && item.system.equipped);
+  });
   // A skill that takes effect by itself is not for its unit to switch or use
   const skills = actor.items.filter((item) => {
     return (item.type === "skill") && item.system.equipped && item.system.usage?.kind && (item.system.usage.kind !== "auto");
@@ -644,7 +648,13 @@ export function buildDock(unit, i18n) {
             : guard ? `${i18n.localize("FEO.Block.label")} ${guard.chance}% · ${blockAmount(guard, i18n)}` : i18n.localize("FEO.Block.shield"),
           end: usesOf(item), disabled: !(acting || (moving && !!again?.gear)) || !!item.system.spent || barred
         };
-      })
+      }),
+
+      // An accessory, one of which is worn at a time, with what it gives
+      ...accessories.map((item) => ({
+        action: "toggleEquip", id: item.id, img: item.img, name: item.name, on: item.system.equipped,
+        sub: item.system.effect ?? "", end: usesOf(item), disabled: !(acting || (moving && !!again?.gear))
+      }))
     ]
   };
   else if ( unit.flyout === "staff" ) flyout = {
@@ -802,7 +812,7 @@ export function buildDock(unit, i18n) {
       ...(system.block ? [{ label: i18n.localize("FEO.Block.abbr"), value: system.block.chance, tip: blockTip(system.block, i18n) }] : [])
     ],
     blocks: !!system.block,
-    canSwap: (weapons.length + shields.length + (unit.lent?.length ?? 0)) > 1,
+    canSwap: ((weapons.length + shields.length + (unit.lent?.length ?? 0)) > 1) || (accessories.length > 0),
     equipOpen: unit.flyout === "equip",
     mov: {
       pips: Array.from({ length: Math.min(movement, 12) }, (_, index) => ({ off: index >= left })),

@@ -22,6 +22,7 @@ import { FEO } from "../config.mjs";
 import { effectiveAgainst, parseRange } from "./combat.mjs";
 import { applyCondition, conditionConfig, guards, inflictions, wardOff } from "./conditions.mjs";
 import { woundsFrom } from "./defeat.mjs";
+import { plainEffect } from "./gear.mjs";
 
 const ORDER = Object.keys(FEO.ranks);
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
@@ -553,7 +554,7 @@ export function fightBattalions(plan, result) {
     if ( !squad ) continue;
     const lost = Math.max((outcome.hpStart - outcome.hp) + (outcome.healed ?? 0), 0);
     const weapon = plan[foe].unit.weapon ?? null;
-    const against = [weapon?.effect ?? "", ...(plan[foe].art?.effective ?? [])].join(", ");
+    const against = [plainEffect(weapon), ...(plan[foe].art?.effective ?? [])].join(", ");
     const harm = battalionDamage(squad, lost, { effective: effectiveAgainst(against, squad.quality).length > 0 });
     if ( !harm.taken ) continue;
     out[side].battalion = { ...harm, id: squad.id, name: squad.name, max: squad.hp.max };

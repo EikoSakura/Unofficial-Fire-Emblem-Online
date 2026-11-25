@@ -1,5 +1,5 @@
 import { FEO } from "../config.mjs";
-import { planRefresh, shelve, sourceOf } from "../rules/migration.mjs";
+import { ACCESSORY_TAKES, accessoryToWear, planRefresh, shelve, sourceOf } from "../rules/migration.mjs";
 import { pickedOf, picksOpen } from "../rules/picks.mjs";
 import { START, givesRanks, rankSteps, readGiven } from "../rules/skill-ranks.mjs";
 import { postCard } from "./chat.mjs";
@@ -12,10 +12,18 @@ import { pickUnit } from "./picks.mjs";
  * what is its unit's own. What a skill takes is decided by the pure rules in `rules/migration.mjs`.
  *
  * It can be run again at any time with `game.feo.migration.refreshSkills()`.
+ *
+ * Accessories are brought up to date the same way, with `game.feo.migration.refreshAccessories()`: each takes
+ * what it is from its entry of the items compendium, and, once for each world, a unit that carries accessories
+ * and wears none puts on the first of them, since an accessory gives what its Effect says only while it is worn.
  */
 
 /** The world setting that keeps which skills compendium the world's skills were last brought up to date with. */
 const SETTING = "skillsRefreshed";
+
+/** The same for the accessories of the items compendium, and whether the world's units have put theirs on. */
+const GEAR_SETTING = "accessoriesRefreshed";
+const WORN_SETTING = "accessoriesWorn";
 
 /**
  * What marks an update as one of these, for whoever listens to skills changing: a skill that is brought up to
@@ -230,6 +238,179 @@ async function tellRefreshed(report) {
 }
 
 /* -------------------------------------------- */
+/*  Accessories                                 */
+/* -------------------------------------------- */
+
+/**
+ * The compendiums of the system that hold items a unit carries.
+ * @returns {CompendiumCollection[]}
+ */
+function gearPacks() {
+  return game.packs.filter((pack) => {
+    return (pack.documentName === "Item") && (pack.metadata.packageType === "system")
+      && (pack.metadata.packageName === FEO.id) && pack.index.some((entry) => entry.type === "gear");
+  });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What tells one build of the items compendium from another.
+ * @param {CompendiumCollection[]} packs
+ * @returns {Promise<string>}
+ */
+async function gearStampOf(packs) {
+  let written = 0;
+  for ( const pack of packs ) {
+    const index = await pack.getIndex({ fields: ["_stats.modifiedTime"] });
+    for ( const entry of index ) {
+      if ( entry.type === "gear" ) written = Math.max(written, Number(entry._stats?.modifiedTime) || 0);
+    }
+  }
+  return `${game.system.version}:${written}`;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What each accessory among some Items takes from its entry of the items compendium.
+ * @param {Iterable<Item>} items
+ * @param {import("../rules/migration.mjs").SkillShelf} shelf
+ * @returns {{item: Item, update: object}[]}
+ */
+function accessoryPlans(items, shelf) {
+  const prefix = `Compendium.${FEO.id}.`;
+  const plans = [];
+  for ( const item of items ) {
+    if ( (item.type !== "gear") || !item.system.isAccessory ) continue;
+    const { entry } = sourceOf(item._source, shelf, { prefix });
+    const plan = entry ? planRefresh(item._source, entry, { only: ACCESSORY_TAKES }) : null;
+    if ( !plan ) continue;
+    const update = { _id: item.id };
+    if ( Object.keys(plan.system).length ) update.system = foundry.utils.deepClone(plan.system);
+    if ( plan.link ) update._stats = { compendiumSource: plan.link };
+    plans.push({ item, update });
+  }
+  return plans;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Bring the accessories of the world up to date: those in the Items sidebar, those of the units in the Actors
+ * list and those of tokens that are units of their own take what they are from the items compendium. And, where
+ * `wear` is set, a unit that carries accessories and wears none puts on the first of them. A Game Master's to do.
+ * @param {object} [options]
+ * @param {boolean} [options.wear]    Have units that wear no accessory put one on?
+ * @param {boolean} [options.tell]    Post what changed to the Game Masters?
+ * @returns {Promise<{changed: string[], units: {name: string, wears: string, others: string[]}[]}|null>}
+ *   The accessories that changed, and the units that put one on, each with the others it carries; null for a
+ *   player
+ */
+export async function refreshAccessories({ wear = false, tell = true } = {}) {
+  if ( !game.user.isGM ) return null;
+  const entries = [];
+  for ( const pack of gearPacks() ) {
+    for ( const document of await pack.getDocuments() ) {
+      if ( (document.type !== "gear") || !document.system.isAccessory ) continue;
+      entries.push({ uuid: document.uuid, name: document.name, img: document.img, system: document.toObject().system });
+    }
+  }
+  const shelf = shelve(entries);
+  const report = { changed: [], units: [] };
+  const attempt = async (what, work) => {
+    try {
+      await work();
+    } catch(err) {
+      console.error(`${FEO.id} | The accessories of ${what} could not be brought up to date.`, err);
+    }
+  };
+
+  const world = accessoryPlans(game.items, shelf);
+  if ( world.length ) {
+    await attempt("the Items sidebar", async () => {
+      await foundry.documents.Item.implementation.updateDocuments(world.map((plan) => plan.update), REFRESHED);
+      report.changed.push(...world.map((plan) => plan.item.name));
+    });
+  }
+
+  // One unit: its accessories take what they are, and it puts one on if it wears none
+  const see = async (actor, name, mine = () => true) => {
+    const plans = accessoryPlans(actor.items.filter(mine), shelf);
+    if ( plans.length ) {
+      await actor.updateEmbeddedDocuments("Item", plans.map((plan) => plan.update), REFRESHED);
+      report.changed.push(...plans.map((plan) => `${plan.item.name} (${name})`));
+    }
+    if ( !wear ) return;
+    const carried = actor.items.filter((item) => (item.type === "gear") && item.system.isAccessory);
+    const id = accessoryToWear(carried.map((item) => ({ id: item.id, equipped: item.system.equipped, sort: item.sort })));
+    if ( !id ) return;
+    await actor.updateEmbeddedDocuments("Item", [{ _id: id, "system.equipped": true }]);
+    report.units.push({ name, wears: actor.items.get(id).name, others: carried.filter((item) => item.id !== id).map((item) => item.name) });
+  };
+  for ( const actor of game.actors ) {
+    if ( actor.type === "unit" ) await attempt(actor.name, () => see(actor, actor.name));
+  }
+
+  // A token that is a unit of its own has the accessories of its Actor, which are seen to by now: only those
+  // it keeps a copy of for itself take anything, and it puts one on only if it still wears none
+  for ( const scene of game.scenes ) {
+    for ( const token of scene.tokens ) {
+      const actor = token.actorLink ? null : token.actor;
+      if ( actor?.type !== "unit" ) continue;
+      const own = new Set((token.delta?._source?.items ?? []).filter((item) => !item._tombstone).map((item) => item._id));
+      const name = `${token.name} (${scene.name})`;
+      await attempt(name, () => see(actor, name, (item) => own.has(item.id)));
+    }
+  }
+
+  if ( tell ) await tellAccessories(report);
+  return report;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Tell the Game Masters which units put an accessory on, and which accessories changed.
+ * @param {{changed: string[], units: {name: string, wears: string, others: string[]}[]}} report
+ * @returns {Promise<ChatMessage|null>}     Null when nothing changed
+ */
+async function tellAccessories(report) {
+  const i18n = game.i18n;
+  if ( !report.changed.length && !report.units.length ) return null;
+  const rows = report.units.map((unit) => ({
+    label: unit.name,
+    value: unit.others.length
+      ? i18n.format("FEO.Migration.wearsOf", { item: unit.wears, others: unit.others.join(", ") })
+      : unit.wears
+  }));
+  if ( report.changed.length ) rows.push({ label: i18n.localize("FEO.Migration.accessoriesChanged"), value: report.changed.join(", ") });
+  return postCard(null, {
+    title: i18n.localize("FEO.Migration.accessories"),
+    subtitle: i18n.format("FEO.Migration.accessoriesCount", { units: report.units.length }),
+    rows,
+    note: i18n.localize("FEO.Migration.accessoriesNote")
+  }, { whisper: game.users.filter((user) => user.isGM).map((user) => user.id) });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Bring the world's accessories up to date if the items compendium is not the one they were last brought up to
+ * date with, and have its units put theirs on if they never were.
+ * @returns {Promise<boolean>}    Was there anything to look at?
+ */
+async function accessoriesIfStale() {
+  const stamp = await gearStampOf(gearPacks());
+  const wear = !game.settings.get(FEO.id, WORN_SETTING);
+  if ( !wear && (game.settings.get(FEO.id, GEAR_SETTING) === stamp) ) return false;
+  await refreshAccessories({ wear });
+  await game.settings.set(FEO.id, GEAR_SETTING, stamp);
+  if ( wear ) await game.settings.set(FEO.id, WORN_SETTING, true);
+  return true;
+}
+
+/* -------------------------------------------- */
 /*  Registering                                 */
 /* -------------------------------------------- */
 
@@ -254,7 +435,11 @@ async function refreshIfStale() {
  */
 export function registerMigration() {
   game.settings.register(FEO.id, SETTING, { scope: "world", config: false, type: String, default: "" });
+  game.settings.register(FEO.id, GEAR_SETTING, { scope: "world", config: false, type: String, default: "" });
+  game.settings.register(FEO.id, WORN_SETTING, { scope: "world", config: false, type: Boolean, default: false });
   Hooks.once("ready", () => {
-    if ( game.users.activeGM?.isSelf ) refreshIfStale().catch((err) => console.error(err));
+    if ( !game.users.activeGM?.isSelf ) return;
+    refreshIfStale().catch((err) => console.error(err));
+    accessoriesIfStale().catch((err) => console.error(err));
   });
 }

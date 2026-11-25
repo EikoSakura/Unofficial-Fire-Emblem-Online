@@ -1165,7 +1165,12 @@
       "count": "Skills: {skills} · Units: {units}",
       "world": "Items sidebar",
       "picks": "Still to pick on the unit's sheet: {list}.",
-      "ranks": "Weapon ranks were left as they are; check those of: {list}."
+      "ranks": "Weapon ranks were left as they are; check those of: {list}.",
+      "accessories": "Accessories Put On",
+      "accessoriesCount": "Units: {units}",
+      "accessoriesChanged": "Brought up to date",
+      "accessoriesNote": "An accessory now gives what its Effect says while it is worn, one at a time. A unit that carried several wears the first; change it on its sheet or from the battle HUD.",
+      "wearsOf": "{item} (also carries {others})"
     },
     "Promotion": {
       "title": "Promote {name}",
@@ -1434,6 +1439,13 @@
         "delete": "Take it off the map",
         "remove": "Remove"
       }
+    },
+    "Gear": {
+      "wear": "Wear this accessory. Only one is worn at a time, and what it gives counts while it is.",
+      "takeOff": "Take this accessory off",
+      "useHint": "Use it on this unit. That is the unit's Action.",
+      "grantedHint": "Granted by {item} for as long as it is equipped. It takes no skill slot.",
+      "grantedLocked": "{skill} is granted by {item}, and stays equipped for as long as that is."
     },
     "Block": {
       "label": "Block",

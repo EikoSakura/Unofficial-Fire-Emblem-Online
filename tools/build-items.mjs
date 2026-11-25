@@ -22,11 +22,16 @@
  * out, the uses a block costs it, and its chance to parry (see module/rules/blocking.mjs). What else its Effect
  * says stays in the text, and is listed in the report.
  *
+ * An accessory (an item that is equipped and is neither a Shield nor a Storage item) has its Effect read by the
+ * system while it is worn (see module/rules/gear.mjs). The report says how far that goes for each, and what is
+ * left to the table.
+ *
  * An item's image comes from assets/icons/items when a file there is named after it (see the README in
  * assets/icons), and otherwise from the icons that ship with Foundry.
  */
 
 import { readShield } from "../module/rules/blocking.mjs";
+import { gearCoverage, isStorage } from "../module/rules/gear.mjs";
 import { readWorkbook } from "./lib/xlsx.mjs";
 import {
   REFERENCE_SHEET, Report, USAGE, findFoundry, flag, isBlank, loadFoundry, makeFolder, manifest, oneLine,
@@ -171,6 +176,17 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
       const extra = /(?:when blocking|grants |cannot be forcibly|reflects|negates effectivity|prevents the death|unit gains|chance to damage themselves|to enemy when blocking)[^.]*\./i.exec(effect);
       if ( extra ) report.count("Left as text", "what a Shield does beyond blocking", name);
     }
+  }
+
+  // An accessory: how far the system applies its Effect by itself while it is worn (see module/rules/gear.mjs)
+  if ( equip && !shield && !isStorage(effect) ) {
+    const coverage = gearCoverage(effect, { kind: "accessory" });
+    report.count("Automation", {
+      done: "accessories whose whole Effect the system applies while they are worn",
+      part: "accessories of whose Effect the system applies a part",
+      text: "accessories whose Effect is left to the table"
+    }[coverage.state], (coverage.state === "done") ? undefined : name);
+    if ( coverage.left.length ) report.add("Left to the table", `${name}: ${coverage.left.join("; ")}`);
   }
 
   section.count++;

@@ -17,6 +17,12 @@
 export const KEPT = ["equipped", "choice", "raises", "automate", "state"];
 
 /**
+ * What an accessory takes from its entry of the items compendium: what the accessory is. Whether it is worn
+ * and the uses it has left are its unit's own, and anything else of it is left as it is.
+ */
+export const ACCESSORY_TAKES = ["effect", "cost", "equip", "restore"];
+
+/**
  * @typedef SkillEntry
  * A skill as the compendium has it.
  * @property {string} uuid        Where it is: "Compendium.<system>.<pack>.Item.<id>"
@@ -120,17 +126,21 @@ export function sourceOf(skill, shelf, { prefix = "Compendium." } = {}) {
  * @param {{img?: string, system?: object, _stats?: {compendiumSource?: string|null}}} skill
  *   The skill as it is saved
  * @param {SkillEntry} entry
+ * @param {object} [options]
+ * @param {string[]|null} [options.only]    The fields that are taken, where not all that is not its unit's own
+ *                                          is: as for an accessory (`ACCESSORY_TAKES`)
  * @returns {RefreshPlan|null}    Null when the skill is as its entry has it
  */
-export function planRefresh(skill, entry) {
+export function planRefresh(skill, entry, { only = null } = {}) {
   const plan = { system: {}, fields: [] };
   const mine = skill?.system ?? {};
   for ( const [key, value] of Object.entries(entry?.system ?? {}) ) {
-    if ( KEPT.includes(key) || same(mine[key], value) ) continue;
+    if ( KEPT.includes(key) || (only && !only.includes(key)) || same(mine[key], value) ) continue;
     plan.system[key] = value;
     plan.fields.push(key);
   }
-  if ( entry?.img && (entry.img !== skill?.img) ) {
+  // Its icon is taken with all the rest; where only some fields are, the icon it was given stays
+  if ( !only && entry?.img && (entry.img !== skill?.img) ) {
     plan.img = entry.img;
     plan.fields.push("img");
   }
@@ -139,4 +149,20 @@ export function planRefresh(skill, entry) {
   // A skill that was matched by its name is a copy of its entry from now on
   if ( entry.uuid && (skill?._stats?.compendiumSource !== entry.uuid) ) plan.link = entry.uuid;
   return plan;
+}
+
+/* -------------------------------------------- */
+/*  Accessories                                 */
+/* -------------------------------------------- */
+
+/**
+ * The accessory a unit puts on as its world is brought up to date. Before accessories were worn one at a time
+ * a unit simply carried them: one that carries any and wears none puts on the first of them, in the order of
+ * its sheet. A unit that wears one already is left as it is.
+ * @param {{id: string, equipped?: boolean, sort?: number}[]} accessories    The accessories it carries
+ * @returns {string|null}     The id of the one to put on, or null when there is nothing to do
+ */
+export function accessoryToWear(accessories = []) {
+  if ( !accessories.length || accessories.some((item) => item.equipped) ) return null;
+  return accessories.reduce((first, item) => (((item.sort ?? 0) < (first.sort ?? 0)) ? item : first)).id;
 }

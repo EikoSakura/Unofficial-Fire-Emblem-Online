@@ -40,6 +40,7 @@ import * as rescueHelpers from "./module/helpers/rescue.mjs";
 import * as reactionHelpers from "./module/helpers/reactions.mjs";
 import * as stanceHelpers from "./module/helpers/stances.mjs";
 import * as lendingHelpers from "./module/helpers/lending.mjs";
+import * as gearHelpers from "./module/helpers/gear.mjs";
 import * as stealingHelpers from "./module/helpers/stealing.mjs";
 import * as tradingHelpers from "./module/helpers/trading.mjs";
 import * as objectHelpers from "./module/helpers/objects.mjs";
@@ -298,6 +299,11 @@ Hooks.once("init", () => {
 
   // Weapons a skill lends its unit: one that was taken up is put down as a weapon of its own is taken in hand
   lendingHelpers.registerHooks();
+
+  // Skills that gear grants: a weapon, an accessory or a Shield that grants a skill gives its unit that skill
+  // for as long as it is equipped
+  gearHelpers.registerHooks();
+  game.feo.gear = gearHelpers;
 
   // Stealing and loot, and the doors, chests and Villages of a map: a player whose unit takes from a unit
   // that is not theirs, or acts on something that stands on the scene, asks a Game Master to do it

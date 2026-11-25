@@ -51,6 +51,7 @@ import { groundUnder } from "../helpers/terrain.mjs";
 import { ACT_AFTER_WARP, warpOf } from "../rules/warp.mjs";
 import { trapOfItem } from "../rules/traps.mjs";
 import { castStaffWarp, staffWarpOf } from "../helpers/warp.mjs";
+import { grantedBy } from "../helpers/gear.mjs";
 import { isShield, repairItem, sellItem, wieldCheck } from "../helpers/weapons.mjs";
 import { guardStanceOf } from "../rules/blocking.mjs";
 import { buildChange } from "../rules/timed.mjs";
@@ -1147,6 +1148,12 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
     if ( item.type === "skill" ) {
       // What its Effect says is not a skill takes no slot, and can always be equipped
+      // A skill its gear grants is equipped for as long as the gear is
+      const granted = grantedBy(item);
+      if ( granted ) {
+        ui.notifications.warn(game.i18n.format("FEO.Gear.grantedLocked", { skill: item.name, item: granted.name }));
+        return;
+      }
       const room = this.actor.system.skillRoom;
       const fits = (equip && room && countsAsSkill(item.system.effect)) ? skillFits(room, item.system.capacity) : { ok: true };
       if ( !fits.ok ) {
@@ -1165,7 +1172,16 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       return;
     }
 
-    // A Shield: only one is equipped at a time, and nothing else among the items is
+    // An accessory: only one is worn at a time, beside the weapon and the Shield
+    if ( (item.type === "gear") && item.system.isAccessory ) {
+      const worn = this.actor.items
+        .filter((other) => (other.type === "gear") && other.system.isAccessory && ((other.id === item.id) || (equip && other.system.equipped)))
+        .map((other) => ({ _id: other.id, "system.equipped": equip && (other.id === item.id) }));
+      await this.actor.updateEmbeddedDocuments("Item", worn);
+      return;
+    }
+
+    // A Shield: only one is equipped at a time
     if ( item.type === "gear" ) {
       if ( !item.system.isShield ) return;
 
@@ -1175,7 +1191,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
         return;
       }
       const shields = this.actor.items
-        .filter((other) => (other.type === "gear") && ((other.id === item.id) || (equip && other.system.equipped)))
+        .filter((other) => (other.type === "gear") && other.system.isShield && ((other.id === item.id) || (equip && other.system.equipped)))
         .map((other) => ({ _id: other.id, "system.equipped": equip && (other.id === item.id) }));
       await this.actor.updateEmbeddedDocuments("Item", shields);
       return;
@@ -1217,8 +1233,11 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     if ( !item || item.system.spent ) return;
     const actor = this.actor;
 
-    // A Shield is equipped, not Used
+    // A Shield is equipped, not Used, and so is an accessory: all but one that restores HP to the unit that
+    // wears it, as a Goddess Ring does, which is Used while it is worn
     if ( item.system.isShield ) return;
+    const worn = !!item.system.isAccessory;
+    if ( worn && !((item.system.restore > 0) && item.system.equipped) ) return;
 
     // A Staggered unit cannot act, nor one that can do nothing but Wait
     if ( staggerStops(actor) || this.#waitStops() ) return;
@@ -1235,7 +1254,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     if ( consumed === "used" ) await takeAction(actor, this.activeToken, { action: { kind: "item" } });
     if ( consumed ) return;
 
-    const ally = this.targetedUnit;
+    const ally = worn ? null : this.targetedUnit;
     const patient = ally?.actor ?? actor;
     if ( ally && !patient.isOwner ) {
       ui.notifications.warn("FEO.Item.notOwner", { localize: true });
@@ -1265,7 +1284,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
     const remaining = Math.max(item.system.uses.value - 1, 0);
     const usedUp = (item.system.uses.max > 0) && (remaining === 0);
-    rows.push({
+    if ( item.system.uses.max > 0 ) rows.push({
       label: game.i18n.localize("FEO.Weapon.uses"),
       value: usedUp ? game.i18n.localize("FEO.Chat.usedUp") : `${remaining} / ${item.system.uses.max}`
     });
@@ -1281,7 +1300,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       rows
     };
     if ( usedUp ) await item.delete();
-    else await item.update({ "system.uses.value": remaining });
+    else if ( item.system.uses.max > 0 ) await item.update({ "system.uses.value": remaining });
     await postCard(actor, card);
 
     // Using an item is the unit's Action

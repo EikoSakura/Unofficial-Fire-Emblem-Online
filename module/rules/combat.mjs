@@ -16,6 +16,7 @@ import {
 } from "./conditions.mjs";
 import { takeHit } from "./defeat.mjs";
 import { receiveCondition } from "./events.mjs";
+import { plainEffect } from "./gear.mjs";
 import { formationAround, reachable, unitsNear, unitsNearFoe } from "./positions.mjs";
 import { spreadGrant, spreadOut, spreadTo } from "./spread.mjs";
 import { followsUp } from "./progression.mjs";
@@ -1036,8 +1037,8 @@ export function planExchange(initiator, defender, { distance = 1, ground = null,
   // units. Of a weapon's Effect only what it is stays: the stat it adds to its Might, what it counts as, that
   // it may backfire and that it is Midrange, and effective damage that comes with its kind
   const parity = skills?.parity ?? null;
-  const says = (weapon) => (parity ? "" : (weapon?.effect ?? ""));
-  const inborn = (weapon) => ((parity && FEO.parity.inherent.includes(weapon?.category)) ? (weapon.effect ?? "") : says(weapon));
+  const says = (weapon) => (parity ? "" : plainEffect(weapon));
+  const inborn = (weapon) => ((parity && FEO.parity.inherent.includes(weapon?.category)) ? plainEffect(weapon) : says(weapon));
   const rules = (key) => units[key].fx?.rules ?? new Set();
 
   // The weapon triangle goes by the weapons in hand, with the size of the bonus set by the advantaged unit.

@@ -6815,7 +6815,7 @@
           "discount": 25
         }
       ],
-      "note": "In the Market of the Base every price shown to the unit that is buying is the price it pays, with what was taken off on hover. Discounts add up: with a Bargain Ring in its pack the unit pays half. A price is rounded down. What a unit sells for does not change."
+      "note": "In the Market of the Base every price shown to the unit that is buying is the price it pays, with what was taken off on hover. Discounts add up: with a Bargain Ring equipped the unit pays half. A price is rounded down. What a unit sells for does not change."
     },
     "Plunder": {
       "effects": [
@@ -16679,7 +16679,7 @@
     },
     "Steal": {
       "effects": [],
-      "note": "Steal is a command of the battle map for a unit that has it, beside Shove and Rescue: a skill gives it (Thievery), and so does a Thief Glove in its pack. The enemies next to the unit that it may steal from light up, and a click on one lists that enemy's pack above the dock; a click on a weapon or an item takes it into the unit's own pack. The unit's SPD must be higher than the enemy's. What the enemy has in hand stays with it (the weapon it holds, the Shield it has equipped), and so does what it wears (an accessory or a Storage item, which the system has no way to put away); a weapon whose Weight is more than the unit's STR is too heavy, and a weapon a unit was summoned with never changes hands. Each of those is greyed in the list, with the reason on hover, and an enemy the unit may not steal from says why when it is clicked. Stealing is the unit's Action. The rules give a pack no size, so what is taken always goes into the pack. Off a battle map nothing is judged."
+      "note": "Steal is a command of the battle map for a unit that has it, beside Shove and Rescue: a skill gives it (Thievery), and so does a Thief Glove it has equipped. The enemies next to the unit that it may steal from light up, and a click on one lists that enemy's pack above the dock; a click on a weapon or an item takes it into the unit's own pack. The unit's SPD must be higher than the enemy's. What the enemy has in hand stays with it (the weapon it holds, the Shield it has equipped), and so does what it wears (an accessory or a Storage item, which the system has no way to put away); a weapon whose Weight is more than the unit's STR is too heavy, and a weapon a unit was summoned with never changes hands. Each of those is greyed in the list, with the reason on hover, and an enemy the unit may not steal from says why when it is clicked. Stealing is the unit's Action. The rules give a pack no size, so what is taken always goes into the pack. Off a battle map nothing is judged."
     },
     "Thievery": {
       "effects": [

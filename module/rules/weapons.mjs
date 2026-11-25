@@ -5,6 +5,7 @@
  */
 import { FEO } from "../config.mjs";
 import { proficienciesFor, weaponRank } from "./combat.mjs";
+import { gearEntry, readGear } from "./gear.mjs";
 
 /**
  * Can a unit wield a weapon? A unit may only equip weapons of its proficiency rank or lower. Weapon types
@@ -101,8 +102,11 @@ export function weaponDodge(effect) {
 
 /**
  * What a weapon gives the unit that has it equipped, in the notation of skill effects: what every weapon of
- * its category does (`FEO.weaponTraits`), as all Katanas grant +2 HST but -1 END, and the Dodge its own Effect
- * adds. A weapon that is out of uses gives nothing; the broken version it turns into gives what that says.
+ * its category does (`FEO.weaponTraits`), as all Katanas grant +2 HST but -1 END, and what its own Effect says
+ * that is for its unit while it is in hand (see `gear.mjs`): the stats and combat numbers it adds, the rules
+ * of a fight it bends, what its hits leave behind. A weapon that is out of uses gives nothing; the broken
+ * version it turns into gives what that says. A staff's Effect says what it does to its target, and gives
+ * its wielder nothing here.
  * @param {{category?: string, effect?: string, broken?: boolean}|null} weapon
  * @param {Record<string, object[]>} [traits]     FEO.weaponTraits
  * @returns {object[]}          None for a weapon that gives nothing while equipped
@@ -110,9 +114,22 @@ export function weaponDodge(effect) {
 export function weaponGives(weapon, traits = FEO.weaponTraits) {
   if ( !weapon || weapon.broken ) return [];
   const effects = (traits?.[weapon.category] ?? []).map((effect) => structuredClone(effect));
-  const dodge = weaponDodge(weapon.effect);
-  if ( dodge ) effects.push({ combat: { dodge } });
-  return effects;
+  if ( weapon.category === "staff" ) return effects;
+  const read = readGear(weapon.effect, { kind: "weapon" });
+  return [...effects, ...structuredClone(read.effects), ...structuredClone(read.carried)];
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What a weapon gives the unit that carries it without having it in hand: the few things its Effect says it
+ * does "when in inventory".
+ * @param {{category?: string, effect?: string, broken?: boolean}|null} weapon
+ * @returns {object[]}
+ */
+export function weaponCarried(weapon) {
+  if ( !weapon || weapon.broken || (weapon.category === "staff") ) return [];
+  return structuredClone(readGear(weapon.effect, { kind: "weapon" }).carried);
 }
 
 /* -------------------------------------------- */
@@ -120,15 +137,15 @@ export function weaponGives(weapon, traits = FEO.weaponTraits) {
 /**
  * What a weapon gives the unit that has it equipped, as one more skill of the unit: an entry the skill rules
  * read like that of an equipped skill, which Nihil does not cancel and which takes none of its skill slots.
+ * It is marked as gear: what cancels weapons and equipment in a fight, as Parity does, cancels it.
  * @param {{category?: string, effect?: string, broken?: boolean}|null} weapon
  * @param {string} name             What it goes by in fights and on cards: the weapon's name
  * @param {Record<string, object[]>} [traits]     FEO.weaponTraits
- * @returns {{name: string, innate: true, nihil: false, effects: object[]}|null}    Null for a weapon that
- *          gives nothing while equipped
+ * @returns {{name: string, innate: true, gear: true, nihil: false, effects: object[]}|null}    Null for a
+ *          weapon that gives nothing while equipped
  */
 export function weaponEntry(weapon, name, traits = FEO.weaponTraits) {
-  const effects = weaponGives(weapon, traits);
-  return effects.length ? { name, innate: true, nihil: false, effects } : null;
+  return gearEntry(name, weaponGives(weapon, traits));
 }
 
 /* -------------------------------------------- */

@@ -1,4 +1,5 @@
 import { readShield } from "../rules/blocking.mjs";
+import { isStorage, wornRestore } from "../rules/gear.mjs";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -49,7 +50,7 @@ export default class GearData extends foundry.abstract.TypeDataModel {
         })
       }),
 
-      // Is it equipped? Only a Shield is, one at a time
+      // Is it equipped? A Shield is, one at a time, and so is an accessory, one at a time
       equipped: new BooleanField(),
 
       description: new HTMLField()
@@ -65,6 +66,20 @@ export default class GearData extends foundry.abstract.TypeDataModel {
       const read = readShield(this.effect);
       if ( read ) Object.assign(this.shield, { ...read, parry: read.parry ?? { chance: 0, dexDiv: 0, uses: 0 } });
     }
+
+    // An accessory that is Used for HP, as a Goddess Ring is, restores what its Effect says
+    if ( this.equip && !this.restore && !this.shield.blocks.length ) this.restore = wornRestore(this.effect);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Is this item an accessory: one that is equipped for its effect, and neither a Shield nor a Storage item?
+   * Only one accessory is equipped at a time, and what it gives counts while it is (see `rules/gear.mjs`).
+   * @type {boolean}
+   */
+  get isAccessory() {
+    return this.equip && !this.isShield && !isStorage(this.effect);
   }
 
   /* -------------------------------------------- */
