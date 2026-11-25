@@ -1,4 +1,4 @@
-import { battleCanvas, movedByClick, registerBattleCanvas } from "../canvas/battle-canvas.mjs";
+import { battleCanvas, freeMove, movedByClick, registerBattleCanvas } from "../canvas/battle-canvas.mjs";
 import { mapTile, mapTools, registerMapLayer } from "../canvas/map-layer.mjs";
 import { FEO } from "../config.mjs";
 import {
@@ -344,12 +344,13 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
 
     // In a battle a token remembers where its unit's turn began, however it is moved, so that the move can
     // be taken back and counts against its movement; for a unit that moves again after its Action, where it
-    // stood as it acted. A unit that a skill warps has not moved
+    // stood as it acted. A unit that a skill warps has not moved, and neither has one that was put somewhere
+    // by a drag with Ctrl held
     Hooks.on("preUpdateToken", (token, changes, options, userId) => {
       try {
         if ( (userId !== game.user.id) || !(("x" in changes) || ("y" in changes)) || originOf(token) ) return;
         const mine = options?.[FEO.id];
-        if ( mine?.undo || mine?.warp || mine?.forced || !inOwnTurn(token.actor, token) ) return;
+        if ( mine?.undo || mine?.warp || mine?.forced || mine?.free || !inOwnTurn(token.actor, token) ) return;
         // The place the token was last saved at: the one it is drawn at may lag behind
         const { x, y } = token._source ?? token;
         foundry.utils.setProperty(changes, `flags.${FEO.id}.origin`, { x, y });
@@ -364,7 +365,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       try {
         if ( (userId !== game.user.id) || !(("x" in changes) || ("y" in changes)) ) return;
         const mine = options?.[FEO.id];
-        if ( mine?.click || mine?.undo || mine?.warp || mine?.forced || !inOwnTurn(token.actor, token) ) return;
+        if ( mine?.click || mine?.undo || mine?.warp || mine?.forced || mine?.free || !inOwnTurn(token.actor, token) ) return;
         const view = reachOf(token);
         if ( view ) noteMove(token, (view.moved || view.again || view.go?.base) ? walkOf(view, view.standing) : null).catch((err) => console.error(err));
       } catch(err) {
@@ -374,10 +375,12 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
 
     // In a battle a unit is moved by a click on a tile of its reach and by nothing else, so a move made with
     // the keys, or by dragging it along with other tokens, is not made at all. A Game Master who has lifted the
-    // limits on movement puts any unit where they please
-    Hooks.on("preMoveToken", (token, move) => {
+    // limits on movement puts any unit where they please, and so does anyone who holds Ctrl as they begin to
+    // drag it: neither the battle, the deployment zone nor the ground stops that drag
+    Hooks.on("preMoveToken", (token, move, options) => {
       try {
         if ( (move.method !== "dragging") && (move.method !== "keyboard") ) return;
+        if ( freeMove(options) ) return;
         if ( game.user.isGM && game.settings.get("core", "unconstrainedMovement") ) return;
         const grid = token.parent?.grid;
         if ( (token.actor?.type !== "unit") || !grid?.isSquare ) return;

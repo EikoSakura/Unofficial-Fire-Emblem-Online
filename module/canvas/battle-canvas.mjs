@@ -389,10 +389,42 @@ export const battleCanvas = {
 /* -------------------------------------------- */
 
 /**
+ * Is the drag being made a free one? A drag begun with Ctrl held (⌘ on a Mac) puts the tokens it carries
+ * wherever they are let go, for a player and a Game Master alike: nothing that limits movement applies to it,
+ * and it is not counted as the move of a unit.
+ */
+let freeDrag = false;
+
+/**
+ * Is the key that makes a drag a free one held as a pointer event happens?
+ * @param {Event|null} [event]
+ * @returns {boolean}
+ */
+function freeKey(event) {
+  if ( event?.ctrlKey || event?.metaKey ) return true;
+  try {
+    return !!game.keyboard?.isModifierActive("CONTROL");
+  } catch(err) {
+    return false;
+  }
+}
+
+/**
+ * Was a token moved by a free drag, going by what its update was told?
+ * @param {object|null} [options]     The options of the update
+ * @returns {boolean}
+ */
+export function freeMove(options) {
+  return !!options?.[FEO.id]?.free;
+}
+
+/* -------------------------------------------- */
+
+/**
  * Is a token moved by clicks on the map and nothing else? A unit fighting in the battle of its scene goes
  * where a tile of its reach is clicked, so its token is neither dragged nor stepped with the keys. A unit that
  * is down is left out, and so is every token for a Game Master who has lifted the limits on movement, who
- * puts it where they please.
+ * puts it where they please. A drag begun with Ctrl held is let through all the same (see `freeDrag`).
  * @param {Token|TokenDocument|null} token
  * @returns {boolean}
  */
@@ -628,12 +660,69 @@ export class FeoToken extends Token {
 
   /**
    * In a battle a unit is moved by a click on a tile of its reach, and by nothing else: its token stays down
-   * when it is dragged.
+   * when it is dragged, unless Ctrl is held as the drag begins.
    * @override
    */
   _canDrag(user, event) {
-    if ( movedByClick(this) ) return false;
+    if ( !freeKey(event) && movedByClick(this) ) return false;
     return super._canDrag(user, event);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A drag begun with Ctrl held is a free one, for every token it carries.
+   * @override
+   */
+  _initializeDragLeft(event) {
+    freeDrag = freeKey(event);
+    return super._initializeDragLeft(event);
+  }
+
+  /* -------------------------------------------- */
+
+  /** @override */
+  _finalizeDragLeft(event) {
+    try {
+      return super._finalizeDragLeft(event);
+    } finally {
+      freeDrag = false;
+    }
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Foundry keeps a token in hand when it is let go with Ctrl held, so that the way it takes can be marked out
+   * click by click. A free drag has no way to mark out: the token is put down where it is let go.
+   * @override
+   */
+  _shouldPreventDragLeftDrop(event) {
+    if ( freeDrag ) return false;
+    return super._shouldPreventDragLeftDrop(event);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A free drag goes through walls and over ground that cannot be crossed.
+   * @override
+   */
+  _getDragConstrainOptions() {
+    const options = super._getDragConstrainOptions();
+    return freeDrag ? { ...options, ignoreWalls: true, ignoreCost: true } : options;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The update a free drag ends in says that it was one, for whoever would stop the move or take note of it.
+   * @override
+   */
+  _getDragLeftDropUpdateOptions() {
+    const options = super._getDragLeftDropUpdateOptions();
+    if ( freeDrag ) options[FEO.id] = { ...(options[FEO.id] ?? {}), free: true };
+    return options;
   }
 
   /* -------------------------------------------- */

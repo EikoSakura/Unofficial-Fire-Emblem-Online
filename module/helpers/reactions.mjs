@@ -770,10 +770,12 @@ export function tilesThrough(token, points) {
 export function registerHooks() {
   // A unit that is dragged in its own turn, as a Game Master who has lifted the limits on movement drags it,
   // is watched like one that is moved by a click: where something would come of the move, the drag is not
-  // made, and the unit is walked along the same way instead, a step at a time
-  Hooks.on("preMoveToken", (token, move) => {
+  // made, and the unit is walked along the same way instead, a step at a time. A drag begun with Ctrl held
+  // only puts the unit somewhere: it is no move, and nothing comes of it
+  Hooks.on("preMoveToken", (token, move, options) => {
     try {
       if ( (move.method !== "dragging") && (move.method !== "keyboard") ) return;
+      if ( options?.[FEO.id]?.free ) return;
       if ( !game.user.isGM || !game.settings.get("core", "unconstrainedMovement") ) return;
       if ( (token.actor?.type !== "unit") || !token.parent?.grid?.isSquare || !inOwnTurn(token.actor, token) ) return;
       const points = [...(move.passed?.waypoints ?? []), ...(move.pending?.waypoints ?? [])];
