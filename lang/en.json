@@ -4744,7 +4744,17 @@
         "base": "Open the Base",
         "make": "Make the map",
         "showAll": "Show to everyone",
-        "edit": "Edit the map"
+        "edit": "Edit the map",
+        "travel": "Fill the screen",
+        "window": "Back to a window",
+        "close": "Close the map"
+      },
+      "arrive": {
+        "plain": "Arrived",
+        "home": "Home",
+        "battle": "A battle waits",
+        "later": "Not yet",
+        "stay": "Stay on the map"
       },
       "kind": {
         "capital": "Capital",

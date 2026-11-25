@@ -2411,9 +2411,12 @@ FEO.encounter = {
  * kinds of place, of which those in `market` have a market on a new map. On a new map the players are shown the
  * places within `known` routes of the Base. `brushes` are the widths the ground of a nation is painted at.
  * `zoom` is how closely the map can be looked at, and `speed` how far the company marches in a second.
+ * `travel` is the client setting that remembers whether a user has the map over the whole screen, and `splash`
+ * how long, in milliseconds, an arrival that asks nothing stays up.
  */
 FEO.worldMap = {
   setting: "worldMap",
+  travel: "worldMapTravel",
   width: 1200,
   height: 750,
   shapes: {
@@ -2438,5 +2441,6 @@ FEO.worldMap = {
   known: 3,
   brushes: { fine: 14, medium: 26, broad: 48 },
   zoom: 3.2,
-  speed: 300
+  speed: 300,
+  splash: 3600
 };

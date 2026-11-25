@@ -1,6 +1,7 @@
 import { FEO } from "../config.mjs";
 import {
-  beginBattleAt, changePlace, claimsOf, encounterAt, landOf, marchTo, pointAt, readWorldMap, registerWorldMap, showToAll
+  beginBattleAt, changePlace, claimsOf, encounterAt, keepTravel, landOf, marchTo, pointAt, readTravel, readWorldMap,
+  registerWorldMap, showToAll
 } from "../helpers/worldmap.mjs";
 import { alongRoute, nationFacts, pathBetween } from "../rules/worldmap.mjs";
 import { buildWorldMap } from "./world-map-context.mjs";
@@ -16,7 +17,11 @@ const TEMPLATES = `systems/${FEO.id}/templates/worldmap`;
  * The World Map: the land the campaign is set in, with a dot for each place, the routes between them, the
  * ground of each nation, and the company's banner on the place it has come to. Everyone sees the same map. The
  * Game Master sends the company from place to place along the routes, and every open map watches it march; a
- * player can pick a place out and point at it.
+ * player can pick a place out and point at it. When the company arrives, the name of the place is shown across
+ * the map, with what may be done there at once.
+ *
+ * The map is shown in a window, or as the travel view: over the whole screen with no frame, under Foundry's own
+ * interface as a scene would be. Each user's choice of the two is remembered.
  *
  * What the world keeps of the map is read and changed through `helpers/worldmap.mjs`, what is shown around the
  * map is worked out by `world-map-context.mjs`, and the map itself is drawn by a `MapStage`. This class keeps
@@ -33,6 +38,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       icon: "fa-solid fa-earth-europe",
       resizable: true,
       controls: [
+        { icon: "fa-solid fa-expand", label: "FEO.WorldMap.act.travel", action: "travel" },
         { icon: "fa-solid fa-users-viewfinder", label: "FEO.WorldMap.act.showAll", action: "showAll", visible: () => game.user.isGM },
         { icon: "fa-solid fa-map-location-dot", label: "FEO.WorldMap.act.edit", action: "create", visible: () => game.user.isGM }
       ]
@@ -49,7 +55,9 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       point: WorldMap.#onPoint,
       base: WorldMap.#onBase,
       create: WorldMap.#onCreate,
-      showAll: WorldMap.#onShowAll
+      showAll: WorldMap.#onShowAll,
+      travel: WorldMap.#onTravel,
+      dismiss: WorldMap.#onDismiss
     }
   };
 
@@ -57,7 +65,8 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
   static PARTS = {
     map: { template: `${TEMPLATES}/map.hbs` },
     heads: { template: `${TEMPLATES}/heads.hbs` },
-    plate: { template: `${TEMPLATES}/plate.hbs` }
+    plate: { template: `${TEMPLATES}/plate.hbs` },
+    splash: { template: `${TEMPLATES}/splash.hbs` }
   };
 
   /* -------------------------------------------- */
@@ -69,10 +78,14 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
 
   /**
    * Open the World Map, or bring it forward.
+   * @param {object} [options]
+   * @param {boolean} [options.travel]      Open it over the whole screen, or in its window; as it last was if
+   *                                        not given
    */
-  static open() {
-    WorldMap.#instance ??= new WorldMap();
-    WorldMap.#instance.render({ force: true });
+  static open({ travel } = {}) {
+    const app = (WorldMap.#instance ??= new WorldMap());
+    if ( typeof travel === "boolean" ) app.#showAs(travel);
+    app.render({ force: true });
   }
 
   /* -------------------------------------------- */
@@ -98,7 +111,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
         WorldMapCreator.changed();
       },
       pointed: (place, user) => WorldMap.#pointed(place, user),
-      shown: () => WorldMap.open()
+      shown: (travel) => WorldMap.open(travel ? { travel: true } : {})
     });
     game.feo.worldMap = {
       open: WorldMap.open, toggle: WorldMap.toggle, app: WorldMap, read: readWorldMap, marchTo, creator: WorldMapCreator
@@ -132,6 +145,15 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
 
   /** Is the company on its way? */
   #marching = false;
+
+  /** Is the map over the whole screen? */
+  #travel = readTravel();
+
+  /** Has the company just arrived, with the name of the place still across the map? */
+  #arrived = false;
+
+  /** The wait before an arrival that asks nothing is taken down. */
+  #lingering = 0;
 
   /** The map as it was last read. @type {import("../rules/worldmap.mjs").WorldMapState|null} */
   #map = null;
@@ -177,6 +199,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       spotlight: this.#spotlight,
       isGM: game.user.isGM,
       marching: this.#marching,
+      arrived: this.#arrived,
       encounterOf: encounterAt
     }, game.i18n);
   }
@@ -184,8 +207,19 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
   /* -------------------------------------------- */
 
   /** @override */
+  async _renderFrame(options) {
+    const frame = await super._renderFrame(options);
+    frame.classList.toggle("wm-travel", this.#travel);
+    return frame;
+  }
+
+  /* -------------------------------------------- */
+
+  /** @override */
   async _onRender(context, options) {
     await super._onRender(context, options);
+    this.element.classList.toggle("wm-travel", this.#travel);
+    if ( options.parts?.includes("splash") ) this.#linger(context.splash);
     const viewport = this.element.querySelector(".wm-viewport");
     if ( !viewport ) {
       this.#stage?.destroy();
@@ -213,6 +247,19 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
     this.#stage = null;
     this.#marching = false;
     this.#selected = "";
+    this.#arrived = false;
+    clearTimeout(this.#lingering);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Show the map over the whole screen, or in its window.
+   * @param {boolean} travel
+   */
+  #showAs(travel) {
+    this.#travel = travel;
+    this.element?.classList.toggle("wm-travel", travel);
   }
 
   /* -------------------------------------------- */
@@ -279,8 +326,8 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
   /* -------------------------------------------- */
 
   /**
-   * The map changed. If the company has moved, it is watched as it marches there; then the window is drawn
-   * again. Changes are followed in the order they came.
+   * The map changed. If the company has moved, it is watched as it marches there, and its arrival is shown
+   * across the map; then the window is drawn again. Changes are followed in the order they came.
    */
   #follow() {
     this.#queue = this.#queue.then(async () => {
@@ -290,9 +337,42 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       const sameLand = before?.made && next.made && (before.backdrop === next.backdrop) && (before.seed === next.seed)
         && (before.shape === next.shape);
       if ( !sameLand ) return this.render();
-      if ( next.party !== before.party ) await this.#walk(next, before.party, next.party);
-      await this.render({ parts: ["heads", "plate"] });
+      if ( next.party === before.party ) return this.render({ parts: ["heads", "plate"] });
+
+      // An arrival still up gives way to the next march
+      if ( this.#arrived ) {
+        this.#arrived = false;
+        await this.render({ parts: ["splash"] });
+      }
+      this.#arrived = await this.#walk(next, before.party, next.party);
+      await this.render({ parts: ["heads", "plate", "splash"] });
     }).catch((err) => console.error(err));
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * An arrival was drawn, or taken down: one that asks nothing stays up for a moment only.
+   * @param {{stays: boolean}|null} splash
+   */
+  #linger(splash) {
+    clearTimeout(this.#lingering);
+    if ( splash && !splash.stays ) this.#lingering = setTimeout(() => this.#dismiss(), FEO.worldMap.splash);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Take the arrival down, if it is up.
+   */
+  #dismiss() {
+    clearTimeout(this.#lingering);
+    if ( !this.#arrived ) return;
+    this.#arrived = false;
+    this.element?.querySelector(".wm-splash")?.classList.add("wm-leaving");
+    this.#lingering = setTimeout(() => {
+      if ( this.rendered && !this.#arrived ) this.render({ parts: ["splash"] });
+    }, 260);
   }
 
   /* -------------------------------------------- */
@@ -302,12 +382,12 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
    * @param {import("../rules/worldmap.mjs").WorldMapState} map
    * @param {string} from
    * @param {string} to
-   * @returns {Promise<void>}       Once it has arrived
+   * @returns {Promise<boolean>}    Once it has arrived: did it march there, with the map still open to see it?
    */
   async #walk(map, from, to) {
     const way = pathBetween(map, from, to);
     const stage = this.#stage;
-    if ( !way?.legs.length || !stage ) return;
+    if ( !way?.legs.length || !stage ) return false;
     const at = new Map(map.places.map((place) => [place.id, place]));
     const legs = way.legs.map((leg) => {
       const a = at.get(leg.from);
@@ -346,6 +426,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
       requestAnimationFrame(frame);
     });
     this.#marching = false;
+    return this.rendered && (this.#stage === stage);
   }
 
   /* -------------------------------------------- */
@@ -452,20 +533,24 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
   /* -------------------------------------------- */
 
   /**
-   * Begin the battle that waits where the company is, once the Game Master has said that it should.
+   * Begin the battle that waits where the company is, once the Game Master has said that it should. An arrival
+   * has asked already, by offering to wait.
    * @this {WorldMap}
    */
-  static async #onBegin() {
+  static async #onBegin(event, target) {
     const place = this.#place();
     const encounter = encounterAt(place);
     if ( !encounter ) return;
-    const name = foundry.utils.escapeHTML?.(encounter.name) ?? encounter.name;
-    const sure = await DialogV2.confirm({
-      window: { title: game.i18n.localize("FEO.Encounter.foot.begin") },
-      content: `<p>${game.i18n.format("FEO.Encounter.foot.beginAsk", { name })}</p>`,
-      rejectClose: false
-    });
-    if ( !sure ) return;
+    if ( !target?.closest(".wm-splash") ) {
+      const name = foundry.utils.escapeHTML?.(encounter.name) ?? encounter.name;
+      const sure = await DialogV2.confirm({
+        window: { title: game.i18n.localize("FEO.Encounter.foot.begin") },
+        content: `<p>${game.i18n.format("FEO.Encounter.foot.beginAsk", { name })}</p>`,
+        rejectClose: false
+      });
+      if ( !sure ) return;
+    }
+    this.#dismiss();
     try {
       if ( await beginBattleAt(place) ) await this.close();
       else ui.notifications.warn("FEO.WorldMap.act.beginNone", { localize: true });
@@ -496,6 +581,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
    * @this {WorldMap}
    */
   static #onBase() {
+    this.#dismiss();
     game.feo.base?.open();
   }
 
@@ -512,11 +598,32 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
   /* -------------------------------------------- */
 
   /**
-   * Open the map on everyone's screen.
+   * Open the map on everyone's screen, over the whole of it if that is how it is shown here.
    * @this {WorldMap}
    */
   static #onShowAll() {
-    showToAll();
+    showToAll(this.#travel);
     ui.notifications.info("FEO.WorldMap.shownToAll", { localize: true });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Put the map over the whole screen, or back in its window.
+   * @this {WorldMap}
+   */
+  static #onTravel() {
+    this.#showAs(!this.#travel);
+    keepTravel(this.#travel).catch((err) => console.error(err));
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Take the arrival down.
+   * @this {WorldMap}
+   */
+  static #onDismiss() {
+    this.#dismiss();
   }
 }

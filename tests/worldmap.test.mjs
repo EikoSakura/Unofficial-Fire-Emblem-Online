@@ -5,7 +5,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildCreator, buildWorldMap, nationTitle } from "../module/apps/world-map-context.mjs";
+import { buildArrival, buildCreator, buildWorldMap, nationTitle } from "../module/apps/world-map-context.mjs";
 import { overlayMarkup } from "../module/apps/world-map-draw.mjs";
 import { FEO } from "../module/config.mjs";
 import { seededRandom } from "../module/rules/mapgen.mjs";
@@ -321,6 +321,49 @@ test("the plate tells of the place picked out, and offers what the reader may do
 
   // A world with no map yet
   assert.deepEqual(buildWorldMap({ map: cleanWorldMap(), isGM: false }, i18n), { made: false, isGM: false, none: "WorldMap.none.player" });
+});
+
+test("an arrival names the place the company has come to, and offers what may be done there at once", () => {
+  const map = kept();
+  const claims = unpackClaims(map.claims, W * H);
+  const acts = (splash) => splash.actions.map((act) => act.action);
+
+  // Nothing is shown across the map until the company has just arrived
+  assert.equal(buildWorldMap({ map, land, claims, isGM: true }, i18n).splash, null);
+
+  // At the Base anyone may go in, so the arrival waits for an answer
+  const home = buildWorldMap({ map, land, claims, isGM: false, arrived: true }, i18n).splash;
+  assert.equal(home.tone, "home");
+  assert.equal(home.over, "WorldMap.arrive.home");
+  assert.deepEqual(acts(home), ["base", "dismiss"]);
+  assert.ok(home.stays);
+
+  // Anywhere else it tells where the company is, asks nothing, and does not stay
+  const away = map.places.find((place) => place.id !== map.base);
+  arriveAt(map, away.id);
+  const plain = buildArrival({ map, land, claims, isGM: true }, i18n);
+  assert.equal(plain.tone, "plain");
+  assert.equal(plain.name, away.name);
+  assert.ok(plain.under.startsWith(`WorldMap.kind.${away.kind} · `));
+  assert.deepEqual(plain.actions, []);
+  assert.ok(!plain.stays);
+
+  // A battle is begun by the Game Master from its saved encounter; a player is only told of it
+  Object.assign(away, { battle: true, encounter: "e1" });
+  const encounterOf = () => ({ name: "Bandits on the road", objectives: {} });
+  const battle = buildArrival({ map, land, claims, isGM: true, encounterOf }, i18n);
+  assert.equal(battle.tone, "battle");
+  assert.equal(battle.under, `Bandits on the road · ${plain.under}`);
+  assert.deepEqual(acts(battle), ["begin", "dismiss"]);
+  const told = buildArrival({ map, land, claims, isGM: false, encounterOf }, i18n);
+  assert.equal(told.under, battle.under);
+  assert.ok(!told.stays);
+  const byHand = buildArrival({ map, land, claims, isGM: true }, i18n);
+  assert.equal(byHand.over, "WorldMap.arrive.battle");
+  assert.ok(!byHand.stays, "a battle with no encounter is run by hand");
+
+  // A world with no map has nowhere to arrive
+  assert.equal(buildArrival({ map: cleanWorldMap(), isGM: true }, i18n), null);
 });
 
 test("the Creator's tools show what the tool in hand works on", () => {

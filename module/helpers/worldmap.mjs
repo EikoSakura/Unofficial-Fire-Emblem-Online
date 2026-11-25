@@ -28,20 +28,43 @@ const SOCKET = `system.${FEO.id}`;
  * @param {object} told
  * @param {() => void} told.changed                             The map changed
  * @param {(place: string, user: User) => void} told.pointed    A user pointed at a place
- * @param {() => void} told.shown                               A Game Master shows the map to everyone
+ * @param {(travel: boolean) => void} told.shown                A Game Master shows the map to everyone, over the
+ *                                                              whole screen if `travel` is set
  */
 export function registerWorldMap({ changed, pointed, shown }) {
   game.settings.register(FEO.id, WORLD_MAP_SETTING, {
     scope: "world", config: false, type: Object, default: {}, onChange: () => changed()
   });
+  game.settings.register(FEO.id, FEO.worldMap.travel, { scope: "client", config: false, type: Boolean, default: false });
   Hooks.once("ready", () => {
     game.socket?.on(SOCKET, (message) => {
       const user = game.users.get(message?.user);
       if ( !user ) return;
       if ( message.type === "worldMap.point" ) pointed(String(message.place ?? ""), user);
-      else if ( (message.type === "worldMap.show") && user.isGM ) shown();
+      else if ( (message.type === "worldMap.show") && user.isGM ) shown(message.travel === true);
     });
   });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Did this user last have the map over the whole screen?
+ * @returns {boolean}
+ */
+export function readTravel() {
+  return game.settings.get(FEO.id, FEO.worldMap.travel) === true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Remember whether this user has the map over the whole screen.
+ * @param {boolean} on
+ * @returns {Promise<void>}
+ */
+export async function keepTravel(on) {
+  await game.settings.set(FEO.id, FEO.worldMap.travel, on === true);
 }
 
 /* -------------------------------------------- */
@@ -242,7 +265,8 @@ export function pointAt(id) {
 
 /**
  * Open the map on every client. Runs for a Game Master.
+ * @param {boolean} [travel]      Open it over the whole screen
  */
-export function showToAll() {
-  if ( game.user.isGM ) game.socket?.emit(SOCKET, { type: "worldMap.show", user: game.user.id });
+export function showToAll(travel = false) {
+  if ( game.user.isGM ) game.socket?.emit(SOCKET, { type: "worldMap.show", user: game.user.id, travel: travel === true });
 }

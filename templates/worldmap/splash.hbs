@@ -1,0 +1,16 @@
+<div class="wm-splash{{#if splash}} wm-on wm-tone-{{splash.tone}}{{/if}}" {{#if splash}}data-action="dismiss" role="status"{{else}}hidden{{/if}}>
+  {{#if splash}}
+  <div class="wm-band">
+    <div class="wm-band-over">{{splash.over}}</div>
+    <h2>{{splash.name}}</h2>
+    <div class="wm-band-under">{{splash.under}}</div>
+    {{#if splash.actions.length}}
+    <div class="wm-band-acts">
+      {{#each splash.actions as |act|}}
+      <button type="button" class="btn {{act.cls}}" data-action="{{act.action}}">{{#if act.icon}}{{feoIcon act.icon}}{{/if}}{{act.label}}</button>
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+</div>

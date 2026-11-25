@@ -54,11 +54,12 @@ export function phraser(i18n) {
  * @param {number} [known.spotlight]      The nation that is picked out
  * @param {boolean} known.isGM
  * @param {boolean} [known.marching]      Is the company on its way?
+ * @param {boolean} [known.arrived]       Has the company just come to where it is?
  * @param {(place: Place) => {name: string, objectives: Record<string, boolean>}|null} [known.encounterOf]
  * @param {Localizer} i18n
  * @returns {object}
  */
-export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0, isGM, marching = false, encounterOf = () => null }, i18n) {
+export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0, isGM, marching = false, arrived = false, encounterOf = () => null }, i18n) {
   const loc = words(i18n);
   if ( !map.made ) return { made: false, isGM, none: loc(isGM ? "none.gm" : "none.player") };
   const shown = (place) => isGM || place.seen;
@@ -68,7 +69,8 @@ export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0,
     name: map.name || loc("title"),
     summary: loc("summary", { nations: map.nations.length, places: map.places.filter(shown).length }),
     legend: map.nations.map((nation) => ({ id: nation.id, name: nation.name, color: colorOf(nation), on: nation.id === spotlight })),
-    plate: null
+    plate: null,
+    splash: arrived ? buildArrival({ map, land, claims, isGM, encounterOf }, i18n) : null
   };
   const party = map.places.find((place) => place.id === map.party);
   const place = map.places.find((other) => (other.id === selected) && shown(other)) ?? party;
@@ -119,6 +121,54 @@ export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0,
     away: here ? null : way ? { count: way.legs.length, text: loc(way.legs.length === 1 ? "stop" : "stops") } : { count: "", text: loc("noWay") }
   };
   return context;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What is shown across the map when the company arrives at a place: where it has come to, and what may be done
+ * there at once. A battle that waits is begun by the Game Master from its saved encounter; at the Base anyone
+ * may go in. An arrival that offers neither asks nothing, and does not stay.
+ * @param {object} known
+ * @param {WorldMapState} known.map
+ * @param {Land} known.land
+ * @param {Uint8Array} known.claims
+ * @param {boolean} known.isGM
+ * @param {(place: Place) => {name: string}|null} [known.encounterOf]
+ * @param {Localizer} i18n
+ * @returns {{tone: string, over: string, name: string, under: string, actions: object[], stays: boolean}|null}
+ *   Null where the company is nowhere
+ */
+export function buildArrival({ map, land, claims, isGM, encounterOf = () => null }, i18n) {
+  const loc = words(i18n);
+  const place = map.places.find((other) => other.id === map.party);
+  if ( !map.made || !place ) return null;
+  const home = place.id === map.base;
+  const tone = place.battle ? "battle" : home ? "home" : "plain";
+  const nation = map.nations.find((other) => other.id === nationAt(land, claims, place.x, place.y));
+  const encounter = place.battle ? encounterOf(place) : null;
+  const where = `${loc(`kind.${place.kind}`)} · ${nation ? nationTitle(nation, i18n) : loc("unclaimed")}`;
+
+  const actions = [];
+  if ( place.battle ) {
+    if ( isGM && encounter ) {
+      actions.push({ action: "begin", icon: "crossed", label: loc("act.begin"), cls: "primary" });
+      actions.push({ action: "dismiss", label: loc("arrive.later"), cls: "" });
+    }
+  }
+  else if ( home ) {
+    actions.push({ action: "base", icon: "tent", label: loc("act.base"), cls: "primary" });
+    actions.push({ action: "dismiss", label: loc("arrive.stay"), cls: "" });
+  }
+
+  return {
+    tone,
+    over: loc(`arrive.${tone}`),
+    name: place.name || loc(`kind.${place.kind}`),
+    under: encounter?.name ? `${encounter.name} · ${where}` : where,
+    actions,
+    stays: actions.length > 0
+  };
 }
 
 /* -------------------------------------------- */

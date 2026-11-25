@@ -76,7 +76,9 @@
   box-shadow: 0 3px 10px rgba(30, 18, 4, .45), inset 0 0 0 2px rgba(255, 255, 255, .35); }
 .feo-worldmap .wm-title b { display: block; font-family: var(--feo-font-display); font-weight: 400; font-size: 21px; letter-spacing: .04em; line-height: 1.15; }
 .feo-worldmap .wm-title small { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #7a6238; }
-.feo-worldmap .wm-legend { position: absolute; right: 12px; top: 12px; display: grid; gap: 1px; padding: 6px; border-radius: 8px;
+.feo-worldmap .wm-corner { position: absolute; right: 12px; top: 12px; display: grid; justify-items: end; gap: 6px; }
+.feo-worldmap .wm-bar { display: none; gap: 4px; }
+.feo-worldmap .wm-legend { display: grid; gap: 1px; padding: 6px; border-radius: 8px;
   background: color-mix(in srgb, var(--feo-window) 88%, transparent); border: 1px solid var(--feo-line); box-shadow: 0 6px 18px rgba(0, 0, 0, .4); backdrop-filter: blur(3px); }
 .feo-worldmap .wm-legend button { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 7px; padding: 2px 8px 2px 5px; border-radius: 5px; cursor: pointer;
   font-size: 13px; font-weight: 700; color: var(--feo-ink); }
@@ -94,9 +96,10 @@
 .feo-worldmap .wm-key-known { background: #f6e8bb; }
 
 .feo-worldmap .wm-zoom { position: absolute; right: 12px; bottom: 12px; display: grid; gap: 4px; }
-.feo-worldmap .wm-zoom button { all: unset; box-sizing: border-box; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; cursor: pointer;
+.feo-worldmap :is(.wm-zoom, .wm-bar) button { all: unset; box-sizing: border-box; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; cursor: pointer;
   background: color-mix(in srgb, var(--feo-window) 90%, transparent); border: 1px solid var(--feo-line); color: var(--feo-ink); font-size: 15px; }
-.feo-worldmap .wm-zoom button:is(:hover, :focus-visible) { border-color: var(--feo-gold); }
+.feo-worldmap :is(.wm-zoom, .wm-bar) button:is(:hover, :focus-visible) { border-color: var(--feo-gold); }
+.feo-worldmap .wm-zoom [data-action="travel"] { margin-top: 6px; }
 .feo-worldmap .wm-compass { position: absolute; left: 16px; bottom: 14px; width: 58px; height: 58px; pointer-events: none; opacity: .9; filter: drop-shadow(0 1px 2px rgba(250, 240, 210, .7)); }
 .feo-worldmap-creator .wm-compass { bottom: 52px; }
 .feo-worldmap .wm-hint { position: absolute; left: 12px; right: 52px; bottom: 12px; padding: 6px 14px; border-radius: 999px; font-size: 13px; color: var(--feo-muted); cursor: default;
@@ -131,6 +134,55 @@
 .feo-worldmap .wm-plate-acts .btn[disabled] { cursor: default; }
 .feo-worldmap .wm-stops { font-size: 13px; color: var(--feo-muted); margin-right: 4px; white-space: nowrap; }
 .feo-worldmap .wm-stops b { font-family: var(--feo-font-display); font-weight: 400; font-size: 19px; color: var(--feo-ink); }
+
+/* ---------- The travel view ---------- */
+
+/* The map over the whole screen, with no frame, above the scene and under Foundry's own interface. What lies
+   over the map keeps clear of that interface: change these to move it. */
+.feo-worldmap.wm-travel {
+  --wm-right: 330px;
+  --wm-bottom: 92px;
+  left: 0 !important; top: 0 !important; width: 100vw !important; height: 100vh !important; max-width: none; max-height: none;
+  z-index: 10 !important; margin: 0; border: 0; border-radius: 0; box-shadow: none;
+}
+.feo-worldmap.wm-travel > :is(.window-header, .window-resize-handle) { display: none; }
+.feo-worldmap.wm-travel .wm-bar { display: flex; }
+.feo-worldmap.wm-travel .wm-zoom [data-action="travel"] { display: none; }
+.feo-worldmap.wm-travel .wm-title { left: 50%; transform: translateX(-50%); text-align: center; }
+.feo-worldmap.wm-travel .wm-corner { right: calc(var(--wm-right) + 12px); }
+.feo-worldmap.wm-travel .wm-zoom { right: calc(var(--wm-right) + 12px); bottom: 16px; }
+.feo-worldmap.wm-travel .wm-compass { left: 236px; bottom: 20px; }
+.feo-worldmap.wm-travel .wm-toast { top: 76px; }
+.feo-worldmap.wm-travel .wm-plate { position: absolute; left: 50%; bottom: var(--wm-bottom); transform: translateX(-50%); z-index: 2; width: min(776px, calc(100vw - 32px));
+  border: 1px solid var(--feo-line); border-radius: 10px; box-shadow: 0 10px 28px rgba(0, 0, 0, .5); }
+.feo-worldmap.wm-travel .wm-plate::before { left: 9px; right: 9px; }
+
+/* ---------- The arrival ---------- */
+
+.feo-worldmap .wm-splash { position: absolute; inset: 0; z-index: 5; display: none; align-items: center; cursor: pointer;
+  background: rgba(10, 8, 4, .5); animation: wm-splash-in .3s ease-out both; }
+.feo-worldmap .wm-splash.wm-on { display: flex; }
+.feo-worldmap .wm-splash.wm-leaving { pointer-events: none; animation: wm-splash-out .25s ease-in both; }
+.feo-worldmap .wm-band { position: relative; width: 100%; padding: 26px 20px 24px; text-align: center; background: var(--feo-window);
+  box-shadow: 0 0 44px rgba(0, 0, 0, .6); animation: wm-band-in .45s cubic-bezier(.2, .8, .2, 1) both; }
+.feo-worldmap .wm-band::before, .feo-worldmap .wm-band::after { content: ""; position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #a67c2c, #f0d48a 22%, #f0d48a 78%, #a67c2c); }
+.feo-worldmap .wm-band::before { top: 0; }
+.feo-worldmap .wm-band::after { bottom: 0; }
+.feo-worldmap .wm-band-over { font-size: 12px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: var(--feo-gold); }
+.feo-worldmap .wm-tone-battle .wm-band-over { color: var(--feo-bane); }
+.feo-worldmap .wm-tone-home .wm-band-over { color: var(--feo-boon); }
+.feo-worldmap .wm-band h2 { margin: 6px 0 5px; padding: 0; border: 0; font-family: var(--feo-font-display); font-weight: 400; font-size: 44px; line-height: 1.1; letter-spacing: .03em;
+  color: var(--feo-ink); overflow-wrap: anywhere; }
+.feo-worldmap .wm-band-under { font-size: 14px; color: var(--feo-muted); }
+.feo-worldmap .wm-band-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.feo-worldmap .wm-band-acts .btn { width: auto; cursor: pointer; }
+@keyframes wm-splash-in { from { opacity: 0; } }
+@keyframes wm-splash-out { to { opacity: 0; } }
+@keyframes wm-band-in { from { transform: scaleY(.15); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .feo-worldmap :is(.wm-splash, .wm-band) { animation-duration: .01s; }
+}
 
 /* ---------- The Creator's tools ---------- */
 

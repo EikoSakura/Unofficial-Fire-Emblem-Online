@@ -25,6 +25,7 @@
     <div class="wm-zoom wm-chrome">
       <button type="button" data-action="zoom" data-by="1.35" data-tooltip="{{localize "FEO.WorldMap.zoomIn"}}" aria-label="{{localize "FEO.WorldMap.zoomIn"}}">{{feoIcon "plus"}}</button>
       <button type="button" data-action="zoom" data-by="0.74" data-tooltip="{{localize "FEO.WorldMap.zoomOut"}}" aria-label="{{localize "FEO.WorldMap.zoomOut"}}">{{feoIcon "minus"}}</button>
+      {{#unless creator}}<button type="button" data-action="travel" data-tooltip="{{localize "FEO.WorldMap.act.travel"}}" aria-label="{{localize "FEO.WorldMap.act.travel"}}">{{feoIcon "expand"}}</button>{{/unless}}
     </div>
     {{#if creator}}<div class="wm-hint wm-chrome"></div>{{/if}}
     <div class="wm-toast" role="status"></div>
