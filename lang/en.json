@@ -1174,6 +1174,16 @@
       "accessoriesNote": "An accessory now gives what its Effect says while it is worn, one at a time. A unit that carried several wears the first; change it on its sheet or from the battle HUD.",
       "wearsOf": "{item} (also carries {others})"
     },
+    "Linking": {
+      "title": "Player Units Linked",
+      "count": "Units: {units} · Tokens: {tokens}",
+      "units": "Units",
+      "tokens": "Tokens on maps",
+      "copies": "Left as copies",
+      "note": "A player's unit now stands on the map as itself: its token and its sheet are one, wherever it is placed.",
+      "noteCopies": "A player's unit now stands on the map as itself: its token and its sheet are one. The tokens left as copies hold changes that are not on the unit's sheet. Move what should be kept to the sheet, then tick Link Actor Data on the token or place the unit again.",
+      "copiesLeft": "{name} is now linked to its token. These tokens hold changes of their own and were left as copies: {list}."
+    },
     "Promotion": {
       "title": "Promote {name}",
       "raise": "In place of the skill",

@@ -20,6 +20,7 @@ import { registerDiscord } from "./module/helpers/discord.mjs";
 import * as eventHelpers from "./module/helpers/events.mjs";
 import * as cutInHelpers from "./module/helpers/cut-ins.mjs";
 import * as levelUpHelpers from "./module/helpers/level-up.mjs";
+import * as linkingHelpers from "./module/helpers/linking.mjs";
 import * as migrationHelpers from "./module/helpers/migration.mjs";
 import * as npcHelpers from "./module/helpers/npc.mjs";
 import { APPLY_QUERY, applyExchangeQuery } from "./module/helpers/exchange.mjs";
@@ -281,6 +282,11 @@ Hooks.once("init", () => {
   // now has, as a Game Master opens the world; game.feo.migration.refreshSkills() does it again when asked
   migrationHelpers.registerMigration();
   game.feo.migration = migrationHelpers;
+
+  // A player's unit stands on the map as itself: its token is linked to its sheet as it is made or handed to a
+  // player, and the units players had before are linked once; game.feo.linking.linkPlayerUnits() does it again
+  linkingHelpers.registerHooks();
+  game.feo.linking = linkingHelpers;
 
   // Lets a player's staff warp a unit whose token only a Game Master may move, and has a unit that joins a
   // battle under way remember where it took the field

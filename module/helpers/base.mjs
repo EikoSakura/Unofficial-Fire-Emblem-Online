@@ -306,7 +306,8 @@ async function handOver(actor, user) {
   const kept = !next ? null : (held?.user === next) ? held : { user: next, was: ownership[next] ?? null };
   if ( next ) ownership[next] = OWNER;
 
-  await actor.update({ ownership }, { diff: false, recursive: false });
+  // The update says that the unit is only lent, so that it is not taken for a player's own (see `linking.mjs`)
+  await actor.update({ ownership }, { diff: false, recursive: false, [FEO.id]: { lending: true } });
   if ( kept ) await actor.setFlag(FEO.id, RUN_FLAG, kept);
   else if ( held ) await actor.unsetFlag(FEO.id, RUN_FLAG);
 }
