@@ -401,6 +401,8 @@ function unitSummary({ actor, name, img, army, range, ground, rider = null, lent
  *                                            that it may steal from?
  * @param {{open: boolean}|null} [unit.objects]   On a map with doors, chests or Villages: is one in its reach
  *                                            that it can act on?
+ * @param {{open: boolean}|null} [unit.retreats]  In a battle on a map with a Retreat zone: does it stand on a
+ *                                            tile of the zone, so that it can leave the map?
  * @param {boolean} [unit.lifts]              Is there something for it to do with Rescue: an ally next to it
  *                                            to pick up or to take a passenger from, or for a unit that
  *                                            carries one, a tile to Drop it on or an ally to Give it to?
@@ -868,6 +870,11 @@ export function buildDock(unit, i18n) {
       ...(unit.objects ? [action("object", "key", "FEO.Objects.label", free && unit.objects.open, {
         on: unit.mode === "object", why: free ? i18n.localize("FEO.Objects.nothing") : why
       })] : []),
+
+      // Retreat, in a battle on a map with a Retreat zone: a unit that stands on one of its tiles leaves the map
+      ...(unit.retreats ? [action("retreat", "boot", "FEO.Retreat.label", free && unit.retreats.open, {
+        tip: i18n.localize("FEO.Retreat.hint"), why: free ? i18n.localize("FEO.Retreat.away") : why
+      })] : []),
       action("wait", "hourglass", "FEO.Wait.label", (acting && !lunged) || moving),
       action("sheet", "scroll", "FEO.Hud.sheet", true)
     ],
@@ -876,7 +883,7 @@ export function buildDock(unit, i18n) {
     // run on into a third row, since a sixth column leaves no room for their names. With an odd number of
     // them Wait takes two places
     ...(() => {
-      const count = 9 + (gauge ? 1 : 0) + (song ? 1 : 0) + (unit.steals ? 1 : 0) + (unit.objects ? 1 : 0);
+      const count = 9 + (gauge ? 1 : 0) + (song ? 1 : 0) + (unit.steals ? 1 : 0) + (unit.objects ? 1 : 0) + (unit.retreats ? 1 : 0);
       return { columns: Math.min(Math.ceil(count / 2), 5), wide: (count % 2) === 1 };
     })(),
     showTurn: owner && (state === "free"),

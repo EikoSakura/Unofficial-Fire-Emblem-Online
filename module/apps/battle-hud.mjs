@@ -38,6 +38,7 @@ import {
 import { layTilesOf, layTrapItem, trapItemOf, warpTilesFor } from "../helpers/traps.mjs";
 import { staffAreaOf, staffMarksOf, staffObjectsOf, staffPlanOf, staffTakesOf, staffTargetsOf, staffTilesOf, staffWhy } from "../helpers/staves.mjs";
 import { DEPLOY_ZONE, hasGround, registerGround, tileGround } from "../helpers/terrain.mjs";
+import { retreatOf, retreatUnit } from "../helpers/retreat.mjs";
 import { buildWeather, pickWeather, registerWeather } from "../helpers/weather.mjs";
 import { buildMapAffinity, pickMapAffinity, registerMapAffinity } from "../helpers/map-affinity.mjs";
 import { staffWarpAllows, staffWarpOf, staffWarpTilesOf, warpToken } from "../helpers/warp.mjs";
@@ -118,6 +119,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       trade: BattleHud.#onTrade,
       shift: BattleHud.#onShift,
       object: BattleHud.#onObject,
+      retreat: BattleHud.#onRetreat,
       rescue: BattleHud.#onRescue,
       refresh: BattleHud.#onRefresh,
       pickRefresh: BattleHud.#onPickRefresh,
@@ -1151,12 +1153,22 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     } catch(err) {
       console.error(err);
     }
+
+    // Retreat, in a battle on a map with a Retreat zone: for a unit that stands on one of its tiles
+    let retreats = null;
+    try {
+      const found = retreatOf(document);
+      if ( found ) retreats = { open: acting && !view?.onlyWait && found.open };
+    } catch(err) {
+      console.error(err);
+    }
     return buildDock({
       ...this.#describe(token),
       lifts,
       trades: acting && tradesOf(document).some((entry) => entry.tried.ok),
       steals,
       objects,
+      retreats,
       refresh,
       choice: asked ? { skill: asked.skill, hint: asked.hint ?? "", options: asked.options } : null,
       shoves: acting && !view?.onlyWait && shovesOf(token.document).some((entry) => entry.tried.ok),
@@ -3218,6 +3230,20 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     this.#clear();
     if ( entering ) this.#mode = "object";
     this.refresh();
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Retreat: the selected unit, which stands on a tile of the Retreat zone, leaves the map once the user has
+   * said they are sure.
+   * @this {BattleHud}
+   */
+  static async #onRetreat() {
+    const token = this.#token;
+    if ( !token || !this.#acting ) return;
+    this.#clear();
+    await this.#working(() => retreatUnit(token.document));
   }
 
   /* -------------------------------------------- */

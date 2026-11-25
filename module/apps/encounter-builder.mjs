@@ -360,6 +360,7 @@ export default class EncounterBuilder extends HandlebarsApplicationMixin(Applica
     }, {
       tints: FEO.terrain.tints,
       zone: FEO.zones.deploy.tint,
+      zones: Object.fromEntries(Object.entries(FEO.zones).map(([key, zone]) => [key, zone.tint])),
       width: Math.max((frame?.clientWidth ?? 572) - 12, 240),
       height: 470
     });

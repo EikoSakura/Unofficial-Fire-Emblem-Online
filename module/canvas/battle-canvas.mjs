@@ -35,6 +35,25 @@ import { TileField } from "./tiles.mjs";
  */
 const TILE_SORT_LAYER = 650;
 
+/**
+ * The setting that says how solid the squares are drawn, as a percentage: each user's own choice, so that the
+ * map can be seen under them.
+ */
+export const SQUARE_SETTING = "squareOpacity";
+
+/**
+ * How much of each square's body this user has filled in, from 0 to 1.
+ * @returns {number}
+ */
+function squareSolid() {
+  try {
+    const percent = Number(game.settings.get(FEO.id, SQUARE_SETTING));
+    return Number.isFinite(percent) ? Math.min(Math.max(percent / 100, 0), 1) : 1;
+  } catch(err) {
+    return 1;
+  }
+}
+
 /** What draws on the canvas for the battle map, and who listens to it. */
 export const battleCanvas = {
 
@@ -139,7 +158,7 @@ export const battleCanvas = {
         const tile = keyTile(key);
         const { x, y } = canvas.grid.getTopLeftPoint(tile);
         return { x, y, wave: tile.i + tile.j };
-      }, canvas.grid.size);
+      }, canvas.grid.size, squareSolid());
       this._drawPath(paint.path ?? []);
       this._drawTraps(paint.traps ?? []);
       this._drawObjects(paint.objects ?? []);
@@ -1018,6 +1037,24 @@ export function registerBattleCanvas() {
   CONFIG.Token.objectClass = FeoToken;
   CONFIG.Token.rulerClass = FeoTokenRuler;
   CONFIG.Canvas.layers.tokens.layerClass = FeoTokenLayer;
+
+  // How solid the squares are is each user's own choice: the map is painted again as it is changed
+  game.settings.register(FEO.id, SQUARE_SETTING, {
+    name: "FEO.Setting.squareOpacity.name",
+    hint: "FEO.Setting.squareOpacity.hint",
+    scope: "client",
+    config: true,
+    type: Number,
+    range: { min: 0, max: 100, step: 5 },
+    default: 100,
+    onChange: () => {
+      try {
+        game.feo?.hud?.refresh?.();
+      } catch(err) {
+        console.error(err);
+      }
+    }
+  });
 
   // A right click on the ground is told to the listener as the button is let go, unless the map was dragged
   // with it. The window hears of that before the canvas does, while the canvas still knows of its drag

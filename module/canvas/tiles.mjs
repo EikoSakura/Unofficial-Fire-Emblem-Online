@@ -40,12 +40,16 @@ const GLEAM = { period: 2000, depth: 0.16, spread: 0.5 };
  * @param {CanvasRenderingContext2D} context
  * @param {number} size             The side of the canvas, in pixels
  * @param {TileStyle} style
+ * @param {number} [solid]          How much of its body is filled in, from 0 to 1. A tile that is less than
+ *                                  solid lets the map show through its middle and keeps its rim, with a band of
+ *                                  its colour inside it, so that it can still be told from the other kinds
  */
-export function drawTile(context, size, style) {
+export function drawTile(context, size, style, solid = 1) {
   const gap = Math.max(1, Math.round(size * 0.035));
   const side = size - (gap * 2);
   const radius = size * 0.08;
   const line = Math.max(1, size * 0.03);
+  const filled = Math.min(Math.max(Number.isFinite(solid) ? solid : 1, 0), 1);
   const body = () => {
     context.beginPath();
     context.roundRect(gap, gap, side, side, radius);
@@ -57,8 +61,10 @@ export function drawTile(context, size, style) {
   fill.addColorStop(0, style.top);
   fill.addColorStop(1, style.base);
   context.fillStyle = fill;
+  context.globalAlpha = filled;
   body();
   context.fill();
+  context.globalAlpha = 1;
 
   // A sheen across its upper half, and the lines of a tile that is struck through
   context.save();
@@ -68,7 +74,20 @@ export function drawTile(context, size, style) {
   sheen.addColorStop(0, "rgba(255, 255, 255, 0.2)");
   sheen.addColorStop(1, "rgba(255, 255, 255, 0)");
   context.fillStyle = sheen;
+  context.globalAlpha = filled;
   context.fillRect(gap, gap, side, side * 0.55);
+
+  // The band of colour that stands in for a body that was thinned out
+  if ( filled < 1 ) {
+    const band = line * 2.2;
+    const inset = line + (band / 2);
+    context.globalAlpha = (1 - filled) * 0.9;
+    context.lineWidth = band;
+    context.strokeStyle = style.top;
+    context.beginPath();
+    context.roundRect(gap + inset, gap + inset, side - (inset * 2), side - (inset * 2), Math.max(radius - inset, 0));
+    context.stroke();
+  }
   if ( style.hatched ) {
     context.strokeStyle = style.rim;
     context.globalAlpha = 0.5;
@@ -147,6 +166,9 @@ export class TileField {
 
   #size = 0;
 
+  /** How much of each square's body is filled in, as the pictures of the tiles were drawn. */
+  #solid = 1;
+
   #gleaming = false;
 
   /* -------------------------------------------- */
@@ -164,16 +186,18 @@ export class TileField {
    * @param {(key: string) => {x: number, y: number, wave: number}} place
    *                                  Where a tile lies on the canvas, and along the way the gleam runs
    * @param {number} size             The side of a space of the grid, in pixels
+   * @param {number} [solid]          How much of each square's body is filled in, from 0 to 1 (see `drawTile`)
    */
-  show(paint, place, size) {
+  show(paint, place, size, solid = 1) {
     const kinds = Object.keys(TILE_STYLES).map((kind) => [kind, Array.from(paint[kind] ?? [])]);
-    const shown = `${size}|${kinds.map(([kind, keys]) => `${kind}:${keys.join(" ")}`).join("|")}`;
+    const shown = `${size}|${solid}|${kinds.map(([kind, keys]) => `${kind}:${keys.join(" ")}`).join("|")}`;
     if ( shown === this.#shown ) return;
     this.#shown = shown;
     for ( const child of this.container.removeChildren() ) child.destroy();
     this.#tiles = [];
-    if ( size !== this.#size ) this.#forget();
+    if ( (size !== this.#size) || (solid !== this.#solid) ) this.#forget();
     this.#size = size;
+    this.#solid = solid;
     for ( const [kind, keys] of kinds ) {
       if ( !keys.length ) continue;
       const style = TILE_STYLES[kind];
@@ -208,7 +232,7 @@ export class TileField {
     const picture = document.createElement("canvas");
     picture.width = side;
     picture.height = side;
-    drawTile(picture.getContext("2d"), side, TILE_STYLES[kind]);
+    drawTile(picture.getContext("2d"), side, TILE_STYLES[kind], this.#solid);
     texture = PIXI.Texture.from(picture);
     this.#textures.set(kind, texture);
     return texture;

@@ -22,6 +22,9 @@ export const ZONE_FLAG = "zone";
 /** The zone the players set their units up in before a battle. */
 export const DEPLOY_ZONE = "deploy";
 
+/** The zone a unit can leave the map from once a battle is under way. */
+export const RETREAT_ZONE = "retreat";
+
 /** What has been read of each scene's ground, tile by tile, until its Regions change. */
 const read = new WeakMap();
 

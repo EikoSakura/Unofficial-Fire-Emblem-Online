@@ -2029,6 +2029,10 @@
         "name": "Level Up splash",
         "hint": "When a unit levels up, show its new level, its stats and what they gained over the whole screen, with a line from the unit. Off shows none, and the level up is told in chat as before. This is your own choice and changes nothing for the others at the table."
       },
+      "squareOpacity": {
+        "name": "Map squares: how solid",
+        "hint": "How much of the squares on the battle map is filled in, in percent: where a unit can move, what it can strike or reach, and what a foe threatens. Lower it to see the map under them: each square keeps its outline and a band of its colour. This is your own choice and changes nothing for the others at the table."
+      },
       "cutInSound": {
         "name": "Cut-in sound",
         "hint": "Play a sound with each skill cut-in. It is as loud as Foundry's Interface volume."
@@ -4460,7 +4464,17 @@
         "label": "Deployment zone",
         "hint": "Deployment zone: the tiles the players set their units up on. Shown to everyone until the battle begins.",
         "held": "{name} sets up inside the deployment zone until the battle begins."
+      },
+      "retreat": {
+        "label": "Retreat zone",
+        "hint": "Retreat zone: the tiles a unit can leave the map from. In a battle, a unit that stands on one has the Retreat command. Shown to everyone."
       }
+    },
+    "Retreat": {
+      "label": "Retreat",
+      "hint": "Leave the map from this tile. It is the unit's Action.",
+      "away": "This unit does not stand on a tile of the Retreat zone.",
+      "prompt": "{name} retreats and leaves the map. Go ahead?"
     },
     "MapGen": {
       "title": "Map Generator",

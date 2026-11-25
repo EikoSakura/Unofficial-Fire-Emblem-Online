@@ -650,9 +650,11 @@ FEO.objects = {
 /**
  * The zones a Game Master marks on a map with the terrain brush, each with the colour its tiles are drawn in.
  * `deploy` is the deployment zone: the tiles the players set their units up on before a battle begins.
+ * `retreat` is the Retreat zone: the tiles a unit can leave the map from once a battle is under way.
  */
 FEO.zones = {
-  deploy: { label: "FEO.Zone.deploy.label", icon: "banner", tint: "#4f8fe6" }
+  deploy: { label: "FEO.Zone.deploy.label", icon: "banner", tint: "#4f8fe6" },
+  retreat: { label: "FEO.Zone.retreat.label", icon: "boot", tint: "#f2c230" }
 };
 
 /**

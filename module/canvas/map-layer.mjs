@@ -1,6 +1,6 @@
 import { FEO } from "../config.mjs";
 import { paintScene, paintShown, terrainTint, veilPaint } from "../helpers/paint.mjs";
-import { DEPLOY_ZONE, hasZone, tileGround } from "../helpers/terrain.mjs";
+import { DEPLOY_ZONE, RETREAT_ZONE, hasZone, tileGround } from "../helpers/terrain.mjs";
 import { objectOn } from "../helpers/map-objects.mjs";
 import { battle } from "../helpers/phases.mjs";
 import { boxTiles, brushHolds, lineTiles } from "../rules/paint.mjs";
@@ -14,7 +14,8 @@ import { drawGround } from "./ground-art.mjs";
  * the ground shows the same way for as long as everything on the map is highlighted, which is while Alt is held.
  *
  * The deployment zone, where one was marked with the brush, is drawn for everyone until a battle begins on the
- * map, whether the controls are in use or not: it is where the players set their units up.
+ * map, whether the controls are in use or not: it is where the players set their units up. The Retreat zone
+ * is drawn for everyone the same way, before a battle and all through it: it is where units leave the map.
  *
  * The layer only draws and follows the pointer. What the brush holds is kept in `mapTools`, where the palette
  * of the Battle HUD sets it, and a stroke is laid down by `helpers/paint.mjs`. The Compendium and the Base add
@@ -276,8 +277,8 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
   /** The strokes are laid down one after another, so that none works from paint that is about to change. */
   #laying = Promise.resolve();
 
-  /** Was the deployment zone on show when the ground was last drawn? */
-  #deployed = false;
+  /** The zones that were on show when the ground was last drawn, in a word. */
+  #zoned = "";
 
   /* -------------------------------------------- */
   /*  Drawing                                     */
@@ -323,23 +324,28 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
   /* -------------------------------------------- */
 
   /**
-   * Is the deployment zone of the map on show? To whoever looks at the ground, and to everyone until a battle
-   * begins there.
-   * @type {boolean}
+   * The zones of the map that are on show. To whoever looks at the ground, all of them; to everyone, the
+   * deployment zone until a battle begins there, and the Retreat zone for as long as the map has one.
+   * @type {string[]}     Keys of FEO.zones
    */
-  get #deploying() {
-    return this.#surveyed || (hasZone(canvas.scene, DEPLOY_ZONE) && !battle());
+  get #zones() {
+    if ( this.#surveyed ) return Object.keys(FEO.zones);
+    const scene = canvas.scene;
+    const shown = [];
+    if ( hasZone(scene, DEPLOY_ZONE) && !battle() ) shown.push(DEPLOY_ZONE);
+    if ( hasZone(scene, RETREAT_ZONE) ) shown.push(RETREAT_ZONE);
+    return shown;
   }
 
   /* -------------------------------------------- */
 
   /**
-   * A battle began or ended, or may have: the deployment zone is drawn or wiped if that changes whether it is
-   * on show.
+   * A battle began or ended, or may have: the zones are drawn or wiped if that changes which of them are on
+   * show.
    */
   refreshZone() {
     try {
-      if ( this.#ground && !this.#ground.destroyed && (this.#deploying !== this.#deployed) ) this.redraw();
+      if ( this.#ground && !this.#ground.destroyed && (this.#zones.join(" ") !== this.#zoned) ) this.redraw();
     } catch(err) {
       console.error(err);
     }
@@ -348,8 +354,8 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
   /* -------------------------------------------- */
 
   /**
-   * Draw the ground of the map again, or wipe it if nobody is looking at it. The deployment zone is drawn with
-   * it, and on its own before a battle while nobody is.
+   * Draw the ground of the map again, or wipe it if nobody is looking at it. The zones are drawn with it, and
+   * those that are shown to everyone on their own while nobody is.
    */
   redraw() {
     try {
@@ -358,11 +364,12 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
       ground.clear();
       for ( const label of this.#heights.removeChildren() ) label.destroy();
       this.#drawStroke();
-      this.#deployed = false;
+      this.#zoned = "";
       if ( !canvas.grid?.isSquare ) return;
       const surveying = this.#surveyed;
-      const deploying = this.#deployed = this.#deploying;
-      if ( !surveying && !deploying ) return;
+      const zones = this.#zones;
+      this.#zoned = zones.join(" ");
+      if ( !surveying && !zones.length ) return;
 
       const scene = canvas.scene;
       const size = canvas.grid.size;
@@ -372,14 +379,15 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
       const pictured = groundArt.shown;
       const style = CONFIG.canvasTextStyle.clone();
       style.fontSize = Math.round(size * 0.26);
-      const zoneTint = Number(foundry.utils.Color.from(FEO.zones[DEPLOY_ZONE].tint));
+      const zoneTints = new Map(zones.map((key) => [key, Number(foundry.utils.Color.from(FEO.zones[key].tint))]));
       const inset = Math.max(2, size * 0.07);
       for ( let i = first.i; i <= last.i; i++ ) {
         for ( let j = first.j; j <= last.j; j++ ) {
           const { painted: terrain, elevation, zone } = tileGround(scene, { i, j });
           const open = terrain === FEO.terrain.default;
-          const deploy = deploying && (zone === DEPLOY_ZONE);
-          if ( !deploy && (!surveying || (open && !elevation)) ) continue;
+          const zoneTint = zoneTints.get(zone) ?? null;
+          const marked = zoneTint !== null;
+          if ( !marked && (!surveying || (open && !elevation)) ) continue;
           const { x, y } = canvas.grid.getTopLeftPoint({ i, j });
           if ( surveying && !open && !pictured ) {
             ground.lineStyle(0);
@@ -397,8 +405,9 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
             label.position.set(x + size - (size * 0.08), y + (size * 0.04));
           }
 
-          // A tile of the deployment zone is a blue plate set inside its edges, so that the ground shows round it
-          if ( deploy ) {
+          // A tile of a zone is a plate in the colour of its zone, blue for the deployment zone and yellow for
+          // the Retreat zone, set inside its edges so that the ground shows round it
+          if ( marked ) {
             ground.lineStyle({ width: Math.max(2, size * 0.035), color: zoneTint, alpha: 0.95, alignment: 0 });
             ground.beginFill(zoneTint, 0.3);
             ground.drawRect(x + inset, y + inset, size - (inset * 2), size - (inset * 2));
@@ -607,7 +616,8 @@ export function registerMapLayer() {
     if ( (scene === canvas?.scene) && changes.flags?.[FEO.id] ) redraw();
   });
 
-  // The deployment zone shows until a battle begins on the map, and again once it is over
+  // The deployment zone shows until a battle begins on the map, and again once it is over; the Retreat zone
+  // shows throughout
   const zone = foundry.utils.debounce(() => globalThis.canvas?.[MAP_CONTROL]?.refreshZone(), 40);
   for ( const hook of ["createCombat", "updateCombat", "deleteCombat"] ) Hooks.on(hook, zone);
 

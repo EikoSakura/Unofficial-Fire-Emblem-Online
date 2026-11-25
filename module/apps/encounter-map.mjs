@@ -38,11 +38,12 @@ const OPEN = "plain";
  * @param {object} options
  * @param {Record<string, string>} options.tints      The colour of each kind of terrain
  * @param {string} options.zone                       The colour of the tiles the players set up on
+ * @param {Record<string, string>} [options.zones]    The colour of each zone, for those that have their own
  * @param {number} [options.width]                    The box to fit the picture in, in CSS pixels
  * @param {number} [options.height]
  * @returns {number}                                  The side of a tile as drawn, in CSS pixels
  */
-export function drawEncounterMap(canvas, map, { tints, zone, width = 560, height = 440 }) {
+export function drawEncounterMap(canvas, map, { tints, zone, zones = {}, width = 560, height = 440 }) {
   const cell = Math.max(Math.floor(Math.min(width / map.columns, height / map.rows)), 4);
   const sharp = Math.max(Math.ceil(window.devicePixelRatio || 1), 2);
   const side = cell * sharp;
@@ -67,11 +68,12 @@ export function drawEncounterMap(canvas, map, { tints, zone, width = 560, height
     }
   });
 
-  // The tiles the players set up on
-  pen.fillStyle = zone;
+  // The tiles the players set up on, and those of any other zone in its own colour
   for ( let i = 0; i < map.rows; i++ ) {
     for ( let j = 0; j < map.columns; j++ ) {
-      if ( !map.zoneAt(i, j) ) continue;
+      const marked = map.zoneAt(i, j);
+      if ( !marked ) continue;
+      pen.fillStyle = zones[marked] ?? zone;
       pen.globalAlpha = 0.38;
       pen.fillRect(j * side, i * side, side, side);
       pen.globalAlpha = 1;
