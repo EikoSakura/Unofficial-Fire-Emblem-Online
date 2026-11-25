@@ -334,14 +334,19 @@ FEO.supportBoosts = {
 /*  Supports                                    */
 /* -------------------------------------------- */
 
-/** Support ranks and the level each one multiplies affinity boosts by. E is a starting point with no bonus. */
+/**
+ * Support ranks and the level each one multiplies affinity boosts by. E is a starting point with no bonus.
+ * The ranks climb one after another up to A; from there a support reaches one of the `top` ranks, A+ or S,
+ * which give the same and of which a unit holds one each.
+ */
 FEO.supportRanks = {
   E: { label: "FEO.SupportRank.E", level: 0 },
   D: { label: "FEO.SupportRank.D", level: 1 },
   C: { label: "FEO.SupportRank.C", level: 2 },
   B: { label: "FEO.SupportRank.B", level: 3 },
   A: { label: "FEO.SupportRank.A", level: 4 },
-  S: { label: "FEO.SupportRank.S", level: 5 }
+  "A+": { label: "FEO.SupportRank.APlus", level: 5, top: true },
+  S: { label: "FEO.SupportRank.S", level: 5, top: true }
 };
 
 /** The radius, in spaces, within which support partners boost each other. */
@@ -1385,18 +1390,21 @@ FEO.weapons = {
  *   rank is reached at the totals in `chapters.thresholds`.
  * - `points`: points for what partners do together, as listed in `events`. A rank is gained at `points.perRank`
  *   and the points start again from what is left over.
- * `topRankLimit` is how many supports of the highest rank a unit may hold: one A+ and one S.
+ * From A a support does not go on by itself: once it has the points, its partners choose between A+ and S, and
+ * a unit holds one support of each at most.
  * `bondStart` is the rank a Bond Support begins at, and `bondAdjacent` what its partners gain side by side.
  * `fightRange` is how close a partner must be for a fight to earn points.
+ * `heart` is how long, in milliseconds, the heart shows that pops over two partners as they grow closer; 0
+ * for none.
  */
 FEO.supports = {
-  method: "chapters",
+  method: "points",
   methods: {
     manual: "FEO.Support.method.manual",
     chapters: "FEO.Support.method.chapters",
     points: "FEO.Support.method.points"
   },
-  chapters: { perBattle: 1, thresholds: { D: 2, C: 5, B: 10, A: 15, S: 20 } },
+  chapters: { perBattle: 1, thresholds: { D: 2, C: 5, B: 10, A: 15, "A+": 20, S: 20 } },
   points: { perRank: 80 },
   events: {
     adjacent: 4,
@@ -1407,7 +1415,7 @@ FEO.supports = {
     chapter: 10
   },
   fightRange: 2,
-  topRankLimit: 2,
+  heart: 1700,
   bondStart: "D",
   bondAdjacent: { hit: 10, dodge: 10, critical: 5 }
 };
@@ -1608,8 +1616,8 @@ FEO.optionalGrowths = {
  *
  * `heartSeals` (Heart Seals/Reclassing): a new unit chooses `picks` classes which, with the class it starts
  * in, are its Heart Seal Classes. It can reclass into the line of any of them, at the tier it is in. A player
- * spends an item named `item` to do so, where the unit carries one; the Game Master needs none. Reaching the
- * support rank `supportRank` with a partner lets a unit add one of the partner's Heart Seal Classes to its own.
+ * spends an item named `item` to do so, where the unit carries one; the Game Master needs none. Reaching A+
+ * or S with a partner lets a unit add one of the partner's Heart Seal Classes to its own.
  *
  * `glory` (Glory): the unit that brings down a unit with Glory to give gains that much, to spend on Powers.
  * Each of `powers` has its `cost` and what it does: `effects` in the notation of skill effects (see
@@ -1913,8 +1921,7 @@ FEO.optional = {
   heartSeals: {
     enabled: false,
     picks: 3,
-    item: "Heart Seal",
-    supportRank: "S"
+    item: "Heart Seal"
   },
   glory: {
     enabled: false,

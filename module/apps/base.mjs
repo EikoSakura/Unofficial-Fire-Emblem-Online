@@ -79,6 +79,7 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
       talk: Base.#onTalk,
       befriend: Base.#onBefriend,
       rank: Base.#onRank,
+      top: Base.#onTop,
       foe: Base.#onFoe,
       spar: Base.#onSpar,
       join: Base.#onJoin,
@@ -1230,6 +1231,16 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
    */
   static async #onRank(event, target) {
     await request("rank", { actor: this.#state.visitor, bond: Number(target.dataset.bond), lower: target.dataset.lower === "true" });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A support at A takes one of the highest ranks.
+   * @this {Base}
+   */
+  static async #onTop(event, target) {
+    await request("top", { actor: this.#state.visitor, bond: Number(target.dataset.bond), to: target.dataset.to });
   }
 
   /* -------------------------------------------- */

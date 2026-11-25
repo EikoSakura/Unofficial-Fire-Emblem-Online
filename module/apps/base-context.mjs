@@ -10,7 +10,9 @@ import {
 } from "../rules/base.mjs";
 import { sellValue } from "../rules/progression.mjs";
 import { discounted, resold } from "../rules/stealing.mjs";
-import { pointsForNext } from "../rules/supports.mjs";
+import {
+  atFork, isReady, namesPartner, nextRanks, openTops, pointsForNext, rankBelow, takenTops, topRanks
+} from "../rules/supports.mjs";
 import { canWield } from "../rules/weapons.mjs";
 
 /**
@@ -910,16 +912,27 @@ export function buildSupports(world, i18n) {
     .filter(([key]) => bonus?.[key])
     .map(([key, label]) => `${i18n.localize(label)} +${bonus[key]}`).join(", ");
 
+  const level = (rank) => FEO.supportRanks[rank]?.level ?? 0;
+  const label = (rank) => i18n.localize(FEO.supportRanks[rank]?.label ?? "");
+  const either = (list) => list.map(label).join(i18n.localize("FEO.Support.or"));
+
   const bonds = (visitor?.bonds ?? []).map((bond, index) => {
     const partner = world.company.find((unit) => bond.uuid && (unit.uuid === bond.uuid)) ?? null;
-    const at = ranks.indexOf(bond.rank);
     const needed = pointsForNext(bond.rank, method);
     const floor = method === "chapters" ? (FEO.supports.chapters.thresholds[bond.rank] ?? 0) : 0;
-    const next = ranks[at + 1];
+    const next = nextRanks(bond.rank);
+
+    // From A the two choose between the highest ranks, of which neither may hold one with somebody else
+    const fork = atFork(bond.rank);
+    const theirs = partner ? takenTops(partner.bonds, (partner.bonds ?? []).findIndex((other) => {
+      return namesPartner(other, { uuid: visitor.uuid, names: [visitor.name] });
+    })) : [];
+    const open = openTops(takenTops(visitor.bonds, index), theirs);
+    const ready = isReady(bond, method) && (open.length > 0);
     const progress = (needed === null) ? null : {
       pct: Math.min(Math.max(Math.round((bond.points - floor) / Math.max(needed - floor, 1) * 100), 0), 100),
       text: fmt(`supports.progress.${method}`, {
-        points: bond.points, needed, rank: i18n.localize(FEO.supportRanks[next]?.label ?? "")
+        points: bond.points, needed, rank: either((fork && open.length) ? open : next)
       })
     };
     const given = gives(bond.bonus);
@@ -931,15 +944,24 @@ export function buildSupports(world, i18n) {
       sub: partner ? subOf(partner, i18n) : loc("supports.offRoster"),
       affinities: [FEO.affinityIcons[visitor.affinity], FEO.affinityIcons[bond.affinity]].filter(Boolean),
       kin: !!bond.kin,
-      ladder: ranks.map((rank, step) => ({
-        label: i18n.localize(FEO.supportRanks[rank].label), cls: step === at ? "now" : step < at ? "won" : ""
+      ladder: ranks.map((rank) => ({
+        label: label(rank),
+        cls: (rank === bond.rank) ? "now" : (level(rank) < level(bond.rank)) ? "won"
+          : (fork && FEO.supportRanks[rank].top && !open.includes(rank)) ? "shut" : ""
       })),
       progress,
       ripe: ripe.has(index),
+      ready,
       gives: given ? fmt("supports.gives", { range: FEO.supportRange, bonus: given }) : loc("supports.nothingYet"),
       kinGives: bond.kin ? fmt("supports.kinGives", { hit: kin.hit, dodge: kin.dodge, crit: kin.critical }) : null,
-      canRaise: user.isGM && !!next,
-      canLower: user.isGM && (at > 0)
+
+      // The highest ranks, for the two to choose from once the support has the points, and for a Game Master
+      // to hand out at any time
+      tops: (fork && (ready || user.isGM)) ? topRanks().map((rank) => ({
+        rank, label: label(rank), open: open.includes(rank), hint: fmt("supports.take", { rank: label(rank) })
+      })) : [],
+      canRaise: user.isGM && !fork && (next.length > 0),
+      canLower: user.isGM && (rankBelow(bond.rank) !== null)
     };
   });
 

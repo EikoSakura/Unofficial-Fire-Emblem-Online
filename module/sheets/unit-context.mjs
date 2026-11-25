@@ -18,7 +18,7 @@ import { countsAsSkill, formsOf } from "../rules/skills.mjs";
 import { staggerInUse } from "../rules/stagger.mjs";
 import { sellValue } from "../rules/progression.mjs";
 import { resold } from "../rules/stealing.mjs";
-import { pointsForNext } from "../rules/supports.mjs";
+import { isTop, ladder, pointsForNext, topRanks } from "../rules/supports.mjs";
 import { canWield, countedRank, repairCost, wieldLevel } from "../rules/weapons.mjs";
 import { picksOf } from "../helpers/picks.mjs";
 import { prepareUsage } from "../helpers/skill-usage-context.mjs";
@@ -940,7 +940,8 @@ function prepareChecks(system) {
  * @returns {object[]}
  */
 function prepareBonds(system) {
-  const ranks = Object.keys(FEO.supportRanks);
+  const level = (rank) => FEO.supportRanks[rank]?.level ?? 0;
+  const steps = ladder().filter((rank) => level(rank) > 0);
   return system.bonds.map((bond, index) => {
     const parts = Object.entries(FEO.supportBoosts)
       .map(([key, label]) => ({ label, amount: bond.bonus[key] }))
@@ -961,9 +962,11 @@ function prepareBonds(system) {
       kin: !!bond.kin,
       linked: !!bond.uuid,
       parts,
-      letters: ranks.filter((rank) => rank !== "E").map((rank) => ({
+
+      // The ranks it has climbed, then the one of the highest it took, or both while it has taken neither
+      letters: [...steps, ...(isTop(bond.rank) ? [bond.rank] : topRanks())].map((rank) => ({
         label: FEO.supportRanks[rank].label,
-        on: ranks.indexOf(rank) <= ranks.indexOf(bond.rank)
+        on: level(rank) <= level(bond.rank)
       }))
     };
   });

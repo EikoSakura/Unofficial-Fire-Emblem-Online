@@ -189,6 +189,7 @@
       "C": "C",
       "B": "B",
       "A": "A",
+      "APlus": "A+",
       "S": "S"
     },
     "WeaponType": {
@@ -2057,7 +2058,7 @@
       },
       "supportMethod": {
         "name": "Support Points",
-        "hint": "How supports grow: by hand, a point for each battle two partners are fielded in together (ranks at 2, 5, 10, 15 and 20 points), or points for what partners do together (a rank every 80)."
+        "hint": "How supports grow: by hand, a point for each battle two partners are fielded in together (ranks at 2, 5, 10, 15 and 20 points), or points for what partners do together (a rank every 80). From A the two partners choose between A+ and S."
       },
       "off": "Off",
       "optionalAffinities": {
@@ -2410,8 +2411,17 @@
       },
       "title": "Supports",
       "rankUp": "Reaches {rank}",
-      "held": "Ready for the highest rank, but both slots for it are taken",
+      "ready": "Ready for {ranks}",
+      "or": " or ",
+      "held": "Has earned its highest rank, but A+ and S are both taken",
       "gained": "+{amount} ({points} points)",
+      "full": "No more to gain",
+      "top": {
+        "title": "The highest rank",
+        "lead": "{name} and {partner} can reach their highest rank. Which is it?",
+        "hint": "A+ and S give the same. A unit holds one support of each, so the choice counts for both of them.",
+        "later": "Later"
+      },
       "addPoints": "Add support points",
       "event": {
         "battle": "Fielded in the same battle",
@@ -4109,6 +4119,8 @@
         "nothingYet": "This rank gives nothing yet.",
         "kinGives": "Side by side: Hit +{hit}, Dodge +{dodge}, Crit +{crit}.",
         "ripe": "A conversation is waiting.",
+        "ready": "Ready for its highest rank.",
+        "take": "Take {rank} as the highest rank",
         "talk": "Hold conversation",
         "lower": "Lower the rank",
         "raise": "Raise the rank",
@@ -4178,6 +4190,7 @@
         "soldOut": "The {item} is sold out.",
         "cannotForge": "{item} cannot be forged.",
         "bonded": "The two already have a support with {name}.",
+        "noTop": "That rank is not open to this support.",
         "noBouts": "{name} has no bouts left before the next battle.",
         "bound": "{item} cannot leave {name}'s pack."
       }

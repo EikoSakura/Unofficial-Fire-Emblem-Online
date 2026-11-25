@@ -2,7 +2,7 @@ import Compendium from "../apps/compendium.mjs";
 import { FEO } from "../config.mjs";
 import { chooseSkill, classLine, planReclass, planUpdate, reclassTrade } from "../rules/classes.mjs";
 import { addSealClass, removeSealClass, sealClasses } from "../rules/optional.mjs";
-import { topRank } from "../rules/supports.mjs";
+import { topRanks } from "../rules/supports.mjs";
 import { buildChangeCard, buildReclassDialog } from "../sheets/class-context.mjs";
 import { postCard } from "./chat.mjs";
 import { classesOf, embedClass, findItem, findPromotions, grantSkills, knownSkills } from "./classes.mjs";
@@ -439,17 +439,18 @@ export async function offerPartnerClass(actor, partner) {
 /* -------------------------------------------- */
 
 /**
- * The partners with whom a unit's supports have just reached their highest rank, from the bonds it had before
- * a change and those it has after it.
+ * The partners with whom a unit's supports have just reached one of the highest ranks, from the bonds it had
+ * before a change and those it has after it. A support that goes from one of them to the other has reached
+ * nothing new.
  * @param {object[]} before     The unit's bonds before the change
  * @param {object[]} after      Its bonds after it
- * @param {string} rank         The rank that counts
+ * @param {string[]} ranks      The ranks that count
  * @returns {string[]}          The addresses of those partners' Actors
  */
-export function newTopPartners(before, after, rank) {
+export function newTopPartners(before, after, ranks) {
   const key = (bond) => bond.uuid || bond.name;
   const had = new Map((before ?? []).map((bond) => [key(bond), bond.rank]));
-  return (after ?? []).filter((bond) => bond.uuid && (bond.rank === rank) && (had.get(key(bond)) !== rank)).map((bond) => bond.uuid);
+  return (after ?? []).filter((bond) => bond.uuid && ranks.includes(bond.rank) && !ranks.includes(had.get(key(bond)))).map((bond) => bond.uuid);
 }
 
 /* -------------------------------------------- */
@@ -459,7 +460,6 @@ export function newTopPartners(before, after, rank) {
  */
 export function registerHooks() {
   if ( !config().enabled ) return;
-  const rank = () => (config().supportRank in FEO.supportRanks ? config().supportRank : topRank());
 
   // The bonds a unit had are noted before they change, and looked at again once they have
   Hooks.on("preUpdateActor", (actor, changes, options) => {
@@ -468,7 +468,7 @@ export function registerHooks() {
   });
   Hooks.on("updateActor", async (actor, changes, options, userId) => {
     if ( (userId !== game.user.id) || !options.feoBondsBefore || (actor.type !== "unit") ) return;
-    for ( const uuid of newTopPartners(options.feoBondsBefore, actor._source.system.bonds, rank()) ) {
+    for ( const uuid of newTopPartners(options.feoBondsBefore, actor._source.system.bonds, topRanks()) ) {
       try {
         const partner = await foundry.utils.fromUuid(uuid);
         await offerPartnerClass(actor, partner);

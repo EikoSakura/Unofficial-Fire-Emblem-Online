@@ -27,7 +27,7 @@ import {
 } from "../helpers/reclass.mjs";
 import { toggleSealPicker } from "../helpers/seal-picker.mjs";
 import { adjustGauge, resetGauge, toggleShift } from "../helpers/shifting.mjs";
-import { awardEvent, grantPoints, linkBond, queueRangesFor, reportGains } from "../helpers/supports.mjs";
+import { awardEvent, grantPoints, linkBond, queueRangesFor, settleGains } from "../helpers/supports.mjs";
 import { endTurnOf, startTurnOf } from "../helpers/turns.mjs";
 import { useSkillMoment, waitFor } from "../helpers/skill-turns.mjs";
 import { packBar } from "../helpers/creatures.mjs";
@@ -410,7 +410,7 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
         const index = Number(event.currentTarget.closest("[data-bond]").dataset.bond);
         if ( !amount ) return;
         const gains = await grantPoints(this.actor, [index], amount);
-        await reportGains(this.actor, gains, { reason: `FEO.Support.event.${event.currentTarget.value}`, all: true });
+        await settleGains(this.actor, gains, { reason: `FEO.Support.event.${event.currentTarget.value}`, all: true });
       });
     }
   }

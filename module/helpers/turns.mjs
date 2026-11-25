@@ -8,7 +8,7 @@ import { keepConditions, startBattleEvents } from "./events.mjs";
 import { settleShiftsFor, startBattleShift, tickShiftFor } from "./shifting.mjs";
 import { endStaggerTurnFor, startBattleStagger, startStaggerTurnFor } from "./stagger.mjs";
 import { endSkillTurnFor, startBattleSkills, startSkillTurnFor } from "./skill-turns.mjs";
-import { awardBattle, awardEvent } from "./supports.mjs";
+import { awardBattle } from "./supports.mjs";
 
 /**
  * Everything that happens when a unit's turn starts or ends, whether the combat tracker or the buttons on
@@ -80,8 +80,7 @@ export async function startTurnOf(actor) {
 /**
  * A unit's turn ends: conditions in their last turn end, its skills have their moment, the weather deals what
  * it deals, a unit it subdued and
- * did not pick up waits one turn less, a Staggered unit is one turn nearer to recovering, and partners it
- * stands next to grow closer where the world counts points for that.
+ * did not pick up waits one turn less, and a Staggered unit is one turn nearer to recovering.
  * @param {Actor} actor
  * @returns {Promise<void>}
  */
@@ -115,10 +114,6 @@ export async function endTurnOf(actor) {
 
     // A weapon a skill lent it, which it took up and did not attack with, is put down as its turn ends
     if ( actor.isOwner && actor.getFlag(FEO.id, "lent") ) await actor.unsetFlag(FEO.id, "lent");
-    // A unit that is off the map, as one an ally carries, stands next to nobody
-    for ( const token of actor.system.defeat?.out ? [] : (actor.getActiveTokens?.(false, true) ?? []).slice(0, 1) ) {
-      await awardEvent("adjacent", token, { range: 1, mutual: false });
-    }
   } catch(err) {
     console.error(err);
   }

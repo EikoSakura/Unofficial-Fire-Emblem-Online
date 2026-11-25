@@ -20,11 +20,94 @@ import { FEO } from "../config.mjs";
 const RANKS = () => Object.keys(FEO.supportRanks);
 
 /**
- * The highest support rank.
- * @returns {string}
+ * The highest support ranks, of which a support reaches one: A+ and S.
+ * @returns {string[]}
  */
-export function topRank() {
-  return RANKS().at(-1);
+export function topRanks() {
+  return RANKS().filter((rank) => FEO.supportRanks[rank].top);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Is a rank one of the highest?
+ * @param {string} rank
+ * @returns {boolean}
+ */
+export function isTop(rank) {
+  return !!FEO.supportRanks[rank]?.top;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The ranks a support climbs one after another, from E to A.
+ * @returns {string[]}
+ */
+export function ladder() {
+  return RANKS().filter((rank) => !FEO.supportRanks[rank].top);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The ranks that come after a rank: the next one up to A, both of the highest from A, and none from those.
+ * @param {string} rank
+ * @returns {string[]}
+ */
+export function nextRanks(rank) {
+  const steps = ladder();
+  const at = steps.indexOf(rank);
+  if ( at < 0 ) return [];
+  return (at === steps.length - 1) ? topRanks() : [steps[at + 1]];
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The rank below a rank: A for both of the highest. Null for the lowest.
+ * @param {string} rank
+ * @returns {string|null}
+ */
+export function rankBelow(rank) {
+  const steps = ladder();
+  if ( isTop(rank) ) return steps.at(-1);
+  return steps[steps.indexOf(rank) - 1] ?? null;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Does a support stand where it chooses between the highest ranks?
+ * @param {string} rank
+ * @returns {boolean}
+ */
+export function atFork(rank) {
+  return rank === ladder().at(-1);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The highest ranks a unit already holds, on its supports other than one.
+ * @param {{rank: string}[]} bonds
+ * @param {number} [except]     The support that is not counted
+ * @returns {string[]}
+ */
+export function takenTops(bonds, except = -1) {
+  return [...new Set((bonds ?? []).filter((bond, index) => (index !== except) && isTop(bond.rank)).map((bond) => bond.rank))];
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The highest ranks still open to a support: those neither of its partners holds with somebody else.
+ * @param {string[]} [taken]      Those its unit holds
+ * @param {string[]} [theirs]     Those its partner holds
+ * @returns {string[]}
+ */
+export function openTops(taken = [], theirs = []) {
+  return topRanks().filter((rank) => !taken.includes(rank) && !theirs.includes(rank));
 }
 
 /* -------------------------------------------- */
@@ -37,8 +120,7 @@ export function topRank() {
  * @returns {number|null}
  */
 export function pointsForNext(rank, method = FEO.supports.method) {
-  const ranks = RANKS();
-  const next = ranks[ranks.indexOf(rank) + 1];
+  const [next] = nextRanks(rank);
   if ( !next ) return null;
   if ( method === "chapters" ) return FEO.supports.chapters.thresholds[next] ?? null;
   if ( method === "points" ) return FEO.supports.points.perRank;
@@ -48,38 +130,80 @@ export function pointsForNext(rank, method = FEO.supports.method) {
 /* -------------------------------------------- */
 
 /**
- * Add support points to a bond and raise its rank as far as they carry it.
- * A rank is never lost. The highest rank is only reached while the unit has room for another support of it.
+ * Has a support the points for one of the highest ranks, which its partners have yet to choose?
+ * @param {{rank: string, points: number}} bond
+ * @param {string} [method]
+ * @returns {boolean}
+ */
+export function isReady(bond, method = FEO.supports.method) {
+  const needed = pointsForNext(bond.rank, method);
+  return atFork(bond.rank) && (needed !== null) && ((bond.points ?? 0) >= needed);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Add support points to a bond and raise its rank as far as they carry it. A rank is never lost.
+ * At A the points only make the support ready: which of the highest ranks it reaches is for its partners to
+ * choose (see `takeTop`), and it gains no points beyond those it needs. A support of the highest rank gains none.
  * @param {{rank: string, points: number}} bond
  * @param {number} amount
  * @param {object} [options]
- * @param {string} [options.method]       How supports grow; the world's method by default
- * @param {number} [options.topRanks]     How many of the unit's other supports are already at the highest rank
- * @returns {{rank: string, points: number, rankUps: number, held: boolean}}   `held` when the highest rank was
- *                                                                              earned but there is no room for it
+ * @param {string} [options.method]     How supports grow; the world's method by default
+ * @param {string[]} [options.taken]    The highest ranks its unit and its partner hold with somebody else
+ * @returns {{rank: string, points: number, rankUps: number, gained: number, ready: boolean, held: boolean,
+ *   ripened: boolean, open: string[]}}
+ *   `gained`, the points that counted; `ready`, when a highest rank is there to be chosen from `open`; `held`,
+ *   when it was earned but both are taken; `ripened`, when the support came to that with these points
  */
-export function addPoints(bond, amount, { method = FEO.supports.method, topRanks = 0 } = {}) {
-  const ranks = RANKS();
-  const top = topRank();
-  const room = topRanks < FEO.supports.topRankLimit;
+export function addPoints(bond, amount, { method = FEO.supports.method, taken = [] } = {}) {
+  const had = Math.max(bond.points ?? 0, 0);
+  const added = Math.max(Math.floor(amount ?? 0), 0);
+  const open = openTops(taken);
+  const none = { rank: bond.rank, points: had, rankUps: 0, gained: 0, ready: false, held: false, ripened: false, open };
+  if ( isTop(bond.rank) || !nextRanks(bond.rank).length ) return none;
+
+  const was = isReady(bond, method);
   let rank = bond.rank;
-  let points = Math.max((bond.points ?? 0) + Math.max(Math.floor(amount ?? 0), 0), 0);
+  let points = had + added;
+  let gained = added;
   let rankUps = 0;
-  let held = false;
+  let full = false;
 
   for ( ;; ) {
-    const next = ranks[ranks.indexOf(rank) + 1];
     const needed = pointsForNext(rank, method);
-    if ( !next || (needed === null) || (points < needed) ) break;
-    if ( (next === top) && !room ) {
-      held = true;
+    if ( (needed === null) || (points < needed) ) break;
+    if ( atFork(rank) ) {
+      gained -= points - needed;
+      points = needed;
+      full = true;
       break;
     }
     if ( method === "points" ) points -= needed;
-    rank = next;
+    rank = nextRanks(rank)[0];
     rankUps++;
   }
-  return { rank, points, rankUps, held };
+  const ready = full && (open.length > 0);
+  const held = full && !open.length;
+  return { rank, points, rankUps, gained: Math.max(gained, 0), ready, held, ripened: full && !was, open };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A support at A takes one of the highest ranks.
+ * @param {{rank: string, points: number}} bond
+ * @param {string} top                    The rank chosen
+ * @param {object} [options]
+ * @param {string} [options.method]       How supports grow; the world's method by default
+ * @param {string[]} [options.taken]      The highest ranks its unit holds with somebody else
+ * @param {boolean} [options.force]       Is it taken whether or not the support has the points, as by a Game Master?
+ * @returns {{rank: string, points: number}|null}     Null when it cannot take that rank
+ */
+export function takeTop(bond, top, { method = FEO.supports.method, taken = [], force = false } = {}) {
+  if ( !isTop(top) || !atFork(bond.rank) || taken.includes(top) ) return null;
+  if ( !force && !isReady(bond, method) ) return null;
+  return { rank: top, points: (method === "points") ? 0 : Math.max(bond.points ?? 0, 0) };
 }
 
 /* -------------------------------------------- */

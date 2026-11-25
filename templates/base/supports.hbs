@@ -28,8 +28,12 @@
         <button type="button" class="bs-step bs-gmb" data-action="rank" data-bond="{{bond.index}}" data-lower="false"
                 data-tooltip="{{localize "FEO.Base.supports.raise"}}" aria-label="{{localize "FEO.Base.supports.raise"}}">{{feoIcon "plus"}}</button>
         {{/if}}
+        {{#each bond.tops as |top|}}
+        <button type="button" class="bs-btn bs-sm{{#if bond.ready}} bs-gold{{else}} bs-gmb{{/if}}" data-action="top" data-bond="{{bond.index}}" data-to="{{top.rank}}"
+                data-tooltip="{{top.hint}}" aria-label="{{top.hint}}"{{#unless top.open}} disabled{{/unless}}>{{top.label}}</button>
+        {{/each}}
       </div>
-      <div class="bs-gives">{{bond.gives}}{{#if bond.kinGives}} {{bond.kinGives}}{{/if}}{{#if bond.ripe}} <b>{{localize "FEO.Base.supports.ripe"}}</b>{{/if}}</div>
+      <div class="bs-gives">{{bond.gives}}{{#if bond.kinGives}} {{bond.kinGives}}{{/if}}{{#if bond.ready}} <b>{{localize "FEO.Base.supports.ready"}}</b>{{/if}}{{#if bond.ripe}} <b>{{localize "FEO.Base.supports.ripe"}}</b>{{/if}}</div>
     </article>
     {{/each}}
   </div>

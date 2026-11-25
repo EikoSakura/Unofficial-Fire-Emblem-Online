@@ -4,10 +4,11 @@ import {
 } from "../rules/base.mjs";
 import { sellValue } from "../rules/progression.mjs";
 import { discounted, resold } from "../rules/stealing.mjs";
+import { atFork, nextRanks, rankBelow } from "../rules/supports.mjs";
 import { postCard } from "./chat.mjs";
 import { awardExp, earnsExp, expRow, useExp } from "./experience.mjs";
 import { characterOf } from "./players.mjs";
-import { linkBond } from "./supports.mjs";
+import { chooseTop, linkBond } from "./supports.mjs";
 import { originalOf } from "./weapons.mjs";
 
 /**
@@ -806,11 +807,23 @@ const ACTIONS = {
       if ( actor?.type !== "unit" ) refuse("noUnit");
       const bonds = foundry.utils.deepClone(actor._source.system.bonds);
       const bond = bonds[data.bond];
-      const ranks = Object.keys(FEO.supportRanks);
-      const next = ranks[ranks.indexOf(bond?.rank) + (data.lower ? -1 : 1)];
-      if ( !bond || !next ) return;
+      if ( !bond ) return;
+
+      // From A a support takes one of the highest ranks, which is chosen (see `top`)
+      const next = data.lower ? rankBelow(bond.rank) : atFork(bond.rank) ? null : nextRanks(bond.rank)[0];
+      if ( !next ) return;
       bond.rank = next;
       await actor.update({ "system.bonds": bonds });
+    }
+  },
+
+  top: {
+    unit: true,
+    post: "supports",
+    async run({ data, user, actor }) {
+      // A Game Master hands the rank out whether or not the support has the points for it
+      const taken = await chooseTop(actor, Number(data.bond), String(data.to ?? ""), { force: user.isGM });
+      if ( !taken ) refuse("noTop");
     }
   },
 

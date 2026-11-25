@@ -7,6 +7,7 @@ import { moveAgainFor, movingAgain, settleMove } from "./canto.mjs";
 import { armyOf } from "./exchange.mjs";
 import { forgetTurn, noteTurn } from "./movement.mjs";
 import { awardCarried, isCarried, setDownOver, settleCarries, tendCarried } from "./rescue.mjs";
+import { awardBeside } from "./supports.mjs";
 import { healFromGround } from "./terrain.mjs";
 import { endMapTimed, endPhaseTimed } from "./timed.mjs";
 import { endTurnOf, startTurnOf } from "./turns.mjs";
@@ -417,11 +418,13 @@ export async function endPhase(combat) {
     }
   }
 
-  // Carrying a hurt partner through the Phase brings the two closer
-  try {
-    await awardCarried(combat, phase);
-  } catch(err) {
-    console.error(err);
+  // Carrying a hurt partner through the Phase brings the two closer, and so does ending it side by side
+  for ( const award of [awardCarried, awardBeside] ) {
+    try {
+      await award(combat, phase);
+    } catch(err) {
+      console.error(err);
+    }
   }
 
   // What lasted until the end of this Phase is over, for every unit in the battle

@@ -188,6 +188,9 @@ Hooks.once("init", () => {
   optionalHelpers.registerHooks();
   reclassHelpers.registerHooks();
 
+  // Supports: the heart that pops over two partners as they grow closer, and their choice between A+ and S
+  supportHelpers.registerHooks();
+
   // A skill that gives a weapon rank raises it as the skill is taken, and takes it back as the skill goes
   skillRankHelpers.registerHooks();
 

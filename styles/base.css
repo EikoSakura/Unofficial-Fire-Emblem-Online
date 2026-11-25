@@ -468,6 +468,7 @@ button.bs-th:focus-visible { outline: 2px solid var(--feo-gold); outline-offset:
 .bs-ladder span { flex: 1; text-align: center; padding: 2px 0; font-family: var(--feo-font-display); font-size: 14px; border-radius: 3px; background: var(--feo-track); color: var(--feo-faint); }
 .bs-ladder span.bs-won { background: color-mix(in srgb, var(--feo-gold) 26%, transparent); color: var(--feo-ink); }
 .bs-ladder span.bs-now { background: linear-gradient(180deg, #f6dd96, #c9a14a); color: #241a05; box-shadow: 0 0 8px color-mix(in srgb, var(--feo-gold) 50%, transparent); }
+.bs-ladder span.bs-shut { opacity: .45; text-decoration: line-through; }
 .bs-bond .bs-prog { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-top: 6px; font-size: 12px; color: var(--feo-muted); }
 .bs-bond .bs-prog .bs-bar { --bs-c: var(--feo-gold); }
 .bs-bond .bs-gives { grid-column: 2 / -1; font-size: 12.5px; color: var(--feo-muted); }
