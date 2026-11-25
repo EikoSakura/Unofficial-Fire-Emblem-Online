@@ -4428,7 +4428,7 @@
     },
     "Controls": {
       "title": "Fire Emblem",
-      "survey": "Survey the ground",
+      "survey": "Survey the ground (hold Alt for a glance from any controls)",
       "paint": "Terrain brush",
       "mapgen": "Map generator",
       "encounter": "Encounter builder",

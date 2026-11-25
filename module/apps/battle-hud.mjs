@@ -37,7 +37,7 @@ import {
 } from "../helpers/phases.mjs";
 import { layTilesOf, layTrapItem, trapItemOf, warpTilesFor } from "../helpers/traps.mjs";
 import { staffAreaOf, staffMarksOf, staffObjectsOf, staffPlanOf, staffTakesOf, staffTargetsOf, staffTilesOf, staffWhy } from "../helpers/staves.mjs";
-import { DEPLOY_ZONE, registerGround, tileGround } from "../helpers/terrain.mjs";
+import { DEPLOY_ZONE, hasGround, registerGround, tileGround } from "../helpers/terrain.mjs";
 import { buildWeather, pickWeather, registerWeather } from "../helpers/weather.mjs";
 import { buildMapAffinity, pickMapAffinity, registerMapAffinity } from "../helpers/map-affinity.mjs";
 import { staffWarpAllows, staffWarpOf, staffWarpTilesOf, warpToken } from "../helpers/warp.mjs";
@@ -69,6 +69,9 @@ const CAPTURE_ACTIONS = ["toggleCapture", "pickUpCaptive", "releaseCaptive"];
 
 /** How long the pointer rests on a tile before the terrain card says more of it, in milliseconds. */
 const REST_TIME = 700;
+
+/** The same for whoever is looking at the ground, who is there to read what each tile does. */
+const SURVEY_REST_TIME = 200;
 
 /**
  * The Battle HUD: what a player sees and does on the battle map without opening a sheet. A banner says whose
@@ -168,6 +171,12 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /** The token under the pointer. @type {Token|null} */
   #hoverToken = null;
 
+  /**
+   * Was the token under the pointer found by the tile it stands on, as it is behind the Fire Emblem controls,
+   * where the tokens do not hear the pointer themselves?
+   */
+  #found = false;
+
   /** The list that is open above the dock: equip, staff, skill or item. @type {string|null} */
   #flyout = null;
 
@@ -259,7 +268,10 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     CONFIG.queries[END_PHASE_QUERY] = endPhaseQuery;
     const hud = () => BattleHud.#instance;
     const refresh = foundry.utils.debounce(() => hud()?.refresh(), 30);
-    mapTools.listener = refresh;
+    mapTools.listener = () => {
+      hud()?.#onSurvey();
+      refresh();
+    };
     game.feo.hud = {
       app: BattleHud, refresh, beginBattle, endBattle, endPhase: requestEndPhase,
       pickWarp: (token, item) => BattleHud.#pickWarp(token, item),
@@ -423,6 +435,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     this.#view = null;
     this.#hoverTile = null;
     this.#hoverToken = null;
+    this.#found = false;
     this.#rest(false);
     this.#clear();
     this.#settle(null, { quiet: true });
@@ -1007,7 +1020,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
    */
   #terrainContext(i18n) {
     const view = this.#view;
-    if ( !view && !battle() && !mapTools.surveying ) return null;
+    if ( !view && !this.#named ) return null;
     const hover = this.#hoverTile;
     const tile = hover ?? view?.standing ?? null;
     if ( !tile ) return null;
@@ -1908,18 +1921,94 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
+   * Is the tile under the pointer named with no unit selected? It is while a battle is on, on any map whose
+   * ground was painted or marked out, and for whoever is looking at the ground. A Game Master, who seldom has
+   * one unit in hand, reads the land that way without picking one up first.
+   * @type {boolean}
+   */
+  get #named() {
+    return mapTools.surveying || !!battle() || hasGround(canvas.scene);
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Is the ground looked at from behind the Fire Emblem controls, with the Survey tool and not the brush? The
+   * units on it are then named along with it; the brush is left to paint with nothing in its way.
+   * @type {boolean}
+   */
+  get #looking() {
+    return mapTools.open && !mapTools.painting;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The tile the pointer is over, if it is one to name: a tile of the map itself, not of the padding round it.
+   * @param {{i: number, j: number}|null} tile
+   * @returns {{i: number, j: number}|null}
+   */
+  #pointed(tile) {
+    if ( !tile ) return null;
+    const onMap = this.#view ? this.#view.inside(tile) : (this.#named && !!mapTile(canvas.grid.getCenterPoint(tile)));
+    return onMap ? tile : null;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The unit that stands on a tile, if this user sees it there.
+   * @param {{i: number, j: number}} tile
+   * @returns {Token|null}
+   */
+  #unitOn(tile) {
+    for ( const token of canvas.tokens?.placeables ?? [] ) {
+      if ( token.destroyed || !token.visible || (token.actor?.type !== "unit") ) continue;
+      const at = tokenTile(token.document);
+      if ( !at ) continue;
+      if ( (tile.i >= at.i) && (tile.i < at.i + at.height) && (tile.j >= at.j) && (tile.j < at.j + at.width) ) return token;
+    }
+    return null;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The ground is looked at, or no longer: whether the tile under the pointer is named goes by that, and a unit
+   * that was found under the pointer behind the Fire Emblem controls is let go of once they are left, or the
+   * brush is taken up.
+   */
+  #onSurvey() {
+    try {
+      this.#hoverTile = this.#pointed(battleCanvas.hover);
+      if ( this.#found && !this.#looking ) {
+        this.#found = false;
+        this.#hoverToken = null;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * The pointer is over another tile.
    * @param {{i: number, j: number}|null} tile
    */
   #onTileHover(tile) {
-    // While the ground is surveyed or painted, any tile of the map is named, whether a unit is selected or not
-    const surveying = mapTools.surveying;
-    const onMap = !tile ? false
-      : this.#view ? this.#view.inside(tile)
-      : (surveying && !!mapTile(canvas.grid.getCenterPoint(tile)));
-    this.#hoverTile = onMap ? tile : null;
-    const shown = !!this.#view || !!battle() || surveying;
-    this.#rest(onMap && shown);
+    this.#hoverTile = this.#pointed(tile);
+    const onMap = !!this.#hoverTile;
+    const shown = !!this.#view || this.#named;
+    this.#rest(onMap && shown, mapTools.surveying ? SURVEY_REST_TIME : REST_TIME);
+
+    // Behind the Fire Emblem controls the tokens do not hear the pointer, so the unit that stands on the tile
+    // under it is looked for here, and gets its card as it would under the pointer anywhere else
+    if ( this.#looking ) {
+      const found = onMap ? this.#unitOn(this.#hoverTile) : null;
+      this.#found = !!found;
+      this.#onTokenHover(found);
+    }
     if ( !shown ) return;
 
     // While an attack is forecast, a tile it could be made from shows how it would go from there: what the
@@ -1942,8 +2031,9 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
    * The pointer is on another tile, or has left the map: the terrain card goes back to its figures, and says
    * more of the tile only once the pointer has stayed on it for a moment.
    * @param {boolean} onMap     Is the pointer on a tile of the map?
+   * @param {number} [wait]     How long it has to stay there, in milliseconds
    */
-  #rest(onMap) {
+  #rest(onMap, wait = REST_TIME) {
     clearTimeout(this.#resting);
     this.#resting = null;
     this.#rested = false;
@@ -1952,7 +2042,7 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       this.#resting = null;
       this.#rested = true;
       if ( this.rendered ) this.refresh({ parts: ["terrain"] });
-    }, REST_TIME);
+    }, wait);
   }
 
   /* -------------------------------------------- */

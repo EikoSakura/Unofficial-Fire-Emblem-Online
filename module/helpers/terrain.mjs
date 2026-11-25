@@ -108,6 +108,26 @@ export function hasZone(scene, zone = DEPLOY_ZONE) {
 /* -------------------------------------------- */
 
 /**
+ * Does any Region of a scene say something about its ground? A map that was painted, or had its terrain marked
+ * out by hand, has ground worth naming; a scene nobody did that for is open ground from edge to edge.
+ * @param {Scene|null} scene
+ * @returns {boolean}
+ */
+export function hasGround(scene) {
+  if ( !scene?.grid?.isSquare ) return false;
+  try {
+    const known = knownOf(scene);
+    known.regions ??= terrainRegions(scene);
+    return known.regions.length > 0;
+  } catch(err) {
+    console.error(err);
+    return false;
+  }
+}
+
+/* -------------------------------------------- */
+
+/**
  * What a tile of a scene is: its kind of terrain and how high it lies. A tile no Region speaks for is open
  * ground on the floor of the map.
  * @param {Scene} scene

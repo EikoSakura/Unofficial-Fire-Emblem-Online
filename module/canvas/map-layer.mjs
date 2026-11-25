@@ -10,7 +10,8 @@ import { drawGround } from "./ground-art.mjs";
 /**
  * The Fire Emblem controls: a set of scene controls of the system's own, with a canvas layer behind it as
  * Foundry asks of every set. While the set is in use the ground of the map is on show, each kind of terrain
- * in its colour and each height marked; with the terrain brush, a Game Master paints it.
+ * in its colour and each height marked; with the terrain brush, a Game Master paints it. From any other set
+ * the ground shows the same way for as long as everything on the map is highlighted, which is while Alt is held.
  *
  * The deployment zone, where one was marked with the brush, is drawn for everyone until a battle begins on the
  * map, whether the controls are in use or not: it is where the players set their units up.
@@ -50,11 +51,26 @@ export const mapTools = {
   listener: null,
 
   /**
-   * Is the ground of the map on show?
+   * Is the ground glanced at from whichever controls are in use? It is for as long as everything on the map
+   * is highlighted, which is while Alt is held unless the user gave that another key.
+   * @type {boolean}
+   */
+  glancing: false,
+
+  /**
+   * Are the Fire Emblem controls in use?
+   * @type {boolean}
+   */
+  get open() {
+    return !!globalThis.canvas?.[MAP_CONTROL]?.active;
+  },
+
+  /**
+   * Is the ground of the map on show? Behind the Fire Emblem controls, and at a glance from any others.
    * @type {boolean}
    */
   get surveying() {
-    return !!globalThis.canvas?.[MAP_CONTROL]?.active;
+    return this.open || this.glancing;
   },
 
   /**
@@ -62,7 +78,7 @@ export const mapTools = {
    * @type {boolean}
    */
   get painting() {
-    return this.surveying && game.user.isGM && !!canvas.grid?.isSquare && (game.activeTool === MAP_TOOLS.paint);
+    return this.open && game.user.isGM && !!canvas.grid?.isSquare && (game.activeTool === MAP_TOOLS.paint);
   },
 
   /**
@@ -297,12 +313,22 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
   /* -------------------------------------------- */
 
   /**
-   * Is the deployment zone of the map on show? To whoever has the controls in use, and to everyone until a
-   * battle begins there.
+   * Is the ground of the map on show? To whoever has the controls in use, or glances at it from others.
+   * @type {boolean}
+   */
+  get #surveyed() {
+    return this.active || mapTools.glancing;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Is the deployment zone of the map on show? To whoever looks at the ground, and to everyone until a battle
+   * begins there.
    * @type {boolean}
    */
   get #deploying() {
-    return this.active || (hasZone(canvas.scene, DEPLOY_ZONE) && !battle());
+    return this.#surveyed || (hasZone(canvas.scene, DEPLOY_ZONE) && !battle());
   }
 
   /* -------------------------------------------- */
@@ -322,8 +348,8 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
   /* -------------------------------------------- */
 
   /**
-   * Draw the ground of the map again, or wipe it if the controls are not in use. The deployment zone is drawn
-   * with it, and on its own before a battle while they are not.
+   * Draw the ground of the map again, or wipe it if nobody is looking at it. The deployment zone is drawn with
+   * it, and on its own before a battle while nobody is.
    */
   redraw() {
     try {
@@ -334,7 +360,7 @@ export class FeoMapLayer extends foundry.canvas.layers.InteractionLayer {
       this.#drawStroke();
       this.#deployed = false;
       if ( !canvas.grid?.isSquare ) return;
-      const surveying = this.active;
+      const surveying = this.#surveyed;
       const deploying = this.#deployed = this.#deploying;
       if ( !surveying && !deploying ) return;
 
@@ -585,8 +611,25 @@ export function registerMapLayer() {
   const zone = foundry.utils.debounce(() => globalThis.canvas?.[MAP_CONTROL]?.refreshZone(), 40);
   for ( const hook of ["createCombat", "updateCombat", "deleteCombat"] ) Hooks.on(hook, zone);
 
-  // The canvas destroys what is drawn on it as it is taken down, so the picture is let go of first
-  Hooks.on("canvasTearDown", () => groundArt.clear());
+  // While everything on the map is highlighted, as holding Alt does, the ground is on show as well, whichever
+  // controls are in use: a look at the land that takes nobody off their tokens
+  Hooks.on("highlightObjects", (active) => {
+    try {
+      if ( mapTools.glancing === !!active ) return;
+      mapTools.glancing = !!active;
+      globalThis.canvas?.[MAP_CONTROL]?.redraw();
+      mapTools.changed();
+    } catch(err) {
+      console.error(err);
+    }
+  });
+
+  // The canvas destroys what is drawn on it as it is taken down, so the picture is let go of first. The next
+  // scene is drawn with nothing highlighted
+  Hooks.on("canvasTearDown", () => {
+    groundArt.clear();
+    mapTools.glancing = false;
+  });
 
   // Ground that was shown by making its Regions visible is shown as the picture from now on
   Hooks.on("canvasReady", () => {
