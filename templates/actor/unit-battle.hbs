@@ -150,6 +150,7 @@
               {{#if weapon.canRepair}}<button type="button" data-action="repairItem" data-tooltip="{{localize "FEO.Repair.hint" cost=weapon.repair}}" aria-label="{{localize "FEO.Repair.button"}}">{{feoIcon "hammer"}}</button>{{/if}}
               <button type="button" data-action="sellItem" data-tooltip="{{localize "FEO.Sell.hint" gold=weapon.sell}}" aria-label="{{localize "FEO.Sell.button"}}">{{feoIcon "coin"}}</button>
               {{/if}}
+              <button type="button" data-action="postItem" data-tooltip="{{localize "FEO.Item.post"}}" aria-label="{{localize "FEO.Item.post"}}">{{feoIcon "chat"}}</button>
               <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "spark"}}</button>
               {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
             </span>
@@ -184,6 +185,7 @@
               {{#if item.canRepair}}<button type="button" data-action="repairItem" data-tooltip="{{localize "FEO.Repair.hint" cost=item.repair}}" aria-label="{{localize "FEO.Repair.button"}}">{{feoIcon "hammer"}}</button>{{/if}}
               <button type="button" data-action="sellItem" data-tooltip="{{localize "FEO.Sell.hint" gold=item.sell}}" aria-label="{{localize "FEO.Sell.button"}}">{{feoIcon "coin"}}</button>
               {{/if}}
+              <button type="button" data-action="postItem" data-tooltip="{{localize "FEO.Item.post"}}" aria-label="{{localize "FEO.Item.post"}}">{{feoIcon "chat"}}</button>
               <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "spark"}}</button>
               {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
             </span>
@@ -206,8 +208,9 @@
               {{#if @root.editable}}
               <button type="button" class="btn small" data-action="useItem" {{#if item.spent}}disabled{{/if}} data-tooltip="{{localize "FEO.Item.useHint"}}">{{localize "FEO.Item.use"}}</button>
               <button type="button" data-action="sellItem" data-tooltip="{{localize "FEO.Sell.hint" gold=item.sell}}" aria-label="{{localize "FEO.Sell.button"}}">{{feoIcon "coin"}}</button>
-              <button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>
               {{/if}}
+              <button type="button" data-action="postItem" data-tooltip="{{localize "FEO.Item.post"}}" aria-label="{{localize "FEO.Item.post"}}">{{feoIcon "chat"}}</button>
+              {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
             </span>
           </div>
           {{/if}}

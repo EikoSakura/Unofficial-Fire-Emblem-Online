@@ -2,6 +2,7 @@ import { itemLine, itemMoments, itemOffers, itemPower, itemRestores } from "../r
 import { postCard } from "./chat.mjs";
 import { cutIn } from "./cut-ins.mjs";
 import { eventUnitOf } from "./events.mjs";
+import { buildItemCard } from "./item-card-context.mjs";
 import { grantTimed } from "./timed.mjs";
 import { describeChange } from "./timed-context.mjs";
 
@@ -69,6 +70,19 @@ export async function afterItemHeal(patient, { unit, taken }, healed) {
       cls: "good"
     };
   });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Show an item to the table as a card in the chat: what it is and what it does. Nothing of it is used or spent,
+ * and nothing is earned.
+ * @param {Item} item
+ * @returns {Promise<ChatMessage>}
+ */
+export async function postItem(item) {
+  const { template, card } = buildItemCard(item, game.i18n);
+  return postCard(item.actor ?? null, card, { template });
 }
 
 /* -------------------------------------------- */

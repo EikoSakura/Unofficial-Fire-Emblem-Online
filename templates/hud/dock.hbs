@@ -73,11 +73,16 @@
       <h5>{{title}} <span>{{aside}}</span></h5>
       <div class="fly-rows">
         {{#each rows as |row|}}
-        <button type="button" class="fly-row {{#if row.on}}on{{/if}}{{#if row.watch}} watch{{/if}}{{#if row.wait}} wait{{/if}}{{#if row.dim}} dim{{/if}}" data-action="{{row.action}}" data-item-id="{{row.id}}" {{#if row.form}}data-form="{{row.form}}" {{/if}}{{#if row.disabled}}disabled{{/if}}{{#if row.dim}} aria-disabled="true"{{/if}}{{#if row.tip}} data-tooltip="{{row.tip}}"{{/if}}>
+        {{#if row.post}}<div class="fly-line">{{/if}}
+        <button type="button" class="fly-row{{#if row.on}}on{{/if}}{{#if row.watch}} watch{{/if}}{{#if row.wait}} wait{{/if}}{{#if row.dim}} dim{{/if}}" data-action="{{row.action}}" data-item-id="{{row.id}}" {{#if row.form}}data-form="{{row.form}}" {{/if}}{{#if row.disabled}}disabled{{/if}}{{#if row.dim}} aria-disabled="true"{{/if}}{{#if row.tip}} data-tooltip="{{row.tip}}"{{/if}}>
           <span class="ico">{{#if row.img}}<img src="{{row.img}}" alt="">{{else}}{{#if row.icon}}{{feoIcon row.icon}}{{/if}}{{/if}}{{#if row.mark}}<img class="lent-mark" src="{{row.mark}}" alt="" data-tooltip="{{row.tip}}">{{/if}}</span>
           <span class="txt"><span class="nm">{{row.name}}</span><span class="sub">{{row.sub}}</span></span>
           <span class="end">{{row.end}}</span>
         </button>
+        {{#if row.post}}
+        <button type="button" class="fly-post" data-action="postItem" data-item-id="{{row.id}}" data-tooltip="{{localize "FEO.Item.post"}}" aria-label="{{localize "FEO.Item.post"}}">{{feoIcon "chat"}}</button>
+        </div>
+        {{/if}}
         {{/each}}
       </div>
       {{#if empty}}<p>{{empty}}</p>{{/if}}

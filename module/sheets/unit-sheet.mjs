@@ -16,7 +16,6 @@ import { afflictUnit, awardGold, changeHpByHand, grantUnit, healUnit, pop, selec
 import { buildLevelUpSplash, showLevelUp } from "../helpers/level-up.mjs";
 import { manualLevelUp } from "../helpers/manual-gains.mjs";
 import { addModeToggle, setModeToggle } from "../helpers/mode-toggle.mjs";
-import { buildSkillCard } from "../helpers/skill-card-context.mjs";
 import { addWindowToggle, setWindowToggle } from "../helpers/window-toggle.mjs";
 import { growthValue } from "../helpers/earnings-context.mjs";
 import { awardExp, earnsExp, expRow, staffExpBy, useExp } from "../helpers/experience.mjs";
@@ -33,7 +32,7 @@ import { endTurnOf, startTurnOf } from "../helpers/turns.mjs";
 import { useSkillMoment, waitFor } from "../helpers/skill-turns.mjs";
 import { packBar } from "../helpers/creatures.mjs";
 import { castStaffFor, healsMore, staffAreaOf, staffPlanOf, staffTakesOf, staffWhy } from "../helpers/staves.mjs";
-import { afterItemHeal, beforeItemHeal, useUpItem } from "../helpers/items.mjs";
+import { afterItemHeal, beforeItemHeal, postItem, useUpItem } from "../helpers/items.mjs";
 import { staffRefreshes } from "../helpers/refresh.mjs";
 import { usageRows } from "../helpers/skill-usage-context.mjs";
 import { cooldownsFor, switchAffinity } from "../helpers/affinity.mjs";
@@ -112,7 +111,8 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       useItem: UnitSheet.#onUseItem,
       useStaff: UnitSheet.#onUseStaff,
       useSkill: UnitSheet.#onUseSkill,
-      postSkill: UnitSheet.#onPostSkill,
+      postItem: UnitSheet.#onPostItem,
+      postSkill: UnitSheet.#onPostItem,
       flipSkill: UnitSheet.#onFlipSkill,
       repairItem: UnitSheet.#onRepairItem,
       sellItem: UnitSheet.#onSellItem,
@@ -1571,16 +1571,15 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
-   * Show a skill to the table as a card in the chat: what it is, its chance for this unit, and what it does.
-   * Nothing is spent and nothing is earned.
+   * Show an item to the table as a card in the chat: what it is and what it does and, for a skill, its chance
+   * for this unit. Nothing is used, nothing is spent and nothing is earned.
    * @this {UnitSheet}
    * @param {PointerEvent} event
    * @param {HTMLElement} target
    */
-  static async #onPostSkill(event, target) {
+  static async #onPostItem(event, target) {
     const item = this.#getItem(target);
-    if ( item?.type !== "skill" ) return;
-    await postCard(this.actor, buildSkillCard(item, game.i18n), { template: "skill" });
+    if ( item ) await postItem(item);
   }
 
   /* -------------------------------------------- */

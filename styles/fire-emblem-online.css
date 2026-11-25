@@ -1698,6 +1698,20 @@
 .feo-skill .effect { margin: 0; padding: 8px 12px 9px; line-height: 1.45; white-space: pre-line; }
 .feo-skill dl { border-top: 1px solid var(--feo-hair); font-size: .92em; }
 
+/* An item shown to the table: the same card, with its own picture where it has one and its numbers in boxes */
+.feo-item .badge.art { overflow: hidden; border-radius: 7px; }
+.feo-item .badge img { display: block; width: 100%; height: 100%; border: 0; object-fit: cover; }
+.feo-item .cells { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; padding: 8px 12px 0; text-align: center; }
+.feo-item .cells:last-child { padding-bottom: 9px; }
+.feo-item .cells + dl { margin-top: 8px; }
+.feo-item .cells > div { display: grid; gap: 1px; min-width: 0; padding: 3px 2px 4px; border: 1px solid var(--feo-hair); border-radius: 5px; background: rgba(0, 0, 0, .16); }
+.feo-item .cells span { overflow: hidden; color: var(--feo-muted); font-size: .66em; font-weight: 800; letter-spacing: .1em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.feo-item .cells b { font-family: var(--feo-number); font-size: 1.12em; line-height: 1.2; }
+.feo-item .cells b.word { overflow: hidden; font-size: .78em; line-height: 1.72; text-overflow: ellipsis; white-space: nowrap; }
+.feo-item .cells b.up { color: var(--feo-good); }
+.feo-item .cells b.down { color: var(--feo-bane); }
+.feo-item .cells b.nil { font-weight: 400; opacity: .6; }
+
 /* A combat exchange: who fought, what each strike did and where HP ended up */
 .feo-exchange .versus {
   display: grid;

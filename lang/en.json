@@ -264,6 +264,7 @@
       "edit": "Open",
       "delete": "Delete",
       "use": "Use",
+      "post": "Show in chat. Nothing is used.",
       "none": "No items. Add one, or drag an item onto the sheet.",
       "restore": "HP Restored",
       "equip": "Equipped Item",

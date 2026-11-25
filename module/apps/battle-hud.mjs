@@ -62,7 +62,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const TEMPLATES = `systems/${FEO.id}/templates/hud`;
 
 /** The actions of the unit sheet that the dock may ask for by name, each for the selected unit. */
-const SHEET_ACTIONS = ["wait", "startTurn", "endTurn", "spendRound", "toggleEquip", "useItem", "useSkill", "switchSkill", "switchAffinity", "guardStance", "toggleForm", "readyArt", "useGambit"];
+const SHEET_ACTIONS = ["wait", "startTurn", "endTurn", "spendRound", "toggleEquip", "useItem", "useSkill", "switchSkill", "switchAffinity", "guardStance", "toggleForm", "readyArt", "useGambit", "postItem"];
 
 /** Those of Capturing, asked for in the same way: readying an attempt, picking up and releasing a captive. */
 const CAPTURE_ACTIONS = ["toggleCapture", "pickUpCaptive", "releaseCaptive"];
@@ -3460,8 +3460,9 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     const name = target.dataset.action;
     const id = target.closest("[data-item-id]")?.dataset.itemId ?? null;
 
-    // Switching a weapon or a skill leaves the list open; anything else is done with it
-    if ( !["toggleEquip", "switchSkill", "switchAffinity", "toggleForm", "readyArt", "toggleCapture"].includes(name) ) this.#clear();
+    // Switching a weapon or a skill leaves the list open, and so does showing something in the chat; anything
+    // else is done with it
+    if ( !["toggleEquip", "switchSkill", "switchAffinity", "toggleForm", "readyArt", "toggleCapture", "postItem"].includes(name) ) this.#clear();
     const { form } = target.dataset;
     await this.#working(() => this.#sheetAction(name, id, form ? { form } : {}));
   }

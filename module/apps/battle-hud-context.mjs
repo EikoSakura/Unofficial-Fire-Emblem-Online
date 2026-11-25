@@ -622,7 +622,7 @@ export function buildDock(unit, i18n) {
         sub: item.system.category === "staff"
           ? i18n.localize("FEO.WeaponType.staff")
           : `${i18n.localize("FEO.Hud.might")} ${item.system.might} · ${i18n.localize("FEO.Combat.hit")} ${item.system.hit}`,
-        end: usesOf(item), disabled: !(acting || (moving && !!again?.gear))
+        end: usesOf(item), disabled: !(acting || (moving && !!again?.gear)), post: true
       })),
 
       // The weapons its skills lend it, each marked with its skill: one is taken up to attack with in place of
@@ -646,14 +646,14 @@ export function buildDock(unit, i18n) {
           action: "toggleEquip", id: item.id, img: item.img, name: item.name, on: item.system.equipped && !barred,
           sub: barred ? i18n.localize("FEO.Timed.rule.noShield")
             : guard ? `${i18n.localize("FEO.Block.label")} ${guard.chance}% · ${blockAmount(guard, i18n)}` : i18n.localize("FEO.Block.shield"),
-          end: usesOf(item), disabled: !(acting || (moving && !!again?.gear)) || !!item.system.spent || barred
+          end: usesOf(item), disabled: !(acting || (moving && !!again?.gear)) || !!item.system.spent || barred, post: true
         };
       }),
 
       // An accessory, one of which is worn at a time, with what it gives
       ...accessories.map((item) => ({
         action: "toggleEquip", id: item.id, img: item.img, name: item.name, on: item.system.equipped,
-        sub: item.system.effect ?? "", end: usesOf(item), disabled: !(acting || (moving && !!again?.gear))
+        sub: item.system.effect ?? "", end: usesOf(item), disabled: !(acting || (moving && !!again?.gear)), post: true
       }))
     ]
   };
@@ -664,7 +664,7 @@ export function buildDock(unit, i18n) {
     foot: i18n.localize("FEO.Hud.flyout.staffHint"),
     rows: staves.map((item) => ({
       action: "pickStaff", id: item.id, img: item.img, name: item.name, sub: item.system.effect ?? "",
-      end: usesOf(item), disabled: !acting || !!item.system.broken
+      end: usesOf(item), disabled: !acting || !!item.system.broken, post: true
     }))
   };
   else if ( unit.flyout === "item" ) flyout = {
@@ -674,7 +674,7 @@ export function buildDock(unit, i18n) {
     foot: i18n.localize("FEO.Hud.flyout.itemHint"),
     rows: gear.map((item) => ({
       action: "useItem", id: item.id, img: item.img, name: item.name, sub: item.system.effect ?? "",
-      end: usesOf(item), disabled: !acting || !!item.system.spent
+      end: usesOf(item), disabled: !acting || !!item.system.spent, post: true
     }))
   };
   else if ( unit.flyout === "skill" ) flyout = {
@@ -708,7 +708,7 @@ export function buildDock(unit, i18n) {
             : wait ? stands
             : early ? `${stands} · ${i18n.localize("FEO.Usage.useEarly")}`
             : i18n.localize(asAction ? "FEO.Hud.flyout.asAction" : item.system.state?.active ? "FEO.Hud.flyout.declared" : "FEO.Hud.flyout.declare"),
-          wait, disabled: !acting || wait
+          wait, disabled: !acting || wait, post: true
         };
       }),
 
@@ -732,7 +732,7 @@ export function buildDock(unit, i18n) {
           action: "readyArt", id: item.id, img: item.img, name: item.name, sub: item.system.effect ?? "", on: readied,
           end: readied ? i18n.localize("FEO.Optional.combatArts.readied")
             : able.ok ? artCostLabel(able.cost, i18n) : i18n.localize(`FEO.Optional.combatArts.blocked.${able.why}`),
-          disabled: !acting || (!able.ok && !readied)
+          disabled: !acting || (!able.ok && !readied), post: true
         };
       }),
       ...(squad ? [squad] : []).map((item) => {
@@ -744,7 +744,7 @@ export function buildDock(unit, i18n) {
           end: !able.ok ? i18n.localize(`FEO.Optional.battalions.blocked.${able.why}`)
             : (gambit.uses.max > 0) ? i18n.format("FEO.Optional.battalions.usesLine", { value: gambit.uses.value, max: gambit.uses.max })
               : i18n.localize("FEO.Hud.flyout.asAction"),
-          disabled: !acting || !able.ok || barred
+          disabled: !acting || !able.ok || barred, post: true
         };
       }),
 

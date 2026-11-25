@@ -1,0 +1,25 @@
+<div class="feo-card feo-skill feo-item"{{#if army}} data-army="{{army}}"{{/if}}>
+  <header>
+    <span class="badge{{#if img}} art{{/if}}">{{#if img}}<img src="{{img}}" alt="">{{else}}{{{icon}}}{{/if}}</span>
+    <div class="head">
+      <h3>{{name}}</h3>
+      {{#if kind}}<p>{{kind}}</p>{{/if}}
+    </div>
+  </header>
+  {{#if cells.length}}
+  <div class="cells">
+    {{#each cells as |cell|}}
+    <div{{#if cell.tip}} data-tooltip="{{cell.tip}}"{{/if}}><span>{{cell.label}}</span><b{{#if cell.cls}} class="{{cell.cls}}"{{/if}}>{{cell.value}}</b></div>
+    {{/each}}
+  </div>
+  {{/if}}
+  {{#if effect}}<p class="effect">{{effect}}</p>{{/if}}
+  {{#if rows.length}}
+  <dl>
+    {{#each rows as |row|}}
+    <div><dt>{{row.label}}</dt><dd>{{row.value}}</dd></div>
+    {{/each}}
+  </dl>
+  {{/if}}
+  {{#if note}}<p class="note">{{note}}</p>{{/if}}
+</div>

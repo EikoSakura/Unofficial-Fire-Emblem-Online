@@ -1,6 +1,7 @@
 import { FEO } from "../config.mjs";
 import { bonusLabel, gambitReading } from "../helpers/battalion-context.mjs";
 import { growthPickFields } from "../helpers/earnings-context.mjs";
+import { postItem } from "../helpers/items.mjs";
 import { addModeToggle, setModeToggle } from "../helpers/mode-toggle.mjs";
 import { bonusAt, bonusKeys } from "../rules/battalions.mjs";
 import { growthChoice } from "../rules/earnings.mjs";
@@ -25,6 +26,7 @@ export default class FeoItemSheet extends HandlebarsApplicationMixin(ItemSheetV2
     form: { submitOnChange: true },
     actions: {
       toggleMode: FeoItemSheet.#onToggleMode,
+      postItem: FeoItemSheet.#onPostItem,
       addPromotion: FeoItemSheet.#onAddPromotion,
       removePromotion: FeoItemSheet.#onRemovePromotion,
       openPromotion: FeoItemSheet.#onOpenPromotion,
@@ -92,7 +94,26 @@ export default class FeoItemSheet extends HandlebarsApplicationMixin(ItemSheetV2
   async _renderFrame(options) {
     const frame = await super._renderFrame(options);
     if ( this.isEditable ) addModeToggle(frame);
+
+    // Anyone who can read the item can show it to the table, from beside the window's own buttons
+    const post = document.createElement("button");
+    post.type = "button";
+    post.className = "header-control icon fa-solid fa-comment";
+    post.dataset.action = "postItem";
+    post.dataset.tooltip = game.i18n.localize("FEO.Item.post");
+    post.setAttribute("aria-label", post.dataset.tooltip);
+    frame.querySelector('.window-header [data-action="toggleControls"]')?.insertAdjacentElement("beforebegin", post);
     return frame;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Show the item to the table as a card in the chat. Nothing of it is used.
+   * @this {FeoItemSheet}
+   */
+  static async #onPostItem() {
+    await postItem(this.item);
   }
 
   /* -------------------------------------------- */

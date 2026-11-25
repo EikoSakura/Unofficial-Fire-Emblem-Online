@@ -104,6 +104,7 @@
           {{#if art.byHand}}<span class="kind warn" data-tooltip="{{localize (concat art.byHand "Hint")}}">{{localize art.byHand}}</span>{{/if}}
           <span class="row-controls">
             {{#if @root.editable}}<button type="button" class="btn small usage{{#if art.readied}} on{{/if}}" data-action="readyArt" aria-pressed="{{#if art.readied}}true{{else}}false{{/if}}"{{#if art.blocked}}{{#unless art.readied}} disabled{{/unless}}{{/if}} data-tooltip="{{#if art.blocked}}{{localize art.blocked}}{{else}}{{localize "FEO.Optional.combatArts.readyHint"}}{{/if}}">{{#if art.readied}}{{localize "FEO.Optional.combatArts.readied"}}{{else}}{{localize "FEO.Optional.combatArts.ready"}}{{/if}}</button>{{else}}{{#if art.readied}}<span class="kind usage">{{localize "FEO.Optional.combatArts.readied"}}</span>{{/if}}{{/if}}
+            <button type="button" data-action="postItem" data-tooltip="{{localize "FEO.Item.post"}}" aria-label="{{localize "FEO.Item.post"}}">{{feoIcon "chat"}}</button>
             <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "open"}}</button>
             {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
           </span>
@@ -147,6 +148,7 @@
             <button type="button" class="btn small usage{{#if squad.assigned}} on{{/if}}" data-action="assignBattalion" aria-pressed="{{#if squad.assigned}}true{{else}}false{{/if}}" data-tooltip="{{#if squad.assigned}}{{localize "FEO.Optional.battalions.standDown"}}{{else}}{{#if squad.blocked}}{{localize squad.blocked.key needs=(localize squad.blocked.needs) qualities=squad.blocked.qualities}}{{else}}{{localize "FEO.Optional.battalions.assignHint"}}{{/if}}{{/if}}">{{#if squad.assigned}}{{localize "FEO.Optional.battalions.assigned"}}{{else}}{{localize "FEO.Optional.battalions.assign"}}{{/if}}</button>
             <button type="button" class="btn small" data-action="replenishBattalion"{{#if squad.full}} disabled{{/if}} data-tooltip="{{localize "FEO.Optional.battalions.replenishHint"}}">{{localize "FEO.Optional.battalions.replenish"}}</button>
             {{else}}{{#if squad.assigned}}<span class="kind usage">{{localize "FEO.Optional.battalions.assigned"}}</span>{{/if}}{{/if}}
+            <button type="button" data-action="postItem" data-tooltip="{{localize "FEO.Item.post"}}" aria-label="{{localize "FEO.Item.post"}}">{{feoIcon "chat"}}</button>
             <button type="button" data-action="editItem" data-tooltip="{{localize "FEO.Item.edit"}}" aria-label="{{localize "FEO.Item.edit"}}">{{feoIcon "open"}}</button>
             {{#if @root.editable}}<button type="button" class="edit-only" data-action="deleteItem" data-tooltip="{{localize "FEO.Item.delete"}}" aria-label="{{localize "FEO.Item.delete"}}">{{feoIcon "trash"}}</button>{{/if}}
           </span>

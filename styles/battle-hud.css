@@ -213,6 +213,9 @@
 .feo-hud .fly-row.wait[disabled] { opacity: 1; cursor: not-allowed; }
 .feo-hud .fly-row.wait .ico, .feo-hud .fly-row.wait .txt { opacity: .45; }
 .feo-hud .fly-row.wait .end { font-weight: 800; color: var(--feo-warn); }
+.feo-hud .fly-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px; }
+.feo-hud .fly-post { display: grid; place-items: center; width: 28px; padding: 0; background: var(--feo-raised); border: 1px solid var(--feo-line-soft); border-radius: 7px; color: var(--feo-muted); font-size: 15px; cursor: pointer; }
+.feo-hud .fly-post:hover, .feo-hud .fly-post:focus-visible { border-color: var(--feo-gold); color: var(--feo-gold); outline: none; }
 .feo-hud .fly-row .ico { width: 30px; height: 30px; border-radius: 6px; background: var(--feo-panel); border: 1px solid var(--feo-line-soft); overflow: hidden; }
 .feo-hud .fly-row .ico img { width: 100%; height: 100%; object-fit: cover; border: 0; display: block; }
 
