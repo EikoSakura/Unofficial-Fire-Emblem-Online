@@ -59,8 +59,9 @@ import { canWield } from "../rules/weapons.mjs";
  * @property {boolean} fallen
  * @property {boolean} character                    Is it a player's character?
  * @property {{id: string, name: string, online: boolean}|null} player
+ * @property {{id: string, name: string, online: boolean}|null} owner     The player it belongs to; an ally has none
  * @property {boolean} marching
- * @property {string|null} lead                     The User who leads it, "" for the Game Master
+ * @property {string|null} lead                     The User named to run an ally, "" for the Game Master
  * @property {boolean} mine                         May the reader act for it?
  * @property {boolean} earns                        Does it earn experience?
  * @property {Record<string, {rank: string}>} ranks
@@ -210,14 +211,13 @@ function hpOf(unit) {
 const subOf = (unit, i18n) => i18n.format("FEO.Base.unit.sub", { level: unit.level, cls: unit.cls || i18n.localize("FEO.Base.unit.noClass") });
 
 /**
- * Who leads a unit in battle.
+ * Who runs a unit in battle: the player it belongs to, or the one named for an ally.
  * @param {BaseWorld} world
  * @param {BaseUnit} unit
  * @returns {{id: string, name: string, online: boolean}|null}   Null for the Game Master
  */
 function leaderOf(world, unit) {
-  const chosen = world.players.find((player) => player.id === unit.lead);
-  return chosen ?? unit.player ?? null;
+  return unit.owner ?? world.players.find((player) => player.id === unit.lead) ?? null;
 }
 
 /**
@@ -451,12 +451,10 @@ export function buildRoster(world, ui, i18n) {
     const away = unit.character && !unit.player?.online;
     const fixed = unit.character && !away && !user.isGM;
     const leader = leaderOf(world, unit);
-    const handed = unit.character && !!leader && (leader.id !== unit.player?.id);
-    const mayChoose = !unit.character || away || user.isGM || (unit.player?.id === user.id);
 
-    let tag = unit.character ? unit.player.name : on ? (leader ? fmt("roster.ledBy", { name: leader.name }) : loc("roster.gm")) : loc("unit.recruit");
-    if ( unit.character && on && handed ) tag = fmt("roster.ledBy", { name: leader.name });
-    else if ( away ) tag = fmt("roster.away", { name: unit.player.name });
+    // A player's own unit carries that player's name; an ally says who runs it
+    let tag = unit.owner ? unit.owner.name : leader ? fmt("roster.ledBy", { name: leader.name }) : loc(on ? "roster.gm" : "unit.recruit");
+    if ( away ) tag = fmt("roster.away", { name: unit.player.name });
 
     const toggle = unit.fallen ? null
       : fixed ? { lock: true, title: fmt("roster.always", { name: unit.player.name }) }
@@ -467,9 +465,13 @@ export function buildRoster(world, ui, i18n) {
         : on ? { action: "stand", label: loc("roster.stand") }
           : { action: "march", label: loc(full ? "roster.full" : "roster.march"), gold: true, disabled: full };
 
-    // Whoever may lead it: every player, here or away, and the Game Master
-    const leads = on && mayChoose && (!unit.character || away || user.isGM) ? [
-      ...world.players.map((player) => ({
+    // Who may run an ally. The Game Master hands it to anyone at the table; a player takes one nobody runs, or
+    // gives theirs back. A player's own unit has nothing to choose
+    const seats = unit.owner ? []
+      : user.isGM ? world.players.filter((player) => player.online || (player.id === leader?.id))
+        : leader && (leader.id !== user.id) ? [] : world.players.filter((player) => player.id === user.id);
+    const leads = seats.length ? [
+      ...seats.map((player) => ({
         value: player.id,
         label: fmt("roster.ledBy", { name: player.online ? player.name : fmt("roster.awayName", { name: player.name }) }),
         selected: leader?.id === player.id
@@ -481,7 +483,7 @@ export function buildRoster(world, ui, i18n) {
       ...sheet(unit),
       mode: on ? "on" : "off",
       tag,
-      tagAway: away && !(on && handed),
+      tagAway: away,
       band: unit.fallen ? loc("unit.fallen") : unit.injuries ? loc("unit.injured") : null,
       toggle,
       leads,

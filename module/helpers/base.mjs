@@ -26,6 +26,9 @@ export const BASE_QUERY = `${FEO.id}.base`;
 /** The flag, on a forged weapon, that keeps the increments it carries. */
 export const FORGE_FLAG = "forge";
 
+/** The flag, on an ally, that keeps the player the Base has handed it to and what that player could do with it before. */
+export const RUN_FLAG = "runBy";
+
 /* -------------------------------------------- */
 /*  Reading                                     */
 /* -------------------------------------------- */
@@ -52,9 +55,10 @@ export function readBase() {
 /* -------------------------------------------- */
 
 /**
- * The company: the characters of the players, then the units recruited to the roster.
+ * The company: the characters of the players, then the units recruited to the roster. `owner` is the player a
+ * unit belongs to; a recruit with none is an ally, which is run by whoever the Base names for it.
  * @param {BaseState} [base]
- * @returns {{actor: Actor, user: User|null, character: boolean}[]}
+ * @returns {{actor: Actor, user: User|null, owner: User|null, character: boolean}[]}
  */
 export function company(base = readBase()) {
   const units = [];
@@ -63,15 +67,45 @@ export function company(base = readBase()) {
     const actor = user.isGM ? null : user.character;
     if ( (actor?.type !== "unit") || seen.has(actor.id) ) continue;
     seen.add(actor.id);
-    units.push({ actor, user, character: true });
+    units.push({ actor, user, owner: user, character: true });
   }
   for ( const id of base.members ) {
     const actor = game.actors.get(id);
     if ( (actor?.type !== "unit") || seen.has(id) ) continue;
     seen.add(id);
-    units.push({ actor, user: null, character: false });
+    units.push({ actor, user: null, owner: ownerOf(actor), character: false });
   }
   return units;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The player a unit belongs to: the one whose character it is, or one who has been made its owner. A player the
+ * Base has only handed an ally to is not its owner (see `handOver`).
+ * @param {Actor} actor
+ * @returns {User|null}
+ */
+export function ownerOf(actor) {
+  const OWNER = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+  const lent = actor.flags?.[FEO.id]?.[RUN_FLAG]?.user;
+  return playerOf(actor)
+    ?? game.users.find((user) => !user.isGM && (user.id !== lent) && (actor.ownership?.[user.id] === OWNER)) ?? null;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The player who runs a unit in battle: its owner, or the one named for an ally.
+ * @param {BaseState} base
+ * @param {Actor} actor
+ * @param {User|null} [owner]     The player it belongs to, where that is known already
+ * @returns {User|null}           Null for the Game Master
+ */
+export function runnerOf(base, actor, owner = ownerOf(actor)) {
+  if ( owner ) return owner;
+  const named = game.users.get(base.muster[actor.id]?.lead || "");
+  return named && !named.isGM ? named : null;
 }
 
 /* -------------------------------------------- */
@@ -235,6 +269,31 @@ function member(base, id) {
 }
 
 /**
+ * Hand an ally to the player who runs it, so that they can play it in battle, and take it back from whoever ran
+ * it before. What each could do with the unit beforehand is kept on the unit, and put back.
+ * @param {Actor} actor
+ * @param {User|null} user      Null for the Game Master
+ */
+async function handOver(actor, user) {
+  const OWNER = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+  const held = actor.flags?.[FEO.id]?.[RUN_FLAG] ?? null;
+  const next = user && !user.isGM ? user.id : null;
+  if ( ((held?.user ?? null) === next) && (!next || (actor.ownership[next] === OWNER)) ) return;
+
+  const ownership = foundry.utils.deepClone(actor.ownership);
+  if ( held?.user && (held.user !== next) ) {
+    if ( Number.isInteger(held.was) ) ownership[held.user] = held.was;
+    else delete ownership[held.user];
+  }
+  const kept = !next ? null : (held?.user === next) ? held : { user: next, was: ownership[next] ?? null };
+  if ( next ) ownership[next] = OWNER;
+
+  await actor.update({ ownership }, { diff: false, recursive: false });
+  if ( kept ) await actor.setFlag(FEO.id, RUN_FLAG, kept);
+  else if ( held ) await actor.unsetFlag(FEO.id, RUN_FLAG);
+}
+
+/**
  * A weapon or an item that a unit carries, or a refusal.
  * @param {Actor} actor
  * @param {string} id
@@ -309,9 +368,13 @@ const ACTIONS = {
   sound: {
     gm: true,
     async run({ base, user }) {
-      const marching = company(base).filter((unit) => isMarching(base, unit.actor.id, unit.character));
-      const rows = marching.map(({ actor, user: player }) => {
-        const lead = game.users.get(base.muster[actor.id]?.lead ?? "") ?? player;
+      const everyone = company(base);
+      const marching = everyone.filter((unit) => isMarching(base, unit.actor.id, unit.character));
+
+      // Whoever runs an ally can play it by the time the battle begins, whenever they were named for it
+      for ( const { actor, owner } of everyone ) if ( !owner ) await handOver(actor, runnerOf(base, actor, null));
+      const rows = marching.map(({ actor, owner }) => {
+        const lead = runnerOf(base, actor, owner);
         return { label: actor.name, value: lead ? fmt("FEO.Base.roster.ledBy", { name: lead.name }) : loc("FEO.Base.roster.gm") };
       });
       base.ready = {};
@@ -364,7 +427,7 @@ const ACTIONS = {
 
   march: {
     post: "roster",
-    run({ base, data, user }) {
+    async run({ base, data, user }) {
       const { actor, player } = member(base, data.actor);
       if ( player && !user.isGM && (player !== user) && player.active ) refuse("notYours", { name: actor.name });
       if ( actor.system.defeat?.state === "dead" ) refuse("fallen", { name: actor.name });
@@ -374,7 +437,12 @@ const ACTIONS = {
       if ( player ) delete entry.out;
       else {
         entry.march = true;
-        entry.lead ??= user.isGM ? "" : user.id;
+
+        // An ally nobody has been named for is run by whoever sends it to march
+        if ( !ownerOf(actor) ) {
+          entry.lead ??= user.isGM ? "" : user.id;
+          await handOver(actor, runnerOf(base, actor, null));
+        }
       }
     }
   },
@@ -392,14 +460,20 @@ const ACTIONS = {
 
   lead: {
     post: "roster",
-    run({ base, data, user }) {
-      const { actor, player } = member(base, data.actor);
-      if ( player && !user.isGM && player.active ) refuse("notYours", { name: actor.name });
-      const lead = game.users.get(data.lead ?? "");
-      const entry = base.muster[actor.id] ??= {};
-      if ( lead && !lead.isGM && (lead !== player) ) entry.lead = lead.id;
-      else if ( player ) delete entry.lead;
-      else entry.lead = "";
+    async run({ base, data, user }) {
+      const { actor } = member(base, data.actor);
+
+      // A unit that is a player's own is that player's to lead, and nobody else's
+      const owner = ownerOf(actor);
+      if ( owner ) refuse("theirs", { name: actor.name, player: owner.name });
+
+      // An ally is handed to anyone by the Game Master; a player takes one nobody runs, or gives theirs back
+      const now = runnerOf(base, actor, null);
+      const named = game.users.get(data.lead || "");
+      const next = named && !named.isGM ? named : null;
+      if ( !user.isGM && ((now && (now !== user)) || (next && (next !== user))) ) refuse("notYours", { name: actor.name });
+      (base.muster[actor.id] ??= {}).lead = next?.id ?? "";
+      await handOver(actor, next);
     }
   },
 
@@ -424,9 +498,13 @@ const ACTIONS = {
 
   dismiss: {
     gm: true,
-    run({ base, data }) {
+    async run({ base, data }) {
       base.members = base.members.filter((id) => id !== data.actor);
       delete base.muster[data.actor];
+
+      // Whoever ran it at the Base no longer does
+      const actor = game.actors.get(data.actor);
+      if ( actor ) await handOver(actor, null);
     }
   },
 
@@ -472,6 +550,12 @@ const ACTIONS = {
       await pay(actor, user.isGM && data.free ? 0 : offer.cost);
       base.offers = base.offers.filter((entry) => entry.id !== offer.id);
       if ( !base.members.includes(recruit.id) ) base.members.push(recruit.id);
+
+      // The player who recruits an ally runs it, until someone else is named
+      if ( !user.isGM && !ownerOf(recruit) ) {
+        (base.muster[recruit.id] ??= {}).lead = user.id;
+        await handOver(recruit, user);
+      }
       await postCard(recruit, {
         title: fmt("FEO.Base.roster.joined", { name: recruit.name }),
         subtitle: offer.terms || undefined,

@@ -235,9 +235,10 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
    * @param {object} [options]
    * @param {boolean} [options.character]   Is it a player's character?
    * @param {User|null} [options.player]    The player whose character it is
+   * @param {User|null} [options.owner]     The player it belongs to, which an ally has none of
    * @returns {import("./base-context.mjs").BaseUnit}
    */
-  static #unit(actor, base, { character = false, player = null } = {}) {
+  static #unit(actor, base, { character = false, player = null, owner = null } = {}) {
     const system = actor.system;
     const weapon = system.equippedWeapon;
     const icon = (item) => FEO.categoryIcons[item.system.category] ?? "sword";
@@ -267,6 +268,7 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
       fallen: system.defeat?.state === "dead",
       character,
       player: player ? { id: player.id, name: player.name, online: player.active } : null,
+      owner: owner ? { id: owner.id, name: owner.name, online: owner.active } : null,
       marching: isMarching(base, actor.id, character),
       lead: base.muster[actor.id]?.lead ?? null,
       mine: mayAct(base, actor, game.user),
@@ -322,7 +324,7 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
     const base = readBase();
     const state = this.#state;
     const players = game.users.filter((user) => !user.isGM).map((user) => ({ id: user.id, name: user.name, online: user.active }));
-    const units = company(base).map(({ actor, user, character }) => Base.#unit(actor, base, { character, player: user }));
+    const units = company(base).map(({ actor, user, owner, character }) => Base.#unit(actor, base, { character, player: user, owner }));
     const offers = base.offers.map((offer) => {
       const actor = game.actors.get(offer.actor);
       return actor?.type === "unit" ? { ...offer, unit: Base.#unit(actor, base) } : null;
