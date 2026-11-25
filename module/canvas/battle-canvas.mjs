@@ -1,6 +1,6 @@
 import { FEO } from "../config.mjs";
 import { keyTile } from "../rules/reach.mjs";
-import { battle, fightsIn, hasActed, turnState } from "../helpers/phases.mjs";
+import { battle, fightsIn, hasActed, phaseOf, turnState } from "../helpers/phases.mjs";
 import { riderOf } from "../helpers/rescue.mjs";
 import { armyOf } from "../helpers/exchange.mjs";
 import { unseenBy } from "../rules/reactions.mjs";
@@ -671,6 +671,30 @@ export class FeoToken extends Token {
 
   /* -------------------------------------------- */
 
+  /**
+   * A battle played in Phases has no turn of a single unit: a whole side has the Phase. Foundry would ring
+   * whichever unit comes first in the encounter as the one whose turn it is, so its turn marker is not drawn
+   * while such a battle is the encounter in view.
+   * @override
+   */
+  _refreshTurnMarker() {
+    try {
+      if ( phaseOf(game.combat) ) {
+        if ( this.turnMarker ) {
+          canvas.tokens.turnMarkers.delete(this);
+          this.turnMarker.destroy();
+          this.turnMarker = null;
+        }
+        return;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+    return super._refreshTurnMarker();
+  }
+
+  /* -------------------------------------------- */
+
   /** @override */
   _refreshState() {
     super._refreshState();
@@ -932,6 +956,17 @@ export function registerBattleCanvas() {
   for ( const hook of ["createToken", "deleteToken"] ) Hooks.on(hook, () => battleCanvas.refreshSharing());
   Hooks.on("updateToken", (token, changes) => {
     if ( ("x" in changes) || ("y" in changes) ) battleCanvas.refreshSharing();
+  });
+
+  // An encounter that takes to Phases, or is no longer played in them, has the turn marker looked at again:
+  // Foundry only does so as the turn passes
+  Hooks.on("updateCombat", (combat, changes) => {
+    try {
+      if ( !canvas?.ready || !("phase" in (changes.flags?.[FEO.id] ?? {})) ) return;
+      for ( const token of canvas.tokens?.placeables ?? [] ) token.renderFlags.set({ refreshTurnMarker: true });
+    } catch(err) {
+      console.error(err);
+    }
   });
 
   // A unit that dies or retreats leaves the map, and one that returns is back on it
