@@ -1,5 +1,5 @@
 import { FEO } from "../config.mjs";
-import { company, mayAct, readBase, registerBase, request } from "../helpers/base.mjs";
+import { company, mayAct, playsAt, readBase, registerBase, request } from "../helpers/base.mjs";
 import { earnsExp } from "../helpers/experience.mjs";
 import { iconHtml } from "../helpers/icons.mjs";
 import { forgeSteps, isMarching } from "../rules/base.mjs";
@@ -323,7 +323,10 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
   async #gather() {
     const base = readBase();
     const state = this.#state;
-    const players = game.users.filter((user) => !user.isGM).map((user) => ({ id: user.id, name: user.name, online: user.active }));
+
+    // Who is at the table: the players, and a Game Master whose own character marches
+    const players = game.users.filter((user) => playsAt(base, user))
+      .map((user) => ({ id: user.id, name: user.name, online: user.active, gm: user.isGM }));
     const units = company(base).map(({ actor, user, owner, character }) => Base.#unit(actor, base, { character, player: user, owner }));
     const offers = base.offers.map((offer) => {
       const actor = game.actors.get(offer.actor);

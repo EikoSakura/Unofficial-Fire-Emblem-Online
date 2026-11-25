@@ -4,6 +4,7 @@ import { resolveExchange } from "../rules/combat.mjs";
 import { BLOW } from "../rules/stances.mjs";
 import { pickCount } from "../rules/timed.mjs";
 import { rollD100 } from "./chat.mjs";
+import { isPlayerUnit } from "./players.mjs";
 
 /**
  * Answers in the middle of a fight, in Foundry (see `rules/answers.mjs`): a fight the system rolls stops where
@@ -29,7 +30,7 @@ const other = (side) => (side === "initiator") ? "defender" : "initiator";
  * @returns {boolean}
  */
 export function answersAlone(actor) {
-  return !!FEO.answers.alone.enabled && !!actor && !actor.hasPlayerOwner;
+  return !!FEO.answers.alone.enabled && !!actor && !isPlayerUnit(actor);
 }
 
 /* -------------------------------------------- */

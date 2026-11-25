@@ -6,6 +6,7 @@ import { sellValue } from "../rules/progression.mjs";
 import { discounted, resold } from "../rules/stealing.mjs";
 import { postCard } from "./chat.mjs";
 import { awardExp, earnsExp, expRow, useExp } from "./experience.mjs";
+import { characterOf } from "./players.mjs";
 import { linkBond } from "./supports.mjs";
 import { originalOf } from "./weapons.mjs";
 
@@ -55,8 +56,9 @@ export function readBase() {
 /* -------------------------------------------- */
 
 /**
- * The company: the characters of the players, then the units recruited to the roster. `owner` is the player a
- * unit belongs to; a recruit with none is an ally, which is run by whoever the Base names for it.
+ * The company: the characters the users have chosen, a Game Master's among them, then the units recruited to
+ * the roster. `owner` is the player a unit belongs to; a recruit with none is an ally, which is run by whoever
+ * the Base names for it.
  * @param {BaseState} [base]
  * @returns {{actor: Actor, user: User|null, owner: User|null, character: boolean}[]}
  */
@@ -64,7 +66,7 @@ export function company(base = readBase()) {
   const units = [];
   const seen = new Set();
   for ( const user of game.users ) {
-    const actor = user.isGM ? null : user.character;
+    const actor = user.character;
     if ( (actor?.type !== "unit") || seen.has(actor.id) ) continue;
     seen.add(actor.id);
     units.push({ actor, user, owner: user, character: true });
@@ -105,7 +107,22 @@ export function ownerOf(actor) {
 export function runnerOf(base, actor, owner = ownerOf(actor)) {
   if ( owner ) return owner;
   const named = game.users.get(base.muster[actor.id]?.lead || "");
-  return named && !named.isGM ? named : null;
+  return named && playsAt(base, named) ? named : null;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Does a user sit at the table as a player? Every player does. A Game Master does while the character they have
+ * chosen marches: whoever runs the battle stands their own down.
+ * @param {BaseState} base
+ * @param {User} user
+ * @returns {boolean}
+ */
+export function playsAt(base, user) {
+  if ( !user.isGM ) return true;
+  const actor = user.character;
+  return (actor?.type === "unit") && isMarching(base, actor.id, true);
 }
 
 /* -------------------------------------------- */
@@ -246,12 +263,12 @@ const newId = () => foundry.utils.randomID();
 const number = (value) => Number(value ?? 0).toLocaleString("en-US");
 
 /**
- * The player whose character a unit is, if it is one.
+ * The user whose character a unit is, if it is one: a player, or a Game Master who has chosen one to play.
  * @param {Actor} actor
  * @returns {User|null}
  */
 function playerOf(actor) {
-  return game.users.find((user) => !user.isGM && (user.character?.id === actor.id)) ?? null;
+  return characterOf(actor);
 }
 
 /**
@@ -277,7 +294,7 @@ function member(base, id) {
 async function handOver(actor, user) {
   const OWNER = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
   const held = actor.flags?.[FEO.id]?.[RUN_FLAG] ?? null;
-  const next = user && !user.isGM ? user.id : null;
+  const next = user?.id ?? null;
   if ( ((held?.user ?? null) === next) && (!next || (actor.ownership[next] === OWNER)) ) return;
 
   const ownership = foundry.utils.deepClone(actor.ownership);
@@ -470,7 +487,7 @@ const ACTIONS = {
       // An ally is handed to anyone by the Game Master; a player takes one nobody runs, or gives theirs back
       const now = runnerOf(base, actor, null);
       const named = game.users.get(data.lead || "");
-      const next = named && !named.isGM ? named : null;
+      const next = named && playsAt(base, named) ? named : null;
       if ( !user.isGM && ((now && (now !== user)) || (next && (next !== user))) ) refuse("notYours", { name: actor.name });
       (base.muster[actor.id] ??= {}).lead = next?.id ?? "";
       await handOver(actor, next);

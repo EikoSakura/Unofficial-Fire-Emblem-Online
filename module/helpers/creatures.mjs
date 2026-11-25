@@ -16,6 +16,7 @@ import { syncStatus } from "./defeat.mjs";
 import { damageUnit, pop, spendFor } from "./events.mjs";
 import { armyOf, tokenTile } from "./exchange.mjs";
 import { phaseOf } from "./phases.mjs";
+import { isPlayerUnit } from "./players.mjs";
 import { sightField } from "./sight.mjs";
 import { SUMMONED_FLAG, alwaysWields } from "./weapons.mjs";
 
@@ -317,7 +318,7 @@ export function makesBlocked(token, act, tiles) {
  * @returns {Actor[]}
  */
 function preparedUnits() {
-  return game.actors.filter((actor) => (actor.type === "unit") && !actor.hasPlayerOwner && !creatureOf(actor))
+  return game.actors.filter((actor) => (actor.type === "unit") && !isPlayerUnit(actor) && !creatureOf(actor))
     .sort((a, b) => (a.folder?.name ?? "").localeCompare(b.folder?.name ?? "") || a.name.localeCompare(b.name));
 }
 
@@ -1028,7 +1029,7 @@ export async function placeCreature(request = {}) {
     const list = [];
     for ( const entry of picks.units ?? [] ) {
       const unit = (typeof entry?.uuid === "string") ? await foundry.utils.fromUuid(entry.uuid) : null;
-      if ( (unit?.documentName !== "Actor") || (unit.type !== "unit") || unit.hasPlayerOwner || unit.inCompendium ) return fail("failed");
+      if ( (unit?.documentName !== "Actor") || (unit.type !== "unit") || isPlayerUnit(unit) || unit.inCompendium ) return fail("failed");
       for ( let n = 0; n < entry.count; n++ ) list.push(unit);
     }
     for ( const [index, unit] of list.entries() ) {

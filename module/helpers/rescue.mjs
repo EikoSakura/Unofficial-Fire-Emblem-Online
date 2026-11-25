@@ -751,12 +751,15 @@ function savesWith(item) {
 /* -------------------------------------------- */
 
 /**
- * The user who acts for a unit: a player who owns it and is connected, else a Game Master.
+ * The user who acts for a unit: a player who owns it and is connected, or the Game Master whose own character
+ * it is, else the Game Master who runs the battle.
  * @param {Actor} actor
  * @returns {User|null}
  */
 export function actsFor(actor) {
-  const owners = game.users.filter((user) => user.active && !user.isGM && actor.testUserPermission(user, "OWNER"));
+  const owners = game.users.filter((user) => {
+    return user.active && (user.isGM ? (user.character?.id === actor.id) : actor.testUserPermission(user, "OWNER"));
+  });
   return owners.find((user) => user === game.user) ?? owners[0] ?? game.users.activeGM ?? null;
 }
 

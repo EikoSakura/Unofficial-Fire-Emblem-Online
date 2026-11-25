@@ -12,6 +12,7 @@ import { setMapAffinity } from "./map-affinity.mjs";
 import { DROP_FLAG, copyDelta, specOf } from "./npc.mjs";
 import { readPaint } from "./paint.mjs";
 import { beginBattle } from "./phases.mjs";
+import { characterOf, isPlayerUnit } from "./players.mjs";
 import { setWeather } from "./weather.mjs";
 
 /**
@@ -76,9 +77,9 @@ export async function removeEncounter(id) {
 /*  Units                                       */
 /* -------------------------------------------- */
 
-/** The user who plays a unit, where one does. */
+/** The user who plays a unit, where one does: whoever chose it as their character, or a player who owns it. */
 function playerOf(actor) {
-  return game.users.find((user) => !user.isGM && (user.character === actor))
+  return characterOf(actor)
     ?? game.users.find((user) => !user.isGM && actor.testUserPermission(user, "OWNER")) ?? null;
 }
 
@@ -94,7 +95,7 @@ export function partyPool() {
     pool.push({ actor, user: user ?? playerOf(actor) });
   }
   for ( const actor of game.actors ) {
-    if ( (actor.type !== "unit") || seen.has(actor.id) || !actor.hasPlayerOwner ) continue;
+    if ( (actor.type !== "unit") || seen.has(actor.id) || !isPlayerUnit(actor) ) continue;
     pool.push({ actor, user: playerOf(actor) });
   }
   return pool;
@@ -107,7 +108,7 @@ export function partyPool() {
  * @returns {Actor[]}
  */
 export function npcPool() {
-  const units = game.actors.filter((actor) => (actor.type === "unit") && !actor.hasPlayerOwner);
+  const units = game.actors.filter((actor) => (actor.type === "unit") && !isPlayerUnit(actor));
   const made = (actor) => (specOf(actor) ? 0 : 1);
   return units.sort((a, b) => (made(a) - made(b)) || a.name.localeCompare(b.name));
 }

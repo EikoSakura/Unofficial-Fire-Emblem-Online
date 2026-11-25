@@ -24,6 +24,7 @@ import { betweenOn, reachOf } from "./battle-map.mjs";
 import { bareFor, lentFor, offersOf, stillHeld, takeUp } from "./lending.mjs";
 import { onlyWaits, turnMoveOf } from "./movement.mjs";
 import { turnState } from "./phases.mjs";
+import { isPlayerUnit } from "./players.mjs";
 import { standingOf } from "./positions.mjs";
 import { sightFrom } from "./sight.mjs";
 import { creatureOf, heirOf as summonerOf } from "./creatures.mjs";
@@ -59,7 +60,7 @@ export function armyOf(actor, token) {
   // A unit that a change which lasts on it has stand apart from every side, as a Charm does
   if ( actor.system.skills?.rules?.includes(NEUTRAL) ) return "other";
   if ( actor.system.army ) return actor.system.army;
-  if ( actor.hasPlayerOwner ) return "player";
+  if ( isPlayerUnit(actor) ) return "player";
   const disposition = (token ?? actor.prototypeToken)?.disposition;
   const { FRIENDLY, HOSTILE } = CONST.TOKEN_DISPOSITIONS;
   if ( disposition === HOSTILE ) return "enemy";

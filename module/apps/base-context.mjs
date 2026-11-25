@@ -75,7 +75,8 @@ import { canWield } from "../rules/weapons.mjs";
  * @typedef BaseWorld
  * @property {BaseState} base
  * @property {{id: string, isGM: boolean}} user
- * @property {{id: string, name: string, online: boolean}[]} players
+ * @property {{id: string, name: string, online: boolean, gm?: boolean}[]} players     Who is at the table; `gm`
+ *                                              marks a Game Master who is there with a character of their own
  * @property {BaseUnit[]} company
  * @property {{id: string, cost: number, terms: string, check: string, temp: boolean, unit: BaseUnit}[]} offers
  * @property {BaseUnit|null} visitor
@@ -294,9 +295,11 @@ export function buildRail(world, ui, i18n) {
     };
   });
 
-  // Who is ready: the players with a character in the company, or everyone at the table if there are none
-  const withUnit = world.players.filter((player) => world.company.some((unit) => unit.player?.id === player.id));
-  const table = withUnit.length ? withUnit : world.players;
+  // Who is ready: the players with a character in the company, or everyone at the table if there are none. A
+  // Game Master who plays sounds the march like any other, and is not waited for
+  const seated = world.players.filter((player) => !player.gm);
+  const withUnit = seated.filter((player) => world.company.some((unit) => unit.player?.id === player.id));
+  const table = withUnit.length ? withUnit : seated;
   const ready = table.filter((player) => base.ready[player.id]).length;
   return {
     posts,

@@ -6,6 +6,7 @@ import { awardGold, pop, spendFor } from "./events.mjs";
 import { tokenTile } from "./exchange.mjs";
 import { onMap, relationTo } from "./forced.mjs";
 import { takeAction } from "./phases.mjs";
+import { isPlayerUnit } from "./players.mjs";
 import { SUMMONED_FLAG } from "./weapons.mjs";
 
 /**
@@ -769,7 +770,7 @@ export async function startBattleCrafts(combat) {
     seen.add(actor.uuid);
     if ( actor.items.some((item) => item.getFlag(FEO.id, CRAFTED_FLAG)) ) continue;
     try {
-      if ( !actor.hasPlayerOwner ) {
+      if ( !isPlayerUnit(actor) ) {
         await craftAlone(actor);
         continue;
       }

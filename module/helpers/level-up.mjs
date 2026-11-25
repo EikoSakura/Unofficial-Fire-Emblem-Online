@@ -3,6 +3,7 @@ import { levelUpShowing, playLevelUp } from "../apps/level-up-splash.mjs";
 import { raisedCount, readSplash, splashLine, splashRows } from "../rules/level-up.mjs";
 import { growthValue } from "./earnings-context.mjs";
 import { armyOf } from "./exchange.mjs";
+import { isPlayerUnit } from "./players.mjs";
 
 /**
  * The Level Up splash, in Foundry: putting together what it shows of a level up, playing it for the one who
@@ -125,7 +126,7 @@ export function buildLevelUpSplash(actor, { from, to, results, points, notes = [
  */
 export async function showLevelUp(actor, splash) {
   try {
-    if ( actor.hasPlayerOwner ) game.socket?.emit(SOCKET, { type: "unit.levelUp", splash });
+    if ( isPlayerUnit(actor) ) game.socket?.emit(SOCKET, { type: "unit.levelUp", splash });
     if ( !levelUpSplashOn() ) return;
     await playLevelUp(splash, {
       auto: !!setting(AUTO_SETTING),
