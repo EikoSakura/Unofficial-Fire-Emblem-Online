@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0
+
+- World Map: a map of the campaign's land with a dot for each place, routes between them and the ground of each nation. The Game Master sends the company from place to place and everyone with the map open watches it march; players see the places shown to them and can point at one. A place can hold the Base, a market and a battle from a saved encounter.
+- World Map Creator: the Game Master makes a land from a shape, a number of nations and a seed, or draws over a picture, and changes borders, places and routes by hand. Both open from the Fire Emblem controls.
+- Accessories are now worn, one at a time, from the sheet or the battle HUD, and give what their Effect says while they are. A weapon in hand and a Shield give what their Effects say as well: stat and combat bonuses, extra attacks, Weapon Triangle changes, healing on hit, and what a hit leaves on the foe. Gear that grants a skill gives its unit that skill for as long as it is equipped. When a Game Master opens the world after the update, a unit that carries accessories and wears none puts on the first of them.
+- A weapon, an item, a Combat Art or a Battalion can be shown to the table as a card in the chat without using it, from the unit sheet, the item's own window and the lists of the battle HUD.
+- Retreat zone: the Game Master marks the tiles units can leave the map from with the terrain brush, beside the deployment zone. It is drawn in yellow for everyone, before a battle and all through it. In a battle, a unit that stands on one of its tiles has the Retreat command: it is the unit's Action, and takes the unit off the map as one that retreated.
+- A new setting of each player's own, "Map squares: how solid", thins out the squares that show where a unit can move and what it can reach, so that the map can be seen under them. Each square keeps its outline and a band of its colour.
+- On the battle map: a right click on the ground calls off what was being picked, or deselects the unit. Until a battle begins, a selected unit has no reach painted, so that units are set up with nothing in the way. A drag begun with Ctrl held puts a token anywhere. The terrain card names the ground under the pointer with no unit selected, and holding Alt shows the ground of the map. No turn ring is drawn in a battle played in Phases.
+- At the Base, a player's own units are theirs to lead, and an ally says who runs it: the Game Master hands it to anyone at the table, and a player can take one nobody runs. The character a Game Master has chosen counts as a player's unit.
+
 ## 0.6.0
 
 - NPC Builder: the Game Master makes an enemy, an ally or a bystander from a class, a Level and a side. Its base stats, Level ups, promotions, skills and weapon ranks are filled in as the rules give them, and anything can be changed by hand. A unit can be marked as a Boss or as recruitable, what it carries can be set to drop for the players or for anyone, and a unit set to vary gives each copy its own Level ups when it is placed.
