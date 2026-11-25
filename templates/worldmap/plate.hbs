@@ -1,0 +1,21 @@
+<footer class="wm-plate{{#unless plate}} wm-off{{/unless}}">
+  {{#if plate}}
+  <div class="wm-crest" style="--wm-nation: {{plate.color}}">{{{plate.glyph}}}</div>
+  <div class="wm-plate-main">
+    <div class="eyebrow">{{plate.over}}</div>
+    <h3>{{plate.name}}</h3>
+    <div class="wm-chips">
+      {{#each plate.chips as |chip|}}
+      <span class="tag {{chip.cls}}">{{feoIcon chip.icon}}{{#if chip.strong}}<b>{{chip.strong}}</b>{{/if}}{{chip.label}}</span>
+      {{/each}}
+    </div>
+  </div>
+  <div class="wm-plate-acts">
+    {{#if plate.away}}<span class="wm-stops">{{#if plate.away.count}}<b>{{plate.away.count}}</b> {{/if}}{{plate.away.text}}</span>{{/if}}
+    {{#each plate.actions as |act|}}
+    <button type="button" class="btn {{act.cls}}" data-action="{{act.action}}" {{#if act.disabled}}disabled{{/if}}
+            {{#if act.hint}}data-tooltip="{{act.hint}}"{{/if}}>{{feoIcon act.icon}}{{act.label}}</button>
+    {{/each}}
+  </div>
+  {{/if}}
+</footer>

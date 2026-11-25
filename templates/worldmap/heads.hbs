@@ -1,0 +1,19 @@
+<div class="wm-heads">
+  {{#if made}}
+  <div class="wm-title">
+    <b>{{name}}</b>
+    <small>{{summary}}</small>
+  </div>
+  <div class="wm-legend">
+    {{#each legend as |nation|}}
+    <button type="button" data-action="spot" data-nation="{{nation.id}}" aria-pressed="{{nation.on}}"
+            data-tooltip="{{localize "FEO.WorldMap.spot"}}"><i style="background: {{nation.color}}"></i>{{nation.name}}</button>
+    {{/each}}
+    <div class="wm-key">
+      <span><i class="wm-key-battle"></i>{{localize "FEO.WorldMap.key.battle"}}</span>
+      <span><i class="wm-key-visited"></i>{{localize "FEO.WorldMap.key.visited"}}</span>
+      <span><i class="wm-key-known"></i>{{localize "FEO.WorldMap.key.known"}}</span>
+    </div>
+  </div>
+  {{/if}}
+</div>

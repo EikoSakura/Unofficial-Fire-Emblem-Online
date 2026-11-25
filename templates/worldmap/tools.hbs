@@ -1,0 +1,200 @@
+<aside class="wm-tools">
+  <div class="wm-tabs" role="group" aria-label="{{localize "FEO.WorldMap.tools"}}">
+    {{#each tabs as |tab|}}
+    <button type="button" class="wm-tab" data-action="tool" data-tool="{{tab.key}}" aria-pressed="{{tab.on}}">{{feoIcon tab.icon}}{{tab.label}}</button>
+    {{/each}}
+  </div>
+
+  <div class="wm-tools-in">
+    {{#if land}}
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.land.backdrop"}}</h4>
+      <div class="wm-picks">
+        <button type="button" class="wm-pick" data-action="backdrop" data-kind="made" aria-pressed="{{#if picturing}}false{{else}}true{{/if}}">{{localize "FEO.WorldMap.land.made"}}</button>
+        <button type="button" class="wm-pick" data-action="backdrop" data-kind="picture" aria-pressed="{{#if picturing}}true{{else}}false{{/if}}">{{feoIcon "picture"}}{{localize "FEO.WorldMap.land.picture"}}</button>
+      </div>
+      {{#if picturing}}
+      <file-picker type="image" data-field="backdrop" value="{{land.backdrop}}"></file-picker>
+      <p>{{localize "FEO.WorldMap.land.pictureHint"}}</p>
+      {{/if}}
+    </div>
+    {{#unless land.picture}}
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.land.shape"}}</h4>
+      <div class="wm-picks">
+        {{#each land.shapes as |shape|}}
+        <button type="button" class="wm-pick" data-action="shape" data-shape="{{shape.key}}" aria-pressed="{{shape.on}}">{{shape.label}}</button>
+        {{/each}}
+      </div>
+      <div class="wm-field">
+        <span>{{localize "FEO.WorldMap.land.nations"}}</span>
+        <div class="wm-stepper">
+          <button type="button" data-action="count" data-by="-1" {{#unless land.fewer}}disabled{{/unless}} aria-label="{{localize "FEO.WorldMap.land.fewer"}}">{{feoIcon "minus"}}</button>
+          <b>{{land.count}}</b>
+          <button type="button" data-action="count" data-by="1" {{#unless land.more}}disabled{{/unless}} aria-label="{{localize "FEO.WorldMap.land.more"}}">{{feoIcon "plus"}}</button>
+        </div>
+      </div>
+      <div class="wm-field">
+        <span>{{localize "FEO.WorldMap.land.places"}}</span>
+        <div class="wm-picks">
+          {{#each land.densities as |density|}}
+          <button type="button" class="wm-pick" data-action="density" data-density="{{density.key}}" aria-pressed="{{density.on}}">{{density.label}}</button>
+          {{/each}}
+        </div>
+      </div>
+      <div class="wm-field">
+        <label for="feo-worldmap-seed">{{localize "FEO.MapGen.seed"}}</label>
+        <div class="wm-row">
+          <input type="text" id="feo-worldmap-seed" data-field="seed" value="{{land.seed}}" maxlength="24" spellcheck="false" autocomplete="off"
+                 data-tooltip="{{localize "FEO.WorldMap.land.seedHint"}}">
+          <button type="button" class="btn small" data-action="reroll">{{feoIcon "dice"}}{{localize "FEO.MapGen.reroll"}}</button>
+        </div>
+      </div>
+    </div>
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.land.keep"}}</h4>
+      <p>{{localize "FEO.WorldMap.land.keepHint"}}</p>
+      <p><button type="button" class="btn small" data-action="redraw">{{feoIcon "dice"}}{{localize "FEO.WorldMap.land.redraw"}}</button></p>
+      <p>{{localize "FEO.WorldMap.land.replaces"}}</p>
+    </div>
+    {{/unless}}
+    <div class="wm-card">
+      <h4><label for="feo-worldmap-name">{{localize "FEO.WorldMap.land.name"}}</label></h4>
+      <input type="text" id="feo-worldmap-name" data-field="name" value="{{land.name}}" autocomplete="off">
+    </div>
+    {{/if}}
+
+    {{#if nations}}
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.nations.title"}}</h4>
+      {{#each nations.rows as |row|}}
+      <div class="wm-nation-row" role="button" tabindex="0" data-action="nation" data-nation="{{row.id}}" aria-pressed="{{row.on}}">
+        <button type="button" class="wm-sw" data-action="color" data-nation="{{row.id}}" style="background: {{row.color}}"
+                data-tooltip="{{localize "FEO.WorldMap.nations.color"}}" aria-label="{{localize "FEO.WorldMap.nations.color"}}"></button>
+        <input type="text" data-field="nation" data-id="{{row.id}}" value="{{row.name}}" spellcheck="false" autocomplete="off"
+               aria-label="{{localize "FEO.WorldMap.nations.name"}}">
+        <small>{{row.places}}</small>
+      </div>
+      {{/each}}
+      <div class="wm-nation-row" role="button" tabindex="0" data-action="nation" data-nation="0" aria-pressed="{{nations.nobody}}">
+        <span class="wm-sw wm-sw-none"></span>
+        <b>{{localize "FEO.WorldMap.nations.nobody"}}</b>
+        <small>{{localize "FEO.WorldMap.nations.nobodyNote"}}</small>
+      </div>
+      <p><button type="button" class="btn small" data-action="addNation" {{#unless nations.canAdd}}disabled{{/unless}}>{{feoIcon "plus"}}{{localize "FEO.WorldMap.nations.add"}}</button></p>
+    </div>
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.nations.brush"}}</h4>
+      <div class="wm-picks">
+        {{#each nations.brushes as |brush|}}
+        <button type="button" class="wm-pick" data-action="brush" data-brush="{{brush.key}}" aria-pressed="{{brush.on}}">{{brush.label}}</button>
+        {{/each}}
+      </div>
+      <p>{{localize "FEO.WorldMap.nations.brushHint"}}</p>
+    </div>
+    {{#if nations.picked}}
+    <div class="wm-card">
+      <h4>{{nations.picked.name}}</h4>
+      <div class="wm-picks">
+        {{#each nations.picked.styles as |style|}}
+        <button type="button" class="wm-pick" data-action="style" data-style="{{style.key}}" aria-pressed="{{style.on}}">{{style.label}}</button>
+        {{/each}}
+      </div>
+      <p>{{localize "FEO.WorldMap.nations.shownAs"}} <b>{{nations.picked.title}}</b></p>
+      <p><button type="button" class="btn small wm-danger" data-action="removeNation" {{#unless nations.picked.canRemove}}disabled{{/unless}}>{{feoIcon "trash"}}{{localize "FEO.WorldMap.nations.remove"}}</button></p>
+    </div>
+    {{/if}}
+    {{/if}}
+
+    {{#if place}}
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.place.title"}}</h4>
+      <div class="wm-field">
+        <label for="feo-worldmap-place">{{localize "FEO.WorldMap.place.name"}}</label>
+        <input type="text" id="feo-worldmap-place" data-field="place" value="{{place.name}}" autocomplete="off">
+      </div>
+      <div class="wm-field">
+        <span>{{localize "FEO.WorldMap.place.kind"}}</span>
+        <div class="wm-picks">
+          {{#each place.kinds as |kind|}}
+          <button type="button" class="wm-pick wm-kind-pick" data-action="kind" data-kind="{{kind.key}}" aria-pressed="{{kind.on}}">{{{kind.glyph}}}{{kind.label}}</button>
+          {{/each}}
+        </div>
+      </div>
+      <div class="wm-field">
+        <span>{{localize "FEO.WorldMap.place.standsIn"}}</span>
+        <div class="wm-holder"><i class="wm-sw{{#unless place.color}} wm-sw-none{{/unless}}" {{#if place.color}}style="background: {{place.color}}"{{/if}}></i><b>{{place.nation}}</b></div>
+      </div>
+    </div>
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.place.here"}}</h4>
+      <button type="button" class="wm-switch" role="switch" data-action="toggle" data-toggle="base" aria-checked="{{place.base}}"><span class="wm-track"></span>{{localize "FEO.WorldMap.chip.base"}}<small>{{localize "FEO.WorldMap.place.oneOnly"}}</small></button>
+      <button type="button" class="wm-switch" role="switch" data-action="toggle" data-toggle="market" aria-checked="{{place.market}}"><span class="wm-track"></span>{{localize "FEO.WorldMap.place.market"}}</button>
+      <button type="button" class="wm-switch" role="switch" data-action="toggle" data-toggle="battle" aria-checked="{{place.battle}}"><span class="wm-track"></span>{{localize "FEO.WorldMap.place.battle"}}</button>
+      {{#if place.battle}}
+      <div class="wm-field">
+        <label for="feo-worldmap-encounter">{{localize "FEO.WorldMap.place.encounter"}}</label>
+        <select id="feo-worldmap-encounter" data-field="encounter">
+          {{#each place.encounters as |encounter|}}<option value="{{encounter.id}}" {{#if encounter.on}}selected{{/if}}>{{encounter.name}}</option>{{/each}}
+        </select>
+      </div>
+      <p>{{localize "FEO.WorldMap.place.encounterHint"}}</p>
+      {{/if}}
+    </div>
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.place.players"}}</h4>
+      <button type="button" class="wm-switch" role="switch" data-action="toggle" data-toggle="seen" aria-checked="{{place.seen}}"><span class="wm-track"></span>{{localize "FEO.WorldMap.place.seen"}}</button>
+      <button type="button" class="wm-switch" role="switch" data-action="toggle" data-toggle="visited" aria-checked="{{place.visited}}"><span class="wm-track"></span>{{localize "FEO.WorldMap.place.visited"}}</button>
+    </div>
+    <div class="wm-ends">
+      <button type="button" class="btn small wm-danger" data-action="remove">{{feoIcon "trash"}}{{localize "FEO.WorldMap.place.remove"}}</button>
+      <button type="button" class="btn small" data-action="done">{{feoIcon "check"}}{{localize "FEO.WorldMap.place.done"}}</button>
+    </div>
+    {{/if}}
+
+    {{#if adding}}
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.place.add"}}</h4>
+      <div class="wm-picks">
+        {{#each adding.kinds as |kind|}}
+        <button type="button" class="wm-pick wm-kind-pick" data-action="kind" data-kind="{{kind.key}}" aria-pressed="{{kind.on}}">{{{kind.glyph}}}{{kind.label}}</button>
+        {{/each}}
+      </div>
+      <p>{{localize "FEO.WorldMap.place.addHint"}}</p>
+    </div>
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.place.edit"}}</h4>
+      <p>{{localize "FEO.WorldMap.place.editHint"}}</p>
+    </div>
+    {{#if adding.any}}
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.place.players"}}</h4>
+      <p>{{localize "FEO.WorldMap.place.showHint"}}</p>
+      <div class="wm-picks">
+        <button type="button" class="btn small" data-action="showPlaces" data-which="all">{{feoIcon "eye"}}{{localize "FEO.WorldMap.place.showAll"}}</button>
+        <button type="button" class="btn small" data-action="showPlaces" data-which="near">{{feoIcon "eyeOff"}}{{localize "FEO.WorldMap.place.showNear"}}</button>
+      </div>
+    </div>
+    {{/if}}
+    {{/if}}
+
+    {{#if routes}}
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.routes.title"}}</h4>
+      <p>{{routes.count}}</p>
+      <p><b>{{routes.next}}</b></p>
+      <p>{{localize "FEO.WorldMap.routes.sea"}}</p>
+    </div>
+    <div class="wm-card">
+      <h4>{{localize "FEO.WorldMap.routes.forMe"}}</h4>
+      <p><button type="button" class="btn small" data-action="join" {{#unless routes.canJoin}}disabled{{/unless}}>{{feoIcon "route"}}{{localize "FEO.WorldMap.routes.join"}}</button></p>
+      <p>{{localize "FEO.WorldMap.routes.joinHint"}}</p>
+    </div>
+    {{/if}}
+  </div>
+
+  <div class="wm-save">
+    {{#if unsaved}}<span>{{localize "FEO.WorldMap.unsaved"}}</span>{{/if}}
+    <button type="button" class="btn primary" data-action="save">{{feoIcon "check"}}{{localize "FEO.WorldMap.save"}}</button>
+  </div>
+</aside>

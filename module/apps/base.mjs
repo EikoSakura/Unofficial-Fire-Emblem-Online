@@ -40,6 +40,7 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
       view: Base.#onView,
       visitor: Base.#onVisitor,
       ready: Base.#onReady,
+      worldMap: Base.#onWorldMap,
       sound: Base.#onSound,
       configure: Base.#onConfigure,
       post: Base.#onPost,
@@ -677,6 +678,16 @@ export default class Base extends HandlebarsApplicationMixin(ApplicationV2) {
     Object.assign(this.#state.forge, { item: null, steps: null, name: null });
     this.#state.market.ware = null;
     await this.render();
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Look at the World Map, to see where the company goes next.
+   * @this {Base}
+   */
+  static #onWorldMap() {
+    game.feo.worldMap?.open();
   }
 
   /* -------------------------------------------- */

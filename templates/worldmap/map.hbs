@@ -1,0 +1,40 @@
+<section class="wm-map">
+  {{#if made}}
+  <div class="wm-viewport">
+    <div class="wm-world">
+      <canvas class="wm-ground"></canvas>
+      <canvas class="wm-marks"></canvas>
+      <svg class="wm-over" preserveAspectRatio="none" role="img" aria-label="{{localize "FEO.WorldMap.title"}}">
+        <g data-layer="names"></g>
+        <g data-layer="routes"></g>
+        <g data-layer="lit" class="wm-lit"></g>
+        <g data-layer="places"></g>
+        <g data-layer="party"></g>
+        <g data-layer="fx"></g>
+      </svg>
+    </div>
+    <div class="wm-vignette"></div>
+    <svg class="wm-compass" viewBox="-30 -30 60 60" aria-hidden="true" focusable="false">
+      <circle r="21" fill="none" stroke="#3a2a14" stroke-width="1.2"/>
+      <circle r="17.5" fill="none" stroke="#3a2a14" stroke-width=".6"/>
+      <path d="M0-27L5 0 0 27-5 0z" fill="#3a2a14"/>
+      <path d="M0-27L5 0H0z" fill="#b8892c"/>
+      <path d="M-27 0L0-4 27 0 0 4z" fill="#3a2a14" opacity=".75"/>
+      <circle r="2.5" fill="#f2e3b6" stroke="#3a2a14"/>
+    </svg>
+    <div class="wm-zoom wm-chrome">
+      <button type="button" data-action="zoom" data-by="1.35" data-tooltip="{{localize "FEO.WorldMap.zoomIn"}}" aria-label="{{localize "FEO.WorldMap.zoomIn"}}">{{feoIcon "plus"}}</button>
+      <button type="button" data-action="zoom" data-by="0.74" data-tooltip="{{localize "FEO.WorldMap.zoomOut"}}" aria-label="{{localize "FEO.WorldMap.zoomOut"}}">{{feoIcon "minus"}}</button>
+    </div>
+    {{#if creator}}<div class="wm-hint wm-chrome"></div>{{/if}}
+    <div class="wm-toast" role="status"></div>
+    <div class="wm-busy">{{localize "FEO.WorldMap.busy"}}</div>
+  </div>
+  {{else}}
+  <div class="wm-nothing">
+    {{feoIcon "scroll"}}
+    <p>{{none}}</p>
+    {{#if isGM}}<button type="button" class="btn primary" data-action="create">{{feoIcon "plus"}}{{localize "FEO.WorldMap.act.make"}}</button>{{/if}}
+  </div>
+  {{/if}}
+</section>

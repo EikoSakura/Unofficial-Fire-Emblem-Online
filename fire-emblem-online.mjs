@@ -6,6 +6,7 @@ import MapGenerator from "./module/apps/map-generator.mjs";
 import NpcBuilder from "./module/apps/npc-builder.mjs";
 import Compendium from "./module/apps/compendium.mjs";
 import OptionalRulesConfig from "./module/apps/optional-rules-config.mjs";
+import WorldMap from "./module/apps/world-map.mjs";
 import { FEO } from "./module/config.mjs";
 import * as models from "./module/data/_module.mjs";
 import TerrainRegionBehavior from "./module/data/region-terrain.mjs";
@@ -234,6 +235,12 @@ Hooks.once("init", () => {
   EncounterBuilder.register();
   npcHelpers.registerHooks();
   game.feo.npcs = npcHelpers;
+
+  // The World Map: the land of the campaign with a dot for each place, routes between them and the ground of
+  // each nation, on which the Game Master sends the company from place to place; and its Creator, in which the
+  // map is made and changed. They open from the Fire Emblem controls, or with game.feo.worldMap.open() and
+  // game.feo.worldMap.creator.open()
+  WorldMap.register();
 
   // The Character Creator: who is looking at which step of a unit, and calls for help
   Hooks.once("ready", () => creationHelpers.registerCreation());

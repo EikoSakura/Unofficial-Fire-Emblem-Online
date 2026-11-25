@@ -38,6 +38,9 @@
     },
     {
       "src": "styles/encounter.css"
+    },
+    {
+      "src": "styles/worldmap.css"
     }
   ],
   "packs": [

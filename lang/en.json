@@ -3733,6 +3733,8 @@
       "over": "Between battles",
       "posts": "The posts of the Base",
       "whereTo": "Where to?",
+      "worldMap": "World Map",
+      "worldMapNote": "Where the company goes next",
       "visitingAs": "Visiting as",
       "visitorHint": "Visit as another of your units",
       "nobody": "Nobody",
@@ -4433,7 +4435,9 @@
       "paint": "Terrain brush",
       "mapgen": "Map generator",
       "encounter": "Encounter builder",
-      "npc": "NPC builder"
+      "npc": "NPC builder",
+      "worldMap": "World Map",
+      "worldMapCreator": "World Map creator"
     },
     "Paint": {
       "label": "Terrain brush",
@@ -4672,6 +4676,189 @@
         "create": "Create unit",
         "created": "{name} was created, in the NPCs folder.",
         "updated": "{name} was made over."
+      }
+    },
+    "WorldMap": {
+      "title": "World Map",
+      "creator": "World Map Creator",
+      "busy": "Drawing the map…",
+      "summary": "{nations} nations · {places} places",
+      "spot": "Pick this nation out on the map",
+      "zoomIn": "Look closer",
+      "zoomOut": "Look from further off",
+      "tools": "Tools",
+      "unclaimed": "Unclaimed land",
+      "stop": "stop away",
+      "stops": "stops away",
+      "noWay": "No way there",
+      "placesHeld": "{count} places",
+      "pointed": "{user} points at {place}.",
+      "pointing": "Everyone sees {place} flash on their map.",
+      "shownToAll": "The World Map is open on every screen.",
+      "save": "Save the map",
+      "saved": "The World Map was saved.",
+      "unsaved": "Not saved yet",
+      "unsavedAsk": "The map has changes that were not saved. Close the Creator and lose them?",
+      "none": {
+        "gm": "This world has no map yet. Make one in the Creator: a land, its nations, the places on it and the routes between them.",
+        "player": "This world has no map yet. The Game Master makes one."
+      },
+      "warn": {
+        "picture": "The picture {path} could not be read, so the map is drawn on a made land instead."
+      },
+      "key": {
+        "battle": "Battle",
+        "visited": "Visited",
+        "known": "Known"
+      },
+      "chip": {
+        "here": "The company is here",
+        "base": "The Base",
+        "market": "Market",
+        "battle": "A battle waits",
+        "hidden": "Hidden from players"
+      },
+      "act": {
+        "march": "March here",
+        "home": "Return to the Base",
+        "hide": "Hide",
+        "show": "Show to players",
+        "won": "Mark as won",
+        "begin": "Begin battle",
+        "beginNone": "No saved encounter is set for this battle. Pick one for the place in the Creator.",
+        "point": "Point here",
+        "base": "Open the Base",
+        "make": "Make the map",
+        "showAll": "Show to everyone",
+        "edit": "Edit the map"
+      },
+      "kind": {
+        "capital": "Capital",
+        "fort": "Fortress",
+        "town": "Town",
+        "village": "Village",
+        "port": "Port",
+        "ruins": "Ruins"
+      },
+      "style": {
+        "kingdom": "Kingdom of {name}",
+        "empire": "{name} Empire",
+        "holy": "Holy {name}",
+        "duchy": "Grand Duchy of {name}",
+        "cities": "Free Cities of {name}",
+        "league": "{name} League",
+        "principality": "Principality of {name}",
+        "theocracy": "Theocracy of {name}"
+      },
+      "phrase": {
+        "world": {
+          "continent": "The Continent of {name}",
+          "twin": "The Twin Lands of {name}",
+          "inner": "The Shores of {name}",
+          "isles": "The {name} Isles"
+        },
+        "port": {
+          "0": "Port {name}",
+          "1": "{name} Haven"
+        },
+        "fort": {
+          "0": "Fort {name}",
+          "1": "{name} Keep"
+        },
+        "ruins": "Ruins of {name}"
+      },
+      "shape": {
+        "continent": "Continent",
+        "twin": "Twin lands",
+        "inner": "Inner sea",
+        "isles": "Archipelago"
+      },
+      "density": {
+        "sparse": "Sparse",
+        "settled": "Settled",
+        "crowded": "Crowded"
+      },
+      "brush": {
+        "fine": "Fine",
+        "medium": "Medium",
+        "broad": "Broad"
+      },
+      "tool": {
+        "land": "Land",
+        "nations": "Nations",
+        "places": "Places",
+        "routes": "Routes"
+      },
+      "hint": {
+        "land": "Drag to move the map, scroll to look closer.",
+        "nations": "Drag on the land to paint it into the chosen nation. Right-drag moves the map.",
+        "places": "Click the land to add a place, drag a dot to move it, click a dot to edit it.",
+        "routes": "Click one dot, then another, to join them with a route or to remove the route between them."
+      },
+      "land": {
+        "backdrop": "Backdrop",
+        "made": "Generated",
+        "picture": "My own picture",
+        "pictureHint": "A map picture from the world's files is shown as it is, filling the window. Nations are painted over it as a tint, and places and routes are added by hand. Choosing one takes the places off the map.",
+        "shape": "The land",
+        "nations": "Nations",
+        "fewer": "One nation fewer",
+        "more": "One nation more",
+        "places": "Places",
+        "seedHint": "The same land, number of nations, places and seed always give the same map. Type one to get a map back.",
+        "keep": "Keep the land",
+        "keepHint": "Happy with the coastline but not the borders?",
+        "redraw": "New nations and places",
+        "replaces": "Making the map again replaces what was changed by hand.",
+        "name": "Name of the map"
+      },
+      "nations": {
+        "title": "Nations",
+        "color": "Change its colour",
+        "name": "Name of the nation",
+        "nobody": "Unclaimed",
+        "nobodyNote": "no nation",
+        "add": "Add a nation",
+        "brush": "Brush",
+        "brushHint": "Choose a nation above, then drag on the map. Only land takes paint.",
+        "shownAs": "Shown on a place as",
+        "remove": "Remove this nation"
+      },
+      "place": {
+        "title": "This place",
+        "name": "Name",
+        "kind": "Kind",
+        "standsIn": "Stands in",
+        "here": "What is here",
+        "oneOnly": "one place only",
+        "market": "A market",
+        "battle": "A battle",
+        "encounter": "Encounter",
+        "encounterHint": "One of the battles saved in the Encounter Builder. Begin battle opens it once the company has arrived.",
+        "noEncounter": "None, run by hand",
+        "unnamed": "Unnamed encounter",
+        "players": "Players",
+        "seen": "Shown to players",
+        "visited": "Already visited",
+        "remove": "Remove this place",
+        "done": "Done",
+        "add": "Add a place",
+        "addHint": "Click the land to put one down. It belongs to whichever nation it stands on.",
+        "edit": "Edit a place",
+        "editHint": "Click a dot to rename it, change what is there or hide it from the players. Drag it to move it; its routes follow.",
+        "showHint": "Players see a hidden place once it is shown to them, or once the company arrives a route away from it.",
+        "showAll": "Show every place",
+        "showNear": "Only near the Base"
+      },
+      "routes": {
+        "title": "Routes",
+        "count": "{roads} roads and {lanes} sea lanes join {places} places.",
+        "start": "Click a dot to start a route.",
+        "from": "From {name}: now click where the route leads.",
+        "sea": "A route that runs mostly over water is drawn as a sea lane. The company travels both the same way.",
+        "forMe": "Do it for me",
+        "join": "Join every place",
+        "joinHint": "Lays the shortest set of routes that reaches every place, then adds a few so there is more than one way round. It replaces the routes there are."
       }
     },
     "Encounter": {

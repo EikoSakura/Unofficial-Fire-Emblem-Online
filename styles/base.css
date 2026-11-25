@@ -533,6 +533,7 @@ button.bs-th:focus-visible { outline: 2px solid var(--feo-gold); outline-offset:
 .feo-base .bs-visitor.bs-nobody { cursor: default; padding-left: 14px; }
 .feo-base .bs-march { margin-top: 14px; }
 .feo-base .bs-posts { flex: none; }
+.feo-base .bs-away { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--feo-cloth-line); }
 
 /* Whatever a post has nothing of */
 .feo-base .bs-none { grid-column: 1 / -1; padding: 14px; color: var(--feo-faint); font-size: 13.5px; }

@@ -2396,3 +2396,45 @@ FEO.encounter = {
     least: 0.5
   }
 };
+
+/**
+ * The World Map: the land a campaign is set in, with a dot for each place, routes between them and the ground
+ * of each nation.
+ *
+ * `setting` is the world setting it is kept in. The map is `width` by `height` whatever the size of its window.
+ * `shapes` are the lands a map can be made as: `grain` is how fine the coast is cut, `pull` how closely the land
+ * keeps to its shape, and `land` the share of the map that is land. `density` is how settled the land is: places
+ * keep `apart` from one another, and there are `most` of them at most. A map has from `nations.least` to
+ * `nations.most` nations, each with one of the `colors`, in order, and one of the `styles`. `kinds` are the
+ * kinds of place, of which those in `market` have a market on a new map. On a new map the players are shown the
+ * places within `known` routes of the Base. `brushes` are the widths the ground of a nation is painted at.
+ * `zoom` is how closely the map can be looked at, and `speed` how far the company marches in a second.
+ */
+FEO.worldMap = {
+  setting: "worldMap",
+  width: 1200,
+  height: 750,
+  shapes: {
+    continent: { grain: 3.1, pull: 0.78, land: 0.44 },
+    twin: { grain: 3.4, pull: 0.85, land: 0.39 },
+    inner: { grain: 3.4, pull: 0.8, land: 0.41 },
+    isles: { grain: 5.2, pull: 0.34, land: 0.3 }
+  },
+  density: {
+    sparse: { apart: 112, most: 18 },
+    settled: { apart: 86, most: 30 },
+    crowded: { apart: 68, most: 44 }
+  },
+  nations: { least: 2, most: 8 },
+  colors: [
+    [63, 111, 196], [194, 69, 63], [61, 145, 96], [210, 162, 51], [138, 85, 184], [47, 156, 156], [210, 117, 46],
+    [184, 83, 127]
+  ],
+  styles: ["kingdom", "empire", "holy", "duchy", "cities", "league", "principality", "theocracy"],
+  kinds: ["capital", "fort", "town", "village", "port", "ruins"],
+  market: ["capital", "town", "port"],
+  known: 3,
+  brushes: { fine: 14, medium: 26, broad: 48 },
+  zoom: 3.2,
+  speed: 300
+};
