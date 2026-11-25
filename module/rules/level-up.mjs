@@ -96,6 +96,40 @@ export function rowPlaces(count) {
 /* -------------------------------------------- */
 
 /**
+ * Does a level wait for a unit: has it the experience of one, and is it under its level limit?
+ * @param {{exp?: number, atMaxLevel?: boolean}|null} unit    The unit's data
+ * @param {number} [perLevel]     FEO.expPerLevel
+ * @returns {boolean}
+ */
+export function levelWaits(unit, perLevel = FEO.expPerLevel) {
+  return !!unit && !unit.atMaxLevel && (Number(unit.exp) >= perLevel);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Who levels a unit up as it does so by itself: the level up is rolled, and shown, on one client only, and every
+ * client names the same one. A unit that is someone's is theirs to level: the user whose character it is before
+ * a player who owns it, among those at the table. While none of them is, it waits for one to join. A unit that
+ * is nobody's is levelled by the Game Master who runs the table.
+ * @param {{id: string, active?: boolean, gm?: boolean, owner?: boolean, character?: boolean}[]} users
+ *                                    Every user of the world: is it at the table, is it a Game Master, does it
+ *                                    own the unit, and is the unit the character it chose?
+ * @param {string|null} [activeGM]    The Game Master who runs the table, where one does
+ * @returns {string|null}             The id of that user, or null where the level up waits
+ */
+export function levelsUnit(users, activeGM = null) {
+  const theirs = (users ?? []).filter((user) => user.character || (!user.gm && user.owner));
+  if ( !theirs.length ) return activeGM ?? null;
+  const here = theirs.filter((user) => user.active).sort((a, b) => {
+    return (Number(!!b.character) - Number(!!a.character)) || String(a.id).localeCompare(String(b.id));
+  });
+  return here[0]?.id ?? null;
+}
+
+/* -------------------------------------------- */
+
+/**
  * Read a splash another client sent: only what a splash is made of is kept, cut to size, and one that names no
  * unit or shows no stat is none at all.
  * @param {*} sent

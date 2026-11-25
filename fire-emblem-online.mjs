@@ -21,6 +21,7 @@ import * as eventHelpers from "./module/helpers/events.mjs";
 import * as cutInHelpers from "./module/helpers/cut-ins.mjs";
 import * as levelSyncHelpers from "./module/helpers/level-sync.mjs";
 import * as levelUpHelpers from "./module/helpers/level-up.mjs";
+import * as levellingHelpers from "./module/helpers/levelling.mjs";
 import * as linkingHelpers from "./module/helpers/linking.mjs";
 import * as migrationHelpers from "./module/helpers/migration.mjs";
 import * as npcHelpers from "./module/helpers/npc.mjs";
@@ -275,6 +276,12 @@ Hooks.once("init", () => {
   levelUpHelpers.registerSettings();
   levelUpHelpers.registerHooks();
   game.feo.levelUp = levelUpHelpers;
+
+  // A unit that reaches the experience of a level levels up by itself, on the screen of whoever it belongs to,
+  // unless the world would rather have the Level Up button of the sheet pressed
+  levellingHelpers.registerSettings();
+  levellingHelpers.registerHooks();
+  game.feo.levelling = levellingHelpers;
 
   // A skill that picks something as it is learnt asks for it once, wherever it is gained, and keeps it
   pickHelpers.registerHooks();

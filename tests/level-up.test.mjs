@@ -5,7 +5,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { FEO } from "../module/config.mjs";
 import { rerollGrowths } from "../module/rules/earnings.mjs";
-import { levelMood, raisedCount, readSplash, rowPlaces, splashLine, splashRows } from "../module/rules/level-up.mjs";
+import {
+  levelMood, levelWaits, levelsUnit, raisedCount, readSplash, rowPlaces, splashLine, splashRows
+} from "../module/rules/level-up.mjs";
 import { rollGrowths } from "../module/rules/progression.mjs";
 
 /** The growth rates and rolls of the rulebook's worked example, with a Charm and an Intelligence beside them. */
@@ -80,6 +82,47 @@ test("the first stat has a row of its own, and the others stand in two columns u
   assert.equal(twelve.filter((place) => place.column === 1).length, 7);
   assert.equal(twelve.filter((place) => place.column === 2).length, 5);
   assert.equal(new Set(twelve.map((place) => `${place.column}:${place.row}`)).size, 12);
+});
+
+test("a level waits for a unit with the experience of one, under its level limit", () => {
+  assert.equal(levelWaits({ exp: FEO.expPerLevel - 1 }), false);
+  assert.equal(levelWaits({ exp: FEO.expPerLevel }), true);
+  assert.equal(levelWaits({ exp: 250 }), true);
+  assert.equal(levelWaits({ exp: 250, atMaxLevel: true }), false);
+  assert.equal(levelWaits({}), false);
+  assert.equal(levelWaits(null), false);
+});
+
+test("a player's unit levels up on its player's client, and waits while they are away", () => {
+  const gm = { id: "gm", active: true, gm: true, owner: true };
+  const ana = { id: "ana", active: true, owner: true };
+  const ben = { id: "ben", active: true };
+  assert.equal(levelsUnit([gm, ana, ben], "gm"), "ana");
+  assert.equal(levelsUnit([gm, { ...ana, active: false }, ben], "gm"), null);
+});
+
+test("the user whose character a unit is levels it before another who owns it", () => {
+  const gm = { id: "gm", active: true, gm: true, owner: true };
+  const ana = { id: "ana", active: true, owner: true };
+  const zed = { id: "zed", active: true, owner: true, character: true };
+  assert.equal(levelsUnit([gm, ana, zed], "gm"), "zed");
+  assert.equal(levelsUnit([gm, zed, ana], "gm"), "zed");
+  assert.equal(levelsUnit([gm, ana, { ...zed, active: false }], "gm"), "ana");
+
+  // Two who own it alike: every client names the same one
+  const cal = { id: "cal", active: true, owner: true };
+  assert.equal(levelsUnit([ana, cal]), levelsUnit([cal, ana]));
+
+  // A Game Master's own character is theirs to level, though a Game Master owns every unit
+  assert.equal(levelsUnit([{ ...gm, character: true }, { id: "ben", active: true }], "other"), "gm");
+});
+
+test("a unit that is nobody's levels up on the client of the Game Master who runs the table", () => {
+  const gm = { id: "gm", active: true, gm: true, owner: true };
+  const ben = { id: "ben", active: true };
+  assert.equal(levelsUnit([gm, ben], "gm"), "gm");
+  assert.equal(levelsUnit([gm, ben], null), null);
+  assert.equal(levelsUnit([], "gm"), "gm");
 });
 
 test("a splash another client sent is cut to what a splash is made of", () => {

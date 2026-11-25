@@ -1310,11 +1310,13 @@ FEO.blocking = {
  * to say its line for a great level, or for a fair one; with fewer it says its line for a poor one. `hold` is
  * how long the splash stays once it has shown everything, in milliseconds, where it leaves by itself. `most` is
  * how much of one a client takes from another: so many stats and so many notes under them, and so many letters
- * to anything written.
+ * to anything written. `wait` is how long a level up that comes by itself waits after its unit earned the
+ * experience, in milliseconds, so that what earned it is shown first.
  */
 FEO.levelUp = {
   lines: { great: 5, fair: 2 },
   hold: 4000,
+  wait: 1200,
   most: { rows: 16, chips: 8, text: 160 }
 };
 

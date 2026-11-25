@@ -2097,6 +2097,10 @@
         "name": "Level Up splash",
         "hint": "When a unit levels up, show its new level, its stats and what they gained over the whole screen, with a line from the unit. Off shows none, and the level up is told in chat as before. This is your own choice and changes nothing for the others at the table."
       },
+      "levelUpOnExp": {
+        "name": "Level up as soon as the EXP is earned",
+        "hint": "A unit that reaches 100 EXP levels up by itself, on the screen of the player it belongs to: its growth rates are rolled and the Level Up splash plays, or its promotion is offered. A unit no player owns levels up on the Game Master's screen. If its player is away, it waits until they join. Off leaves every level up to the Level Up button of the sheet, which works either way."
+      },
       "squareOpacity": {
         "name": "Map squares: how solid",
         "hint": "How much of the squares on the battle map is filled in, in percent: where a unit can move, what it can strike or reach, and what a foe threatens. Lower it to see the map under them: each square keeps its outline and a band of its colour. This is your own choice and changes nothing for the others at the table."

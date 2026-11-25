@@ -1,6 +1,6 @@
 import { FEO } from "../config.mjs";
 import { postCard, rollD100 } from "../helpers/chat.mjs";
-import { applyLevelGains, assignClass, findPromotions, promoteUnit } from "../helpers/classes.mjs";
+import { assignClass, findPromotions, promoteUnit } from "../helpers/classes.mjs";
 import { applyConditionTo, isTracked } from "../helpers/conditions.mjs";
 import { setFate, spendRoundFor, treatUnit } from "../helpers/defeat.mjs";
 import { armyOf, measureDistance } from "../helpers/exchange.mjs";
@@ -10,17 +10,14 @@ import { growthBar, withoutTaken } from "../helpers/imitation.mjs";
 import { movingAgain } from "../helpers/canto.mjs";
 import { holdsToWaiting, onlyWaits } from "../helpers/movement.mjs";
 import { originOf, takeAction, turnState } from "../helpers/phases.mjs";
-import { levelUpSkills, rerollFailed } from "../helpers/earnings.mjs";
 import { askPicks, picksOf } from "../helpers/picks.mjs";
 import { afflictUnit, awardGold, changeHpByHand, grantUnit, healUnit, pop, selectedOther } from "../helpers/events.mjs";
-import { buildLevelUpSplash, showLevelUp } from "../helpers/level-up.mjs";
-import { manualLevelUp } from "../helpers/manual-gains.mjs";
+import { levelUpUnit } from "../helpers/levelling.mjs";
 import { addModeToggle, setModeToggle } from "../helpers/mode-toggle.mjs";
 import { addWindowToggle, setWindowToggle } from "../helpers/window-toggle.mjs";
-import { growthValue } from "../helpers/earnings-context.mjs";
 import { awardExp, earnsExp, expRow, staffExpBy, useExp } from "../helpers/experience.mjs";
 import {
-  adjustLivesFor, buyPowerFor, promotionLifeUpdate, refundPowerFor, rollCrest, rollMovementStars, sheetOptions
+  adjustLivesFor, buyPowerFor, refundPowerFor, rollCrest, rollMovementStars, sheetOptions
 } from "../helpers/optional.mjs";
 import {
   heartSealOf, reclassUnit, sealCardsOf
@@ -55,12 +52,10 @@ import { isShield, repairItem, sellItem, wieldCheck } from "../helpers/weapons.m
 import { guardStanceOf } from "../rules/blocking.mjs";
 import { buildChange } from "../rules/timed.mjs";
 
-import { promotesAt } from "../rules/classes.mjs";
 import { blocksWeapon } from "../rules/conditions.mjs";
 import { gainWexp, wexpProficiencies } from "../rules/combat.mjs";
-import { rollGrowths } from "../rules/progression.mjs";
 import { cycleRange, startingRank } from "../rules/supports.mjs";
-import { grantTimed, removeTimed } from "../helpers/timed.mjs";
+import { removeTimed } from "../helpers/timed.mjs";
 import { skillCount } from "../helpers/timed-context.mjs";
 import { buildUnitContext } from "./unit-context.mjs";
 import { CREATOR_ACTIONS, activateCreator, closeCreator, creatorButton, creatorView, prepareCreator } from "./unit-creator.mjs";
@@ -1735,148 +1730,11 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
-   * Level up: grant ability points, then roll every growth rate. What they came to is shown on the Level Up
-   * splash, and then told in chat.
-   * A unit whose class promotes at this level promotes instead. A unit with only a class name is asked whether
-   * to promote, which skips the growth rolls and leaves the new class to be applied by hand. With the Level
-   * Cap, a unit at its level limit does neither.
+   * Level up, or promote where the unit's class promotes at this level (see `levelUpUnit`).
    * @this {UnitSheet}
    */
   static async #onLevelUp() {
-    const actor = this.actor;
-    const system = actor.system;
-    const source = actor._source.system;
-    if ( (system.exp < FEO.expPerLevel) || system.atMaxLevel ) return;
-
-    // A unit that imitates another levels up once it is itself again
-    const waits = growthBar(actor);
-    if ( waits ) {
-      ui.notifications.warn(waits);
-      return;
-    }
-
-    const cls = system.classItem;
-    if ( promotesAt(system.level, cls) ) {
-      await promoteUnit(actor, { levelUp: true });
-      return;
-    }
-
-    let promote = false;
-    if ( !cls && FEO.promotionLevels.includes(system.level) ) {
-      const choice = await DialogV2.wait({
-        window: { title: "FEO.LevelUp.promotionTitle" },
-        content: `<p>${game.i18n.format("FEO.LevelUp.promotionPrompt", { level: system.level })}</p>`,
-        buttons: [
-          { action: "promote", label: "FEO.LevelUp.promote", default: true },
-          { action: "level", label: "FEO.LevelUp.levelNormally" }
-        ],
-        rejectClose: false
-      });
-      if ( !choice ) return;
-      promote = choice === "promote";
-    }
-
-    const level = system.level + 1;
-    const points = system.checkPointsPerLevel;
-    const update = {
-      "system.level": level,
-      "system.exp": system.exp - FEO.expPerLevel,
-      "system.checkPoints": system.checkPoints + points
-    };
-    const rows = [{
-      label: game.i18n.localize("FEO.LevelUp.abilityPoints"),
-      value: `+${points}`
-    }];
-    const rolls = [];
-    let lasting = [];
-    let splash = null;
-
-    if ( !promote ) {
-      const capped = Object.entries(system.stats).filter(([, stat]) => stat.capped).map(([key]) => key);
-      if ( system.hp.capped ) capped.push("hp");
-      if ( system.weaponLevel?.used && system.weaponLevel.capped ) capped.push("wlv");
-      const growths = Object.keys(FEO.growths);
-      let gained;
-
-      // With Manual Stat Gains the level's points are placed by hand, in place of what the growth rates roll
-      if ( FEO.optional.manualGains.enabled ) {
-        const manual = await manualLevelUp(actor, capped);
-        if ( !manual ) return;
-        rolls.push(...manual.rolls);
-        rows.push(...manual.rows);
-        gained = manual.results;
-      }
-      else {
-        const { roll, results } = await rollD100(growths.length - capped.filter((key) => growths.includes(key)).length);
-        rolls.push(roll);
-        const queue = results.slice();
-
-        // A skill may let the growth rates that failed be rolled once more
-        const again = await rerollFailed(actor, rollGrowths(system.growthRates ?? system.growths, capped, () => queue.shift()));
-        if ( again.roll ) rolls.push(again.roll);
-        gained = again.results;
-        for ( const result of gained ) {
-          const label = game.i18n.localize(FEO.growths[result.key]);
-          if ( result.capped ) rows.push({ label, value: game.i18n.localize("FEO.LevelUp.atCap"), cls: "muted" });
-          else rows.push({ label, value: growthValue(result, game.i18n), cls: result.gain ? "good" : "muted" });
-        }
-      }
-      for ( const result of gained ) {
-        if ( result.capped || !result.gain ) continue;
-        if ( result.key === "hp" ) {
-          update["system.hp.max"] = source.hp.max + result.gain;
-          update["system.hp.value"] = system.hp.value + result.gain;
-        }
-        else if ( result.key in FEO.abilities ) {
-          update[`system.abilities.${result.key}.increase`] = source.abilities[result.key].increase + result.gain;
-        }
-        else if ( result.key === "wlv" ) {
-          update["system.weaponLevel.base"] = Math.min(source.weaponLevel.base + result.gain, system.weaponLevel.cap);
-        }
-        else update[`system.stats.${result.key}.base`] = source.stats[result.key].base + result.gain;
-      }
-
-      // What the unit's skills do at a level up: gold, HP restored, a boost that lasts a while
-      const skills = levelUpSkills(actor, gained, update);
-      Object.assign(update, skills.update);
-      rows.push(...skills.rows);
-      lasting = skills.grants;
-
-      // The Level Up splash is put together from the unit as it stands, before what it gained is saved
-      splash = buildLevelUpSplash(actor, { from: system.level, to: level, results: gained, points, notes: skills.rows });
-    }
-    else {
-      // A promotion that takes the place of a level up is one to the unit's skills. Its class is applied by
-      // hand, so nothing is known of the stats it raises
-      const skills = levelUpSkills(actor, [], update);
-      Object.assign(update, skills.update);
-      rows.push(...skills.rows);
-      lasting = skills.grants;
-    }
-
-    // With Additional Lives, promoting grants one more life in total and restores one
-    const lives = promote ? promotionLifeUpdate(actor) : {};
-    if ( "system.lives.max" in lives ) {
-      Object.assign(update, lives);
-      rows.push({
-        label: game.i18n.localize("FEO.Optional.lives.title"),
-        value: `${lives["system.lives.value"]} / ${lives["system.lives.max"]}`,
-        cls: "good"
-      });
-    }
-    await actor.update(update);
-
-    // The splash shows what the dice came to before the card tells of it in chat
-    if ( splash ) await showLevelUp(actor, splash);
-    await postCard(actor, {
-      title: game.i18n.format(promote ? "FEO.LevelUp.promotedTo" : "FEO.LevelUp.reached", { level }),
-      rows,
-      note: promote ? game.i18n.localize("FEO.LevelUp.promotionNote") : undefined
-    }, { rolls });
-    if ( lasting.length ) await grantTimed(actor, lasting);
-
-    // A class that does not promote learns its skills, and may gain stats, on reaching certain levels
-    if ( cls ) await applyLevelGains(actor, level);
+    await levelUpUnit(this.actor);
   }
 
   /* -------------------------------------------- */
