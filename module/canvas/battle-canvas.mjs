@@ -24,6 +24,9 @@ import { TileField } from "./tiles.mjs";
  *                                            An empty tile was clicked; true if the click was used up
  * @property {(tile: {i: number, j: number}|null) => void} onTileHover
  *                                            The pointer is over another tile, or has left the map
+ * @property {(event: Event) => boolean} onGroundRightClick
+ *                                            The ground was right-clicked, off every token, and the map was
+ *                                            not dragged with it; true if the click was used up
  */
 
 /**
@@ -58,6 +61,12 @@ export const battleCanvas = {
 
   /** The tile the pointer was last over. */
   hover: null,
+
+  /**
+   * Where on the screen the right button went down on the ground, until it is let go.
+   * @type {{x: number, y: number}|null}
+   */
+  pressed: null,
 
   /* -------------------------------------------- */
 
@@ -861,9 +870,32 @@ export class FeoTokenLayer extends TokenLayer {
     }
     return super._onClickLeft(event);
   }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The right button went down on the ground, off every token. That may be a click, or the start of a drag
+   * that pans the map: which of the two is known once the button is let go, so the place is noted until then
+   * (see `registerBattleCanvas`).
+   * @override
+   */
+  _onClickRight(event) {
+    try {
+      battleCanvas.pressed = (canvas.grid?.isSquare && !this._draggedToken) ? { x: event.clientX, y: event.clientY } : null;
+    } catch(err) {
+      console.error(err);
+    }
+    return super._onClickRight(event);
+  }
 }
 
 /* -------------------------------------------- */
+
+/**
+ * How far the pointer may stray, in pixels of the screen, between the right button going down and its being
+ * let go for that to be a click still. Foundry begins a drag at the same distance.
+ */
+const CLICK_SLACK = 10;
 
 /**
  * Put the battle map on the canvas: its tokens and token layer take the place of the core ones, and the
@@ -873,6 +905,26 @@ export function registerBattleCanvas() {
   CONFIG.Token.objectClass = FeoToken;
   CONFIG.Token.rulerClass = FeoTokenRuler;
   CONFIG.Canvas.layers.tokens.layerClass = FeoTokenLayer;
+
+  // A right click on the ground is told to the listener as the button is let go, unless the map was dragged
+  // with it. The window hears of that before the canvas does, while the canvas still knows of its drag
+  globalThis.addEventListener?.("pointerup", (event) => {
+    const pressed = battleCanvas.pressed;
+    if ( !pressed ) return;
+    battleCanvas.pressed = null;
+    try {
+      if ( event.button !== 2 ) return;
+      const manager = canvas?.mouseInteractionManager;
+      const dragged = !!manager?.states && (manager.state >= manager.states.DRAG);
+      const strayed = Math.hypot(event.clientX - pressed.x, event.clientY - pressed.y);
+      if ( !dragged && (strayed < CLICK_SLACK) ) battleCanvas.ask("onGroundRightClick", event);
+    } catch(err) {
+      console.error(err);
+    }
+  }, true);
+  globalThis.addEventListener?.("pointercancel", () => {
+    battleCanvas.pressed = null;
+  }, true);
 
   // The canvas element outlives the scenes drawn on it, so it is listened to once
   let view = null;
@@ -905,6 +957,7 @@ export function registerBattleCanvas() {
     battleCanvas.traps = null;
     battleCanvas.marks = null;
     battleCanvas.hover = null;
+    battleCanvas.pressed = null;
     const element = canvas.app?.view;
     if ( !element || (element === view) ) return;
     view = element;

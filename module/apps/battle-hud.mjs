@@ -276,7 +276,8 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       wantsToken: (token, event) => !!hud()?.#wantsToken(token, event),
       onTokenClick: (token, event) => hud()?.#onTokenClick(token, event),
       onTileClick: (tile, event) => !!hud()?.#onTileClick(tile, event),
-      onTileHover: (tile) => hud()?.#onTileHover(tile)
+      onTileHover: (tile) => hud()?.#onTileHover(tile),
+      onGroundRightClick: () => !!hud()?.#onGroundRightClick()
     };
 
     // The HUD is drawn with the canvas, on maps with a square grid
@@ -479,6 +480,18 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
   /* -------------------------------------------- */
 
   /**
+   * Is the map still being set up: has no battle begun on it, and was the selected unit not told to attack?
+   * Its reach is then neither painted nor walked by a click, so that units are put where they should stand,
+   * in the deployment zone or anywhere else, with nothing in the way.
+   * @type {boolean}
+   */
+  get #settingUp() {
+    return !battle() && (this.#mode !== "target") && !this.#forecast;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
    * Read the map again: who is selected, where that unit can go, and whether what the user was in the middle
    * of still stands.
    */
@@ -645,7 +658,9 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     // While a staff waits for what it is used on: how far it reaches, and over each unit it may be used on
     // what it would do there. One for several units shows all it catches at once
     else if ( view && this.#acting && (this.#mode === "staff") ) this.#paintStaff(paint);
-    else if ( view && (this.#acting || this.#moving) ) {
+
+    // Where the unit can go and what it can strike from there, once a battle has begun on the map
+    else if ( view && (this.#acting || this.#moving) && !this.#settingUp ) {
       const strikes = view.range?.staff ? paint.staff : paint.strike;
       for ( const key of view.reach.stops ) if ( !(view.moved && view.strikes.has(key)) ) paint.move.push(key);
       for ( const key of view.strikes ) if ( view.moved || !view.reach.stops.has(key) ) strikes.push(key);
@@ -1488,6 +1503,9 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
     token = this.#aimedAt(token);
     if ( token === this.#token ) return false;
 
+    // Until a battle begins a click on a unit selects it, and walks nobody
+    if ( this.#settingUp ) return false;
+
     // A unit that may end its move on the tile another stands on walks there when that unit is clicked
     if ( this.#stepOnto(token) && !this.#attacks(token) ) return true;
 
@@ -1858,9 +1876,32 @@ export default class BattleHud extends HandlebarsApplicationMixin(ApplicationV2)
       this.refresh();
       return true;
     }
+
+    // Until a battle begins no reach is painted, and a click on the ground walks nobody
+    if ( this.#settingUp ) return false;
     const key = tileKey(tile);
     if ( !view.reach.stops.has(key) || ((tile.i === view.standing.i) && (tile.j === view.standing.j)) ) return false;
     this.#working(() => this.#moveTo(tile));
+    return true;
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * The ground was right-clicked, off every token. Whatever the user was in the middle of is called off: a
+   * list that is open, a unit or a tile being picked, an attack being forecast. With none of that, the
+   * selected unit is put down, and what was painted for it goes with it.
+   * @returns {boolean}   Whether the click was used up
+   */
+  #onGroundRightClick() {
+    // A step that is offered and a choice that waits are answered where they are asked, and by nothing else
+    if ( this.#busy || this.#offer || this.#choice || !this.#token || this.#token.destroyed ) return false;
+    if ( this.#flyout || this.#mode || this.#forecast ) {
+      this.#clear();
+      this.refresh();
+      return true;
+    }
+    this.#token.release();
     return true;
   }
 
