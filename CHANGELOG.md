@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.0
+
+- World Map, travel view: a new button beside the zoom puts the map over the whole screen with no window around it, under Foundry's own sidebar and controls as a scene would be. Buttons at its top right go back to a window or close it, and let the Game Master show the map to everyone or edit it. The map reopens the way each person last had it, and showing it to everyone from the travel view opens it that way for them.
+- World Map, arrivals: when the company has marched to a place, its name, kind and nation are shown across every open map. Where a battle waits, the Game Master can begin it there and then or wait; at the Base anyone can go in; anywhere else the name clears by itself after a moment, or at a click.
+
 ## 0.7.0
 
 - World Map: a map of the campaign's land with a dot for each place, routes between them and the ground of each nation. The Game Master sends the company from place to place and everyone with the map open watches it march; players see the places shown to them and can point at one. A place can hold the Base, a market and a battle from a saved encounter.
