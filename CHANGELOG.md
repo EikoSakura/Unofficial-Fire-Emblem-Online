@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.0
+
+- Heart Seal: the Items compendium now has a Heart Seal, under Promotion, with 2 uses for 5,000 Gold. With the Heart Seals/Reclassing module on, a unit that carries one can reclass from its sheet. Until now only the Game Master could reclass a unit.
+- Temporary players on The Forge: a Game Master who joins as a temporary player while no Game Master is in the game is now handed their character as soon as one comes in, and has it from the start the next time they join. A message tells them when the character waits for a Game Master, when their own user has chosen none, or when the system cannot tell which user they are.
+
 ## 0.11.0
 
 - Starting CON by proficiency: a class whose CON the Class Sheet lists as "Varies" now gives a new unit the CON of its highest proficiency. A Mage or Magus starts with 5 for Light or Wind, 6 for Fire or Water and 7 for Thunder or Earth; the Cavalier, Lord, Ritter, Knecht, Tactician and Witch go by their own tables. The Creator sets it on the Proficiencies step, where hovering a proficiency shows the CON it gives, and the NPC Builder starts from it. Units already made keep the CON they have: pick the class and its proficiencies again in the Creator, or set it by hand. A Magier's CON is still set by hand.
