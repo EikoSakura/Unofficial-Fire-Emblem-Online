@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { FEO } from "../module/config.mjs";
 import {
-  freeGrowth, growthBudget, helpSteps, planCheck, planGrowth, pointBudget, readCreation
+  chosenCon, freeGrowth, growthBudget, helpSteps, planCheck, planClass, planGrowth, planRanks, pointBudget, readCreation
 } from "../module/rules/creation.mjs";
 
 /** A class of a tier, as far as the growth points read it. */
@@ -95,4 +95,121 @@ test("help is waited for on the steps where it was asked and not yet answered", 
   const blood = readCreation({ help: { holyBlood: "user1" } });
   assert.deepEqual(helpSteps(blood, none), []);
   assert.deepEqual(helpSteps(blood, { holyBlood: { enabled: true } }), ["holyBlood"]);
+});
+
+/* -------------------------------------------- */
+/*  A CON that goes by the highest proficiency  */
+/* -------------------------------------------- */
+
+const CLASS_STATS = ["hp", "str", "mag", "def", "res", "dex", "spd", "luk", "mov", "con", "los"];
+
+/** A starting class as the Class Sheet lists it; its CON varies where `con` is left out. */
+const starting = (name, { con = null, conBy = {}, options = [], choose = 0 } = {}) => ({
+  name,
+  system: {
+    tier: "base", wt: 0, specialQualities: "",
+    base: { hp: 17, str: 1, mag: 7, def: 3, res: 7, dex: 8, spd: 6, luk: 4, mov: 6, con, los: 2 },
+    conBy,
+    proficiencies: { options, choose, firstRank: "", note: "" }
+  }
+});
+const mage = starting("Mage", {
+  options: ["fire", "thunder", "wind", "water", "earth", "light"], choose: 2,
+  conBy: { light: 5, wind: 5, fire: 6, water: 6, thunder: 7, earth: 7 }
+});
+const monk = starting("Monk", { con: 6, options: ["light"] });
+const shaman = starting("Shaman", { options: ["wind"], conBy: { wind: 4 } });
+
+/** A unit nothing has been chosen for, and the same unit once a plan is saved. */
+const fresh = () => ({
+  level: 1, boon: "", bane: "", gold: 0, specialQualities: "", skillRanks: [],
+  hp: { max: 0, value: 0 },
+  wt: { class: 0 },
+  stats: Object.fromEntries(CLASS_STATS.filter((key) => key !== "hp").map((key) => [key, { base: 0 }])),
+  abilities: { cha: { source: "spd", increase: 0, boost: 0 }, int: { source: "mag", increase: 0, boost: 0 } },
+  growths: {},
+  checks: {},
+  proficiencies: Object.fromEntries(Object.keys(FEO.proficiencies).map((key) => [key, { rank: "F" }]))
+});
+const saved = (made, record, plan) => {
+  for ( const [path, value] of Object.entries(plan.update) ) {
+    const keys = path.split(".").slice(1);
+    const last = keys.pop();
+    keys.reduce((at, key) => (at[key] ??= {}), made)[last] = value;
+  }
+  const raw = structuredClone(record);
+  for ( const [path, value] of Object.entries(plan.record) ) {
+    const keys = path.split(".");
+    const last = keys.pop();
+    keys.reduce((at, key) => (at[key] ??= {}), raw)[last] = value;
+  }
+  return readCreation(raw);
+};
+
+test("a Mage's CON follows its highest proficiency as it is chosen", () => {
+  const made = fresh();
+  let record = readCreation({});
+  record = saved(made, record, planClass(made, record, null, mage));
+  assert.equal(made.stats.con.base, 0, "nothing is taken yet");
+
+  // Two taken and neither chosen to start higher: the one that stands for more, for now
+  record = saved(made, record, planRanks(made, record, mage, ["wind", "thunder"], ""));
+  assert.equal(made.stats.con.base, 7);
+  record = saved(made, record, planRanks(made, record, mage, ["wind", "thunder"], "wind"));
+  assert.equal(made.stats.con.base, 5);
+  assert.equal(made.proficiencies.wind.rank, "D");
+  record = saved(made, record, planRanks(made, record, mage, ["wind", "thunder"], "thunder"));
+  assert.equal(made.stats.con.base, 7);
+  record = saved(made, record, planRanks(made, record, mage, ["fire", "light"], "fire"));
+  assert.equal(made.stats.con.base, 6);
+  assert.equal(record.con, 6);
+
+  // What else the Creator has put on CON stays on top
+  made.stats.con.base += 2;
+  record = saved(made, record, planRanks(made, record, mage, ["fire", "light"], "light"));
+  assert.equal(made.stats.con.base, 7);
+  record = saved(made, record, planRanks(made, record, mage, [], ""));
+  assert.equal(made.stats.con.base, 2);
+  assert.equal(record.con, 0);
+});
+
+test("changing class takes back the CON the old class gave for a proficiency, and gives the new one's", () => {
+  const made = fresh();
+  let record = readCreation({});
+  record = saved(made, record, planClass(made, record, null, mage));
+  record = saved(made, record, planRanks(made, record, mage, ["earth", "light"], "earth"));
+  assert.equal(made.stats.con.base, 7);
+
+  // To a class with a CON of its own
+  record = saved(made, record, planClass(made, record, mage, monk));
+  assert.equal(made.stats.con.base, 6);
+  assert.equal(record.con, 0);
+
+  // To one whose only proficiency settles it at once, and back
+  record = saved(made, record, planClass(made, record, monk, shaman));
+  assert.equal(made.stats.con.base, 4);
+  assert.equal(record.con, 4);
+  record = saved(made, record, planClass(made, record, shaman, mage));
+  assert.equal(made.stats.con.base, 0);
+  assert.equal(record.con, 0);
+});
+
+test("a unit that starts in a class with one proficiency has its CON from the first", () => {
+  const made = fresh();
+  made.boon = "con";
+  const record = saved(made, readCreation({ bonus: { con: 1 } }), planClass(made, readCreation({ bonus: { con: 1 } }), null, shaman));
+  assert.equal(made.stats.con.base, 4 + 1 + 1);
+  assert.equal(record.con, 4);
+});
+
+test("a Mage made before its CON went by proficiency is put right when its proficiencies are next chosen", () => {
+  const made = fresh();
+  made.stats.con.base = 1;
+  made.proficiencies.fire.rank = "D";
+  made.proficiencies.wind.rank = "E";
+  let record = readCreation({ class: { name: "Mage" }, bonus: { con: 1 }, ranks: { take: ["fire", "wind"], first: "fire" } });
+  assert.equal(record.con, 0);
+  record = saved(made, record, planRanks(made, record, mage, ["fire", "wind"], "fire"));
+  assert.equal(made.stats.con.base, 7);
+  assert.equal(chosenCon(mage, ["fire", "wind"], "fire"), 6);
 });

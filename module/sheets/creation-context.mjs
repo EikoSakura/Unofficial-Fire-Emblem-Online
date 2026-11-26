@@ -217,7 +217,8 @@ const PANELS = {
     const open = classOpen(cls);
     if ( !cls ) return { open, none: true };
     const system = cls.system;
-    const cells = FEO.classStats.map((key) => ({ abbr: loc(abbr(key)), value: system.base?.[key] ?? "–" }));
+    // A CON that varies is shown once the unit's highest proficiency has given it
+    const cells = FEO.classStats.map((key) => ({ abbr: loc(abbr(key)), value: system.base?.[key] ?? (((key === "con") && record.con) || "–") }));
     return {
       open,
       chosen: {
@@ -325,17 +326,24 @@ const PANELS = {
     // A Trainee's proficiencies all start at the same rank, so none is chosen to start higher
     const start = startingRanksOf(cls);
     const level = start.first === start.others;
+
+    // Where the class's CON varies: what each proficiency stands for, and what the unit has for its highest
+    const conOf = (key) => {
+      const con = cls.system.conBy?.[key] ?? null;
+      return (cls.system.base?.con ?? null) === null && (con !== null) ? `${loc(abbr("con"))} ${con}` : "";
+    };
     return {
       lead: level ? i18n.format("FEO.Creator.step.ranks.leadLevel", { rank: loc(FEO.ranks[start.others] ?? "") }) : undefined,
       note: note ? i18n.format("FEO.Creator.ranks.gives", { name: cls.name, note }) : "",
       choose: choose > 0 ? {
         title: i18n.format("FEO.Creator.ranks.take", { count: choose }),
-        options: options.map((key) => ({ key, label: label(key), pressed: record.ranks.take.includes(key) }))
+        options: options.map((key) => ({ key, label: label(key), con: conOf(key), pressed: record.ranks.take.includes(key) }))
       } : null,
       first: !level && (record.ranks.take.length > 1)
-        ? record.ranks.take.map((key) => ({ key, label: label(key), pressed: record.ranks.first === key })) : null,
+        ? record.ranks.take.map((key) => ({ key, label: label(key), con: conOf(key), pressed: record.ranks.first === key })) : null,
       firstTitle: i18n.format("FEO.Creator.ranks.first", { rank: loc(FEO.ranks[start.first] ?? "") }),
       result: record.ranks.take.map((key) => ({ label: label(key), rank: loc(FEO.ranks[unit.proficiencies[key]?.rank] ?? "") })),
+      con: record.con ? { label: loc(abbr("con")), value: record.con } : null,
       raised,
       none: !options.length,
       taken
@@ -579,7 +587,7 @@ const PANELS = {
       const mark = ((unit.boon === key ? 1 : 0) - (unit.bane === key ? 1 : 0)) * boonWorth(key);
       return {
         abbr: loc(abbr(key)),
-        base: mind ? i18n.format("FEO.Creator.bonus.from", { stat: loc(abbr(unit.abilities[key].source)) }) : (cls.system.base?.[key] ?? "–"),
+        base: mind ? i18n.format("FEO.Creator.bonus.from", { stat: loc(abbr(unit.abilities[key].source)) }) : (cls.system.base?.[key] ?? (((key === "con") && record.con) || "–")),
         bonus: signed(record.bonus[key] ?? 0),
         mark: signed(mark),
         markCss: mark > 0 ? "up" : mark < 0 ? "down" : "",

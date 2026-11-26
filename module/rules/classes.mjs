@@ -15,6 +15,7 @@ import { FEO } from "../config.mjs";
  * @property {string} system.tier                       A key of FEO.classTiers
  * @property {string} system.race                       A key of FEO.races
  * @property {Record<string, number|null>} system.base  Starting stats, null where the class gives none
+ * @property {Record<string, number|null>} [system.conBy]   The CON each proficiency stands for, where CON varies
  * @property {Record<string, number>} system.gains      Stat gains on promoting into the class
  * @property {number} system.wt                         Class Weight
  * @property {Record<string, number|null>} system.caps  Stat caps, null where the class gives none
@@ -303,6 +304,26 @@ export function startingProficiencies(cls, ranks = FEO.startingRanks) {
   return Object.fromEntries(granted.map((key, index) => [key, index === 0 ? first : others]));
 }
 
+/**
+ * The CON of a new unit whose class gives none of its own, where the Class Sheet says "Varies": the one its
+ * highest proficiency at Character Creation stands for. Of proficiencies of the same rank, the one that stands
+ * for the most CON counts.
+ * @param {ClassLike|null} cls
+ * @param {Record<string, string>} ranks     The ranks the unit starts with, by proficiency key
+ * @param {string[]} [order]                 The ranks, lowest first
+ * @returns {number|null}                    Null where the class has a CON of its own, or none for these ranks
+ */
+export function variedCon(cls, ranks, order = Object.keys(FEO.ranks)) {
+  if ( (cls?.system.base?.con ?? null) !== null ) return null;
+  let best = null;
+  for ( const [key, con] of Object.entries(cls?.system.conBy ?? {}) ) {
+    const rank = order.indexOf(ranks?.[key]);
+    if ( !Number.isFinite(con) || (rank < 1) ) continue;
+    if ( !best || (rank > best.rank) || ((rank === best.rank) && (con > best.con)) ) best = { rank, con };
+  }
+  return best?.con ?? null;
+}
+
 /* -------------------------------------------- */
 
 /**
@@ -337,6 +358,12 @@ export function planAssignment(unit, cls, options = {}) {
       else if ( unit.stats[key] && (unit.stats[key].base !== value) ) {
         change.stats.push({ key, from: unit.stats[key].base, to: value });
       }
+    }
+    // A CON that varies goes by the highest of the ranks the unit is given, or of those it has
+    const held = Object.fromEntries(Object.entries(unit.proficiencies ?? {}).map(([key, proficiency]) => [key, proficiency.rank]));
+    const con = variedCon(cls, proficiencies ?? held);
+    if ( (con !== null) && unit.stats.con && (unit.stats.con.base !== con) ) {
+      change.stats.push({ key: "con", from: unit.stats.con.base, to: con });
     }
   }
 

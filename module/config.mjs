@@ -2357,7 +2357,7 @@ FEO.alliances = [["player", "ally"], ["enemy"]];
  * The NPC Builder: a unit the Game Master plays, made from a class, a Level and a side.
  *
  * `sides` are the sides such a unit may fight for. `limit` is the highest Level the builder makes. `con` is the
- * CON of a unit whose class leaves it open, until it is set. `spread` is how wide the span shown for a unit
+ * CON of a unit whose class leaves it open and lists none by proficiency, until it is set. `spread` is how wide the span shown for a unit
  * that varies from copy to copy is, in deviations either side of what its growth rates give on average.
  * `boss` names what makes a unit a Boss: the skill every Boss has. `silent` is the skill of a unit that does
  * not fight, and gives no EXP. `drops` are the ways something a unit carries is left behind: for

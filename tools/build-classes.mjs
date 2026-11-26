@@ -38,6 +38,7 @@
  *         "race": "beorc",                   beorc, laguz, manakete, taguel or monster
  *         "description": "...",
  *         "base": { "hp": 17, ... },         a starting class: its stats; leave a stat out where the sheet gives no number
+ *         "conBy": { "sword": 8, "axe": 10 }, optional: where CON "Varies", the CON by the highest proficiency
  *         "gains": { "hp": 2, ... },         a promoted class: its gains; a dash on the sheet is 0
  *         "wt": 0,                           Class Weight, as the sheet lists it
  *         "transformed": { "mov": 9 },       optional: the second, starred number of a stat
@@ -114,7 +115,7 @@ const classes = read.classes.map((entry) => ({
 /*  Lay the hand-kept classes over it           */
 /* -------------------------------------------- */
 
-const COMPARED = ["name", "tier", "race", "description", "base", "gains", "wt", "transformed", "caps", "proficiencies",
+const COMPARED = ["name", "tier", "race", "description", "base", "conBy", "gains", "wt", "transformed", "caps", "proficiencies",
   "skills", "specialQualities", "promotesTo", "notes"];
 
 /**
@@ -203,6 +204,11 @@ for ( const { entry } of classes ) {
     if ( !STATS.includes(key) && (key !== "wt") ) fail(`${where}: "transformed" has an unknown stat "${key}"`);
     if ( !Number.isInteger(value) ) fail(`${where}: "transformed.${key}" must be a whole number`);
   }
+  for ( const [key, value] of Object.entries(entry.conBy ?? {}) ) {
+    if ( !(key in FEO.proficiencies) ) fail(`${where}: "conBy" has an unknown proficiency "${key}"`);
+    if ( !Number.isInteger(value) ) fail(`${where}: "conBy.${key}" must be a whole number`);
+  }
+  if ( Object.keys(entry.conBy ?? {}).length ) report.count("Values read with care", "a CON that goes by the highest proficiency", where);
   if ( !Number.isInteger(entry.wt) ) fail(`${where}: "wt" must be a whole number`);
   const starting = order(entry.tier) <= FEO.classTiers.base.order;
   if ( !entry.base && !entry.gains ) fail(`${where}: needs "base" stats or "gains"`);
@@ -447,6 +453,7 @@ const documents = classes.map(({ entry, source, id }, index) => {
       tier: entry.tier,
       race: entry.race,
       base: fill(STATS, entry.base, null),
+      conBy: fill(Object.keys(FEO.proficiencies), entry.conBy, null),
       gains: fill(STATS, entry.gains, 0),
       wt: entry.wt,
       transformed: fill([...STATS, "wt"], entry.transformed, null),

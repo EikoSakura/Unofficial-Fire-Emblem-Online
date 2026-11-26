@@ -140,6 +140,30 @@ export function readProficiencies(text) {
   return result;
 }
 
+/**
+ * Read the note pinned to a CON that "Varies": the CON a new unit has by the proficiency it chose, written a
+ * line for each CON as "5: Light, Wind, Astral, or Scroll." or as "8 if unit chose Sword or Bow."
+ * @param {string} note
+ * @returns {{by: Record<string, number>, unknown: string[]}}
+ *   `unknown` lists the words that name no proficiency the system tracks
+ */
+export function readConBy(note) {
+  const by = {};
+  const unknown = [];
+  for ( const line of String(note ?? "").split(/\n+/) ) {
+    const found = /^\s*(\d+)\s*(?::|if\s+unit\s+chose)\s*(.+?)\.?\s*$/i.exec(line);
+    if ( !found ) continue;
+    for ( const word of found[2].split(/,|\s+or\s+|\s+and\s+/i) ) {
+      const name = word.replace(/^\s*(?:or|and)\s+/i, "").trim();
+      if ( !name ) continue;
+      const keys = WORDS[name.toLowerCase()];
+      if ( keys ) for ( const key of keys ) by[key] = Number(found[1]);
+      else unknown.push(name);
+    }
+  }
+  return { by, unknown };
+}
+
 /* -------------------------------------------- */
 /*  Blocks                                      */
 /* -------------------------------------------- */
@@ -366,12 +390,14 @@ function readBlock(sheet, tab, row, start, race, path, odd, problems, { noted = 
   const values = {};
   const caps = {};
   const explained = {};
+  const pins = {};
   for ( let line = 0; line < 4; line++ ) {
     STAT_ROWS[line].forEach((key, position) => {
       const label = sheet.cell(row + 1 + line, start + (position * 2));
       if ( label !== STAT_LABELS[key] ) problems.push(`${where}: expected ${STAT_LABELS[key]} but found "${label}"`);
       values[key] = sheet.cell(row + 1 + line, start + (position * 2) + 1);
-      const pinned = noted ? sheet.note(row + 1 + line, start + (position * 2) + 1) : "";
+      pins[key] = sheet.note(row + 1 + line, start + (position * 2) + 1);
+      const pinned = noted ? pins[key] : "";
       const cap = /\bStat cap:\s*(\d+)/i.exec(pinned);
       if ( cap && (key !== "wt") ) caps[key] = Number(cap[1]);
       const lines = pinned.split(/\n+/).map((text) => text.trim()).filter((text) => text.startsWith("*"));
@@ -406,8 +432,16 @@ function readBlock(sheet, tab, row, start, race, path, odd, problems, { noted = 
     } else if ( promoted && (value === "-") ) {
       number = 0;
     } else if ( /^varies$/i.test(value) ) {
-      entry.notes.push({ label, value });
-      odd('a stat given as "Varies", left empty and kept as a line of the class', `${where}: ${label}`);
+      // A CON that varies goes by the proficiency the unit chose, as the note on its cell lists
+      const read = (key === "con") ? readConBy(pins[key]) : { by: {}, unknown: [] };
+      if ( Object.keys(read.by).length ) {
+        entry.conBy = read.by;
+        entry.notes.push({ label, value: `${value}. ${oneLine(pins[key])}` });
+        if ( read.unknown.length ) odd("a CON by proficiency that names kinds of weapon the system has no proficiency for", `${where}: ${read.unknown.join(", ")}`);
+      } else {
+        entry.notes.push({ label, value });
+        odd('a stat given as "Varies", left empty and kept as a line of the class', `${where}: ${label}`);
+      }
     } else {
       number = wholeNumber(value);
       if ( number === null ) problems.push(`${where}: cannot read ${label} "${value}"`);

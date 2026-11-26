@@ -206,7 +206,7 @@
         <h3>{{panel.choose.title}}</h3>
         <div class="cr-pills" data-fl="creation.ranks.take">
           {{#each panel.choose.options as |option|}}
-          <button type="button" class="cr-pick" data-action="creatorTake" data-value="{{option.key}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
+          <button type="button" class="cr-pick" data-action="creatorTake" data-value="{{option.key}}" aria-pressed="{{option.pressed}}" {{#if option.con}}data-tooltip="{{option.con}}"{{/if}}>{{option.label}}</button>
           {{/each}}
         </div>
       </div>
@@ -216,7 +216,7 @@
         <h3>{{panel.firstTitle}}</h3>
         <div class="cr-pills" data-fl="creation.ranks.first">
           {{#each panel.first as |option|}}
-          <button type="button" class="cr-pick" data-action="creatorPick" data-field="first" data-value="{{option.key}}" aria-pressed="{{option.pressed}}">{{option.label}}</button>
+          <button type="button" class="cr-pick" data-action="creatorPick" data-field="first" data-value="{{option.key}}" aria-pressed="{{option.pressed}}" {{#if option.con}}data-tooltip="{{option.con}}"{{/if}}>{{option.label}}</button>
           {{/each}}
         </div>
       </div>
@@ -225,6 +225,7 @@
         <h3>{{localize "FEO.Creator.ranks.result"}}</h3>
         <div class="cr-budget">
           {{#each panel.result as |entry|}}<span class="tag"><b>{{entry.label}}</b> {{entry.rank}}</span>{{else}}<span class="tag">{{localize "FEO.Creator.ranks.nothing"}}</span>{{/each}}
+          {{#if panel.con}}<span class="tag"><b>{{panel.con.label}}</b> {{panel.con.value}}</span>{{/if}}
         </div>
         {{#each panel.raised as |line|}}<p class="cr-hint">{{line}}</p>{{/each}}
         <p class="cr-hint">{{localize "FEO.Creator.ranks.other"}}</p>

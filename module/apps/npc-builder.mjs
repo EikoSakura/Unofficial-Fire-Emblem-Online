@@ -345,7 +345,7 @@ export default class NpcBuilder extends HandlebarsApplicationMixin(ApplicationV2
    * @this {NpcBuilder}
    */
   static #onCon(event, target) {
-    const now = this.#spec.con ?? FEO.npc.con;
+    const now = this.#spec.con ?? this.#view?.build.conStart ?? FEO.npc.con;
     return this.#change({ con: Math.max(now + (Number(target.dataset.by) || 0), 0) });
   }
 

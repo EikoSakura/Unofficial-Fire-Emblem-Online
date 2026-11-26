@@ -58,6 +58,10 @@ export default class ClassData extends foundry.abstract.TypeDataModel {
       // Stats of a new unit of this class. Empty where the Class Sheet gives no single number.
       base: keyed(FEO.classStats, () => optional({ min: 0 })),
 
+      // Where the Class Sheet gives CON as "Varies": the CON of a new unit by its highest proficiency.
+      // Empty for a proficiency the class's note does not name.
+      conBy: keyed(Object.keys(FEO.proficiencies), () => optional({ min: 0 })),
+
       // Added to a unit's stats when it promotes into this class
       gains: keyed(FEO.classStats, () => integer(0)),
 

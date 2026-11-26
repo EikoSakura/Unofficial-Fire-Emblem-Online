@@ -174,6 +174,20 @@ test("a class that leaves CON open takes the one it is given", () => {
   assert.equal(buildNpc(spec({}), [fighter]).conOpen, false);
 });
 
+test("a class whose CON goes by proficiency starts a unit with the one its highest stands for", () => {
+  const varied = { ...mage, system: { ...mage.system, proficiencies: { options: ["fire", "thunder", "wind"], choose: 2, note: "" }, conBy: { wind: 5, fire: 6, thunder: 7 } } };
+  // Fire at D Rank and Thunder at E, as the class gives them
+  const usual = buildNpc(spec({}), [varied]);
+  assert.equal(usual.conOpen, true);
+  assert.equal(usual.unit.stats.con.base, 6);
+  assert.equal(usual.conStart, 6);
+  // A rank set by hand may be the highest
+  assert.equal(buildNpc(spec({ ranks: { wind: "B" } }), [varied]).unit.stats.con.base, 5);
+  assert.equal(buildNpc(spec({ ranks: { thunder: "D" } }), [varied]).unit.stats.con.base, 7);
+  // And a CON set by hand goes before either
+  assert.equal(buildNpc(spec({ con: 9, ranks: { wind: "B" } }), [varied]).unit.stats.con.base, 9);
+});
+
 test("a class is reached through the classes that promote into it", () => {
   const parents = new Map([[warrior, [fighter, brigand]], [fighter, []], [brigand, []]]);
   const parentsOf = (entry) => parents.get(entry) ?? [];

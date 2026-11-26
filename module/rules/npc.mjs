@@ -20,7 +20,7 @@
 
 import { FEO } from "../config.mjs";
 import {
-  chooseSkill, planAssignment, planLevelGains, planPromotion, promotesAt, startingProficiencies
+  chooseSkill, planAssignment, planLevelGains, planPromotion, promotesAt, startingProficiencies, variedCon
 } from "./classes.mjs";
 import { freeGrowth, startsGeneric } from "./creation.mjs";
 import { builtInSkills } from "./events.mjs";
@@ -41,7 +41,8 @@ import { canWield } from "./weapons.mjs";
  * @property {string} seed                What its rolls are made from, so that they come out the same again
  * @property {boolean} vary               Each copy placed on a map rolls its own Levels
  * @property {Record<string, number>} adjust    What was added to a stat by hand, or taken off it
- * @property {number|null} con            Its CON, for a class that leaves it open
+ * @property {number|null} con            Its CON, for a class that leaves it open; null for the one its highest
+ *                                         proficiency stands for, or the usual one where the class lists none
  * @property {Record<string, string>} ranks     Weapon ranks set by hand
  * @property {Record<string, string>} picks     The skill picked where a class offers a choice, by `choiceId`
  * @property {string} generic             Its Generic Skill
@@ -272,6 +273,7 @@ function raise(unit, key, by) {
  *                                          `builtIn` comes with a Special Quality, and is the system's to give
  * @property {{key: string, rank: string, byHand: boolean}[]} ranks
  * @property {boolean} conOpen              Its class leaves its CON to be set
+ * @property {number} conStart              The CON it starts with, before its Levels and what is set by hand
  * @property {boolean} generic              May it have a Generic Skill of its own from the start?
  */
 
@@ -317,8 +319,11 @@ export function buildNpc(spec, line, { known = null, config = FEO.npc } = {}) {
   });
   apply(unit, taken);
   learn(taken, "class");
+  // A class that leaves CON open: the one set by hand, else the one its highest proficiency stands for, going
+  // by the ranks it starts with and those set by hand, else the usual one
   const conOpen = (first.system.base?.con ?? null) === null;
-  if ( conOpen ) unit.stats.con.base = Math.max(Math.floor(Number(spec.con ?? config.con)) || 0, 0);
+  const varied = variedCon(first, { ...startingProficiencies(first), ...(spec.ranks ?? {}) });
+  if ( conOpen ) unit.stats.con.base = Math.max(Math.floor(Number(spec.con ?? varied ?? config.con)) || 0, 0);
   unit.hp.value = unit.hp.max;
   for ( const [key, value] of Object.entries(snapshot()) ) parts[key].base = value;
   const given = spec.growths ?? shapedGrowths(first);
@@ -438,6 +443,7 @@ export function buildNpc(spec, line, { known = null, config = FEO.npc } = {}) {
     ranks: Object.entries(unit.proficiencies).filter(([, proficiency]) => proficiency.rank !== order[0])
       .map(([key, proficiency]) => ({ key, rank: proficiency.rank, byHand: set.has(key) })),
     conOpen,
+    conStart: parts.con?.base ?? unit.stats.con.base,
     generic: generic || (promotions > 0)
   };
 }

@@ -13,7 +13,7 @@
  */
 
 import { FEO } from "../config.mjs";
-import { addQualities, classSkills, splitNames, startingRanksOf } from "./classes.mjs";
+import { addQualities, classSkills, splitNames, startingRanksOf, variedCon } from "./classes.mjs";
 import { abilityScore } from "./combat-stats.mjs";
 import { affinityRankOf } from "./optional.mjs";
 import { givenSteps, raisedRank } from "./skill-ranks.mjs";
@@ -75,6 +75,7 @@ export function creationSteps(optional = FEO.optional) {
  * @property {number} wt                          What was added to Class Weight
  * @property {Record<string, number>} bonus       How far bonus points have raised each stat
  * @property {{take: string[], first: string}} ranks    The proficiencies taken, and the one that starts higher
+ * @property {number} con                         The CON its highest proficiency has given it, in a class whose CON varies
  * @property {{class: {name: string, items: string[]}, generic: {name: string, items: string[]}}} skills
  *   The starting skills taken, and the Items they were added as
  * @property {{id: string, name: string, cost: number}[]} purchases     What was bought, by the Item it became
@@ -107,6 +108,7 @@ export function readCreation(raw = {}, config = FEO.creation) {
     wt: Number.isInteger(data.wt) ? data.wt : 0,
     bonus: Object.fromEntries(config.bonus.stats.map((key) => [key, Math.max(Math.trunc(data.bonus?.[key] ?? 0) || 0, 0)])),
     ranks: { take: list(data.ranks?.take), first: text(data.ranks?.first) },
+    con: Number.isInteger(data.con) ? Math.max(data.con, 0) : 0,
     skills: { class: skill(data.skills?.class), generic: skill(data.skills?.generic) },
     purchases: (Array.isArray(data.purchases) ? data.purchases : []).filter((entry) => entry?.id).map((entry) => {
       return { id: String(entry.id), name: text(entry.name), cost: Number(entry.cost) || 0 };
@@ -350,6 +352,21 @@ export function givenRanks(cls) {
 }
 
 /**
+ * The CON a class whose CON varies gives a new unit for the proficiencies it has taken: the one its highest
+ * stands for, and nothing where the class has a CON of its own or none is taken yet.
+ * @param {ClassLike|null} cls
+ * @param {string[]} take           The proficiencies taken
+ * @param {string} first            The one that starts higher; blank while it is not chosen
+ * @param {object} [ranks]          FEO.startingRanks
+ * @returns {number}
+ */
+export function chosenCon(cls, take, first, ranks = FEO.startingRanks) {
+  const start = startingRanksOf(cls, ranks);
+  const higher = take.length === 1 ? take[0] : first;
+  return variedCon(cls, Object.fromEntries(take.map((key) => [key, key === higher ? start.first : start.others]))) ?? 0;
+}
+
+/**
  * May a unit's class still be chosen in the Creator? Not once it has promoted out of a starting class.
  * @param {ClassLike|null} cls      The class the unit has
  * @param {object} [tiers]          FEO.classTiers
@@ -379,12 +396,19 @@ export function planClass(unit, record, from, to, { config = FEO.creation, stats
   const update = { "system.className": to.name };
   const base = (cls, key) => cls?.system.base?.[key] ?? 0;
 
+  // A CON that varies goes by the highest proficiency: what the class left behind gave for it is taken back,
+  // and the new class gives its own for the proficiencies it has the unit take without asking
+  const given = givenRanks(to);
+  const con = chosenCon(to, given.take, given.first, ranks);
+  const gave = (key) => base(from, key) + (key === "con" ? record.con : 0);
+  const gives = (key) => base(to, key) + (key === "con" ? con : 0);
+
   for ( const key of stats ) {
-    if ( from ) shiftStat(update, unit, key, base(to, key) - base(from, key));
+    if ( from ) shiftStat(update, unit, key, gives(key) - gave(key));
     else {
       // A unit that starts here: the class's own number, with whatever the Creator has already put on top
       const boon = (unit.boon === key ? 1 : 0) - (unit.bane === key ? 1 : 0);
-      const value = Math.max(base(to, key) + (record.bonus[key] ?? 0) + (boon * boonWorth(key, config)), 0);
+      const value = Math.max(gives(key) + (record.bonus[key] ?? 0) + (boon * boonWorth(key, config)), 0);
       if ( key === "hp" ) Object.assign(update, { "system.hp.max": value, "system.hp.value": value });
       else if ( unit.stats[key] ) update[`system.stats.${key}.base`] = value;
     }
@@ -402,7 +426,6 @@ export function planClass(unit, record, from, to, { config = FEO.creation, stats
   for ( const key of record.ranks.take ) {
     if ( unit.proficiencies[key] ) update[`system.proficiencies.${key}.rank`] = raisedRank("F", extra[key]);
   }
-  const given = givenRanks(to);
   const start = startingRanksOf(to, ranks);
   for ( const key of given.take ) {
     if ( !unit.proficiencies[key] ) continue;
@@ -413,6 +436,7 @@ export function planClass(unit, record, from, to, { config = FEO.creation, stats
     "class.name": to.name,
     "ranks.take": given.take,
     "ranks.first": given.first,
+    con,
     "confirmed.ranks": false,
     status: record.status || "draft"
   };
@@ -640,7 +664,8 @@ export function planBoon(unit, which, key, { config = FEO.creation, stats = FEO.
 
 /**
  * Plan the proficiencies a new unit takes from its class, and the one that starts a rank higher. The ranks the
- * unit's skills have added stay on top of what the class gives.
+ * unit's skills have added stay on top of what the class gives. In a class whose CON varies, the unit's CON
+ * follows the highest of them.
  * @param {UnitLike} unit
  * @param {CreationRecord} record
  * @param {ClassLike} cls
@@ -664,7 +689,9 @@ export function planRanks(unit, record, cls, take, first, ranks = FEO.startingRa
     const rank = raisedRank(!wanted.includes(key) ? "F" : (key === higher ? start.first : start.others), extra[key]);
     if ( unit.proficiencies[key].rank !== rank ) update[`system.proficiencies.${key}.rank`] = rank;
   }
-  return { update, record: { "ranks.take": wanted, "ranks.first": higher } };
+  const con = chosenCon(cls, wanted, higher, ranks);
+  shiftStat(update, unit, "con", con - record.con);
+  return { update, record: { "ranks.take": wanted, "ranks.first": higher, con } };
 }
 
 /* -------------------------------------------- */
