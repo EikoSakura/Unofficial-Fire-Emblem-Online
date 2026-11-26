@@ -29,6 +29,7 @@ import { APPLY_QUERY, applyExchangeQuery } from "./module/helpers/exchange.mjs";
 import * as experienceHelpers from "./module/helpers/experience.mjs";
 import * as optionalHelpers from "./module/helpers/optional.mjs";
 import * as pickHelpers from "./module/helpers/picks.mjs";
+import * as playerHelpers from "./module/helpers/players.mjs";
 import * as reclassHelpers from "./module/helpers/reclass.mjs";
 import * as positionHelpers from "./module/helpers/positions.mjs";
 import * as clockHelpers from "./module/helpers/clock.mjs";
@@ -253,6 +254,9 @@ Hooks.once("init", () => {
 
   // A unit that waits for help in its Creator carries a raised hand beside its name in the Actors list
   helpListHelpers.registerHooks();
+
+  // A Game Master who joins as a temporary player on The Forge is handed the character of their own user
+  playerHelpers.registerPlayers();
 
   // Encounters count down conditions as the turns of units start and end
   CONFIG.Combat.documentClass = FeoCombat;

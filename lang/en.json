@@ -4370,6 +4370,9 @@
         "indoors": "Column {col}, row {row}: indoors, nothing happens"
       }
     },
+    "Players": {
+      "takenOver": "{name} is yours to play while you are here as a temporary player."
+    },
     "Phase": {
       "label": "Phase",
       "turn": "Turn {turn}",
