@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+
+- Level ups come by themselves: a unit that reaches 100 EXP levels up a moment later on the screen of the player it belongs to, with its growth rolls and the Level Up splash, or its promotion where its class promotes. A unit no player owns levels up on the Game Master's screen, and one whose player is away waits until they join. The Level Up button of the sheet still works, and a world setting switches the automatic level up off.
+- Level Sync: an encounter can be held to a band of Levels in the Encounter Builder. When its battle begins, each player unit above the band fights as it was at the band's highest Level, with the stats, HP, weapon ranks, class and skills of that Level, and is itself again when the battle ends. Nothing of the unit's own is lost, and its level ups wait until it is over. The builder shows how each unit that is going stands and reads difficulty from the synced numbers.
+- Battlefields from the World Map: the Map Generator can make the battle map of a place, or of bare ground, on the World Map. Sea, high ground, woods and roads fall where the World Map shows them, and what stands at the place stands at the heart of the map: a town round a keep, a fortress, a village, a harbour or ruins. A Battlefield button on the Game Master's plate opens it, and a place's saved encounter is fought on the map made for it.
+- Supports: partners now earn support points for what they do together in battle, and those who stand side by side gain theirs as the Player Phase ends. From A a support no longer climbs by itself: the partners choose between A+ and S, of which a unit holds one each. A heart pops over both partners whenever their support grows.
+- A player's unit now stands on the map as itself: its token is linked to its sheet as the unit is made, handed to a player or chosen as a character. When a Game Master opens the world after the update, the units players already had are linked once.
+
 ## 0.8.0
 
 - World Map, travel view: a new button beside the zoom puts the map over the whole screen with no window around it, under Foundry's own sidebar and controls as a scene would be. Buttons at its top right go back to a window or close it, and let the Game Master show the map to everyone or edit it. The map reopens the way each person last had it, and showing it to everyone from the travel view opens it that way for them.
