@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.0
+
+- Places at sea: the World Map has a new kind of place, Waters. In the Creator a click on the sea puts one down, and any place can be dragged out over the water. It is joined by sea lanes and marched to as any other place. On a map drawn over your own picture, pick Waters as the kind of the place.
+- Battles on ships: the Map Generator makes a battlefield of Waters, or of open sea picked out on the World Map, as water with two ships lying side by side. Each has masts, crates to shelter behind and a helm at the stern, with boarding planks from one deck to the other. The battle is joined from the company's deck and leads to the other ship's helm. Any other kind of place put out at sea stands on an island of its own.
+- Ships at Sea is a new kind of battlefield in the Map Generator, for a map made without the World Map.
+- Deck is a new terrain of the terrain brush: the boards of a ship, a bridge or a jetty, which does all that Plain does. Bridges and the jetty of a port are drawn as boards now.
+
 ## 0.9.0
 
 - Level ups come by themselves: a unit that reaches 100 EXP levels up a moment later on the screen of the player it belongs to, with its growth rolls and the Level Up splash, or its promotion where its class promotes. A unit no player owns levels up on the Game Master's screen, and one whose player is away waits until they join. The Level Up button of the sheet still works, and a world setting switches the automatic level up off.
