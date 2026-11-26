@@ -129,6 +129,7 @@ satori-sign		Satori Sign	Promotion	icons/sundries/documents/document-sealed-red-
 dragons-seal		Dragon's Seal	Promotion	icons/sundries/documents/envelope-sealed-red-tan.webp
 beasts-seal		Beast's Seal	Promotion	icons/sundries/documents/document-sealed-beige-red.webp
 occult-scroll		Occult Scroll	Promotion	icons/sundries/scrolls/scroll-bound-diamond-brown.webp
+heart-seal		Heart Seal	Promotion	icons/sundries/documents/document-sealed-white-red.webp
 wild-stone		Wild Stone	Laguz, Manakete, Taguel	icons/commodities/stone/geode-raw-teal.webp
 demi-stone		Demi Stone	Laguz, Manakete, Taguel	icons/commodities/stone/stone-porous-blue.webp
 laguz-stone		Laguz Stone	Laguz, Manakete, Taguel	icons/commodities/stone/rock-gift.webp

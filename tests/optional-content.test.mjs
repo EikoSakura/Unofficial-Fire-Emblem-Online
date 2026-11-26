@@ -68,6 +68,7 @@ test("the list names the skills of its lines, and each is written in parts the r
     assert.ok(entry.effects.length > 0, name);
   }
   assert.deepEqual(list.weapons.Katanas, ["Bronze Katana", "Akuma", "Iron Katana", "Kotetsu"]);
+  assert.deepEqual(list.items, { "Promotion and Reclassing": [FEO.optional.heartSeals.item] }, "the item a reclass spends, by the name it is looked for");
   assert.deepEqual(list.classes.map((entry) => entry.name), ["Ashigaru", "Rei", "Hitokiri", "Oni Savage", "Yokai", "Shugoki", "Merchant", "Profiteer", "Tycoon"]);
 });
 

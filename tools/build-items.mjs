@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Builds the item compendium (packs/items) from the "Items" tab of the Reference Sheet.
+ * Builds the item compendium (packs/items) from the "Items" tab of the Reference Sheet, with the items of the
+ * Optional Content Sheet that packs-src/optional-content.json lists.
  *
  * Usage:
  *   node tools/build-items.mjs [--foundry <path>] [--json <file>] [--check] [--out <folder>] [--quiet]
@@ -9,6 +10,9 @@
  * note when it is long. Headings become folders, a heading's words in brackets and the notes beneath it become
  * the folder's description, and every other row is an item. Each item keeps its Effect text exactly as the
  * sheet words it.
+ *
+ * Of the Optional Content Sheet only the items the list names are read, each under the heading it names them
+ * under. They join the folder of the Reference Sheet's section that OPTIONAL_SECTIONS gives that heading.
  *
  * How the sheet's ways of writing a value are read:
  *   Uses "3.0"             3 uses
@@ -34,8 +38,8 @@ import { readShield } from "../module/rules/blocking.mjs";
 import { gearCoverage, isStorage } from "../module/rules/gear.mjs";
 import { readWorkbook } from "./lib/xlsx.mjs";
 import {
-  REFERENCE_SHEET, Report, USAGE, findFoundry, flag, isBlank, loadFoundry, makeFolder, manifest, oneLine,
-  paragraphs, slugify, stableId, stats, validate, wholeNumber, writeJson, writePack
+  OPTIONAL_SHEET, REFERENCE_SHEET, Report, USAGE, findFoundry, flag, isBlank, loadFoundry, makeFolder, manifest,
+  oneLine, paragraphs, readOptionalList, slugify, stableId, stats, validate, wholeNumber, writeJson, writePack
 } from "./lib/pack.mjs";
 import { IconLibrary, IconPicker } from "./lib/icons.mjs";
 
@@ -48,6 +52,13 @@ const PACK = "items";
 const TAB = "Items";
 const COLUMNS = { name: 0, effect: 1, uses: 6, cost: 7 };
 const TITLES = { name: "Name", effect: "Effect", uses: "Uses", cost: "Cost" };
+const SOURCES = { reference: "Reference Sheet", optional: "Optional Content Sheet" };
+
+/**
+ * The headings of the Optional Content Sheet's tab whose items can be in the game, each with the section of the
+ * Reference Sheet whose folder its items join.
+ */
+const OPTIONAL_SECTIONS = { "Promotion and Reclassing": "Promotion" };
 
 const app = findFoundry();
 const foundry = await loadFoundry(app);
@@ -74,19 +85,32 @@ const sections = [];
 const items = [];
 let section = null;
 
+/** Does a row hold nothing but its first cell, as a heading or a note does? */
+const lone = (from, row) => {
+  const cells = from.filled(row);
+  return (cells.length === 1) && (cells[0].column === 0);
+};
+
+/**
+ * Read a row's lone cell as a section heading: a short line, with what it says in brackets as its first note.
+ * @param {string} text
+ * @returns {{name: string, notes: string[]}|null}    Null for a note
+ */
+function headingOf(text) {
+  const bracketed = /^([^()]{1,40}?)\s*\((.+)\)$/.exec(text);
+  if ( bracketed ) return { name: bracketed[1], notes: [bracketed[2]] };
+  if ( (text.length <= 40) && !text.endsWith(".") ) return { name: text, notes: [] };
+  return null;
+}
+
 for ( let row = 2; row <= sheet.lastRow; row++ ) {
-  const cells = sheet.filled(row);
-  if ( !cells.length ) continue;
+  if ( !sheet.filled(row).length ) continue;
   const first = oneLine(sheet.cell(row, 0));
 
-  if ( (cells.length === 1) && (cells[0].column === 0) ) {
-    const bracketed = /^([^()]{1,40}?)\s*\((.+)\)$/.exec(first);
-    if ( bracketed ) {
-      section = { key: bracketed[1], name: bracketed[1], notes: [bracketed[2]], count: 0 };
-      sections.push(section);
-      report.count("Rows that are not items", "section headings, made into folders");
-    } else if ( (first.length <= 40) && !first.endsWith(".") ) {
-      section = { key: first, name: first, notes: [], count: 0 };
+  if ( lone(sheet, row) ) {
+    const heading = headingOf(first);
+    if ( heading ) {
+      section = { key: heading.name, name: heading.name, notes: heading.notes, count: 0 };
       sections.push(section);
       report.count("Rows that are not items", "section headings, made into folders");
     } else if ( section ) {
@@ -101,19 +125,95 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
     problems.push(`Row ${row}: "${first}" comes before any section heading`);
     continue;
   }
+  const item = readItem(sheet, row, section, SOURCES.reference);
+  if ( !item ) continue;
+  section.count++;
+  items.push(item);
+}
 
-  const name = first;
-  const where = `row ${row} ${name}`;
-  const effect = /^n\/?a$/i.test(sheet.cell(row, COLUMNS.effect)) ? "" : sheet.cell(row, COLUMNS.effect);
-  if ( !name ) {
-    problems.push(`Row ${row}: has no name`);
+/* -------------------------------------------- */
+/*  The Optional Content Sheet                  */
+/* -------------------------------------------- */
+
+// Only the items the list names are read, each under the heading it names them under. They stand after the
+// items of the folder they join
+const optional = readOptionalList();
+problems.push(...optional.problems);
+const wanted = Object.entries(optional.items).filter(([, names]) => names.length);
+const extra = (wanted.length && !optional.problems.length) ? readWorkbook(OPTIONAL_SHEET).find((candidate) => candidate.name === TAB) : null;
+if ( wanted.length && !optional.problems.length && !extra ) problems.push(`The ${SOURCES.optional} has no "${TAB}" tab.`);
+if ( extra ) {
+  for ( const [key, column] of Object.entries(COLUMNS) ) {
+    if ( oneLine(extra.cell(1, column)) !== TITLES[key] ) {
+      problems.push(`${SOURCES.optional}, row 1: column ${column + 1} should be "${TITLES[key]}" but is "${oneLine(extra.cell(1, column))}"`);
+    }
+  }
+}
+for ( const [heading, names] of extra ? wanted : [] ) {
+  const place = sections.find((entry) => entry.name === OPTIONAL_SECTIONS[heading]);
+  if ( !place ) {
+    problems.push(`optional-content.json: no folder takes the items of the heading "${heading}". Add it to OPTIONAL_SECTIONS.`);
     continue;
+  }
+  let start = 0;
+  for ( let row = 2; (row <= extra.lastRow) && !start; row++ ) {
+    if ( lone(extra, row) && (headingOf(oneLine(extra.cell(row, 0)))?.name === heading) ) start = row;
+  }
+  if ( !start ) {
+    problems.push(`optional-content.json: the ${TAB} tab of the ${SOURCES.optional} has no heading "${heading}"`);
+    continue;
+  }
+  const found = new Set();
+  const read = [];
+  for ( let row = start + 1; row <= extra.lastRow; row++ ) {
+    if ( !extra.filled(row).length ) continue;
+    const first = oneLine(extra.cell(row, 0));
+    if ( lone(extra, row) ) {
+      // The next heading ends it
+      if ( headingOf(first) ) break;
+      continue;
+    }
+    if ( !names.includes(first) || found.has(first) ) continue;
+    found.add(first);
+    const item = readItem(extra, row, place, SOURCES.optional);
+    if ( item ) read.push(item);
+  }
+  for ( const name of names ) {
+    if ( !found.has(name) ) problems.push(`optional-content.json: "${heading}" of the ${SOURCES.optional} has no item named "${name}"`);
+  }
+  const last = items.findLastIndex((item) => item.section === place);
+  items.splice((last >= 0) ? last + 1 : items.length, 0, ...read);
+  place.count += read.length;
+  report.count("Optional Content", `items of "${heading}" that are in the game, in the folder ${place.name}`, [...found].join(", "));
+}
+
+/* -------------------------------------------- */
+/*  Read an item                                */
+/* -------------------------------------------- */
+
+/**
+ * Read a row of either sheet's tab as an item.
+ * @param {object} from         The tab the row is on
+ * @param {number} row
+ * @param {object} place        The section whose folder it goes in
+ * @param {string} source       One of SOURCES
+ * @returns {object|null}       Null for a row that has no name, which is listed among the problems
+ */
+function readItem(from, row, place, source) {
+  const cells = from.filled(row);
+  const name = oneLine(from.cell(row, 0));
+  const sheetName = (source === SOURCES.reference) ? "" : `${source}, `;
+  const where = `${sheetName}row ${row} ${name}`;
+  const effect = /^n\/?a$/i.test(from.cell(row, COLUMNS.effect)) ? "" : from.cell(row, COLUMNS.effect);
+  if ( !name ) {
+    problems.push(`${sheetName}Row ${row}: has no name`);
+    return null;
   }
   const stray = cells.filter(({ column }) => !Object.values(COLUMNS).includes(column));
   if ( stray.length ) problems.push(`${where}: has cells outside the Name, Effect, Uses and Cost columns`);
 
   // Uses
-  const usesText = sheet.cell(row, COLUMNS.uses);
+  const usesText = from.cell(row, COLUMNS.uses);
   let uses = wholeNumber(usesText);
   let equip = false;
   const equipped = /^equip(?:\s*\/\s*(\d+))?$/i.exec(usesText);
@@ -133,7 +233,7 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
   }
 
   // Cost
-  const costText = sheet.cell(row, COLUMNS.cost);
+  const costText = from.cell(row, COLUMNS.cost);
   let cost = wholeNumber(costText);
   if ( cost === null ) {
     if ( isBlank(costText) ) {
@@ -159,7 +259,7 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
 
   // A Shield: what its Effect says of blocking, read into fields. What it says beyond that stays text
   let shield = null;
-  if ( /^shields$/i.test(section.name) ) {
+  if ( /^shields$/i.test(place.name) ) {
     shield = readShield(effect);
     if ( !shield ) problems.push(`${where}: is listed among the Shields, but its Effect names no chance to block`);
     else {
@@ -189,9 +289,8 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
     if ( coverage.left.length ) report.add("Left to the table", `${name}: ${coverage.left.join("; ")}`);
   }
 
-  section.count++;
-  items.push({
-    row, name, section,
+  return {
+    row, name, section: place, source,
     system: {
       effect,
       uses: { value: uses ?? 0, max: uses ?? 0 },
@@ -201,8 +300,7 @@ for ( let row = 2; row <= sheet.lastRow; row++ ) {
       ...(shield ? { shield: { ...shield, parry: shield.parry ?? { chance: 0, dexDiv: 0, uses: 0 } } } : {}),
       description: ""
     }
-  });
-
+  };
 }
 
 /* -------------------------------------------- */
@@ -239,6 +337,7 @@ const SHAPES = [
   [/herb|grass|leaf|lily|blossom|clover|moss/i, from("consumables/plants", /herb|leaf|grass|sprout/)],
   [/fruit|pepper/i, from("consumables/fruit")],
   [/mushroom/i, from("consumables/mushrooms")],
+  [/\bseal\b|contract|\bsign\b/i, from("sundries/documents", /sealed/)],
   [/flesh|heart/i, from("consumables/meat", /steak|shank|ribs/)],
   [/prawn|jelly|spice/i, from("consumables/food")],
   [/needle/i, from("tools/hand", /needle/)],
@@ -255,7 +354,6 @@ const SHAPES = [
   [/lantern/i, from("sundries/lights", /lantern-(iron|steel|bullseye)/)],
   [/torch/i, from("sundries/lights", /torch/)],
   [/crown|circlet/i, [...from("equipment/head", /^crown-gold/), ...from("commodities/treasure", /^crown/)]],
-  [/\bseal\b|contract|\bsign\b/i, from("sundries/documents", /sealed/)],
   [/scroll/i, from("sundries/scrolls", /^scroll-(bound|runed|rolled)/)],
   [/tome|book|manual/i, from("sundries/books", /^book-/, /mimic|notebook|notes/)],
   [/crest|medallion|memento|\bicon\b/i, from("commodities/treasure", /^(medal|brooch|token)/)],
@@ -350,7 +448,7 @@ const documents = items.map((item, index) => {
     folder: folderIds.get(place.key),
     sort: (index + 1) * 100000,
     ownership: { default: 0 },
-    flags: { [manifest.id]: { row: item.row, source: `Reference Sheet, ${TAB} tab, row ${item.row}` } },
+    flags: { [manifest.id]: { row: item.row, source: `${item.source}, ${TAB} tab, row ${item.row}` } },
     _stats: stats
   };
 });
