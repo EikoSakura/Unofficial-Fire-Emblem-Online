@@ -26,7 +26,7 @@ export const MAP_SOURCES = ["world", "kind"];
  * @returns {string}
  */
 export function lieTitle(lie, i18n) {
-  const key = lie.peaks > 0.18 ? "mountains" : lie.sea > 0.12 ? "coast" : lie.arid > 0.5 ? "desert" : lie.wood > 0.4 ? "woods"
+  const key = lie.sea > 0.85 ? "sea" : lie.peaks > 0.18 ? "mountains" : lie.sea > 0.12 ? "coast" : lie.arid > 0.5 ? "desert" : lie.wood > 0.4 ? "woods"
     : lie.hills > 0.3 ? "hills" : "open";
   return i18n.localize(`FEO.MapGen.lie.${key}`);
 }
@@ -35,7 +35,8 @@ export function lieTitle(lie, i18n) {
 
 /**
  * What the World Map shows of the ground a map was made from, each as a chip: the sea and the side it is on,
- * high ground, woods, dry and cold land, and the roads and sea lanes that cross the map.
+ * the ships of a battle at sea, high ground, woods, dry and cold land, and the roads and sea lanes that cross
+ * the map.
  * @param {LandMap} map
  * @param {Localizer} i18n
  * @returns {{icon: string, label: string}[]}
@@ -50,6 +51,7 @@ export function lieChips(map, i18n) {
       label: lie.seaSide === "around" ? word("seaAround") : word("seaTo", { wind: i18n.localize(`FEO.MapGen.wind.${lie.seaSide}`) })
     });
   }
+  if ( map.afloat ) chips.push({ icon: "plank", label: word("ships") });
   if ( lie.peaks > 0.12 ) chips.push({ icon: "peak", label: word("mountains") });
   else if ( lie.hills > 0.2 ) chips.push({ icon: "peak", label: word("hills") });
   if ( lie.wood > 0.5 ) chips.push({ icon: "tree", label: word("deepWoods") });

@@ -7,7 +7,7 @@ import { tileKey } from "./reach.mjs";
  *
  * A map is laid out for a battle that runs from its left edge to its right: whatever else is made, a unit on
  * foot with no skill for it can always walk from the middle of one edge to the middle of the other, or to the
- * throne of a fortress.
+ * throne of a fortress. A battle at sea runs from the deck of one ship to the helm of the other.
  *
  * Everything here works on rows and columns alone and touches nothing of Foundry. Making a scene of a map is
  * the work of `helpers/mapgen.mjs`.
@@ -46,7 +46,16 @@ import { tileKey } from "./reach.mjs";
  * @property {() => number} random    The next number of the seed, from 0 up to 1
  * @property {string[][]} tiles
  * @property {number[][]} heights
+ * @property {Tile} [start]           Where the battle is joined from, if not from the middle of the left edge
  * @property {Tile} [goal]            Where the battle leads, if not to the middle of the right edge
+ */
+
+/**
+ * @typedef Ship
+ * A ship as it was laid on a map.
+ * @property {Tile} deck              The middle of its deck, where a company stands
+ * @property {Tile} helm              Its helm, at the stern
+ * @property {Tile[]} tiles           Every tile of it
  */
 
 /** The kinds of battlefield the generator knows, each with the function that lays it out. */
@@ -58,7 +67,8 @@ export const MAP_TYPES = {
   coast: layCoast,
   fortress: layFortress,
   town: layTown,
-  desert: layDesert
+  desert: layDesert,
+  ships: laySea
 };
 
 /** The sizes offered, in tiles. */
@@ -285,7 +295,7 @@ function wayBetween(draft, from, to, wander = 0) {
  * @param {object} water
  * @param {string} water.kind           The kind of terrain the water is
  * @param {number} [water.width]        How many tiles wide it runs
- * @param {number} [water.bridges]      How many rows are bridged: open ground from bank to bank
+ * @param {number} [water.bridges]      How many rows are bridged: boards from bank to bank
  * @param {number} [water.fords]        How many rows are shallow enough to wade
  * @param {number[]} [water.open]       Rows that are bridged whatever else is, as where a street meets the water
  * @returns {{banks: number[], bridges: number[]}}    The column of the left bank in each row, and the bridged rows
@@ -308,9 +318,9 @@ function runWater(draft, { kind, width = 1, bridges = 0, fords = 0, open = [] })
     const i = Math.min(Math.max(Math.round(((at + 1) * rows) / (crossings + 1)) + between(random, -1, 1), 1), rows - 2);
     const ford = at >= bridges;
     if ( !ford ) bridged.push(i);
-    for ( let wide = 0; wide < width; wide++ ) lay(draft, i, banks[i] + wide, ford ? "river" : "plain", 0);
+    for ( let wide = 0; wide < width; wide++ ) lay(draft, i, banks[i] + wide, ford ? "river" : "deck", 0);
   }
-  for ( const i of open ) for ( let wide = 0; wide < width; wide++ ) lay(draft, i, banks[i] + wide, "plain", 0);
+  for ( const i of open ) for ( let wide = 0; wide < width; wide++ ) lay(draft, i, banks[i] + wide, "deck", 0);
   return { banks, bridges: bridged };
 }
 
@@ -357,7 +367,7 @@ export function walksTo(map, from, to) {
 
 /**
  * Make sure a unit on foot can walk from one tile to another: if it cannot, a way is cleared between them,
- * open ground wherever something stood in it.
+ * open ground wherever something stood in it, and boards over deep water.
  * @param {Draft} draft
  * @param {Tile} from
  * @param {Tile} to
@@ -365,8 +375,108 @@ export function walksTo(map, from, to) {
 export function openWay(draft, from, to) {
   if ( walksTo(draft, from, to) ) return;
   for ( const { i, j } of wayBetween(draft, from, to, 0.15) ) {
-    if ( !walkable(draft.tiles[i][j]) ) lay(draft, i, j, "plain", 0);
+    if ( !walkable(draft.tiles[i][j]) ) lay(draft, i, j, draft.tiles[i][j] === "water" ? "deck" : "plain", 0);
   }
+}
+
+/* -------------------------------------------- */
+/*  Ships                                       */
+/* -------------------------------------------- */
+
+/**
+ * Lay two ships on the water, lying side by side, each built of terrain: a deck that narrows to the bow, a mast
+ * or two that nobody passes, crates to shelter behind, and a helm at the stern, which is a fort. Boarding planks
+ * lead from one deck to the other. The hulls run along the longer side of the map, and whatever lay where the
+ * ships are, and a tile all round them, is deep water afterwards.
+ * @param {Draft} draft
+ * @param {object} [options]
+ * @param {Tile} [options.heart]      The tile the two ships lie about; the middle of the map if not given
+ * @param {boolean} [options.before]  Is the first ship the one nearer the top of the map, or nearer its left where
+ *                                    the map is taller than it is wide?
+ * @returns {Ship[]}                  The two ships, the first of them for the company
+ */
+export function layShips(draft, { heart = null, before = false } = {}) {
+  const { rows, columns, random } = draft;
+
+  // Along a hull and across it: on a map wider than tall the hulls lie across it, one above the other
+  const flat = columns >= rows;
+  const along = flat ? columns : rows;
+  const across = flat ? rows : columns;
+  const tile = (a, b) => (flat ? { i: b, j: a } : { i: a, j: b });
+  const fit = (value, low, high) => Math.min(Math.max(Math.round(value), low), Math.max(high, low));
+  const length = Math.min(Math.max(Math.round(along * 0.6), 7), 18, along - 3);
+  let beam = across >= 22 ? 7 : across >= 15 ? 5 : 3;
+  while ( (beam > 3) && (beam * 2 > length) ) beam -= 2;
+  const tip = beam >= 7 ? 3 : 1;
+  const slide = length >= 12 ? between(random, 0, 1) * (random() < 0.5 ? -1 : 1) : 0;
+  const reach = Math.abs(slide);
+  const middle = heart ? (flat ? { a: heart.j, b: heart.i } : { a: heart.i, b: heart.j }) : { a: along / 2, b: across / 2 };
+  const a0 = fit(middle.a - (length / 2), 1 + reach, along - 1 - length - reach);
+  const b0 = fit(middle.b - beam - 0.5, 1, across - 2 - (beam * 2));
+  const gap = b0 + beam;
+
+  // The water the ships lie in
+  for ( let a = a0 - reach - 1; a <= a0 + length + reach; a++ ) {
+    for ( let b = b0 - 1; b <= gap + beam + 1; b++ ) {
+      const { i, j } = tile(a, b);
+      lay(draft, i, j, "water", 0);
+    }
+  }
+
+  // Each hull from stern to bow: full in the beam but for a stern cut square and a bow that narrows to its tip
+  const full = [];
+  const ships = [0, 1].map((second) => {
+    const side = (second === 0) === before ? b0 : gap + 1;
+    const start = a0 + (second ? -slide : slide);
+    const forward = random() < 0.5;
+    const at = (t, w) => tile(forward ? start + t : start + length - 1 - t, side + w);
+    const mid = (beam - 1) / 2;
+    const tiles = [];
+    for ( let t = 0; t < length; t++ ) {
+      let wide = Math.min(beam, tip + (2 * (length - 1 - t)));
+      if ( !t && (beam >= 5) ) wide = Math.min(wide, beam - 2);
+      for ( let w = (beam - wide) / 2; w < (beam + wide) / 2; w++ ) {
+        const spot = at(t, w);
+        lay(draft, spot.i, spot.j, "deck", 0);
+        tiles.push(spot);
+      }
+    }
+    const masts = length >= 11 ? [Math.round(length * 0.36), Math.round(length * 0.68)] : [Math.round(length * 0.36)];
+    for ( const t of masts ) lay(draft, at(t, mid).i, at(t, mid).j, "wall", 0);
+    const helm = at(1, mid);
+    lay(draft, helm.i, helm.j, "fort", 0);
+    const stand = Math.round(length / 2);
+    const deck = at(masts.includes(stand) ? stand + 1 : stand, mid);
+    for ( let crates = between(random, 1, 1 + Math.floor(length / 5)), tries = 60; (crates > 0) && (tries > 0); tries-- ) {
+      const spot = tiles[Math.floor(random() * tiles.length)];
+      if ( (draft.tiles[spot.i][spot.j] !== "deck") || ((spot.i === deck.i) && (spot.j === deck.j)) ) continue;
+      lay(draft, spot.i, spot.j, "cover", 0);
+      crates--;
+    }
+
+    // Where along the map the hull is as wide as it gets, for the planks to land on
+    const ends = [beam >= 5 ? 1 : 0, length - 1 - ((beam - tip) / 2)].map((t) => (forward ? start + t : start + length - 1 - t));
+    full.push([Math.min(...ends), Math.max(...ends)]);
+    return { deck, helm, tiles };
+  });
+
+  // Boarding planks over the water between them, spread along the stretch where both hulls are full
+  let low = Math.max(full[0][0], full[1][0]);
+  let high = Math.min(full[0][1], full[1][1]);
+  if ( high < low ) low = high = Math.round((low + high) / 2);
+  const planks = new Set();
+  const count = length >= 13 ? 3 : 2;
+  for ( let plank = 0; plank < count; plank++ ) planks.add(low + Math.floor(((plank + 0.5) * (high - low + 1)) / count));
+  for ( const a of planks ) {
+    for ( const [from, step] of [[gap, 1], [gap - 1, -1]] ) {
+      for ( let b = from, steps = 0; steps <= beam; b += step, steps++ ) {
+        const { i, j } = tile(a, b);
+        if ( !onMap(draft, i, j) || (draft.tiles[i][j] !== "water") ) break;
+        lay(draft, i, j, "deck", 0);
+      }
+    }
+  }
+  return ships;
 }
 
 /* -------------------------------------------- */
@@ -659,6 +769,22 @@ function layDesert(draft) {
 }
 
 /* -------------------------------------------- */
+
+/**
+ * Ships at sea: open water with two ships lying side by side, boarding planks between them, and here and there
+ * a rock that breaks the surface. The battle is joined from the deck of one and leads to the helm of the other.
+ * @param {Draft} draft
+ */
+function laySea(draft) {
+  const { rows, columns, random } = draft;
+  for ( let i = 0; i < rows; i++ ) for ( let j = 0; j < columns; j++ ) lay(draft, i, j, "water", 0);
+  for ( let rocks = between(random, 2, 4); rocks > 0; rocks-- ) lay(draft, between(random, 0, rows - 1), between(random, 0, columns - 1), "cliff", 1);
+  const [own, foe] = layShips(draft);
+  draft.start = own.deck;
+  draft.goal = foe.helm;
+}
+
+/* -------------------------------------------- */
 /*  Making a Map                                */
 /* -------------------------------------------- */
 
@@ -699,7 +825,7 @@ export function generateMap({ type, rows, columns, seed }) {
 
   // The battle can always be joined: both sides have somewhere to stand, and a way to each other
   const middle = Math.floor(size.rows / 2);
-  const from = { i: middle, j: 0 };
+  const from = draft.start ?? { i: middle, j: 0 };
   const to = draft.goal ?? { i: middle, j: size.columns - 1 };
   for ( const { i, j } of [from, to] ) if ( !walkable(draft.tiles[i][j]) ) lay(draft, i, j, FEO.terrain.default, 0);
   openWay(draft, from, to);

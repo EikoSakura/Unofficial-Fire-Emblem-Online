@@ -37,7 +37,8 @@ import { seededRandom } from "./mapgen.mjs";
  * @property {string} id
  * @property {number} x
  * @property {number} y
- * @property {string} kind            One of FEO.worldMap.kinds
+ * @property {string} kind            One of FEO.worldMap.kinds. Any of them may stand on land or at sea, but waters
+ *                                    are the kind that is sea wherever it lies
  * @property {string} name
  * @property {boolean} seen           Is it shown to the players?
  * @property {boolean} visited        Has the company been there?
@@ -334,7 +335,7 @@ export function makeLand({ seed, shape }, config = FEO.worldMap) {
 
 /**
  * The land of a map that is drawn over a picture: all of it can be painted and built on, and nothing is inked
- * over it.
+ * over it. Where the picture shows sea, a place is told to lie in it by being waters.
  * @param {string} key                        What tells this picture from another
  * @param {Uint8ClampedArray|number[]} pixels     The picture at the size of the map: red, green, blue, alpha
  * @param {object} [config]
@@ -367,6 +368,19 @@ export function isLand(land, x, y) {
   const px = Math.round(x);
   const py = Math.round(y);
   return (px >= 0) && (py >= 0) && (px < land.width) && (py < land.height) && !!land.land[(py * land.width) + px];
+}
+
+/**
+ * The kind a place put down at a point has: the kind that was picked on land, and waters at sea, where nothing
+ * else stands until it is made so by hand.
+ * @param {Land} land
+ * @param {number} x
+ * @param {number} y
+ * @param {string} kind       The kind picked, one of FEO.worldMap.kinds
+ * @returns {string}
+ */
+export function kindAt(land, x, y, kind) {
+  return isLand(land, x, y) ? kind : "waters";
 }
 
 /** Is the sea within a short way of a point? */
@@ -421,7 +435,7 @@ export function madeName(random, kind = "place") {
 
 /**
  * The name of a place of a kind. `phrase` puts a made-up name into the words of the reader's language: it is
- * given `port.0`, `port.1`, `fort.0`, `fort.1` or `ruins` and the name.
+ * given `port.0`, `port.1`, `fort.0`, `fort.1`, `waters.0`, `waters.1` or `ruins` and the name.
  * @param {() => number} random
  * @param {string} kind
  * @param {(key: string, name: string) => string} [phrase]
@@ -430,7 +444,7 @@ export function madeName(random, kind = "place") {
 export function placeName(random, kind, phrase = (key, name) => name) {
   const name = madeName(random);
   const which = random() < 0.5 ? 0 : 1;
-  if ( (kind === "port") || (kind === "fort") ) return phrase(`${kind}.${which}`, name);
+  if ( ["port", "fort", "waters"].includes(kind) ) return phrase(`${kind}.${which}`, name);
   if ( kind === "ruins" ) return phrase("ruins", name);
   return name;
 }

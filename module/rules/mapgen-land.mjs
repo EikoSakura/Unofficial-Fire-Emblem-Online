@@ -1,5 +1,5 @@
 import { FEO } from "../config.mjs";
-import { STEPS, between, dot, grid, lay, mapSize, onMap, openWay, ranked, seededRandom, walkable } from "./mapgen.mjs";
+import { STEPS, between, dot, grid, lay, layShips, mapSize, onMap, openWay, ranked, seededRandom, walkable } from "./mapgen.mjs";
 import { tileKey } from "./reach.mjs";
 import { routeBow } from "./worldmap.mjs";
 
@@ -11,8 +11,9 @@ import { routeBow } from "./worldmap.mjs";
  * `FEO.worldMap.lens` says, with north at the top of both. The sea is where the sea is. High ground, woods and
  * dry land set how likely each tile is to be a hill, a tree or sand, and chance from the seed does the rest, so
  * that deep woods give a map that can still be fought over. Each route that crosses the lens is cleared across
- * the map, and what stands at the place stands at its heart. The same land, point, size and seed always give
- * the same map.
+ * the map, and what stands at the place stands at its heart. Out at sea there is nothing to stand on, so two
+ * ships are laid there for the battle to be fought on. The same land, point, size and seed always give the same
+ * map.
  *
  * Everything here works on numbers alone and touches nothing of Foundry.
  *
@@ -56,14 +57,12 @@ import { routeBow } from "./worldmap.mjs";
  */
 
 /**
- * @typedef {BattleMap & {lens: Lens, lie: Lie, exits: Exit[], tracks: Track[]}} LandMap
+ * @typedef {BattleMap & {lens: Lens, lie: Lie, exits: Exit[], tracks: Track[], afloat: boolean}} LandMap
+ * `afloat` says the battle is fought on ships.
  */
 
 /** The winds, clockwise from the east. */
 export const WINDS = ["east", "southEast", "south", "southWest", "west", "northWest", "north", "northEast"];
-
-/** The most of a lens that may be sea for a battle to be fought there. */
-export const MOST_SEA = 0.85;
 
 /* -------------------------------------------- */
 /*  Reading the Land                            */
@@ -280,14 +279,16 @@ function layLand(draft, read) {
 
 /**
  * Clear every route of the World Map that crosses a lens across the draft made through it: open ground through
- * woods, hills and peaks, and a causeway over water. A sea lane clears nothing.
+ * woods, hills and peaks, and a bridge of boards over water. A sea lane clears nothing, and no route does on a
+ * map that is fought on ships.
  * @param {Draft} draft
  * @param {Lens} lens
  * @param {{places: Place[], routes: Route[]}} world
+ * @param {boolean} [afloat]      Is the map fought on ships?
  * @returns {{road: Set<string>, exits: Exit[], tracks: Track[]}}
  *   The tiles the roads were cleared over, where each route leaves the map, and the line of each across it
  */
-function layRoads(draft, lens, world) {
+function layRoads(draft, lens, world, afloat = false) {
   const at = new Map(world.places.map((place) => [place.id, place]));
   const road = new Set();
   const exits = [];
@@ -319,13 +320,30 @@ function layRoads(draft, lens, world) {
     }
     if ( !run.length ) continue;
     tracks.push({ a: tiles(a), c: tiles(bow), b: tiles(b), sea: route.kind === "sea" });
-    if ( route.kind === "sea" ) continue;
+    if ( afloat || (route.kind === "sea") ) continue;
     for ( const { i, j } of run ) {
       road.add(tileKey({ i, j }));
-      lay(draft, i, j, "plain", 0);
+      lay(draft, i, j, draft.tiles[i][j] === "water" ? "deck" : "plain", 0);
     }
   }
   return { road, exits, tracks };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * How far the island a place stands on reaches from its heart, across the map and down it, where the World Map
+ * shows only sea there: far enough for what the place is.
+ * @param {string} kind       One of FEO.worldMap.kinds
+ * @param {number} rows
+ * @param {number} columns
+ * @returns {{i: number, j: number}}
+ */
+function islandOf(kind, rows, columns) {
+  if ( kind === "capital" ) return { i: Math.round(rows * 0.36) + 2, j: Math.round(columns * 0.33) + 2 };
+  if ( kind === "town" ) return { i: Math.round(rows * 0.27) + 2, j: Math.round(columns * 0.24) + 2 };
+  if ( kind === "fort" ) return { i: Math.min(Math.max(Math.round(rows * 0.18), 2), 4) + 4, j: Math.min(Math.max(Math.round(columns * 0.15), 3), 6) + 4 };
+  return { i: 5, j: 6 };
 }
 
 /* -------------------------------------------- */
@@ -339,8 +357,14 @@ function layRoads(draft, lens, world) {
  * town streets and a square, a village a few houses, a port houses by the shore and a jetty, and ruins broken
  * walls. A point that is no place has none of these.
  *
+ * Waters are fought over on ships, and so is a point picked out at sea: two ships lie side by side at the heart
+ * of the map (see `layShips`), the company's on the side it comes from. Waters are sea even where the World Map
+ * shows land, as on a map drawn over a picture, which knows of no sea. Any other place that lies in the sea
+ * stands on an island of its own.
+ *
  * The battle is joined from the road the company comes by, and leads to the heart of the place, or on bare
- * ground to the road out on the far side. Whatever is made, a unit on foot can walk from one to the other.
+ * ground to the road out on the far side; at sea it is joined from the company's deck and leads to the helm of
+ * the other ship. Whatever is made, a unit on foot can walk from one to the other.
  * @param {object} wanted
  * @param {Land} wanted.land
  * @param {{places: Place[], routes: Route[]}} wanted.world
@@ -368,8 +392,24 @@ export function generateFromLand({ land, world, point, place = null, rows, colum
   const R = size.rows;
   const C = size.columns;
   const read = surveyLens(land, lens);
+  const kind = place?.kind ?? "";
+  const centre = lensTile(lens, point.x, point.y);
+  const heart = { i: Math.min(Math.max(centre.i, 2), R - 3), j: Math.min(Math.max(centre.j, 2), C - 3) };
+
+  // Waters are sea whatever the World Map shows, and another place out at sea has an island under it
+  const wet = read.sea[heart.i][heart.j] >= 0.5;
+  const afloat = (kind === "waters") || (!place && wet);
+  if ( afloat && !wet ) read.sea = grid(R, C, () => 1);
+  else if ( place && !afloat && wet ) {
+    const reach = islandOf(kind, R, C);
+    for ( let i = 0; i < R; i++ ) {
+      for ( let j = 0; j < C; j++ ) {
+        if ( Math.hypot((i - heart.i) / reach.i, (j - heart.j) / reach.j) + ((random() - 0.5) * 0.2) <= 1 ) read.sea[i][j] = 0;
+      }
+    }
+  }
   layLand(draft, read);
-  const { road, exits, tracks } = layRoads(draft, lens, world);
+  const { road, exits, tracks } = layRoads(draft, lens, world, afloat);
 
   // The side the company comes in by: the road from where it was, or the road that leads back towards it
   const company = (cameBy && exits.find((exit) => exit.id === cameBy))
@@ -378,8 +418,6 @@ export function generateFromLand({ land, world, point, place = null, rows, colum
   let from = company ? company.tile : { i: Math.floor(R / 2), j: 0 };
 
   // What stands at the place is built round the heart of the map, off the water and off the roads
-  const centre = lensTile(lens, point.x, point.y);
-  const heart = { i: Math.min(Math.max(centre.i, 2), R - 3), j: Math.min(Math.max(centre.j, 2), C - 3) };
   const dryAt = (i, j) => onMap(draft, i, j) && (draft.tiles[i][j] !== "water");
   const open = (i, j) => dryAt(i, j) && !road.has(tileKey({ i, j }));
   const near = (count, kind, reach, { over = ["plain", "forest", "desert", "hill"], where = () => true } = {}) => {
@@ -458,8 +496,13 @@ export function generateFromLand({ land, world, point, place = null, rows, colum
     return { top, bottom, left, right };
   };
 
-  const kind = place?.kind ?? "";
-  if ( kind === "capital" ) {
+  // At sea the ships lie about the heart of the map, the company's on the side it comes from
+  if ( afloat ) {
+    const [own, foe] = layShips(draft, { heart, before: C >= R ? from.i < heart.i : from.j < heart.j });
+    from = own.deck;
+    goal = foe.helm;
+  }
+  else if ( kind === "capital" ) {
     blocks(Math.round(C * 0.33), Math.round(R * 0.36));
     keep(2, 2);
   }
@@ -499,7 +542,7 @@ export function generateFromLand({ land, world, point, place = null, rows, colum
     for ( let n = 1; shore && (n <= 3); n++ ) {
       const [i, j] = [shore.i + (shore.step[0] * n), shore.j + (shore.step[1] * n)];
       if ( !onMap(draft, i, j) || (draft.tiles[i][j] !== "water") ) break;
-      lay(draft, i, j, "plain", 0);
+      lay(draft, i, j, "deck", 0);
     }
     goal = heart;
   }
@@ -551,6 +594,6 @@ export function generateFromLand({ land, world, point, place = null, rows, colum
   openWay(draft, from, to);
   return {
     type: "land", seed: String(seed), ...size, tiles: draft.tiles, heights: draft.heights, ends: { from, to },
-    lens, lie: lieOf(read), exits, tracks
+    lens, lie: lieOf(read), exits, tracks, afloat
   };
 }

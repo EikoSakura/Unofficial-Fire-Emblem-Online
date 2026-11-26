@@ -90,6 +90,7 @@ export const ICONS = {
   fort: '<path d="M5 21V8h3V5h3v3h2V5h3v3h3v13z"/><path d="M10 21v-4a2 2 0 0 1 4 0v4"/>',
   house: '<path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/>',
   wave: '<path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>',
+  plank: '<path d="M3 6h18v12H3zM3 12h18M10 6v6M15 12v6"/>',
   boot: '<path d="M8 4v9l-3 3.500V20h14v-2.500c0-2-2-3-5-3.500V4z"/>',
   note: '<path d="M9 17.500V6l10-2v11.500"/><circle cx="6.500" cy="17.500" r="2.500"/><circle cx="16.500" cy="15.500" r="2.500"/>',
   hourglass: '<path d="M7 3.500h10M7 20.500h10M8 3.500c0 5 8 5.500 8 8.500s-8 3.500-8 8.500M16 3.500c0 5-8 5.500-8 8.500s8 3.500 8 8.500"/>',

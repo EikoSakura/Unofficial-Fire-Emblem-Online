@@ -9,13 +9,14 @@ import { routeBow } from "../rules/worldmap.mjs";
  * @import {Land, Nation, Place, Route} from "../rules/worldmap.mjs"
  */
 
-/** The picture of each kind of place, drawn standing on a line through 0, of the Base, and of bare ground. */
+/** The picture of each kind of place, drawn standing on a line through 0, of the Base, and of bare ground or sea. */
 export const PLACE_GLYPHS = {
   capital: '<path d="M-8 0V-8h2v1.500h2V-8h1v-4h1.500v1.500h3V-12H3v4h1v1.500h2V-8h2V0z"/><path d="M-1.500 0v-3.500a1.500 1.500 0 0 1 3 0V0"/>',
   fort: '<path d="M-5 0V-9h1.800v1.600h2V-9h2.400v1.600h2V-9H5V0z"/><path d="M-1.300 0v-3h2.600v3"/>',
   town: '<path d="M-8 0v-5l3.500-3.500L-1-5v5z"/><path d="M0 0v-7l4-4 4 4v7z"/>',
   village: '<path d="M-4.500 0v-4.500L0-8.500l4.500 4V0z"/>',
   port: '<circle cx="0" cy="-11" r="1.700"/><path class="wm-open" d="M0-9.300V-1M-3-6.500h6M-5.500-5c0 5.500 11 5.500 11 0"/>',
+  waters: '<path d="M-8-4.500h16l-3.200 4.500h-9.600z"/><path d="M.800-13.500v7.200h6.200z"/><path d="M-.800-11.500v5.200h-4.600z"/>',
   ruins: '<path d="M-7 0v-8h2.600V0z"/><path d="M-1.500 0v-4.500l2.600-1.200V0z"/><path d="M4.400 0v-9.500H7V0z"/><path class="wm-open" d="M-9 0H9"/>',
   base: '<path d="M-7.500 0L0-10l7.500 10z"/><path class="wm-open" d="M0-10V0M0-10v-3.500l4 1.500-4 1.500"/>',
   ground: '<circle class="wm-open" cx="0" cy="-6" r="5.500"/><circle cx="0" cy="-6" r="1.600"/>'

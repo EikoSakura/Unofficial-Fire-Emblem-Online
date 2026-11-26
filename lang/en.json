@@ -4278,6 +4278,7 @@
       "house": "House, Shop, Village",
       "river": "River",
       "water": "Water, Sea, Ocean",
+      "deck": "Deck, Bridge, Jetty",
       "desert": "Desert, Dune",
       "healhedge": "Healhedge",
       "wardwood": "Wardwood",
@@ -4591,6 +4592,7 @@
         "leads": "The battle leads here"
       },
       "lie": {
+        "sea": "Open sea",
         "mountains": "Mountains",
         "coast": "Coast",
         "desert": "Desert",
@@ -4601,6 +4603,7 @@
       "chip": {
         "seaTo": "Sea to the {wind}",
         "seaAround": "Sea all around",
+        "ships": "Fought on ships",
         "mountains": "Mountains",
         "hills": "Hills",
         "deepWoods": "Deep woods",
@@ -4661,6 +4664,10 @@
         "desert": {
           "label": "Desert",
           "hint": "Sand and dunes with bare rock, an oasis, ruins and a village."
+        },
+        "ships": {
+          "label": "Ships at Sea",
+          "hint": "Open water and two ships side by side: boarding planks between them, masts and crates on deck, and a helm at each stern."
         }
       }
     },
@@ -4834,10 +4841,10 @@
       "zoomOut": "Look from further off",
       "tools": "Tools",
       "unclaimed": "Unclaimed land",
+      "sea": "The open sea",
       "stop": "stop away",
       "stops": "stops away",
       "noWay": "No way there",
-      "openSea": "Open sea: there is nothing here to fight over.",
       "placesHeld": "{count} places",
       "pointed": "{user} points at {place}.",
       "pointing": "Everyone sees {place} flash on their map.",
@@ -4869,7 +4876,7 @@
       "act": {
         "march": "March here",
         "field": "Battlefield",
-        "fieldHint": "Make a battle map of the land here, in the Map Generator.",
+        "fieldHint": "Make a battle map of the land or the sea here, in the Map Generator.",
         "home": "Return to the Base",
         "hide": "Hide",
         "show": "Show to players",
@@ -4898,7 +4905,8 @@
         "town": "Town",
         "village": "Village",
         "port": "Port",
-        "ruins": "Ruins"
+        "ruins": "Ruins",
+        "waters": "Waters"
       },
       "style": {
         "kingdom": "Kingdom of {name}",
@@ -4925,7 +4933,11 @@
           "0": "Fort {name}",
           "1": "{name} Keep"
         },
-        "ruins": "Ruins of {name}"
+        "ruins": "Ruins of {name}",
+        "waters": {
+          "0": "{name} Strait",
+          "1": "{name} Sound"
+        }
       },
       "shape": {
         "continent": "Continent",
@@ -4952,7 +4964,7 @@
       "hint": {
         "land": "Drag to move the map, scroll to look closer.",
         "nations": "Drag on the land to paint it into the chosen nation. Right-drag moves the map.",
-        "places": "Click the land to add a place, drag a dot to move it, click a dot to edit it.",
+        "places": "Click the map to add a place, drag a dot to move it, click a dot to edit it.",
         "routes": "Click one dot, then another, to join them with a route or to remove the route between them."
       },
       "land": {
@@ -5003,7 +5015,7 @@
         "remove": "Remove this place",
         "done": "Done",
         "add": "Add a place",
-        "addHint": "Click the land to put one down. It belongs to whichever nation it stands on.",
+        "addHint": "Click the map to put one down. On land it belongs to whichever nation it stands on. At sea it is Waters, where battles are fought on ships.",
         "edit": "Edit a place",
         "editHint": "Click a dot to rename it, change what is there or hide it from the players. Drag it to move it; its routes follow.",
         "showHint": "Players see a hidden place once it is shown to them, or once the company arrives a route away from it.",

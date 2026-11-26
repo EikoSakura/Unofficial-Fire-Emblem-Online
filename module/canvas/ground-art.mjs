@@ -7,6 +7,9 @@
  * It is drawn with the 2D drawing of an ordinary canvas element, from tiles alone, and knows nothing of
  * Foundry. Every kind of terrain starts from its colour in `FEO.terrain.tints`, so that the picture, the
  * palette of the brush and the legend of the generator agree.
+ *
+ * A ship is drawn from its tiles as anything else is: its deck is boards, and what stands among the boards with
+ * no ground beside it stands on boards too, a wall as a mast and a fort as the helm.
  */
 
 /**
@@ -20,6 +23,9 @@ const FINE = 14;
 
 /** The kinds of terrain that are water, which laps against whatever else it meets. */
 const WET = new Set(["water", "river"]);
+
+/** The kinds of terrain that stand on the boards of a ship, where no ground lies beside them. */
+const SHIPBOARD = new Set(["cover", "fort", "wall"]);
 
 /* -------------------------------------------- */
 /*  Colour and Chance                           */
@@ -69,6 +75,7 @@ function chance(i, j, count) {
  * @property {Record<string, string>} tints   The colour of each kind of terrain
  * @property {string} tint                    The colour of its own
  * @property {(count: number) => number} luck The tile's own run of chance
+ * @property {boolean} [aboard]               Does it stand on the boards of a ship?
  */
 
 /**
@@ -184,12 +191,80 @@ function grass(tile, dim = 0) {
 }
 
 /* -------------------------------------------- */
+
+/**
+ * Boards: four to a tile, each a little lighter or darker than the next, with a seam between them and a joint
+ * somewhere along each.
+ * @param {Tile} tile
+ */
+function boards(tile) {
+  const { pen, x, y, c, tints, luck } = tile;
+  const wood = tints.deck ?? "#a56c3c";
+  const seam = shade(wood, -0.38);
+  pen.lineWidth = Math.max(1, c * 0.03);
+  for ( let board = 0; board < 4; board++ ) {
+    const top = y + ((c * board) / 4);
+    pen.fillStyle = shade(wood, (luck(board + 20) - 0.5) * 0.16);
+    pen.fillRect(x, top, c, (c / 4) + 1);
+    pen.strokeStyle = seam;
+    pen.beginPath();
+    pen.moveTo(x, top);
+    pen.lineTo(x + c, top);
+    const joint = x + (c * (0.15 + (luck(board + 24) * 0.7)));
+    pen.moveTo(joint, top);
+    pen.lineTo(joint, top + (c / 4));
+    pen.stroke();
+  }
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What lies under whatever stands on a tile: the boards of a ship, or grass.
+ * @param {Tile} tile
+ */
+function floor(tile) {
+  if ( tile.aboard ) boards(tile);
+  else grass(tile);
+}
+
+/* -------------------------------------------- */
 /*  Terrain                                     */
 /* -------------------------------------------- */
 
 /** How each kind of terrain is drawn on a tile large enough to show it. */
 const DRAW = {
   plain: (tile) => grass(tile),
+
+  deck: (tile) => boards(tile),
+
+  // On a ship a wall is a mast, seen from above with its yard across it
+  wall: (tile) => {
+    const { pen, x, y, c, tint, tints } = tile;
+    if ( !tile.aboard ) return ground(tile, tint);
+    boards(tile);
+    const wood = tints.deck ?? "#a56c3c";
+    pen.fillStyle = "rgba(0, 0, 0, .22)";
+    pen.beginPath();
+    pen.ellipse(x + (c * 0.56), y + (c * 0.6), c * 0.3, c * 0.2, 0, 0, Math.PI * 2);
+    pen.fill();
+    pen.fillStyle = "#efe6cf";
+    pen.strokeStyle = shade(wood, -0.6);
+    pen.lineWidth = Math.max(1, c * 0.035);
+    pen.beginPath();
+    pen.roundRect(x + (c * 0.06), y + (c * 0.4), c * 0.88, c * 0.2, c * 0.1);
+    pen.fill();
+    pen.stroke();
+    pen.fillStyle = shade(wood, -0.3);
+    pen.beginPath();
+    pen.arc(x + (c * 0.5), y + (c * 0.5), c * 0.19, 0, Math.PI * 2);
+    pen.fill();
+    pen.stroke();
+    pen.fillStyle = shade(wood, 0.12);
+    pen.beginPath();
+    pen.arc(x + (c * 0.5), y + (c * 0.5), c * 0.09, 0, Math.PI * 2);
+    pen.fill();
+  },
 
   forest: (tile) => {
     grass(tile, 0.1);
@@ -297,8 +372,36 @@ const DRAW = {
 
   fort: (tile) => {
     const { pen, x, y, c, tint } = tile;
-    grass(tile);
+    floor(tile);
     const line = shade(tint, -0.55);
+
+    // On a ship it is the helm: the wheel, with its spokes
+    if ( tile.aboard ) {
+      const [cx, cy, r] = [x + (c * 0.5), y + (c * 0.5), c * 0.27];
+      pen.strokeStyle = "rgba(0, 0, 0, .25)";
+      pen.lineWidth = Math.max(2, c * 0.09);
+      pen.beginPath();
+      pen.arc(cx + (c * 0.03), cy + (c * 0.05), r, 0, Math.PI * 2);
+      pen.stroke();
+      pen.lineCap = "round";
+      for ( const [color, width] of [[line, 0.1], ["#e6c36a", 0.055]] ) {
+        pen.strokeStyle = color;
+        pen.lineWidth = Math.max(1, c * width);
+        pen.beginPath();
+        pen.arc(cx, cy, r, 0, Math.PI * 2);
+        for ( let spoke = 0; spoke < 8; spoke++ ) {
+          const turn = (spoke * Math.PI) / 4;
+          pen.moveTo(cx, cy);
+          pen.lineTo(cx + (Math.cos(turn) * r * 1.34), cy + (Math.sin(turn) * r * 1.34));
+        }
+        pen.stroke();
+      }
+      pen.fillStyle = line;
+      pen.beginPath();
+      pen.arc(cx, cy, c * 0.07, 0, Math.PI * 2);
+      pen.fill();
+      return;
+    }
     pen.fillStyle = "rgba(0, 0, 0, .2)";
     pen.fillRect(x + (c * 0.24), y + (c * 0.8), c * 0.62, c * 0.07);
     pen.fillStyle = shade(tint, 0.12);
@@ -344,7 +447,7 @@ const DRAW = {
 
   cover: (tile) => {
     const { pen, x, y, c, tint } = tile;
-    grass(tile);
+    floor(tile);
     pen.fillStyle = "rgba(0, 0, 0, .2)";
     pen.fillRect(x + (c * 0.14), y + (c * 0.76), c * 0.76, c * 0.07);
     pen.fillStyle = shade(tint, 0.1);
@@ -407,7 +510,7 @@ const MARK = {
  * @param {Ground} here
  * @param {(Ground|null)[]} around      The tiles above, to the right of, below and to the left of it
  */
-function edges({ pen, x, y, c }, here, around) {
+function edges({ pen, x, y, c, tints, aboard }, here, around) {
   const [north, east, south, west] = around;
   const level = here.elevation || 0;
   if ( level > 0 ) {
@@ -430,6 +533,17 @@ function edges({ pen, x, y, c }, here, around) {
   if ( lower(west) ) {
     pen.fillStyle = "rgba(255, 255, 255, .3)";
     pen.fillRect(x, y, Math.max(1, c * 0.05), c);
+  }
+
+  // The side of a ship, a bridge or a jetty, dark against the water it stands in
+  if ( aboard || (here.terrain === "deck") ) {
+    const wet = (other) => !!other && WET.has(other.terrain);
+    const rail = Math.max(1, c * 0.09);
+    pen.fillStyle = shade(tints.deck ?? "#a56c3c", -0.52);
+    if ( wet(north) ) pen.fillRect(x, y, c, rail);
+    if ( wet(south) ) pen.fillRect(x, y + c - rail, c, rail);
+    if ( wet(west) ) pen.fillRect(x, y, rail, c);
+    if ( wet(east) ) pen.fillRect(x + c - rail, y, rail, c);
   }
 
   // The shore
@@ -506,7 +620,12 @@ export function drawGround(pen, { rows, columns, cell, tints, groundAt }) {
       if ( !here ) continue;
       drawn++;
       const tint = tints[here.terrain] ?? "#888888";
-      const tile = { pen, x: j * cell, y: i * cell, c: cell, tints, tint, luck: (count) => chance(i, j, count) };
+      const around = [known(i - 1, j), known(i, j + 1), known(i + 1, j), known(i, j - 1)];
+
+      // What stands among boards, with no ground beside it, stands on a ship
+      const aboard = SHIPBOARD.has(here.terrain) && around.some((other) => other?.terrain === "deck")
+        && around.every((other) => !other || (other.terrain === "deck") || WET.has(other.terrain) || SHIPBOARD.has(other.terrain));
+      const tile = { pen, x: j * cell, y: i * cell, c: cell, tints, tint, aboard, luck: (count) => chance(i, j, count) };
       pen.save();
       pen.beginPath();
       pen.rect(tile.x, tile.y, cell, cell);
@@ -516,7 +635,7 @@ export function drawGround(pen, { rows, columns, cell, tints, groundAt }) {
         ground(tile, tint);
         MARK[here.terrain]?.(tile);
       }
-      edges(tile, here, [known(i - 1, j), known(i, j + 1), known(i + 1, j), known(i, j - 1)]);
+      edges(tile, here, around);
       pen.restore();
     }
   }

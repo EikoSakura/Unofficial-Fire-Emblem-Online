@@ -1,5 +1,5 @@
 import { FEO } from "../config.mjs";
-import { nationAt, nationFacts, pathBetween } from "../rules/worldmap.mjs";
+import { isLand, nationAt, nationFacts, pathBetween } from "../rules/worldmap.mjs";
 import { lieTitle } from "./map-generator-context.mjs";
 import { glyphSvg } from "./world-map-draw.mjs";
 
@@ -33,6 +33,19 @@ export function nationTitle(nation, i18n) {
 }
 
 /**
+ * Whose the ground at a point is, in words: a nation by its full name, nobody's, or the sea.
+ * @param {Nation|null|undefined} nation      The nation that holds it, if one does
+ * @param {Land} land
+ * @param {{x: number, y: number}} point
+ * @param {Localizer} i18n
+ * @returns {string}
+ */
+export function holderTitle(nation, land, point, i18n) {
+  if ( nation ) return nationTitle(nation, i18n);
+  return i18n.localize(`FEO.WorldMap.${isLand(land, point.x, point.y) ? "unclaimed" : "sea"}`);
+}
+
+/**
  * Puts a made-up name into words, for the maker of a map (see `makeWorld` in rules/worldmap.mjs).
  * @param {Localizer} i18n
  * @returns {(key: string, name: string) => string}
@@ -59,7 +72,8 @@ export function phraser(i18n) {
  * @param {(place: Place) => {name: string, objectives: Record<string, boolean>}|null} [known.encounterOf]
  * @param {(place: Place) => boolean} [known.fieldOf]     Has a battlefield been made of a place, which is still kept?
  * @param {{x: number, y: number, lie: import("../rules/mapgen-land.mjs").Lie|null}|null} [known.ground]
- *   The point of bare ground a Game Master picked out to make a battlefield of, and the lie of the land there
+ *   The point of bare ground or of open sea a Game Master picked out to make a battlefield of, and the lie of
+ *   the land there
  * @param {Localizer} i18n
  * @returns {object}
  */
@@ -76,13 +90,13 @@ export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0,
     plate: null,
     splash: arrived ? buildArrival({ map, land, claims, isGM, encounterOf }, i18n) : null
   };
-  // Bare ground a Game Master picked out, to make a battlefield of
+  // Bare ground or open sea a Game Master picked out, to make a battlefield of
   if ( isGM && ground ) {
     const holder = map.nations.find((other) => other.id === nationAt(land, claims, ground.x, ground.y));
     context.plate = {
       id: "",
       name: ground.lie ? lieTitle(ground.lie, i18n) : i18n.localize("FEO.MapGen.lie.open"),
-      over: holder ? nationTitle(holder, i18n) : loc("unclaimed"),
+      over: holderTitle(holder, land, ground, i18n),
       color: colorOf(holder),
       glyph: glyphSvg("ground"),
       chips: [],
@@ -135,7 +149,7 @@ export function buildWorldMap({ map, land, claims, selected = "", spotlight = 0,
   context.plate = {
     id: place.id,
     name: place.name || loc(`kind.${place.kind}`),
-    over: `${loc(`kind.${place.kind}`)} · ${nation ? nationTitle(nation, i18n) : loc("unclaimed")}`,
+    over: `${loc(`kind.${place.kind}`)} · ${holderTitle(nation, land, place, i18n)}`,
     color: colorOf(nation),
     glyph: glyphSvg(home ? "base" : place.kind),
     chips,
@@ -169,7 +183,7 @@ export function buildArrival({ map, land, claims, isGM, encounterOf = () => null
   const tone = place.battle ? "battle" : home ? "home" : "plain";
   const nation = map.nations.find((other) => other.id === nationAt(land, claims, place.x, place.y));
   const encounter = place.battle ? encounterOf(place) : null;
-  const where = `${loc(`kind.${place.kind}`)} · ${nation ? nationTitle(nation, i18n) : loc("unclaimed")}`;
+  const where = `${loc(`kind.${place.kind}`)} · ${holderTitle(nation, land, place, i18n)}`;
 
   const actions = [];
   if ( place.battle ) {
@@ -272,7 +286,7 @@ export function buildCreator({ draft, land, claims, count, tool, nation, brush, 
         id: place.id,
         name: place.name,
         kinds: kinds(place.kind),
-        nation: holder ? nationTitle(holder, i18n) : loc("unclaimed"),
+        nation: holderTitle(holder, land, place, i18n),
         color: holder ? colorOf(holder) : "",
         base: place.id === draft.base,
         market: place.market,

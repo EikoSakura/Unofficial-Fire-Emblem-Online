@@ -3,7 +3,7 @@ import { readEncounters } from "../helpers/encounters.mjs";
 import { claimsOf, landOf, readWorldMap, writeWorldMap } from "../helpers/worldmap.mjs";
 import { newSeed } from "../rules/mapgen.mjs";
 import {
-  cleanWorldMap, isLand, joinPlaces, madeName, makeWorld, nationFacts, packClaims, paintClaims, placeName, removePlace,
+  cleanWorldMap, joinPlaces, kindAt, madeName, makeWorld, nationFacts, packClaims, paintClaims, placeName, removePlace,
   routeKind, stopsFrom, toggleRoute
 } from "../rules/worldmap.mjs";
 import { buildCreator, phraser } from "./world-map-context.mjs";
@@ -19,7 +19,7 @@ const TEMPLATES = `systems/${FEO.id}/templates/worldmap`;
  * A land is made from a shape, a number of nations, how settled it is and a seed, and rerolled until it suits,
  * or a picture of the Game Master's own is used in its place. After that the ground of each nation is painted
  * with a brush, nations and places are named, places are added, moved and taken away, and routes are drawn
- * between them.
+ * between them. A place may stand anywhere, on land or at sea.
  *
  * Nothing is kept until the map is saved: the window works on a draft of its own. The land and what is laid
  * over it are made by `rules/worldmap.mjs`, what the tools show is worked out by `world-map-context.mjs`, and
@@ -450,7 +450,7 @@ export default class WorldMapCreator extends HandlebarsApplicationMixin(Applicat
 
   /**
    * The map was clicked where no place is: with the places tool a place is added there, unless one was being
-   * edited, which is put down instead.
+   * edited, which is put down instead. On land it is of the kind that is picked, and at sea it is waters.
    * @param {{x: number, y: number}} point
    */
   #onGround(point) {
@@ -458,11 +458,12 @@ export default class WorldMapCreator extends HandlebarsApplicationMixin(Applicat
     if ( this.#tool === "routes" ) this.#linking = "";
     else if ( this.#tool !== "places" ) return;
     else if ( this.#selected ) this.#selected = "";
-    else if ( isLand(this.#land, point.x, point.y) ) {
+    else {
+      const kind = kindAt(this.#land, point.x, point.y, this.#kind);
       const place = {
-        id: foundry.utils.randomID(8), x: Math.round(point.x), y: Math.round(point.y), kind: this.#kind,
-        name: placeName(Math.random, this.#kind, phraser(game.i18n)), seen: true, visited: false, battle: false, encounter: "",
-        market: FEO.worldMap.market.includes(this.#kind)
+        id: foundry.utils.randomID(8), x: Math.round(point.x), y: Math.round(point.y), kind,
+        name: placeName(Math.random, kind, phraser(game.i18n)), seen: true, visited: false, battle: false, encounter: "",
+        market: FEO.worldMap.market.includes(kind)
       };
       draft.places.push(place);
       if ( !draft.base ) draft.base = draft.party = place.id;
@@ -498,15 +499,15 @@ export default class WorldMapCreator extends HandlebarsApplicationMixin(Applicat
   /* -------------------------------------------- */
 
   /**
-   * A place is being dragged: it follows the pointer over land.
+   * A place is being dragged: it follows the pointer over land and sea, and stays on the map.
    * @param {string} id
    * @param {{x: number, y: number}} point
    */
   #onDrag(id, point) {
     const place = this.#draft.places.find((other) => other.id === id);
-    if ( !place || !isLand(this.#land, point.x, point.y) ) return;
-    place.x = Math.round(point.x);
-    place.y = Math.round(point.y);
+    if ( !place ) return;
+    place.x = Math.min(Math.max(Math.round(point.x), 0), FEO.worldMap.width - 1);
+    place.y = Math.min(Math.max(Math.round(point.y), 0), FEO.worldMap.height - 1);
     this.#selected = id;
     this.#unsaved = true;
     this.#draw();

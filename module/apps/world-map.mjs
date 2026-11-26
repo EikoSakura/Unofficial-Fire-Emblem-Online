@@ -22,8 +22,8 @@ const TEMPLATES = `systems/${FEO.id}/templates/worldmap`;
  * the map, with what may be done there at once.
  *
  * A Game Master can have a battle map made of a place, in the Map Generator. While that is open and making its
- * map from the World Map, it follows what is picked here, a click on bare ground picks that ground out, and the
- * frame of ground the battle map is made from is drawn on the map.
+ * map from the World Map, it follows what is picked here, a click on bare ground or on open sea picks that out,
+ * and the frame of ground the battle map is made from is drawn on the map.
  *
  * The map is shown in a window, or as the travel view: over the whole screen with no frame, under Foundry's own
  * interface as a scene would be. Each user's choice of the two is remembered.
@@ -148,7 +148,7 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
   /** The place that is picked out. */
   #selected = "";
 
-  /** The point of bare ground a Game Master picked out to make a battlefield of. @type {{x: number, y: number}|null} */
+  /** The point of bare ground or open sea a Game Master picked out to make a battlefield of. @type {{x: number, y: number}|null} */
   #ground = null;
 
   /** The nation that is picked out, 0 for none. */
@@ -333,14 +333,12 @@ export default class WorldMap extends HandlebarsApplicationMixin(ApplicationV2) 
 
   /**
    * The map was clicked where no place is. A Map Generator that follows the World Map makes its map of the
-   * ground there, which is picked out; otherwise nothing is picked out any more.
+   * ground or the sea there, which is picked out; otherwise nothing is picked out any more.
    * @param {{x: number, y: number}} point
    */
   #pickGround(point) {
     if ( this.#marching ) return;
-    const followed = game.user.isGM ? MapGenerator.follow(point) : null;
-    if ( followed === null ) return this.#pick("");
-    if ( !followed ) return this.#say(game.i18n.localize("FEO.WorldMap.openSea"));
+    if ( !game.user.isGM || !MapGenerator.follow(point) ) return this.#pick("");
     this.#selected = "";
     this.#ground = { x: point.x, y: point.y };
     this.render({ parts: ["plate"] });

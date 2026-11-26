@@ -2,18 +2,18 @@ import { FEO } from "../config.mjs";
 import { createMapScene, keepWithPlace } from "../helpers/mapgen.mjs";
 import { claimsOf, landOf, readWorldMap } from "../helpers/worldmap.mjs";
 import { MAP_SIZES, generateMap, mapSize, newSeed, seededRandom } from "../rules/mapgen.mjs";
-import { MOST_SEA, generateFromLand, lieAt } from "../rules/mapgen-land.mjs";
+import { generateFromLand } from "../rules/mapgen-land.mjs";
 import { nationAt, pathBetween, stopsFrom } from "../rules/worldmap.mjs";
 import { CUSTOM_SIZE, buildMapGenerator, mapName } from "./map-generator-context.mjs";
 import { drawLens, drawMapPreview } from "./map-preview.mjs";
-import { nationTitle } from "./world-map-context.mjs";
+import { holderTitle } from "./world-map-context.mjs";
 import { paintGround, paintMarks } from "./world-map-draw.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 /**
  * @typedef Pick
- * What a map from the World Map is made of: a place of it, or a point of its ground.
+ * What a map from the World Map is made of: a place of it, or a point of its ground or its sea.
  * @property {string} [place]     The id of the place
  * @property {number} [x]         The point, where it is no place
  * @property {number} [y]
@@ -23,7 +23,8 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
  * The map generator: a window in which a Game Master makes a battle map, looks at it, rerolls it until it
  * suits, and has a scene made of it. A map is made from a kind of battlefield, or from the ground round a place
  * or a point of the World Map (see rules/mapgen-land.mjs): then the generator follows whatever is picked on the
- * World Map for as long as it is open, and the World Map shows the frame of ground the map is made from.
+ * World Map for as long as it is open, and the World Map shows the frame of ground the map is made from. Out at
+ * sea that is a map of water, with ships to fight on.
  *
  * Nothing is written until the scene is asked for. The map on show is made again from what is chosen each
  * time the window is drawn, which costs next to nothing; the scene is made by `helpers/mapgen.mjs`, and what
@@ -191,13 +192,11 @@ export default class MapGenerator extends HandlebarsApplicationMixin(Application
    * A place or a point was picked on the World Map: a generator that is open and making its map from the World
    * Map makes it of that.
    * @param {Pick} pick
-   * @returns {boolean|null}    Does it follow? False for a point with nothing but sea round it, and null if the
-   *                            generator is not following the World Map
+   * @returns {boolean}         Does it follow? Not if the generator is not following the World Map
    */
   static follow(pick) {
     const app = MapGenerator.#instance;
-    if ( !app?.rendered || (app.#source !== "world") || !app.#world ) return null;
-    if ( !pick.place && (lieAt(app.#world.land, pick, app.#tiles).sea > MOST_SEA) ) return false;
+    if ( !app?.rendered || (app.#source !== "world") || !app.#world ) return false;
     app.#take(pick);
     app.render();
     return true;
@@ -295,7 +294,7 @@ export default class MapGenerator extends HandlebarsApplicationMixin(Application
     const nation = map.nations.find((other) => other.id === nationAt(land, claims, point.x, point.y));
     return buildMapGenerator({
       source: "world", type: this.#type, size: this.#size, name: this.#name, map: this.#map, laid: this.#laid,
-      world: { made: true, place, nation: nation ? nationTitle(nation, game.i18n) : "" }
+      world: { made: true, place, nation: holderTitle(nation, land, point, game.i18n) }
     }, game.i18n);
   }
 

@@ -2257,6 +2257,9 @@ FEO.optionalAwaited = ["dismounting"];
  *   rules/sight.mjs).
  * `elevation` is what a ranged attack gains against a unit on lower ground and loses against one on higher
  * ground. `flying` is the Special Quality whose units ignore terrain, except for healing.
+ *
+ * `deck` is no row of the table either: it is the Plain of a map on the water, the boards of a ship, a bridge
+ * or a jetty, and does all that Plain does.
  */
 FEO.terrain = {
   types: {
@@ -2272,6 +2275,7 @@ FEO.terrain = {
     house: { label: "FEO.Terrain.house", icon: "house", dodge: 10, cost: 1, note: "FEO.Terrain.note.house" },
     river: { label: "FEO.Terrain.river", icon: "wave", dodge: 10, cost: 2 },
     water: { label: "FEO.Terrain.water", icon: "wave", dodge: 10, cost: 2, needs: ["Privateer", "Sailor"] },
+    deck: { label: "FEO.Terrain.deck", icon: "plank", cost: 1 },
     desert: {
       label: "FEO.Terrain.desert", icon: "sun", dodge: 5, cost: 2,
       slow: { qualities: ["Armored", "Mounted"], cost: 3 },
@@ -2291,8 +2295,8 @@ FEO.terrain = {
   // surveyed
   tints: {
     plain: "#a9c27a", forest: "#2f8a46", thicket: "#1f5f3c", hill: "#b08a4a", mountain: "#8c6f5a", cliff: "#6e5a52",
-    fort: "#9aa3b5", house: "#c97b4a", river: "#4aa3d8", water: "#2f6fc0", desert: "#e0c074", healhedge: "#6fd08a",
-    wardwood: "#7a5fc0", cover: "#a8a08a", wall: "#4b4f5c"
+    fort: "#9aa3b5", house: "#c97b4a", river: "#4aa3d8", water: "#2f6fc0", deck: "#a56c3c", desert: "#e0c074",
+    healhedge: "#6fd08a", wardwood: "#7a5fc0", cover: "#a8a08a", wall: "#4b4f5c"
   }
 };
 
@@ -2424,7 +2428,8 @@ FEO.levelSync = { min: 1, max: 10, most: 99 };
  * keeps to its shape, and `land` the share of the map that is land. `density` is how settled the land is: places
  * keep `apart` from one another, and there are `most` of them at most. A map has from `nations.least` to
  * `nations.most` nations, each with one of the `colors`, in order, and one of the `styles`. `kinds` are the
- * kinds of place, of which those in `market` have a market on a new map. On a new map the players are shown the
+ * kinds of place, of which those in `market` have a market on a new map; `waters` is the kind that lies at
+ * sea, where a battle is fought on ships. On a new map the players are shown the
  * places within `known` routes of the Base. `brushes` are the widths the ground of a nation is painted at.
  * `zoom` is how closely the map can be looked at, and `speed` how far the company marches in a second.
  * `travel` is the client setting that remembers whether a user has the map over the whole screen, and `splash`
@@ -2453,7 +2458,7 @@ FEO.worldMap = {
     [184, 83, 127]
   ],
   styles: ["kingdom", "empire", "holy", "duchy", "cities", "league", "principality", "theocracy"],
-  kinds: ["capital", "fort", "town", "village", "port", "ruins"],
+  kinds: ["capital", "fort", "town", "village", "port", "ruins", "waters"],
   market: ["capital", "town", "port"],
   known: 3,
   brushes: { fine: 14, medium: 26, broad: 48 },

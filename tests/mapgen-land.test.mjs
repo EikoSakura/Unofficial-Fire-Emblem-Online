@@ -7,8 +7,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { MAP_SOURCES, buildMapGenerator, exitTags, lieChips, lieTitle, mapName } from "../module/apps/map-generator-context.mjs";
 import { FEO } from "../module/config.mjs";
-import { MAP_SIZES, generateMap, mapPaint, walkable, walksTo } from "../module/rules/mapgen.mjs";
-import { MOST_SEA, WINDS, generateFromLand, lensOf, lieAt, lieOf, surveyLens } from "../module/rules/mapgen-land.mjs";
+import { MAP_SIZES, MAP_TYPES, generateMap, grid, layShips, mapPaint, seededRandom, walkable, walksTo } from "../module/rules/mapgen.mjs";
+import { WINDS, generateFromLand, lensOf, lieAt, lieOf, surveyLens } from "../module/rules/mapgen-land.mjs";
 import { makeLand, makeWorld, neighbours, pathBetween, pictureLand, stopsFrom } from "../module/rules/worldmap.mjs";
 
 const { width: W, height: H } = FEO.worldMap;
@@ -87,8 +87,8 @@ test("the sea lies on the map where the World Map shows it", () => {
       if ( read.sea[i][j] >= 0.5 ) {
         wet++;
 
-        // But for a jetty, a causeway, or where a way had to be made
-        assert.ok(["water", "plain"].includes(map.tiles[i][j]), `sea at ${i},${j} is ${map.tiles[i][j]}`);
+        // But for the boards of a jetty, of a bridge, or of a way that had to be made
+        assert.ok(["water", "deck"].includes(map.tiles[i][j]), `sea at ${i},${j} is ${map.tiles[i][j]}`);
       }
       else assert.notEqual(map.tiles[i][j], "water", `land at ${i},${j} is water`);
     }
@@ -211,10 +211,154 @@ test("bare ground gives a map with nothing built at its heart, that leads to the
   assert.ok(count(map, "house") <= 1);
   assert.ok(count(map, "cliff") + count(map, "cover") < 40);
   assert.ok(map.tracks.length >= 1);
+  assert.equal(map.afloat, false);
+  assert.equal(count(map, "deck"), 0);
+});
 
-  // The open sea is nothing to fight over
-  assert.ok(lieAt(land, { x: 4, y: 4 }, medium).sea > MOST_SEA);
-  assert.ok(lieAt(land, first("capital"), medium).sea <= MOST_SEA);
+/* -------------------------------------------- */
+/*  At sea                                      */
+/* -------------------------------------------- */
+
+/** A place of a kind at a point, as the Creator would put it down. */
+const placed = (kind, point) => ({ id: "sea1", kind, name: "Aldmere Strait", ...point });
+
+/** A point of open sea: the corner of the map, which every made land leaves to the water. */
+const offshore = { x: 40, y: 40 };
+
+/** Is every tile of a ship one a unit can be on, or a mast? */
+const shipshape = (map, ship) => ship.tiles.every(({ i, j }) => ["deck", "cover", "fort", "wall"].includes(map.tiles[i][j]));
+
+test("two ships are built of terrain, with planks from one deck to the other", () => {
+  for ( const { columns, rows } of [...Object.values(MAP_SIZES), { columns: 10, rows: 10 }, { columns: 14, rows: 30 }, { columns: 60, rows: 11 }] ) {
+    for ( const seed of ["A", "B", "C", "D"] ) {
+      const draft = { rows, columns, random: seededRandom(seed), tiles: grid(rows, columns, () => "forest"), heights: grid(rows, columns, () => 1) };
+      const [own, foe] = layShips(draft);
+      const where = `${columns} × ${rows}, ${seed}`;
+      const kinds = new Set(draft.tiles.flat());
+      assert.deepEqual([...kinds].sort(), ["cover", "deck", "forest", "fort", "wall", "water"], `${where}: a ship is deck, crates, masts and a helm`);
+      for ( const ship of [own, foe] ) {
+        assert.ok(shipshape(draft, ship), `${where}: a ship is all of a piece`);
+        assert.ok(ship.tiles.length >= 12, `${where}: a ship has room to fight on`);
+        assert.equal(draft.tiles[ship.helm.i][ship.helm.j], "fort", `${where}: the helm is a fort`);
+        assert.equal(draft.tiles[ship.deck.i][ship.deck.j], "deck");
+        assert.ok(ship.tiles.every(({ i, j }) => draft.heights[i][j] === 0));
+
+        // Water lies all round a hull but where a plank lands
+        for ( const { i, j } of ship.tiles ) {
+          for ( const [di, dj] of [[0, 1], [1, 0], [0, -1], [-1, 0]] ) {
+            assert.ok((i + di >= 0) && (j + dj >= 0) && (i + di < rows) && (j + dj < columns), `${where}: a ship lies off the edge`);
+            assert.notEqual(draft.tiles[i + di][j + dj], "forest", `${where}: a ship lies against the land`);
+          }
+        }
+      }
+      assert.ok(!own.tiles.some((mine) => foe.tiles.some((theirs) => (mine.i === theirs.i) && (mine.j === theirs.j))));
+      assert.ok(walksTo(draft, own.deck, foe.helm), `${where}: there is no way across the planks`);
+      assert.ok(walksTo(draft, own.helm, foe.deck));
+    }
+  }
+
+  // The company's ship is the lower of the two, or the upper if that is asked for
+  const draft = (seed) => ({ rows: 16, columns: 24, random: seededRandom(seed), tiles: grid(16, 24, () => "water"), heights: grid(16, 24, () => 0) });
+  const below = layShips(draft("A"));
+  const above = layShips(draft("A"), { before: true });
+  assert.ok(below[0].deck.i > below[1].deck.i);
+  assert.ok(above[0].deck.i < above[1].deck.i);
+
+  // And they lie about the tile they are told to
+  const east = layShips(draft("A"), { heart: { i: 8, j: 22 } });
+  assert.ok(Math.max(...east[0].tiles.map((tile) => tile.j)) === 22);
+});
+
+test("ships at sea are a kind of battlefield, fought from one deck to the other helm", () => {
+  assert.ok("ships" in MAP_TYPES);
+  for ( const size of Object.values(MAP_SIZES) ) {
+    const map = generateMap({ type: "ships", ...size, seed: "T1" });
+    assert.deepEqual(generateMap({ type: "ships", ...size, seed: "T1" }), map);
+    assert.ok(count(map, "water") > (map.rows * map.columns) * 0.5);
+    assert.ok(count(map, "deck") >= 30);
+    assert.equal(count(map, "plain"), 0, "nothing had to be cleared");
+    assert.equal(map.tiles[map.ends.from.i][map.ends.from.j], "deck");
+    assert.equal(map.tiles[map.ends.to.i][map.ends.to.j], "fort");
+    assert.ok(walksTo(map, map.ends.from, map.ends.to));
+  }
+
+  // Elsewhere the boards are those of a bridge
+  const river = generateMap({ type: "river", ...medium, seed: "T1" });
+  assert.ok(count(river, "deck") >= 2);
+});
+
+test("open sea picked out on the World Map gives a map of water with two ships", () => {
+  assert.ok(lieAt(land, offshore, medium).sea > 0.99);
+  for ( const size of Object.values(MAP_SIZES) ) {
+    const map = generateFromLand({ land, world, point: offshore, ...size, seed: "T1", rank: stopsFrom(world, world.party) });
+    assert.equal(map.afloat, true);
+    assert.equal(count(map, "plain") + count(map, "house"), 0);
+    assert.ok(count(map, "deck") >= 30);
+    assert.equal(count(map, "fort"), 2, "each ship has its helm");
+    assert.equal(map.tiles[map.ends.from.i][map.ends.from.j], "deck");
+    assert.equal(map.tiles[map.ends.to.i][map.ends.to.j], "fort");
+    assert.ok(walksTo(map, map.ends.from, map.ends.to));
+    assert.equal(lieTitle(map.lie, i18n), "MapGen.lie.sea");
+    assert.ok(lieChips(map, i18n).some((chip) => chip.label === "MapGen.chip.ships"));
+  }
+
+  // Ground by the shore is still ground, and the sea off it is fought on ships with the shore in sight
+  const port = first("port");
+  const read = surveyLens(land, lensOf(land, port, medium));
+  let wet = null;
+  for ( let i = 3; (i < 13) && !wet; i++ ) for ( let j = 3; (j < 21) && !wet; j++ ) if ( read.sea[i][j] >= 0.5 ) wet = { i, j };
+  assert.ok(wet, "the sea comes near a port");
+  const lens = lensOf(land, port, medium);
+  const off = { x: lens.x0 + (wet.j * lens.scale) + 1, y: lens.y0 + (wet.i * lens.scale) + 1 };
+  const coast = generateFromLand({ land, world, point: off, ...medium, seed: "T1", rank: stopsFrom(world, world.party) });
+  assert.equal(coast.afloat, true);
+  assert.ok(walksTo(coast, coast.ends.from, coast.ends.to));
+  assert.ok(coast.lie.sea < 1, "the land is still on the map");
+});
+
+test("waters are fought over on ships, wherever the World Map has them", () => {
+  const waters = placed("waters", offshore);
+  const of = { ...world, places: [...world.places, waters] };
+  const map = fieldOf(waters, { of });
+  assert.equal(map.afloat, true);
+  assert.deepEqual(fieldOf(waters, { of }), map);
+  assert.ok(walksTo(map, map.ends.from, map.ends.to));
+  assert.equal(mapName(map, i18n, waters), "Aldmere Strait");
+
+  // A sea lane that leads there is no road, and nothing is cleared for it
+  const port = first("port");
+  const joined = { ...of, routes: [...of.routes, { a: port.id, b: waters.id, kind: "road", bend: 0 }] };
+  const lane = fieldOf(waters, { of: joined });
+  assert.equal(lane.exits.length, 1);
+  assert.equal(count(lane, "plain"), 0);
+  assert.ok(walksTo(lane, lane.ends.from, lane.ends.to));
+
+  // On land, and on a picture, which knows of no sea, waters are open water all the same
+  const town = first("town");
+  for ( const on of [land, pictureLand("maps/own.webp", new Uint8ClampedArray(W * H * 4))] ) {
+    const inland = fieldOf(placed("waters", { x: town.x, y: town.y }), { of, on });
+    assert.equal(inland.afloat, true);
+    assert.equal(inland.lie.sea, 1);
+    assert.equal(count(inland, "water") + count(inland, "deck") + count(inland, "cover") + count(inland, "fort") + count(inland, "wall"), inland.rows * inland.columns);
+    assert.ok(walksTo(inland, inland.ends.from, inland.ends.to));
+  }
+});
+
+test("any other place out at sea stands on an island of its own", () => {
+  for ( const kind of ["capital", "fort", "town", "village", "port", "ruins"] ) {
+    for ( const size of Object.values(MAP_SIZES) ) {
+      const place = placed(kind, offshore);
+      const map = fieldOf(place, { size, of: { ...world, places: [...world.places, place] } });
+      const where = `a ${kind} at sea (${size.columns} × ${size.rows})`;
+      assert.equal(map.afloat, false, where);
+      assert.ok(map.lie.sea < 0.97, `${where} has land under it`);
+      assert.ok(count(map, "water") > 0, `${where} has the sea round it`);
+      assert.ok(walkable(map.tiles[map.ends.to.i][map.ends.to.j]));
+      assert.ok(walksTo(map, map.ends.from, map.ends.to), `${where}: there is no way across`);
+      if ( ["village", "port"].includes(kind) ) assert.ok(count(map, "house") >= 3, `${where} has its houses`);
+      if ( kind === "fort" ) assert.ok(count(map, "cliff") >= 12, `${where} has its walls`);
+    }
+  }
 });
 
 test("a world drawn over a picture gives open country, with the place and its roads", () => {
@@ -255,6 +399,7 @@ test("the lie of the land is told in a word, and in chips", () => {
   assert.equal(lieTitle({ ...lie, wood: 0.5, arid: 0.6 }, i18n), "MapGen.lie.desert");
   assert.equal(lieTitle({ ...lie, arid: 0.6, sea: 0.2 }, i18n), "MapGen.lie.coast");
   assert.equal(lieTitle({ ...lie, sea: 0.2, peaks: 0.2 }, i18n), "MapGen.lie.mountains");
+  assert.equal(lieTitle({ ...lie, sea: 0.9, peaks: 0.2 }, i18n), "MapGen.lie.sea");
 
   const track = (sea) => ({ a: [0, 0], c: [1, 1], b: [2, 2], sea });
   const labels = (map) => lieChips(map, i18n).map((chip) => chip.label);

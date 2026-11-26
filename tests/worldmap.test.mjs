@@ -5,12 +5,12 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildArrival, buildCreator, buildWorldMap, nationTitle } from "../module/apps/world-map-context.mjs";
-import { overlayMarkup } from "../module/apps/world-map-draw.mjs";
+import { buildArrival, buildCreator, buildWorldMap, holderTitle, nationTitle } from "../module/apps/world-map-context.mjs";
+import { PLACE_GLYPHS, overlayMarkup } from "../module/apps/world-map-draw.mjs";
 import { FEO } from "../module/config.mjs";
 import { seededRandom } from "../module/rules/mapgen.mjs";
 import {
-  alongRoute, arriveAt, cleanWorldMap, isLand, joinPlaces, madeName, makeLand, makeWorld, nationAt, nationFacts,
+  alongRoute, arriveAt, cleanWorldMap, isLand, joinPlaces, kindAt, madeName, makeLand, makeWorld, nationAt, nationFacts,
   neighbours, packClaims, paintClaims, pathBetween, pictureLand, placeName, removePlace, routeKind, stopsFrom, toggleRoute,
   unpackClaims
 } from "../module/rules/worldmap.mjs";
@@ -275,6 +275,51 @@ const i18n = {
   localize: (key) => key.replace(/^FEO\./, ""),
   format: (key, data) => `${key.replace(/^FEO\./, "")}(${Object.values(data).join(",")})`
 };
+
+test("a place may lie at sea, where it is waters", () => {
+  const capital = world.places[0];
+  assert.ok(FEO.worldMap.kinds.includes("waters"));
+  assert.ok(!isLand(land, 40, 40));
+  assert.equal(kindAt(land, 40, 40, "town"), "waters", "at sea a new place is waters whatever was picked");
+  assert.equal(kindAt(land, capital.x, capital.y, "town"), "town");
+  assert.equal(kindAt(land, capital.x, capital.y, "waters"), "waters", "waters can be put on land by picking them");
+  assert.equal(kindAt(pictureLand("maps/own.webp", new Uint8ClampedArray(W * H * 4)), 40, 40, "town"), "town", "a picture is land all over");
+  const named = placeName(seededRandom("w"), "waters", (key, name) => `${key}:${name}`);
+  assert.match(named, /^waters\.[01]:[A-Z][a-z]+$/);
+  assert.ok(PLACE_GLYPHS.waters);
+
+  // It is kept as any other place is, joined to the shore by a sea lane, and can be marched to
+  const draft = kept();
+  draft.places.push({ id: "sea1", x: 40, y: 40, kind: "waters", name: "Aldmere Strait", seen: true });
+  const port = draft.places.find((place) => place.kind === "port");
+  assert.equal(toggleRoute(land, draft, port.id, "sea1", () => 0.5), true);
+  const map = cleanWorldMap(draft);
+  const waters = map.places.find((place) => place.id === "sea1");
+  assert.deepEqual([waters.kind, waters.x, waters.y], ["waters", 40, 40]);
+  assert.equal(map.routes.at(-1).kind, "sea");
+  assert.ok(pathBetween(map, map.party, "sea1"));
+  arriveAt(map, "sea1");
+  assert.equal(map.party, "sea1");
+
+  // It is nobody's, and is said to lie in the sea
+  const claims = unpackClaims(map.claims, W * H);
+  assert.equal(nationAt(land, claims, 40, 40), 0);
+  assert.equal(holderTitle(null, land, waters, i18n), "WorldMap.sea");
+  assert.equal(holderTitle(null, land, { x: 0, y: 0 }, i18n), "WorldMap.sea");
+  assert.equal(holderTitle(map.nations[0], land, waters, i18n), nationTitle(map.nations[0], i18n));
+  const plate = buildWorldMap({ map, land, claims, isGM: true }, i18n).plate;
+  assert.equal(plate.over, "WorldMap.kind.waters · WorldMap.sea");
+  assert.equal(buildArrival({ map, land, claims, isGM: true }, i18n).under, "WorldMap.kind.waters · WorldMap.sea");
+  const editing = buildCreator({ draft: map, land, claims, count: 5, nation: 0, brush: "medium", kind: "town", tool: "places", selected: "sea1" }, i18n).place;
+  assert.equal(editing.nation, "WorldMap.sea");
+  assert.equal(editing.kinds.find((kind) => kind.on).key, "waters");
+  assert.equal(editing.kinds.length, FEO.worldMap.kinds.length);
+
+  // Open sea a Game Master picked out is named for what it is
+  const lie = { sea: 1, seaSide: "around", wood: 0, hills: 0, peaks: 0, arid: 0, frost: 0 };
+  const bare = buildWorldMap({ map, land, claims, isGM: true, ground: { x: 60, y: 50, lie } }, i18n).plate;
+  assert.deepEqual([bare.name, bare.over], ["MapGen.lie.sea", "WorldMap.sea"]);
+});
 
 test("the plate tells of the place picked out, and offers what the reader may do there", () => {
   const map = kept();

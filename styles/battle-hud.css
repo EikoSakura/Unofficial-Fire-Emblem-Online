@@ -433,6 +433,7 @@
 .feo-mapgen .mg-foot span { margin-right: auto; font-size: 13px; color: var(--feo-muted); }
 .feo-mapgen .mg-foot .btn { flex: none; width: auto; cursor: pointer; }
 .feo-mapgen .mg-type[disabled] { opacity: .45; cursor: default; }
+.feo-mapgen .mg-type:last-child:nth-child(odd) { grid-column: 1 / -1; }
 
 /* A map made from the World Map: the ground it was made from, and the roads that leave it named in its margin */
 .feo-mapgen .mg-from { display: grid; gap: 8px; min-width: 0; padding: 8px; border-radius: 8px; border: 1px solid var(--feo-line); background: var(--feo-panel); }
