@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.0
+
+- Starting CON by proficiency: a class whose CON the Class Sheet lists as "Varies" now gives a new unit the CON of its highest proficiency. A Mage or Magus starts with 5 for Light or Wind, 6 for Fire or Water and 7 for Thunder or Earth; the Cavalier, Lord, Ritter, Knecht, Tactician and Witch go by their own tables. The Creator sets it on the Proficiencies step, where hovering a proficiency shows the CON it gives, and the NPC Builder starts from it. Units already made keep the CON they have: pick the class and its proficiencies again in the Creator, or set it by hand. A Magier's CON is still set by hand.
+- Temporary players on The Forge: a Game Master who joins a game as a temporary player is handed the character chosen on their own user as they come in, once a Game Master is in the game. Each Game Master picks their character once, in their own User Configuration.
+
 ## 0.10.0
 
 - Places at sea: the World Map has a new kind of place, Waters. In the Creator a click on the sea puts one down, and any place can be dragged out over the water. It is joined by sea lanes and marched to as any other place. On a map drawn over your own picture, pick Waters as the kind of the place.
