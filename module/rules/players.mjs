@@ -6,6 +6,11 @@
  * Player role that is not their own. It marks that user as temporary, and marks every user it knows the
  * account of with that account. A Game Master's character is chosen on their own user, so it is found from the
  * temporary one by the account the two share, and handed over.
+ *
+ * Only a Game Master's client can make someone the owner of a unit, and a Game Master who plays is not one for
+ * as long as they do. So a temporary player notes on themselves which user they are the rest of the time, and
+ * whichever Game Master is next in the game, they themselves once they are back, hands the character over. It
+ * is theirs already the next time they come in as a temporary player.
  */
 
 /** Where The Forge keeps what it knows of a user: its flags, of which these are read. */
@@ -17,6 +22,7 @@ export const FORGE_SCOPE = "forge-vtt";
  * @property {string} id
  * @property {boolean} [active]              Are they in the game now?
  * @property {string|null} [character]       The id of the Actor they chose as their character
+ * @property {string} [playsAs]              For a temporary player: the user they noted they are the rest of the time
  * @property {Record<string, object>} [flags]
  */
 
@@ -40,7 +46,21 @@ export function accountOf(user) {
 }
 
 /**
- * The user a temporary player is the rest of the time: the one of the same account that is not temporary.
+ * May a user be the one a temporary player is the rest of the time? It is a user of their own that is not
+ * temporary: where both are noted with an account, it is the same one.
+ * @param {UserLike|null} temp      The temporary player
+ * @param {UserLike|null} own       The other user
+ * @returns {boolean}
+ */
+export function mayPlayAs(temp, own) {
+  if ( !isTemporary(temp) || !own || isTemporary(own) || (own.id === temp.id) ) return false;
+  const [theirs, mine] = [accountOf(own), accountOf(temp)];
+  return !theirs || !mine || (theirs === mine);
+}
+
+/**
+ * The user a temporary player is the rest of the time: the one of the same account that is not temporary, or
+ * where no account tells, the one they noted on themselves.
  * @param {UserLike} temp           The temporary player
  * @param {UserLike[]} users        The users of the world
  * @param {string} [account]        The account their client is logged in with, where it is known; else the one
@@ -50,21 +70,21 @@ export function accountOf(user) {
 export function ownUserOf(temp, users, account = "") {
   if ( !isTemporary(temp) ) return null;
   const mine = String(account ?? "") || accountOf(temp);
-  if ( !mine ) return null;
-  return (users ?? []).find((user) => (user.id !== temp.id) && !isTemporary(user) && (accountOf(user) === mine)) ?? null;
+  const shared = mine ? (users ?? []).find((user) => (user.id !== temp.id) && !isTemporary(user) && (accountOf(user) === mine)) : null;
+  if ( shared ) return shared;
+  const noted = temp.playsAs ? (users ?? []).find((user) => user.id === temp.playsAs) : null;
+  return mayPlayAs(temp, noted) ? noted : null;
 }
 
 /**
  * May a temporary player be handed the character of another user? They may where that user is one of their
- * own: where both are noted with an account, it is the same one.
+ * own, and has chosen one.
  * @param {UserLike|null} temp      Who asks
  * @param {UserLike|null} own       Whose character they ask for
  * @returns {boolean}
  */
 export function mayTakeOver(temp, own) {
-  if ( !isTemporary(temp) || !own || isTemporary(own) || (own.id === temp.id) || !own.character ) return false;
-  const [theirs, mine] = [accountOf(own), accountOf(temp)];
-  return !theirs || !mine || (theirs === mine);
+  return mayPlayAs(temp, own) && !!own.character;
 }
 
 /**

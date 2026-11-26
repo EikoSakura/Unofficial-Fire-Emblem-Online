@@ -4371,7 +4371,10 @@
       }
     },
     "Players": {
-      "takenOver": "{name} is yours to play while you are here as a temporary player."
+      "takenOver": "{name} is yours to play while you are here as a temporary player.",
+      "waiting": "{name} is handed to you as soon as a Game Master is in the game. Next time it is yours as you come in.",
+      "noCharacter": "{user} has no character to hand you. Choose one in that user's User Configuration.",
+      "unknown": "The system cannot tell which user you are when you are not a temporary player, so no character was handed to you."
     },
     "Phase": {
       "label": "Phase",

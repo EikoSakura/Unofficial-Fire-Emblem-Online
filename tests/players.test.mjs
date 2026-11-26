@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { accountOf, handedOwnership, isTemporary, mayTakeOver, ownUserOf, playerAmong } from "../module/rules/players.mjs";
+import { accountOf, handedOwnership, isTemporary, mayPlayAs, mayTakeOver, ownUserOf, playerAmong } from "../module/rules/players.mjs";
 
 const OWNER = 3;
 const forge = (data) => ({ "forge-vtt": data });
@@ -41,6 +41,21 @@ test("the account a client is logged in with goes before the one noted on the te
   assert.equal(ownUserOf(unmarked, users), null);
   assert.equal(ownUserOf(unmarked, users, "acc-2")?.id, "gm2");
   assert.equal(ownUserOf(temp, users, "acc-2")?.id, "gm2");
+});
+
+test("where no account tells, a temporary player is the user they noted on themselves", () => {
+  const unmarked = { id: "tmp2", flags: forge({ temporary: true }) };
+  assert.equal(ownUserOf({ ...unmarked, playsAs: "gm2" }, users)?.id, "gm2");
+  assert.equal(ownUserOf({ ...unmarked, playsAs: "gone" }, users), null);
+  assert.equal(ownUserOf({ ...unmarked, playsAs: "tmp1" }, users), null, "not another temporary player");
+  // A note does not go against the accounts The Forge notes
+  assert.equal(ownUserOf({ ...temp, playsAs: "gm2" }, users)?.id, "gm1");
+  assert.equal(ownUserOf({ ...temp, playsAs: "gm2" }, [other, player, temp]), null);
+  // A user without a character is still who they are; there is nothing to hand over yet
+  const bare = { ...gm, character: null };
+  assert.equal(ownUserOf(temp, [bare, temp])?.id, "gm1");
+  assert.equal(mayPlayAs(temp, bare), true);
+  assert.equal(mayTakeOver(temp, bare), false);
 });
 
 test("a temporary player may take over the character of a user of their own account only", () => {
