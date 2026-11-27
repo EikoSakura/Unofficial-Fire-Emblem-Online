@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.0
+
+- Supports begin by themselves: two allies begin a support at E, on both their sheets, the first time they stand within 3 spaces of each other on the map or are fielded in the same battle. Nobody has to be dragged onto a sheet any more, though that still works. Only a token linked to its sheet begins supports, so the copies of a generic unit do not.
+- Supports on the sheet: the Bonds card is now Supports. In Play mode it shows only the partners within range, each with their token, a bar and their rank, under a line that gives what the unit gains from them right now; hovering a partner shows what that one gives. Every support stays saved, and comes back as its partner comes within range. The rail lists the supports in range in the same way.
+- Supports in Edit mode: every support is listed, one line each. Minus and plus move it a rank, A+ and S appear at A, the link marks a Bond Support, the cross ends the support and "Add someone" picks an ally by name. A change made by hand is made on the partner's sheet as well.
+- Whether a partner is in range is always read from the tokens on the map: the switch that set it by hand is gone, as are the typed name, Affinity and points. A support follows its partner's name, Affinity and picture, and a support that was typed in by hand is linked to its partner once the two are on a map together.
+- Heart Scale and Second Seal: the Items compendium has both, under Promotion. With the Heart Seals/Reclassing module on, a Heart Scale adds one more class to a unit's Heart Seal Classes, and a Second Seal reclasses it into the line of any class a unit can start in, which does not join its list. Each is used from the Growth tab of the sheet or by Using the item, as a Heart Seal now can be too.
+
 ## 0.12.0
 
 - Heart Seal: the Items compendium now has a Heart Seal, under Promotion, with 2 uses for 5,000 Gold. With the Heart Seals/Reclassing module on, a unit that carries one can reclass from its sheet. Until now only the Game Master could reclass a unit.
