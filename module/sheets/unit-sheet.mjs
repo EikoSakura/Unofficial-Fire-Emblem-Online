@@ -20,11 +20,13 @@ import {
   adjustLivesFor, buyPowerFor, refundPowerFor, rollCrest, rollMovementStars, sheetOptions
 } from "../helpers/optional.mjs";
 import {
-  heartSealOf, reclassUnit, sealCardsOf
+  heartScaleOf, heartSealOf, isSealItem, openSealTree, reclassUnit, sealCardsOf, secondSealOf, useSealItem
 } from "../helpers/reclass.mjs";
 import { toggleSealPicker } from "../helpers/seal-picker.mjs";
 import { adjustGauge, resetGauge, toggleShift } from "../helpers/shifting.mjs";
-import { awardEvent, grantPoints, linkBond, queueRangesFor, settleGains } from "../helpers/supports.mjs";
+import {
+  awardEvent, befriend, bondCandidates, chooseTop, endBond, openTopsOf, partnerOf, stepBond, toggleKin
+} from "../helpers/supports.mjs";
 import { endTurnOf, startTurnOf } from "../helpers/turns.mjs";
 import { useSkillMoment, waitFor } from "../helpers/skill-turns.mjs";
 import { packBar } from "../helpers/creatures.mjs";
@@ -54,7 +56,7 @@ import { buildChange } from "../rules/timed.mjs";
 
 import { blocksWeapon } from "../rules/conditions.mjs";
 import { gainWexp, wexpProficiencies } from "../rules/combat.mjs";
-import { cycleRange, startingRank } from "../rules/supports.mjs";
+import { topRanks } from "../rules/supports.mjs";
 import { removeTimed } from "../helpers/timed.mjs";
 import { skillCount } from "../helpers/timed-context.mjs";
 import { buildUnitContext } from "./unit-context.mjs";
@@ -64,6 +66,19 @@ const { DialogV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const { ActorSheetV2 } = foundry.applications.sheets;
 
 const TEMPLATES = `systems/${FEO.id}/templates/actor`;
+
+/**
+ * The picture a unit stands on the map as, for where it is shown as a small token: the picture of its token
+ * where that is one still picture, and its portrait otherwise.
+ * @param {Actor|null} actor
+ * @returns {string}    Blank where it has neither
+ */
+function tokenPicture(actor) {
+  const still = (path) => !!path && !/\.(webm|mp4|m4v|ogv)(\?|$)/i.test(path);
+  const token = actor?.prototypeToken;
+  const picture = token?.randomImg ? "" : token?.texture?.src;
+  return still(picture) ? picture : still(actor?.img) ? actor.img : "";
+}
 
 /**
  * The sheet for a Unit.
@@ -123,17 +138,19 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       adjustGauge: UnitSheet.#onAdjustGauge,
       adjustTransforms: UnitSheet.#onAdjustTransforms,
       toggleBoosted: UnitSheet.#onToggleBoosted,
-      autoBond: UnitSheet.#onAutoBond,
       attack: UnitSheet.#onAttack,
       rollCheck: UnitSheet.#onRollCheck,
       levelUp: UnitSheet.#onLevelUp,
       promote: UnitSheet.#onPromote,
       reclass: UnitSheet.#onReclass,
+      heartScale: UnitSheet.#onHeartScale,
       sealClasses: UnitSheet.#onSealClasses,
       addBond: UnitSheet.#onAddBond,
       deleteBond: UnitSheet.#onDeleteBond,
+      stepBond: UnitSheet.#onStepBond,
+      topBond: UnitSheet.#onTopBond,
+      kinBond: UnitSheet.#onKinBond,
       removeTimed: UnitSheet.#onRemoveTimed,
-      toggleBond: UnitSheet.#onToggleBond,
       adjustLives: UnitSheet.#onAdjustLives,
       rollOptional: UnitSheet.#onRollOptional,
       buyPower: UnitSheet.#onBuyPower,
@@ -321,15 +338,38 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       skill.count = item ? skillCount({ name: item.name, effects: item.system.effects }, system.skills?.counts, game.i18n) : null;
     }
 
+    // A support shows its partner as the token it stands on the map as, and at A the highest ranks open to it:
+    // those neither of the two holds with somebody else, for the taking once it has the points
+    for ( const bond of unit.bonds ?? [] ) {
+      const partner = partnerOf(bond);
+      bond.img = tokenPicture(partner);
+      if ( partner ) bond.name = partner.name;
+      const open = bond.atFork ? openTopsOf(actor, bond.index) : [];
+      bond.tops = bond.atFork ? topRanks().map((rank) => {
+        const usable = open.includes(rank) && (bond.ready || game.user.isGM);
+        return {
+          rank,
+          usable,
+          label: FEO.supportRanks[rank].label,
+          hint: usable ? "FEO.Bond.takeTop" : open.includes(rank) ? "FEO.Bond.topNotYet" : "FEO.Bond.topTaken"
+        };
+      }) : [];
+    }
+
     // Heart Seals: the classes the unit can reclass into the lines of, and whether it can do so now. A player
-    // spends the Heart Seal the unit carries; the Game Master needs none
+    // spends the Heart Seal the unit carries; the Game Master needs none. A Second Seal it carries opens every
+    // class to it, and a Heart Scale adds a class to its list
     // The closed line names the class in use: the one the unit's line starts in, or else the class it holds.
     // The others are in the menu it opens
     const heartSeals = FEO.optional.heartSeals.enabled ? {
       active: sealCardsOf(actor).find((entry) => entry.starting) ?? (cls ? { name: cls.name, img: cls.img } : null),
       canReclass: !!cls && (game.user.isGM || !!heartSealOf(actor)),
-      needsSeal: !!cls && !game.user.isGM && !heartSealOf(actor),
-      item: FEO.optional.heartSeals.item
+      canAny: !!cls && !!secondSealOf(actor),
+      canAdd: !!heartScaleOf(actor),
+      needsSeal: !!cls && !game.user.isGM && !heartSealOf(actor) && !secondSealOf(actor),
+      item: FEO.optional.heartSeals.item,
+      second: FEO.optional.heartSeals.second,
+      scale: FEO.optional.heartSeals.scale
     } : null;
 
     return Object.assign(context, unit, {
@@ -396,18 +436,6 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
       const by = selectedOther(this.actor);
       return afflictUnit(this.actor, statusId, { by: by?.actor ?? null, byToken: by?.token ?? null, down: true });
     });
-
-    // So is giving a bond the points of something its partners did together
-    for ( const menu of this.element.querySelectorAll("select[data-bond-points]") ) {
-      menu.addEventListener("change", async (event) => {
-        event.stopPropagation();
-        const amount = FEO.supports.events[event.currentTarget.value];
-        const index = Number(event.currentTarget.closest("[data-bond]").dataset.bond);
-        if ( !amount ) return;
-        const gains = await grantPoints(this.actor, [index], amount);
-        await settleGains(this.actor, gains, { reason: `FEO.Support.event.${event.currentTarget.value}`, all: true });
-      });
-    }
   }
 
   /* -------------------------------------------- */
@@ -434,27 +462,6 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const done = super.maximize();
     setWindowToggle(this.element, this.minimized);
     await done;
-  }
-
-  /* -------------------------------------------- */
-
-  /** @override */
-  _processFormData(event, form, formData) {
-    const data = super._processFormData(event, form, formData);
-
-    // Form fields for an array arrive keyed by index, and carry only the fields that have inputs
-    const bonds = data.system?.bonds;
-    if ( bonds ) {
-      const current = this.actor._source.system.bonds;
-      data.system.bonds = Object.values(bonds).map((bond, index) => {
-        const next = { ...current[index], ...bond };
-
-        // A Bond Support starts a rank ahead
-        if ( next.kin && !current[index]?.kin ) next.rank = startingRank(true, next.rank);
-        return next;
-      });
-    }
-    return data;
   }
 
   /* -------------------------------------------- */
@@ -511,12 +518,12 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
-   * Another unit dropped on the sheet becomes a support partner, linked to its Actor.
+   * Another unit dropped on the sheet becomes a support partner, on its own record as on this unit's.
    * @override
    */
   async _onDropActor(event, actor) {
     if ( !this.actor.isOwner || (actor?.type !== "unit") ) return null;
-    const linked = await linkBond(this.actor, actor);
+    const linked = await befriend(this.actor, actor);
     if ( !linked ) ui.notifications.info("FEO.Bond.alreadyLinked", { localize: true });
     return linked ? actor : null;
   }
@@ -1234,6 +1241,15 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
     const worn = !!item.system.isAccessory;
     if ( worn && !((item.system.restore > 0) && item.system.equipped) ) return;
 
+    // A Heart Seal, a Heart Scale and a Second Seal change the unit's class or the classes open to it. Each
+    // is spent as that is done, and none is an Action
+    if ( !worn && isSealItem(item) ) {
+      const waits = growthBar(actor);
+      if ( waits ) ui.notifications.warn(waits);
+      else await useSealItem(actor, item);
+      return;
+    }
+
     // A Staggered unit cannot act, nor one that can do nothing but Wait
     if ( staggerStops(actor) || this.#waitStops() ) return;
 
@@ -1773,13 +1789,23 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
    * Reclass into the line of one of the unit's Heart Seal Classes.
    * @this {UnitSheet}
    */
-  static async #onReclass() {
+  static async #onReclass(event, target) {
     const waits = growthBar(this.actor);
     if ( waits ) {
       ui.notifications.warn(waits);
       return;
     }
-    await reclassUnit(this.actor);
+    await reclassUnit(this.actor, { any: target?.dataset.any === "true" });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Add a class to the unit's Heart Seal Classes with the Heart Scale it carries.
+   * @this {UnitSheet}
+   */
+  static async #onHeartScale() {
+    await openSealTree(this.actor, { scale: true });
   }
 
   /* -------------------------------------------- */
@@ -1851,27 +1877,81 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
   /* -------------------------------------------- */
 
   /**
-   * Add a blank support partner.
+   * Begin a support by hand with a unit this one has not met on a map: one of its side, picked by name.
    * @this {UnitSheet}
    */
   static async #onAddBond() {
-    const bonds = foundry.utils.deepClone(this.actor._source.system.bonds);
-    bonds.push({ name: "", affinity: "", rank: "E", points: 0, inRange: false, adjacent: false, auto: true, kin: false, uuid: "" });
-    await this.actor.update({ "system.bonds": bonds });
+    const candidates = bondCandidates(this.actor, this.token);
+    if ( !candidates.length ) {
+      ui.notifications.info("FEO.Bond.nobodyLeft", { localize: true });
+      return;
+    }
+    const i18n = game.i18n;
+    const escape = foundry.utils.escapeHTML;
+    const id = await DialogV2.prompt({
+      window: { title: i18n.format("FEO.Bond.addTitle", { name: this.actor.name }) },
+      position: { width: 380 },
+      content: `<p class="hint">${i18n.localize("FEO.Bond.addHint")}</p>
+        <div class="form-group"><label for="feo-bond-partner">${i18n.localize("FEO.Bond.partner")}</label>
+        <select id="feo-bond-partner" name="partner" autofocus>${
+          candidates.map((unit) => `<option value="${unit.id}">${escape(unit.name)}</option>`).join("")
+        }</select></div>`,
+      ok: { label: "FEO.Bond.begin", callback: (event, button) => button.form.elements.partner.value },
+      rejectClose: false
+    });
+    const partner = id ? game.actors.get(id) : null;
+    if ( partner ) await befriend(this.actor, partner);
   }
 
   /* -------------------------------------------- */
 
   /**
-   * Remove a support partner.
+   * End a support, on the partner's record as on this unit's.
    * @this {UnitSheet}
    * @param {PointerEvent} event
    * @param {HTMLElement} target
    */
   static async #onDeleteBond(event, target) {
-    const bonds = foundry.utils.deepClone(this.actor._source.system.bonds);
-    bonds.splice(Number(target.closest("[data-bond]").dataset.bond), 1);
-    await this.actor.update({ "system.bonds": bonds });
+    await endBond(this.actor, Number(target.closest("[data-bond]").dataset.bond));
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Move a support a rank up or down by hand.
+   * @this {UnitSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
+  static async #onStepBond(event, target) {
+    const index = Number(target.closest("[data-bond]").dataset.bond);
+    await stepBond(this.actor, index, { lower: target.dataset.lower === "true" });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * A support at A takes one of the highest ranks. A Game Master hands it out whether or not the support has
+   * the points for it.
+   * @this {UnitSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
+  static async #onTopBond(event, target) {
+    const index = Number(target.closest("[data-bond]").dataset.bond);
+    await chooseTop(this.actor, index, String(target.dataset.to ?? ""), { force: game.user.isGM });
+  }
+
+  /* -------------------------------------------- */
+
+  /**
+   * Make a support a Bond Support, or an ordinary one again.
+   * @this {UnitSheet}
+   * @param {PointerEvent} event
+   * @param {HTMLElement} target
+   */
+  static async #onKinBond(event, target) {
+    await toggleKin(this.actor, Number(target.closest("[data-bond]").dataset.bond));
   }
 
   /* -------------------------------------------- */
@@ -1888,35 +1968,4 @@ export default class UnitSheet extends HandlebarsApplicationMixin(ActorSheetV2) 
 
   /* -------------------------------------------- */
 
-  /**
-   * Mark a support partner as in or out of range by hand, and for a Bond Support as side by side. Doing so
-   * takes the bond off the automatic reading of the tokens on the scene.
-   * @this {UnitSheet}
-   * @param {PointerEvent} event
-   * @param {HTMLElement} target
-   */
-  static async #onToggleBond(event, target) {
-    const bonds = foundry.utils.deepClone(this.actor._source.system.bonds);
-    const bond = bonds[Number(target.closest("[data-bond]").dataset.bond)];
-    if ( !bond ) return;
-    Object.assign(bond, cycleRange(bond), { auto: false });
-    await this.actor.update({ "system.bonds": bonds });
-  }
-
-  /* -------------------------------------------- */
-
-  /**
-   * Hand a bond's range back to the tokens on the scene.
-   * @this {UnitSheet}
-   * @param {PointerEvent} event
-   * @param {HTMLElement} target
-   */
-  static async #onAutoBond(event, target) {
-    const bonds = foundry.utils.deepClone(this.actor._source.system.bonds);
-    const bond = bonds[Number(target.closest("[data-bond]").dataset.bond)];
-    if ( !bond ) return;
-    bond.auto = true;
-    await this.actor.update({ "system.bonds": bonds });
-    queueRangesFor(this.actor);
-  }
 }

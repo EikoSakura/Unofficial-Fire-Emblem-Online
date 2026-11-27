@@ -490,6 +490,30 @@ export function removeSealClass(chosen, name) {
 }
 
 /* -------------------------------------------- */
+
+/**
+ * What a reclass leaves of a unit's Heart Seal Classes. The class the old line started in stays on the list,
+ * and the class the new line starts in needs no entry there. A class that is not one of the unit's own, which
+ * a Second Seal took it into, is its guest: it is not kept on the list once the unit leaves it.
+ * @param {{name: string, uuid: string}[]} [chosen]     What the unit keeps
+ * @param {object} change
+ * @param {{name: string, uuid?: string}|null} [change.left]    The class the old line started in
+ * @param {{name: string}} change.entered           The class the new line starts in
+ * @param {string} [change.guest]                   The class the unit was a guest of until now
+ * @returns {{list: {name: string, uuid: string}[], guest: string}}     The list to keep, and the class the
+ *          unit is a guest of from now on, if it is one
+ */
+export function sealClassesAfter(chosen, { left = null, entered, guest = "" } = {}) {
+  const kept = (chosen ?? []).map((entry) => ({ name: entry.name, uuid: entry.uuid ?? "" }));
+  const [was, old, now] = [foldName(guest), foldName(left?.name), foldName(entered?.name)];
+  const own = (old && (old !== was) && (old === now)) || kept.some((entry) => foldName(entry.name) === now);
+  let list = kept;
+  if ( old && (old !== was) ) list = addSealClass(list, left) ?? list;
+  list = removeSealClass(list, entered?.name) ?? list;
+  return { list, guest: (now && !own) ? String(entered.name) : "" };
+}
+
+/* -------------------------------------------- */
 /*  Additional Lives                            */
 /* -------------------------------------------- */
 

@@ -7,8 +7,8 @@ import { test } from "node:test";
 import { FEO } from "../module/config.mjs";
 import { supportBonus } from "../module/rules/progression.mjs";
 import {
-  addPoints, atFork, bondsWithin, eventPoints, isReady, isTop, ladder, nextRanks, openTops, pointsForNext, rankBelow,
-  startingRank, takeTop, takenTops, topRanks
+  addPoints, atFork, bondsWithin, eventPoints, isReady, isTop, ladder, newBond, nextRanks, openTops, pointsForNext,
+  rankBelow, rankProgress, startingRank, stepRank, takeTop, takenTops, topRanks, unmetAllies
 } from "../module/rules/supports.mjs";
 
 const bond = (rank, points = 0) => ({ rank, points });
@@ -188,4 +188,95 @@ test("the bonds within a group of units", () => {
     { uuid: "Actor.c", names: ["Brigand"], bonds: [] }
   ];
   assert.deepEqual(bondsWithin(units), [{ unit: 0, bond: 0, partner: 1 }, { unit: 1, bond: 0, partner: 0 }]);
+});
+
+/* -------------------------------------------- */
+/*  Supports that begin by themselves           */
+/* -------------------------------------------- */
+
+const onMap = (name, side, { linked = true, bonds = [] } = {}) => {
+  return { uuid: `Actor.${name}`, names: [name], side, linked, bonds };
+};
+
+test("a support that has just begun is an E with nothing to its name", () => {
+  assert.deepEqual(newBond({ name: "Corvin", affinity: "fire", uuid: "Actor.Corvin" }), {
+    name: "Corvin", affinity: "fire", rank: "E", points: 0, inRange: false, adjacent: false, auto: true, kin: false,
+    uuid: "Actor.Corvin"
+  });
+  assert.equal(newBond().uuid, "");
+});
+
+test("a unit has yet to meet the allies none of its bonds names", () => {
+  const corvin = onMap("Corvin", "player");
+  const isolde = onMap("Isolde", "player");
+  const guest = onMap("Guest", "ally");
+  const maren = onMap("Maren", "player", { bonds: [{ uuid: "Actor.Corvin", name: "Corvin" }] });
+  assert.deepEqual(unmetAllies(maren, [maren, corvin, isolde, guest]).map((unit) => unit.names[0]), ["Isolde", "Guest"]);
+});
+
+test("a bond kept by name alone still names its partner", () => {
+  const isolde = onMap("Isolde", "player");
+  const maren = onMap("Maren", "player", { bonds: [{ name: "isolde" }] });
+  assert.deepEqual(unmetAllies(maren, [isolde]), []);
+});
+
+test("foes, units of no side and copies of a unit begin no support", () => {
+  const maren = onMap("Maren", "player");
+  const others = [onMap("Brigand", "enemy"), onMap("Trader", "other"), onMap("Soldier", "player", { linked: false })];
+  assert.deepEqual(unmetAllies(maren, others), []);
+  assert.deepEqual(unmetAllies(onMap("Soldier", "player", { linked: false }), [maren]), []);
+  assert.deepEqual(unmetAllies(onMap("Trader", "other"), [onMap("Pedlar", "other")]), []);
+});
+
+test("an ally with two tokens on the map is met once", () => {
+  const maren = onMap("Maren", "player");
+  const corvin = onMap("Corvin", "player");
+  assert.equal(unmetAllies(maren, [corvin, { ...corvin }]).length, 1);
+});
+
+test("foes of one side come to support each other as allies do", () => {
+  const boss = onMap("Warlord", "enemy");
+  assert.equal(unmetAllies(boss, [onMap("Lieutenant", "enemy"), onMap("Maren", "player")]).length, 1);
+});
+
+test("a rank up by hand climbs to A and no further, and starts the points over", () => {
+  assert.deepEqual(stepRank(bond("E", 30), { method: "points" }), { rank: "D", points: 0 });
+  assert.deepEqual(stepRank(bond("B", 79), { method: "points" }), { rank: "A", points: 0 });
+  assert.equal(stepRank(bond("A", 80), { method: "points" }), null);
+  assert.equal(stepRank(bond("S"), { method: "points" }), null);
+});
+
+test("a rank down by hand goes from either of the highest to A, and from E nowhere", () => {
+  assert.deepEqual(stepRank(bond("S", 0), { lower: true, method: "points" }), { rank: "A", points: 0 });
+  assert.deepEqual(stepRank(bond("A+", 0), { lower: true, method: "points" }), { rank: "A", points: 0 });
+  assert.deepEqual(stepRank(bond("C", 40), { lower: true, method: "points" }), { rank: "D", points: 0 });
+  assert.equal(stepRank(bond("E", 10), { lower: true, method: "points" }), null);
+});
+
+test("with a point for each battle, a rank set by hand has the points of that rank", () => {
+  const at = FEO.supports.chapters.thresholds;
+  assert.deepEqual(stepRank(bond("E", 1), { method: "chapters" }), { rank: "D", points: at.D });
+  assert.deepEqual(stepRank(bond("D", at.C + 3), { method: "chapters" }), { rank: "C", points: at.C + 3 });
+  assert.deepEqual(stepRank(bond("B", at.B + 2), { lower: true, method: "chapters" }), { rank: "C", points: at.B - 1 });
+  assert.deepEqual(stepRank(bond("D", at.D), { lower: true, method: "chapters" }), { rank: "E", points: at.D - 1 });
+});
+
+test("ranks raised by hand alone keep the points they have", () => {
+  assert.deepEqual(stepRank(bond("C", 7), { method: "manual" }), { rank: "B", points: 7 });
+});
+
+test("the bar of a support fills a part for each rank climbed, and the rank it has by its points", () => {
+  const per = FEO.supports.points.perRank;
+  assert.deepEqual(rankProgress(bond("E", 0), "points"), [0, 0, 0, 0, 0]);
+  assert.deepEqual(rankProgress(bond("C", per / 2), "points"), [1, 1, 0.5, 0, 0]);
+  assert.deepEqual(rankProgress(bond("A", per), "points"), [1, 1, 1, 1, 1]);
+  assert.deepEqual(rankProgress(bond("S", 0), "points"), [1, 1, 1, 1, 1]);
+  assert.deepEqual(rankProgress(bond("B", 5), "manual"), [1, 1, 1, 0, 0]);
+});
+
+test("with a point for each battle, the bar counts from the points the rank was reached at", () => {
+  const at = FEO.supports.chapters.thresholds;
+  const half = at.C + ((at.B - at.C) / 2);
+  assert.deepEqual(rankProgress(bond("C", half), "chapters"), [1, 1, 0.5, 0, 0]);
+  assert.deepEqual(rankProgress(bond("E", at.D / 2), "chapters"), [0.5, 0, 0, 0, 0]);
 });

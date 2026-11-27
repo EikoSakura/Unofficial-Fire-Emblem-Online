@@ -4,6 +4,7 @@
  * Pure functions of plain data, so that they can be tested outside of Foundry.
  */
 import { FEO } from "../config.mjs";
+import { relationOf } from "./positions.mjs";
 
 /**
  * @typedef Bond
@@ -235,15 +236,79 @@ export function rangeState(distance) {
 /* -------------------------------------------- */
 
 /**
- * The next state of a bond's range when it is set by hand: out of range, in range, and for a Bond Support
- * side by side as well.
- * @param {{inRange?: boolean, adjacent?: boolean, kin?: boolean}} bond
- * @returns {{inRange: boolean, adjacent: boolean}}
+ * The record a unit keeps of a support that has just begun.
+ * @param {{name?: string, affinity?: string, uuid?: string}} partner
+ * @returns {Bond}
  */
-export function cycleRange(bond) {
-  if ( !bond.inRange ) return { inRange: true, adjacent: false };
-  if ( bond.kin && !bond.adjacent ) return { inRange: true, adjacent: true };
-  return { inRange: false, adjacent: false };
+export function newBond({ name = "", affinity = "", uuid = "" } = {}) {
+  return { name, affinity, rank: "E", points: 0, inRange: false, adjacent: false, auto: true, kin: false, uuid };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The units a unit has yet to begin a support with: those that fight on its side or beside it, that stand on
+ * the map as themselves as it does, and that none of its bonds names. Each is found once.
+ * @param {{uuid: string, side: string, linked?: boolean, bonds?: Bond[]}} unit
+ * @param {{uuid: string, uuids?: string[], names: string[], side: string, linked?: boolean}[]} others
+ * @returns {object[]}    Those of `others`
+ */
+export function unmetAllies(unit, others) {
+  if ( !unit.linked ) return [];
+  const found = [];
+  for ( const other of others ?? [] ) {
+    if ( !other.linked || (other.uuid === unit.uuid) || found.some((met) => met.uuid === other.uuid) ) continue;
+    if ( relationOf(unit.side, other.side) !== "ally" ) continue;
+    if ( (unit.bonds ?? []).some((bond) => namesPartner(bond, other)) ) continue;
+    found.push(other);
+  }
+  return found;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A support is moved a rank up or down by hand. Up it climbs as far as A, from where it takes one of the
+ * highest ranks (see `takeTop`); down it goes from either of those to A, and from E no further. Its points
+ * follow: none of the new rank with the points method, and with the chapters method no fewer than the rank
+ * asks for and fewer than the next one does.
+ * @param {{rank: string, points: number}} bond
+ * @param {object} [options]
+ * @param {boolean} [options.lower]     Is it moved down?
+ * @param {string} [options.method]     How supports grow; the world's method by default
+ * @returns {{rank: string, points: number}|null}     Null when it has no rank to go to
+ */
+export function stepRank(bond, { lower = false, method = FEO.supports.method } = {}) {
+  const rank = lower ? rankBelow(bond.rank) : (isTop(bond.rank) || atFork(bond.rank)) ? null : nextRanks(bond.rank)[0];
+  if ( !rank ) return null;
+  let points = Math.max(bond.points ?? 0, 0);
+  if ( method === "points" ) points = 0;
+  else if ( method === "chapters" ) {
+    const from = FEO.supports.chapters.thresholds[rank] ?? 0;
+    const [next] = nextRanks(rank);
+    const below = next ? (FEO.supports.chapters.thresholds[next] ?? Infinity) - 1 : Infinity;
+    points = Math.max(Math.min(points, below), from);
+  }
+  return { rank, points };
+}
+
+/* -------------------------------------------- */
+
+/**
+ * How far a support has come, as the bar of its record shows it: a part for each rank it climbs through, and
+ * how full each is. The rank it has is filled by the points it has towards the next.
+ * @param {{rank: string, points: number}} bond
+ * @param {string} [method]     How supports grow; the world's method by default
+ * @returns {number[]}          A share of 0 to 1 for each rank of the ladder
+ */
+export function rankProgress(bond, method = FEO.supports.method) {
+  const steps = ladder();
+  if ( isTop(bond.rank) ) return steps.map(() => 1);
+  const at = steps.indexOf(bond.rank);
+  const needed = pointsForNext(bond.rank, method);
+  const from = (method === "chapters") ? (FEO.supports.chapters.thresholds[bond.rank] ?? 0) : 0;
+  const share = (needed === null) || (needed <= from) ? 0 : ((bond.points ?? 0) - from) / (needed - from);
+  return steps.map((rank, index) => (index < at) ? 1 : (index === at) ? Math.min(Math.max(share, 0), 1) : 0);
 }
 
 /* -------------------------------------------- */

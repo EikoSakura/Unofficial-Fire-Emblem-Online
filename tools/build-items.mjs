@@ -338,6 +338,7 @@ const SHAPES = [
   [/fruit|pepper/i, from("consumables/fruit")],
   [/mushroom/i, from("consumables/mushrooms")],
   [/\bseal\b|contract|\bsign\b/i, from("sundries/documents", /sealed/)],
+  [/\bscale\b/i, from("commodities/leather", /^scales?-/)],
   [/flesh|heart/i, from("consumables/meat", /steak|shank|ribs/)],
   [/prawn|jelly|spice/i, from("consumables/food")],
   [/needle/i, from("tools/hand", /needle/)],

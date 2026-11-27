@@ -1,7 +1,7 @@
 import Compendium from "../apps/compendium.mjs";
 import { FEO } from "../config.mjs";
 import { chooseSkill, classLine, planReclass, planUpdate, reclassTrade } from "../rules/classes.mjs";
-import { addSealClass, removeSealClass, sealClasses } from "../rules/optional.mjs";
+import { addSealClass, removeSealClass, sealClasses, sealClassesAfter } from "../rules/optional.mjs";
 import { topRanks } from "../rules/supports.mjs";
 import { buildChangeCard, buildReclassDialog } from "../sheets/class-context.mjs";
 import { postCard } from "./chat.mjs";
@@ -10,8 +10,10 @@ import { classesOf, embedClass, findItem, findPromotions, grantSkills, knownSkil
 /**
  * Heart Seals and Reclassing, as they happen in Foundry: keeping a unit's list of Heart Seal Classes, finding
  * the classes it can reclass into, asking the player, saving the result and posting a card, and offering a
- * partner's class when a support reaches its highest rank. What changes is decided by the pure rules in
- * `rules/classes.mjs` and `rules/optional.mjs`. Nothing here does anything while the world setting is off.
+ * partner's class when a support reaches its highest rank. A Heart Scale adds a class to the list, and a Second
+ * Seal reclasses a unit into the line of any class a unit can start in. What changes is decided by the pure
+ * rules in `rules/classes.mjs` and `rules/optional.mjs`. Nothing here does anything while the world setting is
+ * off.
  *
  * @import {ClassChange} from "../rules/classes.mjs"
  * @import {SealClass} from "../rules/optional.mjs"
@@ -46,6 +48,19 @@ export function sealClassesOf(actor) {
   const starting = startingClassOf(actor);
   const source = starting?._stats?.compendiumSource ?? "";
   return sealClasses(actor._source.system.heartSeals, starting ? { name: starting.name, uuid: source } : null);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The class a unit is a guest of: the one its line starts in, where a Second Seal took it there and it is not
+ * one of its Heart Seal Classes.
+ * @param {Actor} actor
+ * @returns {string}    Its name, or "" for a unit whose line starts in a class of its own
+ */
+export function guestClassOf(actor) {
+  const guest = String(actor._source.system.heartSealGuest ?? "").trim();
+  return (guest && (startingClassOf(actor)?.name.toLowerCase() === guest.toLowerCase())) ? guest : "";
 }
 
 /* -------------------------------------------- */
@@ -103,35 +118,125 @@ export async function removeSealClassFrom(actor, name) {
  * @param {Actor} actor
  * @param {object} [options]
  * @param {number|null} [options.limit]     The most the unit may choose; null for no limit
+ * @param {boolean} [options.scale]         Does each class cost the unit a Heart Scale it carries? The class it
+ *                                          is a guest of may then be chosen too, which makes it its own
  * @returns {Promise<Compendium|null>}
  */
-export function openSealTree(actor, { limit = null } = {}) {
+export function openSealTree(actor, { limit = null, scale = false } = {}) {
   if ( !config().enabled ) return null;
   const i18n = game.i18n;
   const base = FEO.classTiers.base.order;
   const unit = actor.name;
+  const same = (a, b) => String(a ?? "").toLowerCase() === String(b ?? "").toLowerCase();
+  const guest = (cls) => scale && same(guestClassOf(actor), cls.name);
   const describe = (cls) => {
     const list = sealClassesOf(actor);
     const chosen = actor._source.system.heartSeals.length;
     if ( cls.order > base ) return { can: false, text: i18n.format("FEO.HeartSeal.tree.promotion", { unit }) };
-    if ( list.some((entry) => entry.name.toLowerCase() === cls.name.toLowerCase()) ) {
+    if ( !guest(cls) && list.some((entry) => same(entry.name, cls.name)) ) {
       return { can: false, chosen: true, text: i18n.format("FEO.HeartSeal.tree.chosen", { unit }) };
     }
+    if ( scale && !heartScaleOf(actor) ) return { can: false, text: i18n.format("FEO.HeartSeal.tree.noScale", { unit, item: config().scale }) };
     if ( (limit !== null) && (chosen >= limit) ) return { can: false, text: i18n.format("FEO.HeartSeal.tree.full", { unit, count: limit }) };
     return {
       can: true,
-      text: (limit !== null)
-        ? i18n.format("FEO.HeartSeal.tree.take", { unit, left: limit - chosen })
-        : i18n.format("FEO.HeartSeal.tree.add", { unit }),
+      text: scale ? i18n.format("FEO.HeartSeal.tree.scale", { unit, item: config().scale })
+        : (limit !== null) ? i18n.format("FEO.HeartSeal.tree.take", { unit, left: limit - chosen })
+          : i18n.format("FEO.HeartSeal.tree.add", { unit }),
       label: i18n.format("FEO.HeartSeal.tree.choose", { name: cls.name.split("/")[0] })
     };
   };
-  const choose = (cls) => addSealClassTo(actor, { name: cls.name, uuid: cls.uuid ?? "" }, { limit });
+  const choose = async (cls) => {
+    if ( !scale ) return addSealClassTo(actor, { name: cls.name, uuid: cls.uuid ?? "" }, { limit });
+    const item = heartScaleOf(actor);
+    if ( !item ) return false;
+    if ( guest(cls) ) await actor.update({ "system.heartSealGuest": "" });
+    else if ( !(await addSealClassTo(actor, { name: cls.name, uuid: cls.uuid ?? "" })) ) return false;
+    const spent = item.name;
+    await spendItem(item);
+    await postCard(actor, {
+      title: i18n.format("FEO.HeartSeal.partner.cardTitle", { name: cls.name }),
+      subtitle: i18n.format("FEO.HeartSeal.card.spent", { item: spent }),
+      rows: []
+    });
+    return true;
+  };
   return Compendium.open({
     view: "classes",
     class: actor.system.classItem?.name,
     chooser: { takes: "class", actor: actor.uuid, describe, choose }
   });
+}
+
+/* -------------------------------------------- */
+/*  The items                                   */
+/* -------------------------------------------- */
+
+/**
+ * The item of a name a unit carries, if it carries one that is not used up.
+ * @param {Actor} actor
+ * @param {string} name
+ * @returns {Item|null}
+ */
+function carriedItem(actor, name) {
+  const wanted = String(name ?? "").trim().toLowerCase();
+  if ( !wanted ) return null;
+  return actor.items.find((item) => (item.type === "gear") && (item.name.trim().toLowerCase() === wanted) && !item.system.spent) ?? null;
+}
+
+/** The Heart Seal a unit carries, if it carries one: what a reclass into one of its Heart Seal Classes spends. */
+export const heartSealOf = (actor) => carriedItem(actor, config().item);
+
+/** The Heart Scale a unit carries, if it carries one: what one more Heart Seal Class costs it. */
+export const heartScaleOf = (actor) => carriedItem(actor, config().scale);
+
+/** The Second Seal a unit carries, if it carries one: what a reclass into any class spends. */
+export const secondSealOf = (actor) => carriedItem(actor, config().second);
+
+/* -------------------------------------------- */
+
+/**
+ * Spend one use of an item, and remove it with its last.
+ * @param {Item} item
+ * @returns {Promise<void>}
+ */
+async function spendItem(item) {
+  const uses = item.system.uses;
+  if ( (uses?.max > 0) && (uses.value > 1) ) await item.update({ "system.uses.value": uses.value - 1 });
+  else await item.delete();
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Which of the items Heart Seals go by an item is, by its name.
+ * @param {Item} item
+ * @returns {"item"|"scale"|"second"|null}    Null for any other item, and while the setting is off
+ */
+function sealItemKind(item) {
+  if ( !config().enabled || (item?.type !== "gear") ) return null;
+  const name = item.name.trim().toLowerCase();
+  return ["item", "scale", "second"].find((kind) => name === String(config()[kind] ?? "").trim().toLowerCase()) ?? null;
+}
+
+/** Is an item a Heart Seal, a Heart Scale or a Second Seal, while the setting is on? */
+export const isSealItem = (item) => !!sealItemKind(item);
+
+/* -------------------------------------------- */
+
+/**
+ * What Using one of those items does: a Heart Seal reclasses its unit, a Heart Scale adds a class to its list,
+ * and a Second Seal reclasses it into any class. Each is spent as that is done, and not before.
+ * @param {Actor} actor
+ * @param {Item} item
+ * @returns {Promise<boolean>}    Was it one of them?
+ */
+export async function useSealItem(actor, item) {
+  const kind = sealItemKind(item);
+  if ( kind === "item" ) await reclassUnit(actor);
+  else if ( kind === "scale" ) await openSealTree(actor, { scale: true });
+  else if ( kind === "second" ) await reclassUnit(actor, { any: true });
+  return !!kind;
 }
 
 /* -------------------------------------------- */
@@ -185,18 +290,6 @@ export async function linesFrom(start, tier) {
 /* -------------------------------------------- */
 
 /**
- * The Heart Seal a unit carries, if it carries one.
- * @param {Actor} actor
- * @returns {Item|null}
- */
-export function heartSealOf(actor) {
-  const wanted = config().item.trim().toLowerCase();
-  return actor.items.find((item) => (item.type === "gear") && (item.name.trim().toLowerCase() === wanted) && !item.system.spent) ?? null;
-}
-
-/* -------------------------------------------- */
-
-/**
  * Render a dialog template into an element.
  * @param {string} name
  * @param {string} cls
@@ -217,30 +310,76 @@ const readForm = (form) => new foundry.applications.ux.FormDataExtended(form).ob
 /**
  * Reclass a unit: show the classes its Heart Seal Classes let it take at the tier it is in, and apply the one
  * chosen. A player's unit spends the Heart Seal it carries; the Game Master may reclass a unit that has none.
+ *
+ * With `any`, the unit reclasses into the line of any class a unit can start in, which is chosen from the class
+ * tree first, and spends the Second Seal it carries in place of a Heart Seal.
  * @param {Actor} actor
- * @returns {Promise<ClassChange|null>}   Null if nothing was done
+ * @param {object} [options]
+ * @param {boolean} [options.any]         Is any class open to it, as with a Second Seal?
+ * @returns {Promise<ClassChange|null>}   Null if nothing was done, or where the class tree was opened to choose
  */
-export async function reclassUnit(actor) {
+export async function reclassUnit(actor, { any = false } = {}) {
   if ( !config().enabled ) return null;
   const i18n = game.i18n;
-  const current = actor.system.classItem;
-  if ( !current ) {
+  if ( !actor.system.classItem ) {
     ui.notifications.warn("FEO.HeartSeal.warn.noClass", { localize: true });
     return null;
   }
-  const seal = heartSealOf(actor);
-  if ( !seal && !game.user.isGM ) {
-    ui.notifications.warn(i18n.format("FEO.HeartSeal.warn.noSeal", { item: config().item }));
+  const carried = () => (any ? secondSealOf(actor) : heartSealOf(actor));
+  if ( !carried() && !game.user.isGM ) {
+    ui.notifications.warn(i18n.format("FEO.HeartSeal.warn.noSeal", { item: any ? config().second : config().item }));
     return null;
   }
+  if ( !any ) return reclassInto(actor, sealClassesOf(actor), carried());
 
-  // The line the unit holds, and every line its Heart Seal Classes offer at its tier, but the class it has
+  // Any class: it is chosen from the class tree, which closes as the classes of its line are shown
+  const base = FEO.classTiers.base.order;
+  const unit = actor.name;
+  const describe = (cls) => {
+    if ( cls.order > base ) return { can: false, text: i18n.format("FEO.HeartSeal.tree.promotion", { unit }) };
+    if ( !carried() && !game.user.isGM ) return { can: false, text: i18n.format("FEO.HeartSeal.warn.noSeal", { item: config().second }) };
+    return {
+      can: true,
+      text: i18n.format("FEO.HeartSeal.tree.any", { unit }),
+      label: i18n.format("FEO.HeartSeal.tree.reclass", { name: cls.name.split("/")[0] })
+    };
+  };
+  let app = null;
+  const choose = async (cls) => {
+    await app?.close();
+    reclassInto(actor, [{ name: cls.name, uuid: cls.uuid ?? "" }], carried(), { any: true }).catch((err) => console.error(err));
+  };
+  app = await Compendium.open({
+    view: "classes",
+    class: actor.system.classItem.name,
+    chooser: { takes: "class", actor: actor.uuid, describe, choose }
+  });
+  return null;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Reclass a unit into a line of one of the classes given: show those of the tier it is in, and apply the one
+ * chosen.
+ * @param {Actor} actor
+ * @param {SealClass[]} entries       The classes whose lines are open to it
+ * @param {Item|null} seal            The item this spends; null for the Game Master, who needs none
+ * @param {object} [options]
+ * @param {boolean} [options.any]     Was the class chosen from all of them, as with a Second Seal?
+ * @returns {Promise<ClassChange|null>}   Null if nothing was done
+ */
+async function reclassInto(actor, entries, seal, { any = false } = {}) {
+  const i18n = game.i18n;
+  const current = actor.system.classItem;
+
+  // The line the unit holds, and every line those classes offer at its tier, but the class it has
   const unit = actor._source.system;
   const from = classLine(classesOf(actor));
   const tier = order(current);
   const lines = [];
   const missing = [];
-  for ( const entry of sealClassesOf(actor) ) {
+  for ( const entry of entries ) {
     const start = await findSealClass(entry);
     if ( !start ) {
       missing.push(entry.name);
@@ -253,7 +392,9 @@ export async function reclassUnit(actor) {
     }
   }
   if ( !lines.length ) {
-    ui.notifications.warn(i18n.format("FEO.HeartSeal.warn.noTargets", { name: actor.name }));
+    ui.notifications.warn(any
+      ? i18n.format("FEO.HeartSeal.warn.noLine", { name: actor.name, class: entries[0]?.name ?? "" })
+      : i18n.format("FEO.HeartSeal.warn.noTargets", { name: actor.name }));
     return null;
   }
 
@@ -290,28 +431,32 @@ export async function reclassUnit(actor) {
   for ( let at = picks.length - 1; at >= 0; at-- ) chooseSkill(change, at, picks[at]);
 
   // The classes of the new line take the place of those of the old one. The class the old line started in
-  // stays on the unit's list of Heart Seal Classes, and the one the new line starts in needs no entry there
+  // stays on the unit's list of Heart Seal Classes, and the one the new line starts in needs no entry there.
+  // A class that is not one of its own, which a Second Seal took it into, is its guest and is not kept
   const left = startingClassOf(actor);
-  let list = unit.heartSeals;
-  if ( left ) list = addSealClass(list, { name: left.name, uuid: left._stats?.compendiumSource ?? "" }) ?? list;
-  list = removeSealClass(list, to[0].name) ?? list;
+  const { list, guest } = sealClassesAfter(unit.heartSeals, {
+    left: left ? { name: left.name, uuid: left._stats?.compendiumSource ?? "" } : null,
+    entered: to[0],
+    guest: guestClassOf(actor)
+  });
   const owned = [];
   for ( const cls of to ) owned.push(await embedClass(actor, cls));
   const update = { ...planUpdate(change), "system.classId": owned.at(-1).id };
   if ( JSON.stringify(list) !== JSON.stringify(unit.heartSeals) ) update["system.heartSeals"] = list;
+  if ( guest !== String(unit.heartSealGuest ?? "") ) update["system.heartSealGuest"] = guest;
   await actor.update(update);
   const gone = actor.items.filter((item) => (item.type === "class") && !owned.some((cls) => cls.id === item.id)).map((item) => item.id);
   if ( gone.length ) await actor.deleteEmbeddedDocuments("Item", gone);
   const { blank } = await grantSkills(actor, change.skills);
 
-  // The Heart Seal is spent
+  // The seal is spent
   const notes = [];
   if ( seal ) {
-    const uses = seal.system.uses;
-    if ( (uses?.max > 0) && (uses.value > 1) ) await seal.update({ "system.uses.value": uses.value - 1 });
-    else await seal.delete();
-    notes.push(i18n.format("FEO.HeartSeal.card.spent", { item: seal.name }));
+    const spent = seal.name;
+    await spendItem(seal);
+    notes.push(i18n.format("FEO.HeartSeal.card.spent", { item: spent }));
   }
+  if ( guest ) notes.push(i18n.format("FEO.HeartSeal.card.guest", { name: guest }));
   if ( !change.statsKnown ) notes.push(i18n.localize("FEO.HeartSeal.card.statsUnknown"));
   if ( change.occultWaits ) notes.push(i18n.format("FEO.HeartSeal.card.occult", { skill: change.occultWaits, level: FEO.occultLevel }));
   await postCard(actor, buildChangeCard(change, i18n, {
@@ -408,7 +553,9 @@ function activateReclassDialog(element, unit, from, lines) {
 export async function offerPartnerClass(actor, partner) {
   if ( !config().enabled || (partner?.type !== "unit") ) return null;
   const mine = new Set(sealClassesOf(actor).map((entry) => entry.name.toLowerCase()));
-  const theirs = sealClassesOf(partner).filter((entry) => !mine.has(entry.name.toLowerCase()));
+  // A class the partner is only a guest of is not one of theirs to share
+  const guest = guestClassOf(partner).toLowerCase();
+  const theirs = sealClassesOf(partner).filter((entry) => !mine.has(entry.name.toLowerCase()) && (entry.name.toLowerCase() !== guest));
   if ( !theirs.length ) return null;
   const i18n = game.i18n;
   const options = theirs.map((entry, index) => `<option value="${index}">${foundry.utils.escapeHTML(entry.name)}</option>`).join("");

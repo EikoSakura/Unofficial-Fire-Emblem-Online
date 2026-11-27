@@ -133,6 +133,14 @@
           <button type="button" class="btn small seal-reclass" data-action="reclass" data-tooltip="{{localize "FEO.HeartSeal.reclassHint"}}">
             {{feoIcon "swap"}}{{localize "FEO.HeartSeal.reclass"}}
           </button>
+          {{/if}}{{#if heartSeals.canAny}}
+          <button type="button" class="btn small seal-reclass" data-action="reclass" data-any="true" data-tooltip="{{localize "FEO.HeartSeal.anyHint" item=heartSeals.second}}">
+            {{feoIcon "swap"}}{{localize "FEO.HeartSeal.any"}}
+          </button>
+          {{/if}}{{#if heartSeals.canAdd}}
+          <button type="button" class="btn small seal-reclass" data-action="heartScale" data-tooltip="{{localize "FEO.HeartSeal.addHint" item=heartSeals.scale}}">
+            {{feoIcon "plus"}}{{localize "FEO.HeartSeal.add"}}
+          </button>
           {{/if}}{{/if}}
         </h3>
         <button type="button" class="seal-select" data-action="sealClasses" aria-haspopup="dialog">

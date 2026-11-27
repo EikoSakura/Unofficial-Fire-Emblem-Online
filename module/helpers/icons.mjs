@@ -76,6 +76,7 @@ export const ICONS = {
   dice: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.500 8.500h.010M15.500 8.500h.010M12 12h.010M8.500 15.500h.010M15.500 15.500h.010" stroke-width="2.400"/>',
   check: '<path d="M5 12.500l4.500 4.500L19 7.500"/>',
   ring: '<circle cx="12" cy="12" r="7.500"/>',
+  link: '<path d="M10 14a4 4 0 0 0 5.700 0l3-3a4 4 0 0 0-5.700-5.700l-1 1M14 10a4 4 0 0 0-5.700 0l-3 3a4 4 0 0 0 5.700 5.700l1-1"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   minus: '<path d="M5 12h14"/>',
   x: '<path d="M6 6l12 12M18 6L6 18"/>',

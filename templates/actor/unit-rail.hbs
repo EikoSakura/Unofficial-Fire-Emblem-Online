@@ -300,16 +300,15 @@
     </div>
   </div>
 
-  {{#if bonds.length}}
+  {{#if supports.near.length}}
   <div class="rail-group">
     <div class="rail-label">{{localize "FEO.Rail.bondsInRange"}}</div>
     <div class="chips">
-      {{#each bonds as |bond|}}
-      <button type="button" class="chip kin{{#if bond.adjacent}} adjacent{{/if}}{{#unless bond.auto}} manual{{/unless}}" data-action="toggleBond" data-bond="{{bond.index}}"
-              aria-pressed="{{bond.inRange}}"
-              data-tooltip="{{#each bond.parts as |part|}}+{{part.amount}} {{localize part.label}}. {{/each}}{{#if bond.auto}}{{localize "FEO.Bond.autoOn"}}{{else}}{{localize "FEO.Bond.autoOff"}}{{/if}} {{localize "FEO.Rail.toggleBond"}}">
-        {{feoIcon bond.icon}}{{#if bond.name}}{{bond.name}}{{else}}{{localize "FEO.Bond.unnamed"}}{{/if}} <small>{{localize bond.rankLabel}}{{#if bond.adjacent}} · {{localize "FEO.Bond.adjacentShort"}}{{/if}}</small>
-      </button>
+      {{#each supports.near as |bond|}}
+      <span class="chip kin{{#if bond.adjacent}} adjacent{{/if}}"
+            data-tooltip="{{#each bond.parts as |part|}}+{{part.amount}} {{localize part.label}}. {{else}}{{localize "FEO.Bond.noBonus"}}. {{/each}}{{#if bond.adjacent}}{{localize "FEO.Bond.adjacent"}}.{{/if}}">
+        {{#if bond.img}}<img class="chip-token" src="{{bond.img}}" alt="">{{else}}{{feoIcon bond.icon}}{{/if}}{{#if bond.name}}{{bond.name}}{{else}}{{localize "FEO.Bond.unnamed"}}{{/if}} <small>{{localize bond.rankLabel}}{{#if bond.adjacent}} · {{localize "FEO.Bond.adjacentShort"}}{{/if}}</small>
+      </span>
       {{/each}}
     </div>
   </div>

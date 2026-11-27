@@ -1619,7 +1619,9 @@ FEO.optionalGrowths = {
  * `heartSeals` (Heart Seals/Reclassing): a new unit chooses `picks` classes which, with the class it starts
  * in, are its Heart Seal Classes. It can reclass into the line of any of them, at the tier it is in. A player
  * spends an item named `item` to do so, where the unit carries one; the Game Master needs none. Reaching A+
- * or S with a partner lets a unit add one of the partner's Heart Seal Classes to its own.
+ * or S with a partner lets a unit add one of the partner's Heart Seal Classes to its own. An item named `scale`
+ * is spent to add one more class to the list, and one named `second` to reclass into the line of any class a
+ * unit can start in: that class is the unit's guest and does not join its list.
  *
  * `glory` (Glory): the unit that brings down a unit with Glory to give gains that much, to spend on Powers.
  * Each of `powers` has its `cost` and what it does: `effects` in the notation of skill effects (see
@@ -1923,7 +1925,9 @@ FEO.optional = {
   heartSeals: {
     enabled: false,
     picks: 3,
-    item: "Heart Seal"
+    item: "Heart Seal",
+    scale: "Heart Scale",
+    second: "Second Seal"
   },
   glory: {
     enabled: false,

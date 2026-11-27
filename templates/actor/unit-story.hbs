@@ -1,55 +1,80 @@
 <section class="tab panel-tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
 
-  <div class="card">
+  <div class="card supports">
     <h3>{{localize "FEO.Section.bonds"}}
-      <span class="aside">{{{localize "FEO.Bond.rangeHint" range=config.supportRange}}} · {{localize "FEO.Bond.dropHint"}}</span>
-      {{#if editable}}<button type="button" class="add edit-only" data-action="addBond" data-tooltip="{{localize "FEO.Bond.add"}}" aria-label="{{localize "FEO.Bond.add"}}">{{feoIcon "plus"}}</button>{{/if}}
+      <span class="aside">{{#if editMode}}{{localize "FEO.Bond.kept" count=bonds.length}}{{else}}{{localize "FEO.Bond.rangeHint" range=config.supportRange}}{{/if}}</span>
     </h3>
-    {{#each bonds as |bond|}}
-    <div class="bond" data-bond="{{bond.index}}">
-      <span class="aff" {{#if bond.affinityLabel}}data-tooltip="{{localize bond.affinityLabel}}"{{/if}}>{{feoIcon bond.icon}}</span>
-      <div class="who">
-        <div class="bond-fields">
-          <input type="text" name="system.bonds.{{bond.index}}.name" value="{{bond.name}}"
-                 placeholder="{{localize "FEO.Bond.name"}}" aria-label="{{localize "FEO.Bond.name"}}">
-          <select name="system.bonds.{{bond.index}}.affinity" aria-label="{{localize "FEO.Unit.affinity"}}">
-            {{selectOptions @root.config.affinities selected=bond.affinity localize=true blank="–"}}
-          </select>
-          <select name="system.bonds.{{bond.index}}.rank" aria-label="{{localize "FEO.Bond.rank"}}">
-            {{selectOptions @root.supportRankChoices selected=bond.rank localize=true}}
-          </select>
-          <label class="points" {{#if bond.pointsNext}}data-tooltip="{{localize "FEO.Bond.nextAt" points=bond.pointsNext}}"{{/if}}>
-            <input type="number" name="system.bonds.{{bond.index}}.points" value="{{bond.points}}" min="0" step="1"
-                   aria-label="{{localize "FEO.Bond.points"}}">
-            <span>{{localize "FEO.Bond.pointsShort"}}</span>
-          </label>
-          <label class="kin edit-only" data-tooltip="{{localize "FEO.Bond.kinHint"}}">
-            <input type="checkbox" name="system.bonds.{{bond.index}}.kin" {{checked bond.kin}}>
-            <span>{{localize "FEO.Bond.kin"}}</span>
-          </label>
-          {{#if @root.supportEvents}}{{#if @root.editable}}
-          <select class="chip ghost" data-bond-points aria-label="{{localize "FEO.Support.addPoints"}}">
-            <option value="">+ {{localize "FEO.Bond.pointsShort"}}</option>
-            {{#each @root.supportEvents as |entry key|}}<option value="{{key}}">{{localize entry.label}} (+{{entry.amount}})</option>{{/each}}
-          </select>
-          {{/if}}{{/if}}
-        </div>
-        <small>
-          {{#if bond.kin}}{{localize "FEO.Bond.kin"}} · {{/if}}{{#each bond.parts as |part|}}+{{part.amount}} {{localize part.label}}{{#unless @last}} · {{/unless}}{{else}}{{localize "FEO.Bond.noBonus"}}{{/each}}
-          {{#if bond.linked}}· {{localize "FEO.Bond.linked"}}{{/if}}
-          {{#unless bond.auto}}{{#if @root.editable}}· <button type="button" class="link" data-action="autoBond" data-tooltip="{{localize "FEO.Bond.autoHint"}}">{{localize "FEO.Bond.auto"}}</button>{{/if}}{{/unless}}
-        </small>
+
+    {{#if editMode}}
+    {{!-- Edit mode: every partner the unit keeps a record of, each a name and a bar --}}
+    {{#if supports.kept.length}}
+    <div class="sup-row sup-scale" aria-hidden="true">
+      <span></span><span></span>
+      <span class="sup-marks">{{#each supports.scale as |mark|}}<i>{{localize mark}}</i>{{/each}}</span>
+      <span></span><span></span><span></span>
+    </div>
+    {{/if}}
+    {{#each supports.kept as |bond|}}
+    <div class="sup-row" data-bond="{{bond.index}}">
+      <div class="sup-who">
+        {{#if bond.img}}<img class="sup-token" src="{{bond.img}}" alt="">{{else}}<span class="sup-token">{{feoIcon bond.icon}}</span>{{/if}}
+        <b>{{#if bond.name}}{{bond.name}}{{else}}{{localize "FEO.Bond.unnamed"}}{{/if}}</b>
+        <button type="button" class="sup-kin" data-action="kinBond" aria-pressed="{{bond.kin}}"
+                data-tooltip="{{localize "FEO.Bond.kin"}}: {{localize "FEO.Bond.kinHint"}}" aria-label="{{localize "FEO.Bond.kin"}}">{{feoIcon "link"}}</button>
       </div>
-      <button type="button" class="in-range" data-action="toggleBond" aria-pressed="{{bond.inRange}}"
-              data-tooltip="{{#if bond.auto}}{{localize "FEO.Bond.autoOn"}}{{else}}{{localize "FEO.Bond.autoOff"}}{{/if}} {{localize "FEO.Rail.toggleBond"}}">{{#if bond.adjacent}}{{localize "FEO.Bond.adjacent"}}{{else}}{{localize "FEO.Bond.inRange"}}{{/if}}</button>
-      <span class="letters" aria-hidden="true">{{#each bond.letters as |letter|}}<i class="{{#if letter.on}}on{{/if}}">{{localize letter.label}}</i>{{/each}}</span>
-      {{#if @root.editable}}
-      <button type="button" class="remove edit-only" data-action="deleteBond" data-tooltip="{{localize "FEO.Bond.delete"}}" aria-label="{{localize "FEO.Bond.delete"}}">{{feoIcon "trash"}}</button>
-      {{/if}}
+      <button type="button" class="sup-step" data-action="stepBond" data-lower="true"
+              data-tooltip="{{localize "FEO.Bond.lower"}}" aria-label="{{localize "FEO.Bond.lower"}}"{{#unless bond.canLower}} disabled{{/unless}}>{{feoIcon "minus"}}</button>
+      <div class="sup-bar" data-tooltip="{{#if bond.ready}}{{localize "FEO.Bond.readyHint"}}{{else}}{{#if bond.pointsNext}}{{localize "FEO.Bond.progress" points=bond.points next=bond.pointsNext}}{{else}}{{localize bond.rankLabel}}{{/if}}{{/if}}">
+        {{#each bond.steps as |step|}}<span><i style="width: {{step.pct}}%"></i></span>{{/each}}
+      </div>
+      <div class="sup-next">
+        {{#if bond.canRaise}}
+        <button type="button" class="sup-step up" data-action="stepBond" data-lower="false"
+                data-tooltip="{{localize "FEO.Bond.raise"}}" aria-label="{{localize "FEO.Bond.raise"}}">{{feoIcon "plus"}}</button>
+        {{/if}}
+        {{#each bond.tops as |top|}}
+        <button type="button" class="sup-top" data-action="topBond" data-to="{{top.rank}}"
+                data-tooltip="{{localize top.hint}}"{{#unless top.usable}} disabled{{/unless}}>{{localize top.label}}</button>
+        {{/each}}
+      </div>
+      <span class="sup-rank{{#if bond.level}} on{{/if}}">{{localize bond.rankLabel}}</span>
+      <button type="button" class="remove" data-action="deleteBond" data-tooltip="{{localize "FEO.Bond.delete"}}" aria-label="{{localize "FEO.Bond.delete"}}">{{feoIcon "x"}}</button>
     </div>
     {{else}}
     <p class="empty">{{localize "FEO.Bond.none"}}</p>
     {{/each}}
+    {{#if editable}}
+    <button type="button" class="sup-add" data-action="addBond" data-tooltip="{{localize "FEO.Bond.addHint"}}">{{feoIcon "plus"}}{{localize "FEO.Bond.add"}}</button>
+    {{/if}}
+
+    {{else}}
+    {{!-- Play mode: what the partners in range give together, and those partners only --}}
+    <div class="sup-now{{#unless supports.near.length}} idle{{/unless}}">
+      <span class="sup-heart">{{feoIcon "heart"}}</span>
+      <div class="sup-lead">
+        <b>{{localize "FEO.Bond.now"}}</b>
+        <small>{{#if supports.near.length}}{{localize "FEO.Bond.nearCount" count=supports.near.length}}{{else}}{{#if bonds.length}}{{localize "FEO.Bond.nobodyNear" range=config.supportRange}}{{else}}{{localize "FEO.Bond.none"}}{{/if}}{{/if}}</small>
+      </div>
+      <div class="sup-totals">
+        {{#each supports.totals as |part|}}<span><b>+{{part.amount}}</b><small>{{localize part.label}}</small></span>{{/each}}
+      </div>
+    </div>
+    {{#each supports.near as |bond|}}
+    <div class="sup-row near" data-bond="{{bond.index}}"
+         data-tooltip="{{#each bond.parts as |part|}}+{{part.amount}} {{localize part.label}}. {{else}}{{localize "FEO.Bond.noBonus"}}. {{/each}}{{#if bond.ready}}{{localize "FEO.Bond.readyHint"}}{{else}}{{#if bond.pointsNext}}{{localize "FEO.Bond.progress" points=bond.points next=bond.pointsNext}}{{/if}}{{/if}}">
+      <div class="sup-who">
+        {{#if bond.img}}<img class="sup-token" src="{{bond.img}}" alt="">{{else}}<span class="sup-token">{{feoIcon bond.icon}}</span>{{/if}}
+        <b>{{#if bond.name}}{{bond.name}}{{else}}{{localize "FEO.Bond.unnamed"}}{{/if}}</b>
+        {{#if bond.kin}}<span class="sup-kin on" data-tooltip="{{localize "FEO.Bond.kin"}}" aria-label="{{localize "FEO.Bond.kin"}}">{{feoIcon "link"}}</span>{{/if}}
+      </div>
+      <span class="sup-pill{{#if bond.adjacent}} beside{{/if}}">{{#if bond.adjacent}}{{localize "FEO.Bond.adjacent"}}{{else}}{{localize "FEO.Bond.inRange"}}{{/if}}</span>
+      <div class="sup-bar">
+        {{#each bond.steps as |step|}}<span><i style="width: {{step.pct}}%"></i></span>{{/each}}
+      </div>
+      <span class="sup-rank{{#if bond.level}} on{{/if}}">{{localize bond.rankLabel}}</span>
+    </div>
+    {{/each}}
+    {{/if}}
   </div>
 
   <div class="card">

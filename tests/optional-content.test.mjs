@@ -16,6 +16,7 @@ import { surroundings } from "../module/rules/positions.mjs";
 import { discounted, resold } from "../module/rules/stealing.mjs";
 import { buildSkillTurnCard } from "../module/helpers/skill-turn-context.mjs";
 import { backfires, planExchange, playExchange, rollBudget, weaponRank } from "../module/rules/combat.mjs";
+import { sealClassesAfter } from "../module/rules/optional.mjs";
 import { ITEM_MOMENT, checkConsumes, checkItemMoment, itemLine, itemMoments, itemOffers, itemPower, itemPowers, itemRestores } from "../module/rules/items.mjs";
 import { checkRounds, defenderLeads } from "../module/rules/rounds.mjs";
 import { checkEffects, skillKnacks, skillStanding, skillTotals, turnMoment, weaponIs } from "../module/rules/skills.mjs";
@@ -68,8 +69,55 @@ test("the list names the skills of its lines, and each is written in parts the r
     assert.ok(entry.effects.length > 0, name);
   }
   assert.deepEqual(list.weapons.Katanas, ["Bronze Katana", "Akuma", "Iron Katana", "Kotetsu"]);
-  assert.deepEqual(list.items, { "Promotion and Reclassing": [FEO.optional.heartSeals.item] }, "the item a reclass spends, by the name it is looked for");
+  const seals = FEO.optional.heartSeals;
+  assert.deepEqual(list.items, { "Promotion and Reclassing": [seals.item, seals.scale, seals.second] }, "the items of Heart Seals, by the names they are looked for");
   assert.deepEqual(list.classes.map((entry) => entry.name), ["Ashigaru", "Rei", "Hitokiri", "Oni Savage", "Yokai", "Shugoki", "Merchant", "Profiteer", "Tycoon"]);
+});
+
+/* -------------------------------------------- */
+/*  Heart Seals, Heart Scales and Second Seals  */
+/* -------------------------------------------- */
+
+test("a reclass keeps the class left behind on the list, and a class a Second Seal gave is only a guest", () => {
+  const cls = (name) => ({ name, uuid: `Item.${name}` });
+  const names = (result) => result.list.map((entry) => entry.name);
+  const chosen = [cls("Mercenary"), cls("Archer"), cls("Mage")];
+
+  // With a Heart Seal, into a class of its own: the two change places on the list, and nothing is a guest
+  const own = sealClassesAfter(chosen, { left: cls("Fighter"), entered: cls("Mercenary") });
+  assert.deepEqual(names(own), ["Archer", "Mage", "Fighter"]);
+  assert.equal(own.guest, "");
+
+  // To another class of the line it holds: nothing changes
+  const branch = sealClassesAfter(chosen, { left: cls("Fighter"), entered: cls("Fighter") });
+  assert.deepEqual(names(branch), ["Mercenary", "Archer", "Mage"]);
+  assert.equal(branch.guest, "");
+
+  // With a Second Seal, into a class that is not its own: the class left is kept, the new one is a guest
+  const any = sealClassesAfter(chosen, { left: cls("Fighter"), entered: cls("Thief") });
+  assert.deepEqual(names(any), ["Mercenary", "Archer", "Mage", "Fighter"]);
+  assert.equal(any.guest, "Thief");
+
+  // Leaving that class, it is not kept: back to a class of its own, or on to another guest
+  const back = sealClassesAfter(any.list, { left: cls("Thief"), entered: cls("fighter"), guest: "Thief" });
+  assert.deepEqual(names(back), ["Mercenary", "Archer", "Mage"]);
+  assert.equal(back.guest, "");
+  const on = sealClassesAfter(any.list, { left: cls("Thief"), entered: cls("Cleric"), guest: "thief" });
+  assert.deepEqual(names(on), ["Mercenary", "Archer", "Mage", "Fighter"]);
+  assert.equal(on.guest, "Cleric");
+
+  // Another class of the guest's own line leaves it a guest still
+  const within = sealClassesAfter(any.list, { left: cls("Thief"), entered: cls("Thief"), guest: "Thief" });
+  assert.deepEqual(names(within), ["Mercenary", "Archer", "Mage", "Fighter"]);
+  assert.equal(within.guest, "Thief");
+
+  // A Second Seal used for a class of its own makes no guest of it
+  assert.equal(sealClassesAfter(chosen, { left: cls("Fighter"), entered: cls("Mage") }).guest, "");
+
+  // A unit with no class to leave, and a note of a guest that is no longer where its line starts
+  assert.deepEqual(names(sealClassesAfter([], { entered: cls("Thief") })), []);
+  const stale = sealClassesAfter(chosen, { left: cls("Fighter"), entered: cls("Archer"), guest: "Thief" });
+  assert.deepEqual(names(stale), ["Mercenary", "Mage", "Fighter"]);
 });
 
 /* -------------------------------------------- */

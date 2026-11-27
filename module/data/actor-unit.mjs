@@ -388,8 +388,9 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
         points: integer(0, { min: 0 }),
         inRange: new BooleanField(),
 
-        // `uuid` links the bond to its partner's Actor; `kin` marks a Bond Support; `auto` lets the tokens on
-        // the scene decide whether the partner is in range and side by side
+        // `uuid` links the bond to its partner's Actor, whose name and Affinity the record follows; `kin` marks
+        // a Bond Support. Whether the partner is in range and side by side is read from the tokens on the scene
+        // (see `helpers/supports.mjs`); `auto` once let that be set by hand, and is kept for what was saved
         uuid: text(),
         kin: new BooleanField(),
         adjacent: new BooleanField(),
@@ -445,6 +446,10 @@ export default class UnitData extends foundry.abstract.TypeDataModel {
 
       // Heart Seal Classes chosen for the unit, beside the class its own line starts in
       heartSeals: new ArrayField(new SchemaField({ name: text(), uuid: text() })),
+
+      // The class a Second Seal took the unit into, while its line starts there: it is not one of its Heart
+      // Seal Classes, and is not kept once the unit leaves it
+      heartSealGuest: text(),
       leadership: new SchemaField({
         stars: integer(0, { min: 0 }),
         authority: text(),

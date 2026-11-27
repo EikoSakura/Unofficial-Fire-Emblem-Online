@@ -1,14 +1,16 @@
 import { FEO } from "../config.mjs";
+import { relationOf } from "../rules/positions.mjs";
 import {
-  addPoints, bondsWithin, eventPoints, isReady, isTop, namesPartner, openTops, rangeState, takeTop, takenTops
+  addPoints, bondsWithin, eventPoints, isReady, isTop, namesPartner, newBond, openTops, rangeState, startingRank,
+  stepRank, takeTop, takenTops, unmetAllies
 } from "../rules/supports.mjs";
 import { postCard } from "./chat.mjs";
-import { measureDistance } from "./exchange.mjs";
+import { armyOf, measureDistance } from "./exchange.mjs";
 
 /**
- * Supports on units in Foundry: finding out from the tokens on a scene which partners are in range, handing
- * out support points, showing a heart over partners that grow closer, and letting them choose between the
- * highest ranks.
+ * Supports on units in Foundry: beginning them between allies that meet on a map, finding out from the tokens
+ * on a scene which partners are in range, handing out support points, showing a heart over partners that grow
+ * closer, and letting them choose between the highest ranks.
  */
 
 /** The socket the system's clients talk over. */
@@ -20,10 +22,14 @@ export const TOP_QUERY = `${FEO.id}.supportTop`;
 /** The query that asks a Game Master to give a partner's record of a support the highest rank the two chose. */
 export const MIRROR_QUERY = `${FEO.id}.supportMirror`;
 
+/** The query that asks a Game Master to have a partner's record of a support follow a change made to it. */
+export const FOLLOW_QUERY = `${FEO.id}.supportFollow`;
+
 /**
  * Describe the unit behind a token for the support rules.
  * @param {TokenDocument} token
- * @returns {{token: TokenDocument, actor: Actor, uuid: string, uuids: string[], names: string[], bonds: object[]}}
+ * @returns {{token: TokenDocument, actor: Actor, uuid: string, uuids: string[], names: string[], bonds: object[],
+ *   side: string, linked: boolean}}    `linked`, when the token is the unit itself and no copy of it
  */
 function unitOf(token) {
   const actor = token.actor;
@@ -33,7 +39,9 @@ function unitOf(token) {
     uuid: actor.uuid,
     uuids: [token.baseActor?.uuid].filter(Boolean),
     names: [token.name, actor.name],
-    bonds: actor.system.bonds
+    bonds: actor.system.bonds,
+    side: armyOf(actor, token),
+    linked: !!token.actorLink
   };
 }
 
@@ -66,7 +74,7 @@ function describe(actor) {
  * @param {{uuid?: string}} bond
  * @returns {Actor|null}
  */
-function partnerOf(bond) {
+export function partnerOf(bond) {
   if ( !bond?.uuid ) return null;
   let found = null;
   try {
@@ -95,9 +103,25 @@ const rankLabel = (rank) => game.i18n.localize(FEO.supportRanks[rank]?.label ?? 
 /* -------------------------------------------- */
 
 /**
+ * The record of a support that begins with a unit, as its partner keeps it.
+ * @param {Actor} partner
+ * @returns {object}
+ */
+function recordFor(partner) {
+  return newBond({
+    name: partner.name,
+    affinity: partner.system.affinity ?? "",
+    uuid: partner.token?.baseActor?.uuid ?? partner.uuid
+  });
+}
+
+/* -------------------------------------------- */
+
+/**
  * Work out, for every unit with a token on a scene, which of its support partners are in range and which are
- * side by side, and save what changed. Bonds whose range is set by hand are left alone. Runs for the active
- * Game Master only, so that it happens once.
+ * side by side, and save what changed. An ally that comes within range of a unit for the first time begins a
+ * support with it, and a record follows the name and the Affinity of the partner it is linked to. Runs for the
+ * active Game Master only, so that it happens once.
  * @param {Scene} scene
  * @returns {Promise<number>}   How many units were updated
  */
@@ -114,20 +138,40 @@ export async function refreshRanges(scene) {
     const bonds = foundry.utils.deepClone(unit.actor._source.system.bonds);
     let changed = false;
 
-    for ( const bond of bonds ) {
-      if ( !bond.auto ) continue;
+    // How near the unit stands to any of some others
+    const nearestOf = (others) => {
       let nearest = null;
-      for ( const partner of units ) {
-        if ( (partner.uuid === unit.uuid) || !namesPartner(bond, partner) ) continue;
+      for ( const other of others ) {
         for ( const own of mine ) {
-          const distance = measureDistance(own.token, partner.token);
+          const distance = measureDistance(own.token, other.token);
           if ( (distance !== null) && ((nearest === null) || (distance < nearest)) ) nearest = distance;
         }
       }
-      const { inRange, adjacent } = rangeState(nearest);
+      return nearest;
+    };
+
+    // An ally it has no support with begins one as the two come within range of each other
+    for ( const ally of unmetAllies({ ...unit, bonds }, units) ) {
+      if ( !rangeState(nearestOf(units.filter((other) => other.uuid === ally.uuid))).inRange ) continue;
+      bonds.push(recordFor(ally.actor));
+      changed = true;
+    }
+
+    for ( const bond of bonds ) {
+      const partners = units.filter((partner) => (partner.uuid !== unit.uuid) && namesPartner(bond, partner));
+      const { inRange, adjacent } = rangeState(nearestOf(partners));
       if ( (bond.inRange !== inRange) || (bond.adjacent !== adjacent) ) {
         bond.inRange = inRange;
         bond.adjacent = adjacent;
+        changed = true;
+      }
+
+      // A partner that stands on the map as itself is the one the record is of
+      const known = partners.find((partner) => partner.linked)?.actor;
+      if ( !known ) continue;
+      const kept = { uuid: bond.uuid || known.uuid, name: known.name, affinity: known.system.affinity ?? "" };
+      if ( Object.keys(kept).some((key) => bond[key] !== kept[key]) ) {
+        Object.assign(bond, kept);
         changed = true;
       }
     }
@@ -137,6 +181,47 @@ export async function refreshRanges(scene) {
     }
   }
   return updated;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A unit's token leaves a scene: with no other token of it there, none of its partners is in range any more.
+ * Runs for the active Game Master only.
+ * @param {TokenDocument} token     The token that was removed
+ * @returns {Promise<void>}
+ */
+export async function leaveMap(token) {
+  const actor = token?.actorLink ? token.actor : null;
+  if ( (actor?.type !== "unit") || !game.users.activeGM?.isSelf ) return;
+  if ( token.parent?.tokens.some((other) => (other !== token) && (other.actor === actor)) ) return;
+  const bonds = foundry.utils.deepClone(actor._source.system.bonds);
+  if ( !bonds.some((bond) => bond.inRange || bond.adjacent) ) return;
+  for ( const bond of bonds ) Object.assign(bond, { inRange: false, adjacent: false });
+  await actor.update({ "system.bonds": bonds });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Begin the supports the units of a group have yet to begin with each other, each on its own record.
+ * @param {ReturnType<typeof unitOf>[]} units
+ * @returns {Promise<boolean>}    Whether any began
+ */
+async function meet(units) {
+  const done = new Set();
+  let began = false;
+  for ( const unit of units ) {
+    if ( done.has(unit.uuid) || !unit.actor.isOwner ) continue;
+    done.add(unit.uuid);
+    const allies = unmetAllies(unit, units);
+    if ( !allies.length ) continue;
+    const bonds = foundry.utils.deepClone(unit.actor._source.system.bonds);
+    bonds.push(...allies.map((ally) => recordFor(ally.actor)));
+    await unit.actor.update({ "system.bonds": bonds });
+    began = true;
+  }
+  return began;
 }
 
 /* -------------------------------------------- */
@@ -591,6 +676,14 @@ export async function mirrorQuery({ actor: uuid, of, top } = {}) {
 export function registerHooks() {
   CONFIG.queries[TOP_QUERY] = topQuery;
   CONFIG.queries[MIRROR_QUERY] = mirrorQuery;
+  CONFIG.queries[FOLLOW_QUERY] = followQuery;
+
+  // The records partners keep of a unit follow its name and its Affinity
+  Hooks.on("updateActor", (actor, changes) => {
+    if ( (actor.type !== "unit") || !game.users.activeGM?.isSelf ) return;
+    if ( !("name" in changes) && (changes.system?.affinity === undefined) ) return;
+    renamePartner(actor).catch((err) => console.error(err));
+  });
   Hooks.once("ready", () => {
     game.socket?.on(SOCKET, async (message) => {
       if ( message?.type !== "support.heart" ) return;
@@ -613,13 +706,16 @@ export function registerHooks() {
  * @returns {Promise<void>}
  */
 export async function awardBattle(combat) {
-  const amount = eventPoints("battle");
-  if ( !amount ) return;
-  const units = [];
+  let units = [];
   for ( const combatant of combat.combatants ) {
     if ( (combatant.actor?.type !== "unit") || !combatant.token ) continue;
     if ( !units.some((unit) => unit.uuid === combatant.actor.uuid) ) units.push(unitOf(combatant.token));
   }
+
+  // Allies fielded together for the first time begin their supports here, wherever they stand
+  if ( await meet(units) ) units = units.map((unit) => unitOf(unit.token));
+  const amount = eventPoints("battle");
+  if ( !amount ) return;
   const gains = await grantWithin(units, bondsWithin(units), amount);
   const speaker = units[0]?.actor;
   if ( speaker ) await settleGains(speaker, gains, { reason: "FEO.Support.event.battle" });
@@ -733,11 +829,199 @@ export async function linkBond(actor, partner) {
     if ( existing.uuid ) return false;
     existing.uuid = uuid;
   }
-  else bonds.push({
-    name: partner.name, affinity: partner.system.affinity ?? "", rank: "E", points: 0,
-    inRange: false, adjacent: false, auto: true, kin: false, uuid
-  });
+  else bonds.push(recordFor(partner));
   await actor.update({ "system.bonds": bonds });
   queueRangesFor(actor);
   return true;
+}
+
+/* -------------------------------------------- */
+/*  By Hand                                     */
+/* -------------------------------------------- */
+
+/**
+ * Make a unit's record of its support with a partner follow the partner's own record of it: gone where the
+ * partner has ended it, begun where the partner has begun it, and with its rank, its points and whether it is
+ * a Bond Support. The highest ranks are taken by choice (see `chooseTop`), and are not followed here.
+ * @param {Actor} actor       The unit whose record follows
+ * @param {Actor} partner     The unit whose record leads
+ * @returns {Promise<boolean>}    Whether the record changed
+ */
+async function followBond(actor, partner) {
+  const lead = partner.system.bonds?.[recordOf(partner, actor)] ?? null;
+  const index = recordOf(actor, partner);
+  const bonds = foundry.utils.deepClone(actor._source.system.bonds);
+  if ( !lead ) {
+    if ( index < 0 ) return false;
+    bonds.splice(index, 1);
+  }
+  else {
+    const bond = bonds[index] ?? bonds[bonds.push(recordFor(partner)) - 1];
+    const before = JSON.stringify(bond);
+    bond.kin = !!lead.kin;
+    if ( !isTop(lead.rank) ) Object.assign(bond, { rank: lead.rank, points: lead.points });
+    if ( (index >= 0) && (JSON.stringify(bond) === before) ) return false;
+  }
+  await actor.update({ "system.bonds": bonds });
+  queueRangesFor(actor);
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Have a partner's record of a support follow a change made to a unit's own. A partner this user may not
+ * change is handed to an active Game Master.
+ * @param {Actor} actor             The unit whose record was changed
+ * @param {Actor|null} partner
+ * @returns {Promise<void>}
+ */
+async function tellPartner(actor, partner) {
+  if ( !partner || (partner === actor) ) return;
+  try {
+    if ( partner.isOwner ) await followBond(partner, actor);
+    else await game.users.activeGM?.query(FOLLOW_QUERY, { actor: partner.uuid, of: actor.uuid }, { timeout: 10000 });
+  } catch(err) {
+    console.error(err);
+  }
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Answer a request to have a unit's record of a support follow its partner's. Runs for a Game Master, and only
+ * makes the one record say what the other already does.
+ * @param {{actor: string, of: string}} data
+ * @returns {Promise<boolean>}
+ */
+export async function followQuery({ actor: uuid, of } = {}) {
+  if ( !game.user.isGM ) return false;
+  const unit = async (id) => {
+    const found = (typeof id === "string") && id ? await foundry.utils.fromUuid(id).catch(() => null) : null;
+    return ((found?.documentName === "Actor") && (found.type === "unit")) ? found : null;
+  };
+  const actor = await unit(uuid);
+  const partner = await unit(of);
+  if ( !actor || !partner || (actor === partner) ) return false;
+  return followBond(actor, partner);
+}
+
+/* -------------------------------------------- */
+
+/**
+ * The units a unit could begin a support with by hand: those of the world that fight on its side or beside it
+ * and that none of its bonds names, by name.
+ * @param {Actor} actor
+ * @param {TokenDocument|null} [token]    The unit's token, if it has one
+ * @returns {Actor[]}
+ */
+export function bondCandidates(actor, token = null) {
+  const side = armyOf(actor, token);
+  const self = actor.token?.baseActor ?? actor;
+  const bonds = actor.system.bonds ?? [];
+  return game.actors.filter((other) => {
+    if ( (other.type !== "unit") || (other === self) || (!other.visible && !other.hasPlayerOwner) ) return false;
+    if ( relationOf(side, armyOf(other)) !== "ally" ) return false;
+    return !bonds.some((bond) => namesPartner(bond, describe(other)));
+  }).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Begin a support between two units by hand, on both their records. A partner that already keeps a record of
+ * it has the unit's own take up where that one stands.
+ * @param {Actor} actor
+ * @param {Actor} partner
+ * @returns {Promise<boolean>}    False if the unit already has a bond with the partner
+ */
+export async function befriend(actor, partner) {
+  if ( !(await linkBond(actor, partner)) ) return false;
+  if ( recordOf(partner, actor) >= 0 ) await followBond(actor, partner);
+  else await tellPartner(actor, partner);
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * End one of a unit's supports, on its partner's record as on its own.
+ * @param {Actor} actor
+ * @param {number} index      Which of its bonds
+ * @returns {Promise<boolean>}
+ */
+export async function endBond(actor, index) {
+  if ( (actor?.type !== "unit") || !actor.isOwner ) return false;
+  const bonds = foundry.utils.deepClone(actor._source.system.bonds);
+  if ( !bonds[index] ) return false;
+  const [gone] = bonds.splice(index, 1);
+  await actor.update({ "system.bonds": bonds });
+  await tellPartner(actor, partnerOf(gone));
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Move one of a unit's supports a rank up or down by hand, on its partner's record as on its own.
+ * @param {Actor} actor
+ * @param {number} index      Which of its bonds
+ * @param {object} [options]
+ * @param {boolean} [options.lower]     Is it moved down?
+ * @returns {Promise<boolean>}          Whether it had a rank to go to
+ */
+export async function stepBond(actor, index, { lower = false } = {}) {
+  if ( (actor?.type !== "unit") || !actor.isOwner ) return false;
+  const bonds = foundry.utils.deepClone(actor._source.system.bonds);
+  const bond = bonds[index];
+  const after = bond ? stepRank(bond, { lower }) : null;
+  if ( !after ) return false;
+  Object.assign(bond, after);
+  await actor.update({ "system.bonds": bonds });
+  await tellPartner(actor, partnerOf(bond));
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * Make one of a unit's supports a Bond Support, or an ordinary one again, on its partner's record as on its
+ * own. A Bond Support starts a rank ahead.
+ * @param {Actor} actor
+ * @param {number} index      Which of its bonds
+ * @returns {Promise<boolean>}
+ */
+export async function toggleKin(actor, index) {
+  if ( (actor?.type !== "unit") || !actor.isOwner ) return false;
+  const bonds = foundry.utils.deepClone(actor._source.system.bonds);
+  const bond = bonds[index];
+  if ( !bond ) return false;
+  bond.kin = !bond.kin;
+  if ( bond.kin ) bond.rank = startingRank(true, bond.rank);
+  await actor.update({ "system.bonds": bonds });
+  await tellPartner(actor, partnerOf(bond));
+  return true;
+}
+
+/* -------------------------------------------- */
+
+/**
+ * A unit was given another name or Affinity: the records its partners keep of it say so too. Runs for the
+ * active Game Master only.
+ * @param {Actor} actor
+ * @returns {Promise<void>}
+ */
+async function renamePartner(actor) {
+  const kept = { name: actor.name, affinity: actor.system.affinity ?? "" };
+  for ( const other of game.actors ) {
+    if ( (other.type !== "unit") || (other === actor) ) continue;
+    const bonds = foundry.utils.deepClone(other._source.system.bonds);
+    let changed = false;
+    for ( const bond of bonds ) {
+      if ( (bond.uuid !== actor.uuid) || Object.keys(kept).every((key) => bond[key] === kept[key]) ) continue;
+      Object.assign(bond, kept);
+      changed = true;
+    }
+    if ( changed ) await other.update({ "system.bonds": bonds });
+  }
 }

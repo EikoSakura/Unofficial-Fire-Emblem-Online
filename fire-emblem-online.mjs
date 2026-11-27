@@ -444,7 +444,10 @@ Hooks.once("init", () => {
     if ( moved.some((key) => key in changes) ) supportHelpers.queueRanges(token.parent);
   });
   Hooks.on("createToken", (token) => supportHelpers.queueRanges(token.parent));
-  Hooks.on("deleteToken", (token) => supportHelpers.queueRanges(token.parent));
+  Hooks.on("deleteToken", (token) => {
+    supportHelpers.queueRanges(token.parent);
+    supportHelpers.leaveMap(token).catch((err) => console.error(err));
+  });
   Hooks.on("canvasReady", () => supportHelpers.queueRanges(canvas.scene));
 
   // A unit's token does not turn: its rotation is locked as the unit is made and as a token of it is placed,

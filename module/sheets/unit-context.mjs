@@ -18,7 +18,7 @@ import { countsAsSkill, formsOf } from "../rules/skills.mjs";
 import { staggerInUse } from "../rules/stagger.mjs";
 import { sellValue } from "../rules/progression.mjs";
 import { resold } from "../rules/stealing.mjs";
-import { isTop, ladder, pointsForNext, topRanks } from "../rules/supports.mjs";
+import { atFork, isReady, isTop, kinBonus, ladder, pointsForNext, rankBelow, rankProgress } from "../rules/supports.mjs";
 import { canWield, countedRank, repairCost, wieldLevel } from "../rules/weapons.mjs";
 import { picksOf } from "../helpers/picks.mjs";
 import { prepareUsage } from "../helpers/skill-usage-context.mjs";
@@ -68,6 +68,7 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
   }));
 
   const level = prepareLevel(system);
+  const bonds = prepareBonds(system);
   const classPath = buildClassPath(system, ofType("class"), promotions);
 
   // Promoting ahead of time is offered unless the Level Up button is about to promote anyway
@@ -77,9 +78,6 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
     vitals: prepareVitals(system),
     defeat: prepareDefeat(system),
     shift: prepareShift(system),
-    supportEvents: FEO.supports.method === "points"
-      ? Object.fromEntries(Object.entries(FEO.supports.events).map(([key, amount]) => [key, { label: `FEO.Support.event.${key}`, amount }]))
-      : null,
     conditions: prepareConditions(actor.effects, system.conditions ?? {}),
     conditionChoices: Object.fromEntries(
       Object.entries(FEO.conditions).filter(([, condition]) => !condition.combatOnly)
@@ -173,11 +171,9 @@ export function buildUnitContext(actor, { promotions = [], optional = {} } = {})
     })),
 
     checks: prepareChecks(system),
-    bonds: prepareBonds(system),
-    optional: prepareOptional(actor, optional),
-    supportRankChoices: Object.fromEntries(
-      Object.entries(FEO.supportRanks).map(([key, rank]) => [key, rank.label])
-    )
+    bonds,
+    supports: prepareSupports(system, bonds),
+    optional: prepareOptional(actor, optional)
   };
 }
 
@@ -951,7 +947,6 @@ function prepareChecks(system) {
  */
 function prepareBonds(system) {
   const level = (rank) => FEO.supportRanks[rank]?.level ?? 0;
-  const steps = ladder().filter((rank) => level(rank) > 0);
   return system.bonds.map((bond, index) => {
     const parts = Object.entries(FEO.supportBoosts)
       .map(([key, label]) => ({ label, amount: bond.bonus[key] }))
@@ -959,25 +954,58 @@ function prepareBonds(system) {
     return {
       index,
       name: bond.name,
+      uuid: bond.uuid,
       affinity: bond.affinity,
       affinityLabel: FEO.affinities[bond.affinity] ?? null,
       icon: FEO.affinityIcons[bond.affinity] ?? "ring",
       rank: bond.rank,
       rankLabel: FEO.supportRanks[bond.rank]?.label,
+      level: level(bond.rank),
       points: bond.points,
       pointsNext: pointsForNext(bond.rank),
       inRange: bond.inRange,
       adjacent: !!bond.adjacent,
-      auto: bond.auto !== false,
       kin: !!bond.kin,
       linked: !!bond.uuid,
       parts,
 
-      // The ranks it has climbed, then the one of the highest it took, or both while it has taken neither
-      letters: [...steps, ...(isTop(bond.rank) ? [bond.rank] : topRanks())].map((rank) => ({
-        label: FEO.supportRanks[rank].label,
-        on: level(rank) <= level(bond.rank)
-      }))
+      // Its bar: a part for each rank it climbs through, and how full each is
+      steps: rankProgress(bond).map((share) => ({ pct: Math.round(share * 100) })),
+
+      // What moving it by hand comes to: a rank down, a rank up, or at A the choice between the highest ranks
+      canLower: rankBelow(bond.rank) !== null,
+      canRaise: !isTop(bond.rank) && !atFork(bond.rank),
+      atFork: atFork(bond.rank),
+      ready: isReady(bond)
     };
   });
+}
+
+/* -------------------------------------------- */
+
+/**
+ * What a unit's supports come to for its sheet: the partners in range, closest support first, every partner
+ * it keeps a record of in the order they are managed in, and what those in range give it together.
+ * @param {object} system
+ * @param {object[]} bonds      Its bonds, as `prepareBonds` gives them
+ * @returns {{near: object[], kept: object[], totals: {label: string, amount: number}[], scale: string[]}}
+ */
+function prepareSupports(system, bonds) {
+  const byRank = (a, b) => (b.level - a.level) || String(a.name).localeCompare(String(b.name));
+  const sum = {};
+  system.bonds.forEach((bond) => {
+    if ( !bond.inRange ) return;
+    for ( const key of Object.keys(FEO.supportBoosts) ) sum[key] = (sum[key] ?? 0) + (bond.bonus[key] ?? 0);
+
+    // Partners in a Bond Support gain more while side by side
+    for ( const [key, amount] of Object.entries(kinBonus(bond) ?? {}) ) sum[key] = (sum[key] ?? 0) + amount;
+  });
+  return {
+    near: bonds.filter((bond) => bond.inRange).sort(byRank),
+    kept: bonds.slice().sort(byRank),
+    totals: Object.entries(FEO.supportBoosts).map(([key, label]) => ({ label, amount: sum[key] ?? 0 })).filter((part) => part.amount),
+
+    // The ranks along the bar, said once over the records: those it climbs through, then the highest
+    scale: [...ladder().map((rank) => FEO.supportRanks[rank].label), "FEO.Bond.tops"]
+  };
 }
